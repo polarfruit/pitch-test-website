@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Rundle Mall Night Eats — Pitch.</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,700;9..144,900&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --ember:      #E8500A;
+  --ember-glow: #FF6B2B;
+  --ember-bg:   #E8500A12;
+  --coal:       #1A1612;
+  --char:       #231E19;
+  --ash:        #2E2720;
+  --smoke:      #4A3F36;
+  --parchment:  #FDF4E7;
+  --cream:      #F5EDD8;
+  --linen:      #EDE3CC;
+  --herb:       #2D8B55;
+  --gold:       #C9840A;
+  --terra:      #C0392B;
+  --slate:      #2B5BA8;
+  --text-hi:    #FDF4E7;
+  --text-mid:   #A89880;
+  --text-lo:    #6B5A4A;
+  --fd:         'Fraunces', Georgia, serif;
+  --fb:         'Instrument Sans', 'Helvetica Neue', sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+body { background: var(--coal); color: var(--text-hi); font-family: var(--fb); line-height: 1.5; overflow-x: hidden; }
+body::before {
+  content: ''; position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 0; opacity: 0.45;
+}
+
+/* ── NAV ────────────────────────────────────────────────────────────────── */
+.navbar { position: fixed; top: 0; left: 0; right: 0; z-index: 200; height: 66px; display: flex; align-items: center; justify-content: space-between; padding: 0 52px; background: rgba(26,22,18,0.92); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid #ffffff07; }
+.nav-logo { font-family: var(--fd); font-size: 26px; font-weight: 900; letter-spacing: -0.04em; color: var(--text-hi); text-decoration: none; }
+.nav-logo .dot { color: var(--ember); }
+.nav-links { display: flex; align-items: center; gap: 32px; list-style: none; }
+.nav-links a { font-size: 14px; font-weight: 500; color: var(--text-mid); text-decoration: none; transition: color 0.14s; }
+.nav-links a:hover { color: var(--text-hi); }
+.nav-actions { display: flex; align-items: center; gap: 10px; }
+.btn-login { font-family: var(--fb); font-size: 13px; font-weight: 600; color: var(--text-mid); background: transparent; border: none; padding: 9px 16px; border-radius: 8px; cursor: pointer; transition: color 0.14s, background 0.14s; text-decoration: none; }
+.btn-login:hover { color: var(--text-hi); background: #ffffff09; }
+.btn-get-started { font-family: var(--fb); font-size: 13px; font-weight: 700; color: #fff; background: var(--ember); border: none; padding: 10px 22px; border-radius: 9px; cursor: pointer; box-shadow: 0 4px 16px #E8500A2E; transition: background 0.14s, transform 0.14s; text-decoration: none; }
+.btn-get-started:hover { background: var(--ember-glow); transform: translateY(-1px); }
+.nav-hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 8px; border: none; background: transparent; }
+.nav-hamburger span { display: block; width: 22px; height: 2px; background: var(--text-mid); border-radius: 2px; }
+
+/* ── BREADCRUMB ───────────────────────────────────────────────────────────── */
+.breadcrumb-bar { position: relative; z-index: 1; max-width: 1320px; margin: 0 auto; padding: 86px 52px 0; }
+.breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-lo); margin-bottom: 0; }
+.breadcrumb a { color: var(--text-lo); text-decoration: none; transition: color 0.14s; }
+.breadcrumb a:hover { color: var(--text-mid); }
+.breadcrumb-sep { font-size: 10px; }
+
+/* ── DETAIL LAYOUT ────────────────────────────────────────────────────────── */
+.detail-wrap {
+  max-width: 1320px; margin: 0 auto;
+  padding: 28px 52px 88px;
+  display: grid;
+  grid-template-columns: 1fr 372px;
+  gap: 40px;
+  align-items: start;
+  position: relative; z-index: 1;
+}
+
+/* ── LEFT / MAIN ──────────────────────────────────────────────────────────── */
+.detail-main {}
+
+/* Hero image */
+.detail-hero {
+  height: 340px; border-radius: 20px; overflow: hidden;
+  position: relative; display: flex; align-items: center; justify-content: center;
+  font-size: 80px; margin-bottom: 32px;
+  background: linear-gradient(135deg, #1A1612 0%, #321A0A 55%, #1A1612 100%);
+}
+.detail-hero-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(26,22,18,0.7) 0%, rgba(26,22,18,0.1) 60%, transparent 100%); }
+.detail-hero-badge {
+  position: absolute; top: 20px; left: 20px;
+  font-size: 11px; font-weight: 700; padding: 5px 14px;
+  border-radius: 100px; font-family: var(--fb); letter-spacing: 0.07em;
+  background: #2B5BA818; color: #2B5BA8; border: 1px solid #2B5BA828;
+  backdrop-filter: blur(8px);
+}
+.detail-hero-meta {
+  position: absolute; bottom: 20px; left: 20px;
+  display: flex; gap: 10px;
+}
+.detail-hero-tag {
+  font-size: 11px; color: rgba(253,244,231,0.7); background: rgba(26,22,18,0.5);
+  padding: 4px 12px; border-radius: 100px; font-weight: 500;
+  backdrop-filter: blur(8px);
+}
+
+/* Event name */
+.detail-event-name {
+  font-family: var(--fd);
+  font-size: clamp(32px, 4vw, 52px);
+  font-weight: 900; letter-spacing: -0.03em;
+  color: var(--text-hi); line-height: 1.02;
+  margin-bottom: 16px;
+}
+
+/* Meta row */
+.detail-meta-row {
+  display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+.meta-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 600; color: var(--text-mid);
+  background: var(--char); border: 1px solid #ffffff09;
+  padding: 5px 14px; border-radius: 100px;
+}
+
+/* Divider */
+.section-divider { height: 1px; background: #ffffff07; margin: 28px 0; }
+
+/* Section heading */
+.subsec-title {
+  font-family: var(--fd); font-size: 20px; font-weight: 800;
+  color: var(--text-hi); margin-bottom: 14px;
+}
+
+/* About */
+.about-text { font-size: 15px; color: var(--text-mid); line-height: 1.82; }
+
+/* Specs grid */
+.specs-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr);
+  gap: 0; border: 1px solid #ffffff09; border-radius: 16px; overflow: hidden;
+}
+.spec-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid #ffffff08; border-right: 1px solid #ffffff08;
+}
+.spec-item:nth-child(even) { border-right: none; }
+.spec-item:nth-last-child(-n+2) { border-bottom: none; }
+.spec-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+.spec-label { font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-lo); font-weight: 700; margin-bottom: 3px; }
+.spec-value { font-size: 14px; color: var(--text-hi); font-weight: 500; }
+
+/* Booth fee */
+.booth-fee-box {
+  background: var(--char); border: 1px solid #ffffff09; border-radius: 16px;
+  padding: 22px 24px; display: flex; align-items: center; justify-content: space-between;
+}
+.fee-label { font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-lo); font-weight: 700; margin-bottom: 4px; }
+.fee-range { font-family: var(--fd); font-size: 32px; font-weight: 900; color: var(--ember); letter-spacing: -0.02em; }
+.fee-note { font-size: 12px; color: var(--text-lo); margin-top: 2px; }
+.fee-inc-items { display: flex; flex-direction: column; gap: 4px; }
+.fee-inc-item { font-size: 12px; color: var(--text-mid); display: flex; align-items: center; gap: 6px; }
+.fee-inc-item::before { content: '✓'; color: var(--herb); font-weight: 700; }
+
+/* Tags */
+.tag-list { display: flex; gap: 8px; flex-wrap: wrap; }
+.cuisine-tag {
+  font-size: 12px; font-weight: 600; padding: 5px 14px;
+  border-radius: 100px; background: var(--char); border: 1px solid #ffffff09;
+  color: var(--text-mid);
+}
+.cuisine-tag.preferred { background: var(--ember-bg); border-color: #E8500A22; color: var(--ember); }
+
+/* Requirements */
+.req-list { display: flex; flex-direction: column; gap: 10px; }
+.req-item { display: flex; align-items: flex-start; gap: 10px; }
+.req-icon { font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+.req-text { font-size: 14px; color: var(--text-mid); line-height: 1.5; }
+.req-text strong { color: var(--text-hi); }
+
+/* Vendor lineup */
+.vendor-lineup-scroll { display: flex; gap: 12px; flex-wrap: wrap; }
+.vendor-mini {
+  background: var(--parchment); border: 1px solid var(--linen);
+  border-radius: 14px; padding: 14px 16px;
+  display: flex; align-items: center; gap: 12px;
+  color: var(--coal); text-decoration: none;
+  transition: transform 0.16s, box-shadow 0.16s;
+  min-width: 180px;
+}
+.vendor-mini:hover { transform: translateY(-2px); box-shadow: 0 8px 24px #00000018; }
+.vm-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--fd); font-size: 14px; font-weight: 900; flex-shrink: 0;
+}
+.vm-name { font-family: var(--fd); font-size: 13px; font-weight: 800; color: var(--coal); margin-bottom: 2px; }
+.vm-type { font-size: 11px; color: #9A8870; }
+.lineup-empty {
+  font-size: 14px; color: var(--text-lo); font-style: italic;
+  padding: 20px 0;
+}
+
+/* ── RIGHT / SIDEBAR ──────────────────────────────────────────────────────── */
+.detail-sidebar { position: sticky; top: 84px; }
+
+/* Fill ring card */
+.sidebar-card {
+  background: var(--char); border: 1px solid #ffffff09;
+  border-radius: 20px; padding: 24px; margin-bottom: 14px;
+}
+
+.fill-ring-wrap { text-align: center; margin-bottom: 4px; }
+.fill-ring-svg { overflow: visible; }
+.fill-ring-track { fill: none; stroke: var(--ash); stroke-width: 10; }
+.fill-ring-fill  { fill: none; stroke-width: 10; stroke-linecap: round; transition: stroke-dasharray 0.8s ease; transform-origin: center; transform: rotate(-90deg); }
+.fill-ring-label { font-family: var(--fd); font-size: 22px; font-weight: 900; fill: var(--text-hi); }
+.fill-ring-sub   { font-size: 11px; fill: var(--text-lo); font-family: var(--fb); }
+.fill-ring-caption { font-size: 13px; color: var(--text-mid); margin-top: 10px; text-align: center; }
+
+/* Deadline */
+.deadline-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-top: 1px solid #ffffff08; }
+.deadline-label { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-lo); font-weight: 700; }
+.deadline-val { font-family: var(--fd); font-size: 16px; font-weight: 800; color: var(--text-hi); }
+.countdown-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: #C9840A14; border: 1px solid #C9840A22;
+  border-radius: 100px; padding: 3px 10px;
+  font-size: 11px; font-weight: 700; color: var(--gold);
+  margin-top: 4px;
+}
+.countdown-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--gold); animation: blink 1.5s ease-in-out infinite; }
+@keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.2;} }
+
+/* Organiser */
+.organiser-row { display: flex; align-items: center; gap: 12px; padding: 14px 0; border-top: 1px solid #ffffff08; }
+.org-avatar {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: #2B5BA818; color: var(--slate);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--fd); font-size: 16px; font-weight: 900; flex-shrink: 0;
+}
+.org-name { font-family: var(--fd); font-size: 14px; font-weight: 800; color: var(--text-hi); margin-bottom: 2px; }
+.org-meta { font-size: 11px; color: var(--text-lo); }
+
+/* CTA buttons */
+.btn-apply {
+  width: 100%; font-family: var(--fb); font-size: 15px; font-weight: 700;
+  color: #fff; background: var(--ember); border: none; border-radius: 12px;
+  padding: 16px; cursor: pointer; margin-bottom: 10px;
+  box-shadow: 0 6px 24px #E8500A28;
+  transition: background 0.14s, transform 0.14s, box-shadow 0.14s;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+}
+.btn-apply:hover { background: var(--ember-glow); transform: translateY(-1px); box-shadow: 0 10px 32px #E8500A38; }
+.btn-apply.submitted { background: var(--herb); box-shadow: 0 6px 24px #2D8B5528; cursor: default; }
+.btn-apply.submitted:hover { transform: none; }
+
+.btn-share {
+  width: 100%; font-family: var(--fb); font-size: 13px; font-weight: 600;
+  color: var(--text-mid); background: transparent; border: 1px solid #ffffff10;
+  border-radius: 10px; padding: 11px; cursor: pointer; margin-bottom: 14px;
+  transition: all 0.14s; display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.btn-share:hover { border-color: #ffffff24; color: var(--text-hi); }
+
+/* Trust note */
+.trust-note {
+  background: #2D8B5509; border: 1px solid #2D8B5520;
+  border-radius: 12px; padding: 12px 16px;
+  font-size: 12px; color: #2D8B55; line-height: 1.6;
+  display: flex; align-items: flex-start; gap: 8px;
+}
+.trust-note-icon { flex-shrink: 0; margin-top: 1px; }
+
+/* Share toast */
+.share-toast {
+  position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+  background: var(--char); border: 1px solid #ffffff0C;
+  border-radius: 12px; padding: 12px 20px;
+  font-size: 13px; font-weight: 600; color: var(--text-hi);
+  box-shadow: 0 12px 32px #00000040;
+  display: none; z-index: 400; white-space: nowrap;
+}
+.share-toast.show { display: block; animation: fadeInUp 0.2s ease; }
+@keyframes fadeInUp { from { opacity:0; transform: translateX(-50%) translateY(8px); } to { opacity:1; transform: translateX(-50%) translateY(0); } }
+
+/* ── APPLICATION MODAL ────────────────────────────────────────────────────── */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(26,22,18,0.82);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  z-index: 300; display: flex; align-items: flex-end; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.2s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+
+.modal-box {
+  background: var(--char); border-radius: 24px 24px 0 0;
+  width: 100%; max-width: 560px;
+  border: 1px solid #ffffff0A; border-bottom: none;
+  transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.modal-overlay.open .modal-box { transform: translateY(0); }
+
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 24px 28px 0;
+}
+.modal-title { font-family: var(--fd); font-size: 22px; font-weight: 900; color: var(--text-hi); }
+.modal-close {
+  width: 36px; height: 36px; border-radius: 50%; background: var(--ash);
+  border: none; cursor: pointer; font-size: 18px; color: var(--text-lo);
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.14s, color 0.14s;
+}
+.modal-close:hover { background: var(--smoke); color: var(--text-hi); }
+
+/* Step indicator */
+.step-indicator {
+  display: flex; align-items: center; justify-content: center; gap: 0;
+  padding: 20px 28px 0;
+}
+.si-step {
+  display: flex; flex-direction: column; align-items: center; gap: 5px; flex: 1;
+  position: relative;
+}
+.si-dot {
+  width: 32px; height: 32px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--fd); font-size: 13px; font-weight: 900;
+  background: var(--ash); color: var(--text-lo);
+  border: 2px solid var(--ash);
+  transition: all 0.2s;
+  position: relative; z-index: 1;
+}
+.si-step.active .si-dot { background: var(--ember); color: #fff; border-color: var(--ember); }
+.si-step.done .si-dot { background: var(--herb); color: #fff; border-color: var(--herb); }
+.si-label { font-size: 10px; font-weight: 600; color: var(--text-lo); letter-spacing: 0.04em; }
+.si-step.active .si-label { color: var(--ember); }
+.si-step.done .si-label { color: var(--herb); }
+.si-line {
+  flex: 1; height: 2px; background: var(--ash); margin-bottom: 18px;
+  transition: background 0.2s; align-self: center; margin-top: -18px;
+  max-width: 60px;
+}
+.si-line.done { background: var(--herb); }
+
+/* Step panels */
+.modal-body { padding: 24px 28px 0; min-height: 220px; }
+.step-panel { display: none; }
+.step-panel.active { display: block; }
+
+.step-desc { font-size: 14px; color: var(--text-mid); line-height: 1.7; margin-bottom: 20px; }
+
+/* Form fields in modal */
+.field-group { margin-bottom: 18px; }
+.field-label { font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-lo); font-weight: 700; margin-bottom: 7px; display: block; }
+.field-input, .field-select, .field-textarea {
+  width: 100%; background: var(--ash); border: 1px solid #ffffff0A;
+  border-radius: 10px; padding: 11px 14px;
+  font-family: var(--fb); font-size: 14px; color: var(--text-hi);
+  outline: none; transition: border-color 0.14s, box-shadow 0.14s;
+}
+.field-input:focus, .field-select:focus, .field-textarea:focus { border-color: #E8500A40; box-shadow: 0 0 0 3px #E8500A12; }
+.field-input::placeholder, .field-textarea::placeholder { color: var(--text-lo); }
+.field-select { appearance: none; cursor: pointer; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7' viewBox='0 0 12 7'%3E%3Cpath d='M1 1l5 4.5L11 1' stroke='%236B5A4A' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+.field-select option { background: var(--char); }
+.field-textarea { resize: vertical; min-height: 100px; line-height: 1.6; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.char-count { font-size: 11px; color: var(--text-lo); text-align: right; margin-top: 5px; }
+.char-count.warn { color: var(--gold); }
+.char-count.over { color: var(--terra); }
+
+/* Checkbox */
+.field-check-row { display: flex; align-items: flex-start; gap: 12px; cursor: pointer; }
+.field-check { width: 18px; height: 18px; border-radius: 5px; border: 1.5px solid var(--smoke); background: var(--ash); flex-shrink: 0; margin-top: 2px; cursor: pointer; accent-color: var(--ember); }
+
+/* Terms box */
+.terms-box {
+  background: var(--coal); border: 1px solid #ffffff09; border-radius: 12px;
+  padding: 16px 18px; max-height: 140px; overflow-y: auto;
+  font-size: 12px; color: var(--text-lo); line-height: 1.75;
+  margin-bottom: 18px;
+  scrollbar-width: thin; scrollbar-color: var(--ash) transparent;
+}
+.terms-box strong { color: var(--text-mid); font-weight: 600; }
+
+/* Modal footer */
+.modal-footer {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 20px 28px 28px;
+}
+.modal-back {
+  font-family: var(--fb); font-size: 13px; font-weight: 600; color: var(--text-lo);
+  background: none; border: none; cursor: pointer; padding: 10px;
+  transition: color 0.14s;
+}
+.modal-back:hover { color: var(--text-mid); }
+.modal-next {
+  font-family: var(--fb); font-size: 14px; font-weight: 700;
+  color: #fff; background: var(--ember); border: none;
+  padding: 12px 28px; border-radius: 10px; cursor: pointer;
+  box-shadow: 0 4px 16px #E8500A28;
+  transition: background 0.14s, transform 0.14s;
+}
+.modal-next:hover { background: var(--ember-glow); transform: translateY(-1px); }
+.modal-next:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+/* Success state */
+.modal-success { text-align: center; padding: 20px 0 10px; }
+.success-icon { font-size: 52px; margin-bottom: 16px; }
+.success-title { font-family: var(--fd); font-size: 24px; font-weight: 900; color: var(--text-hi); margin-bottom: 10px; }
+.success-desc { font-size: 14px; color: var(--text-mid); line-height: 1.7; }
+
+/* ── FOOTER ──────────────────────────────────────────────────────────────── */
+footer { background: var(--char); border-top: 1px solid #ffffff07; position: relative; z-index: 1; }
+.footer-main { max-width: 1320px; margin: 0 auto; padding: 56px 52px 36px; display: grid; grid-template-columns: 1.8fr 1fr 1fr 1fr; gap: 48px; }
+.footer-logo { font-family: var(--fd); font-size: 24px; font-weight: 900; letter-spacing: -0.04em; color: var(--text-hi); margin-bottom: 10px; text-decoration: none; display: inline-block; }
+.footer-logo .dot { color: var(--ember); }
+.footer-desc { font-size: 13px; color: var(--text-lo); line-height: 1.8; max-width: 220px; margin-bottom: 20px; }
+.footer-socials { display: flex; gap: 8px; }
+.fsoc { width: 34px; height: 34px; border-radius: 8px; background: #ffffff08; border: 1px solid #ffffff0C; display: flex; align-items: center; justify-content: center; font-size: 13px; cursor: pointer; text-decoration: none; color: var(--text-lo); transition: all 0.14s; }
+.fsoc:hover { background: var(--ember-bg); border-color: #E8500A22; color: var(--ember); }
+.footer-col-title { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-lo); font-weight: 700; margin-bottom: 16px; }
+.footer-links { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.footer-links a { font-size: 13px; color: var(--text-mid); text-decoration: none; transition: color 0.14s; }
+.footer-links a:hover { color: var(--text-hi); }
+.footer-bottom { max-width: 1320px; margin: 0 auto; padding: 18px 52px 24px; border-top: 1px solid #ffffff06; display: flex; justify-content: space-between; align-items: center; }
+.footer-copy { font-size: 12px; color: var(--text-lo); }
+.footer-bl { font-family: var(--fd); font-size: 18px; font-weight: 900; letter-spacing: -0.04em; color: var(--text-mid); text-decoration: none; }
+.footer-bl .dot { color: var(--ember); }
+
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--coal); }
+::-webkit-scrollbar-thumb { background: var(--ash); border-radius: 3px; }
+
+/* ── RESPONSIVE ──────────────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .navbar { padding: 0 28px; }
+  .nav-links, .nav-actions { display: none; }
+  .nav-hamburger { display: flex; }
+  .breadcrumb-bar { padding: 86px 28px 0; }
+  .detail-wrap { grid-template-columns: 1fr; padding: 24px 28px 64px; }
+  .detail-sidebar { position: static; }
+  .footer-main { grid-template-columns: 1fr 1fr; gap: 28px; padding: 40px 28px 28px; }
+  .footer-bottom { padding: 16px 28px 20px; }
+}
+@media (max-width: 640px) {
+  .specs-grid { grid-template-columns: 1fr; }
+  .spec-item { border-right: none !important; }
+  .spec-item:nth-last-child(-n+2) { border-bottom: 1px solid #ffffff08 !important; }
+  .spec-item:last-child { border-bottom: none !important; }
+  .footer-main { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── NAV ────────────────────────────────────────────────────────────────── -->
+<nav class="navbar">
+  <a href="/" class="nav-logo">Pitch<span class="dot">.</span></a>
+  <ul class="nav-links">
+    <li><a href="/events">Events</a></li>
+    <li><a href="/vendors">Vendors</a></li>
+    <li><a href="/#how-it-works">How It Works</a></li>
+  </ul>
+  <div class="nav-actions">
+    <a href="/login" class="btn-login">Log in</a>
+    <a href="/signup" class="btn-get-started">Get Started</a>
+  </div>
+  <button class="nav-hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- ── BREADCRUMB ─────────────────────────────────────────────────────────── -->
+<div class="breadcrumb-bar">
+  <nav class="breadcrumb">
+    <a href="/">Home</a>
+    <span class="breadcrumb-sep">›</span>
+    <a href="/events">Events</a>
+    <span class="breadcrumb-sep">›</span>
+    <span>Rundle Mall Night Eats</span>
+  </nav>
+</div>
+
+<!-- ── DETAIL LAYOUT ──────────────────────────────────────────────────────── -->
+<div class="detail-wrap">
+
+  <!-- ── LEFT COLUMN ────────────────────────────────────────────────────── -->
+  <div class="detail-main">
+
+    <!-- Hero image -->
+    <div class="detail-hero">
+      🌃
+      <div class="detail-hero-overlay"></div>
+      <span class="detail-hero-badge">Night Market</span>
+      <div class="detail-hero-meta">
+        <span class="detail-hero-tag">📍 Adelaide CBD</span>
+        <span class="detail-hero-tag">📅 Sat 12 Apr 2026</span>
+        <span class="detail-hero-tag">🕔 5pm–10pm</span>
+      </div>
+    </div>
+
+    <!-- Event name -->
+    <h1 class="detail-event-name">Rundle Mall Night Eats</h1>
+
+    <!-- Meta badges -->
+    <div class="detail-meta-row">
+      <span class="meta-badge" style="background:#2B5BA812;color:#2B5BA8;border-color:#2B5BA820;">Night Market</span>
+      <span class="meta-badge">📍 Rundle Mall, Adelaide CBD</span>
+      <span class="meta-badge">📅 Saturday 12 April 2026</span>
+      <span class="meta-badge">🕔 5:00pm – 10:00pm</span>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- About -->
+    <div class="subsec-title">About this event</div>
+    <p class="about-text">Rundle Mall Night Eats is Adelaide's premier weekly night market, drawing 5,000+ visitors each Saturday evening to the heart of the CBD. Now in its 4th year, the event has become a fixture for foodies, families, and Adelaide's vibrant street food culture. Vendors operate from dedicated 3×3m booths along the pedestrianised mall, with high foot traffic from 5pm through to closing. The event is professionally run by Adelaide City Council Events with full security, waste management, and crowd facilitation provided.</p>
+
+    <div class="section-divider"></div>
+
+    <!-- Event specs -->
+    <div class="subsec-title" style="margin-bottom:16px;">Event specifications</div>
+    <div class="specs-grid">
+      <div class="spec-item">
+        <span class="spec-icon">📅</span>
+        <div><div class="spec-label">Date</div><div class="spec-value">Saturday 12 April 2026</div></div>
+      </div>
+      <div class="spec-item">
+        <span class="spec-icon">🕔</span>
+        <div><div class="spec-label">Time</div><div class="spec-value">5:00pm – 10:00pm</div></div>
+      </div>
+      <div class="spec-item">
+        <span class="spec-icon">📍</span>
+        <div><div class="spec-label">Location</div><div class="spec-value">Rundle Mall, Adelaide CBD SA 5000</div></div>
+      </div>
+      <div class="spec-item">
+        <span class="spec-icon">👥</span>
+        <div><div class="spec-label">Expected Attendance</div><div class="spec-value">5,000–7,000 visitors</div></div>
+      </div>
+      <div class="spec-item">
+        <span class="spec-icon">🏪</span>
+        <div><div class="spec-label">Total Vendor Spots</div><div class="spec-value">20 spots</div></div>
+      </div>
+      <div class="spec-item">
+        <span class="spec-icon">📐</span>
+        <div><div class="spec-label">Booth Size</div><div class="spec-value">3m × 3m (standard) · 3m × 6m available</div></div>
+      </div>
+      <div class="spec-item">
+        <span class="spec-icon">⚡</span>
+        <div><div class="spec-label">Power Available</div><div class="spec-value" style="color:#2D8B55;">Yes — 15A single phase included</div></div>
+      </div>
+      <div class="spec-item">
+        <span class="spec-icon">💧</span>
+        <div><div class="spec-label">Water Available</div><div class="spec-value" style="color:#C9840A;">No — BYO water supply</div></div>
+      </div>
+      <div class="spec-item">
+        <span class="spec-icon">🔧</span>
+        <div><div class="spec-label">Setup Time</div><div class="spec-value">2:00pm – 4:30pm</div></div>
+      </div>
+      <div class="spec-item">
+        <span class="spec-icon">📦</span>
+        <div><div class="spec-label">Pack-down Time</div><div class="spec-value">10:00pm – 11:30pm</div></div>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- Booth fee -->
+    <div class="subsec-title" style="margin-bottom:16px;">Booth fee</div>
+    <div class="booth-fee-box">
+      <div>
+        <div class="fee-label">Fee range</div>
+        <div class="fee-range">$200 – $350</div>
+        <div class="fee-note">Varies by booth size · GST inclusive</div>
+      </div>
+      <div class="fee-inc-items">
+        <div class="fee-inc-item">Standard 3×3m booth space</div>
+        <div class="fee-inc-item">15A power connection</div>
+        <div class="fee-inc-item">Council food permit (included)</div>
+        <div class="fee-inc-item">Waste bin allocation</div>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- What we're looking for -->
+    <div class="subsec-title" style="margin-bottom:12px;">What we're looking for</div>
+    <p class="about-text" style="margin-bottom:16px;">We aim to build a diverse lineup that covers a wide range of cuisines and price points. The following categories are preferred — vendors in these categories will receive priority review.</p>
+    <div class="tag-list">
+      <span class="cuisine-tag preferred">🌮 Street Food</span>
+      <span class="cuisine-tag preferred">🍱 Asian Cuisine</span>
+      <span class="cuisine-tag preferred">🥩 BBQ & Grill</span>
+      <span class="cuisine-tag preferred">🍦 Desserts</span>
+      <span class="cuisine-tag">🍕 Pizza</span>
+      <span class="cuisine-tag">☕ Coffee & Drinks</span>
+      <span class="cuisine-tag">🌾 Vegan / Plant-based</span>
+      <span class="cuisine-tag preferred">🥙 Middle Eastern</span>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- Requirements -->
+    <div class="subsec-title" style="margin-bottom:16px;">Requirements</div>
+    <div class="req-list">
+      <div class="req-item">
+        <span class="req-icon">🏛️</span>
+        <div class="req-text"><strong>ABN required</strong> — All vendors must have a current Australian Business Number and be registered for GST.</div>
+      </div>
+      <div class="req-item">
+        <span class="req-icon">🍽️</span>
+        <div class="req-text"><strong>Food Safety Supervisor Certificate</strong> — At least one person on your team must hold a current FSS cert. You'll need to upload this on your vendor profile.</div>
+      </div>
+      <div class="req-item">
+        <span class="req-icon">🛡️</span>
+        <div class="req-text"><strong>$10M Public Liability Insurance</strong> — Must be current and list "City of Adelaide" as an interested party. Certificate of currency required.</div>
+      </div>
+      <div class="req-item">
+        <span class="req-icon">📋</span>
+        <div class="req-text"><strong>Council food business registration</strong> — Your food premises must be registered with your local council. We'll verify this during review.</div>
+      </div>
+      <div class="req-item">
+        <span class="req-icon">🚫</span>
+        <div class="req-text"><strong>No deep frying after 8pm</strong> — Per council conditions. Vendors using deep fryers must complete service by 8:00pm or have covered fryers.</div>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- Confirmed vendor lineup -->
+    <div class="subsec-title" style="margin-bottom:6px;">Confirmed vendors</div>
+    <p class="about-text" style="font-size:13px;margin-bottom:18px;">Vendors already confirmed for this event. Check back as more vendors are approved.</p>
+    <div class="vendor-lineup-scroll">
+      <a href="/vendors/smoky-joes-bbq" class="vendor-mini">
+        <div class="vm-avatar" style="background:#E8500A18;color:var(--ember);">SJ</div>
+        <div><div class="vm-name">Smoky Joe's BBQ</div><div class="vm-type">BBQ & Grill</div></div>
+      </a>
+      <a href="/vendors/the-green-fold" class="vendor-mini">
+        <div class="vm-avatar" style="background:#2D8B5518;color:var(--herb);">TG</div>
+        <div><div class="vm-name">The Green Fold</div><div class="vm-type">Vegan</div></div>
+      </a>
+      <a href="/vendors/barista-mob" class="vendor-mini">
+        <div class="vm-avatar" style="background:#2B5BA818;color:var(--slate);">BM</div>
+        <div><div class="vm-name">Barista Mob</div><div class="vm-type">Coffee & Drinks</div></div>
+      </a>
+      <a href="/vendors/taco-cartel" class="vendor-mini">
+        <div class="vm-avatar" style="background:#C9840A18;color:var(--gold);">TC</div>
+        <div><div class="vm-name">Taco Cartel</div><div class="vm-type">Mexican</div></div>
+      </a>
+    </div>
+
+  </div>
+
+  <!-- ── RIGHT / SIDEBAR ───────────────────────────────────────────────── -->
+  <div class="detail-sidebar">
+
+    <!-- Fill rate card -->
+    <div class="sidebar-card">
+      <div class="fill-ring-wrap">
+        <svg class="fill-ring-svg" width="140" height="140" viewBox="0 0 140 140">
+          <circle class="fill-ring-track" cx="70" cy="70" r="54"/>
+          <circle class="fill-ring-fill" id="fill-ring-circle" cx="70" cy="70" r="54"
+            stroke="#C9840A"
+            stroke-dasharray="0 339.3"
+            transform="rotate(-90, 70, 70)"/>
+          <text class="fill-ring-label" x="70" y="66" text-anchor="middle" dominant-baseline="middle">70%</text>
+          <text class="fill-ring-sub" x="70" y="86" text-anchor="middle" dominant-baseline="middle">filled</text>
+        </svg>
+        <div class="fill-ring-caption">14 of 20 spots filled — <strong style="color:var(--text-hi);">6 spots remaining</strong></div>
+      </div>
+
+      <div class="deadline-row">
+        <div>
+          <div class="deadline-label">Application deadline</div>
+          <div class="deadline-val">5 April 2026</div>
+          <div id="countdown-badge"></div>
+        </div>
+      </div>
+
+      <div class="organiser-row">
+        <div class="org-avatar">AC</div>
+        <div>
+          <div class="org-name">Adelaide City Council Events</div>
+          <div class="org-meta">34 events posted · 4.8★ avg vendor rating</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <button class="btn-apply" id="apply-btn" onclick="openModal()">
+      Apply for a pitch →
+    </button>
+
+    <button class="btn-share" onclick="shareEvent()">
+      🔗 Share this event
+    </button>
+
+    <!-- Trust note -->
+    <div class="trust-note">
+      <span class="trust-note-icon">✓</span>
+      All vendors on this event are ABN verified, food safety certified, and carry $10M public liability insurance.
+    </div>
+
+  </div>
+</div>
+
+<!-- ── FOOTER ─────────────────────────────────────────────────────────────── -->
+<footer>
+  <div class="footer-main">
+    <div>
+      <a href="/" class="footer-logo">Pitch<span class="dot">.</span></a>
+      <p class="footer-desc">Australia's marketplace connecting food vendors with local events.</p>
+      <div class="footer-socials">
+        <a href="#" class="fsoc">𝕏</a><a href="#" class="fsoc">◈</a>
+        <a href="#" class="fsoc">in</a><a href="#" class="fsoc">f</a>
+      </div>
+    </div>
+    <div>
+      <div class="footer-col-title">For Vendors</div>
+      <ul class="footer-links">
+        <li><a href="/signup?role=vendor">Sign up</a></li>
+        <li><a href="/#how-it-works">How it works</a></li>
+        <li><a href="/pricing">Pricing</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">For Organisers</div>
+      <ul class="footer-links">
+        <li><a href="/events/new">Post an event</a></li>
+        <li><a href="/#how-it-works">How it works</a></li>
+        <li><a href="/contact">Talk to sales</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Company</div>
+      <ul class="footer-links">
+        <li><a href="/about">About</a></li>
+        <li><a href="/contact">Contact</a></li>
+        <li><a href="/terms">Terms</a></li>
+        <li><a href="/privacy">Privacy</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span class="footer-copy">© 2026 Pitch. Adelaide, Australia.</span>
+    <a href="/" class="footer-bl">Pitch<span class="dot">.</span></a>
+  </div>
+</footer>
+
+<!-- ── APPLICATION MODAL ────────────────────────────────────────────────── -->
+<div class="modal-overlay" id="modal-overlay" onclick="handleOverlayClick(event)">
+  <div class="modal-box" id="modal-box">
+
+    <div class="modal-header">
+      <div class="modal-title">Apply for a Pitch</div>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+
+    <!-- Step indicator -->
+    <div class="step-indicator">
+      <div class="si-step active" id="si-1">
+        <div class="si-dot">1</div>
+        <div class="si-label">Stall details</div>
+      </div>
+      <div class="si-line" id="line-1"></div>
+      <div class="si-step" id="si-2">
+        <div class="si-dot">2</div>
+        <div class="si-label">Your note</div>
+      </div>
+      <div class="si-line" id="line-2"></div>
+      <div class="si-step" id="si-3">
+        <div class="si-dot">3</div>
+        <div class="si-label">Confirm</div>
+      </div>
+    </div>
+
+    <div class="modal-body">
+
+      <!-- Step 1: Stall details -->
+      <div class="step-panel active" id="step-1">
+        <p class="step-desc">Confirm your stall details for this application. These are pre-filled from your vendor profile — you can adjust them for this event.</p>
+        <div class="field-row">
+          <div class="field-group">
+            <label class="field-label">Stall size</label>
+            <select class="field-select" id="f-stall-size">
+              <option value="3x3" selected>3m × 3m — Standard</option>
+              <option value="3x6">3m × 6m — Large</option>
+              <option value="6x6">6m × 6m — XL</option>
+              <option value="custom">Custom / Other</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Vehicle type</label>
+            <select class="field-select" id="f-vehicle">
+              <option value="truck">Food Truck</option>
+              <option value="trailer">Trailer</option>
+              <option value="stall" selected>Pop-up Stall</option>
+              <option value="cart">Cart</option>
+            </select>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field-group">
+            <label class="field-label" style="display:flex;align-items:center;gap:8px;">
+              <input type="checkbox" class="field-check" id="f-power" checked />
+              Power required (15A)
+            </label>
+          </div>
+          <div class="field-group">
+            <label class="field-label" style="display:flex;align-items:center;gap:8px;">
+              <input type="checkbox" class="field-check" id="f-water" />
+              Water connection needed
+            </label>
+          </div>
+        </div>
+        <div class="field-group">
+          <label class="field-label">What you'll be selling at this event</label>
+          <input class="field-input" id="f-selling" type="text" value="Slow-smoked BBQ — brisket, ribs, pulled pork rolls" placeholder="Brief description of your menu…" />
+        </div>
+      </div>
+
+      <!-- Step 2: Note to organiser -->
+      <div class="step-panel" id="step-2">
+        <p class="step-desc">Add an optional note to the organiser. This is your chance to introduce yourself and mention anything relevant to this specific event.</p>
+        <div class="field-group">
+          <label class="field-label">Note to organiser <span style="color:var(--text-lo);font-weight:400;text-transform:none;letter-spacing:0;">(optional)</span></label>
+          <textarea class="field-textarea" id="f-note" maxlength="300" placeholder="e.g. We've done Rundle Mall before and know the space well. Our setup takes about 45 mins and we always finish pack-down on time." oninput="updateCharCount()"></textarea>
+          <div class="char-count" id="char-count">0 / 300</div>
+        </div>
+      </div>
+
+      <!-- Step 3: Terms -->
+      <div class="step-panel" id="step-3">
+        <p class="step-desc">Review the event terms and cancellation policy, then confirm your application.</p>
+        <div class="terms-box">
+          <strong>Cancellation Policy</strong><br/>
+          Cancellations made more than 14 days before the event date will receive a full refund of the booth fee. Cancellations made 7–14 days before the event will receive a 50% refund. Cancellations within 7 days of the event are non-refundable. In the event that the event is cancelled by the organiser, all vendors will receive a full refund within 5 business days.<br/><br/>
+          <strong>Vendor Responsibilities</strong><br/>
+          Vendors are responsible for complying with all applicable food safety laws, holding current certificates of currency, and ensuring their stall is staffed for the full duration of the event. Vendors must arrive within the designated setup window and vacate the site by the pack-down deadline. Any vendor who does not show up without prior notice will be suspended from the platform.<br/><br/>
+          <strong>Pitch Platform Terms</strong><br/>
+          By submitting this application you confirm that all information provided is accurate, that you hold the required certifications, and that you agree to Pitch's vendor terms of service available at getpitch.com.au/terms.
+        </div>
+        <label class="field-check-row">
+          <input type="checkbox" class="field-check" id="f-terms" onchange="updateTermsBtn()" />
+          <span style="font-size:13px;color:var(--text-mid);line-height:1.5;">I have read and agree to the event terms, cancellation policy, and Pitch platform terms of service.</span>
+        </label>
+      </div>
+
+      <!-- Success state -->
+      <div class="step-panel" id="step-success">
+        <div class="modal-success">
+          <div class="success-icon">🎉</div>
+          <div class="success-title">Application submitted!</div>
+          <p class="success-desc">Your application for <strong>Rundle Mall Night Eats</strong> has been sent to Adelaide City Council Events. They typically respond within 48 hours. You'll receive an email and an in-app notification when they review your application.</p>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="modal-footer" id="modal-footer">
+      <button class="modal-back" id="modal-back" onclick="prevStep()">Back</button>
+      <button class="modal-next" id="modal-next" onclick="nextStep()">Continue →</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- Share toast -->
+<div class="share-toast" id="share-toast">🔗 Link copied to clipboard</div>
+
+<script>
+// ── FILL RING ANIMATION ──────────────────────────────────────────────────────
+const FILL_PCT    = 70;
+const R           = 54;
+const CIRC        = 2 * Math.PI * R; // 339.29
+
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    const ring = document.getElementById('fill-ring-circle');
+    const filled = CIRC * (FILL_PCT / 100);
+    ring.setAttribute('stroke-dasharray', `${filled} ${CIRC - filled}`);
+    // Color based on fill
+    if (FILL_PCT >= 100)     ring.setAttribute('stroke', '#C0392B');
+    else if (FILL_PCT > 85)  ring.setAttribute('stroke', '#C0392B');
+    else if (FILL_PCT >= 70) ring.setAttribute('stroke', '#C9840A');
+    else                     ring.setAttribute('stroke', '#2D8B55');
+  }, 200);
+});
+
+// ── COUNTDOWN ────────────────────────────────────────────────────────────────
+// Deadline: 5 April 2026. Today is ~7 March 2026, so ~29 days away → no countdown.
+// To demo the countdown badge, we use a nearer deadline:
+const DEMO_DEADLINE = new Date('2026-03-14T23:59:59');
+
+function renderCountdown() {
+  const badge = document.getElementById('countdown-badge');
+  if (!badge) return;
+  const now  = new Date();
+  const diff = DEMO_DEADLINE - now;
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  const hrs  = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+  if (diff <= 0) {
+    badge.innerHTML = `<span class="countdown-badge" style="background:#C0392B14;border-color:#C0392B22;color:#C0392B;">Deadline passed</span>`;
+    return;
+  }
+  if (days <= 7) {
+    badge.innerHTML = `<span class="countdown-badge"><span class="countdown-dot"></span>${days}d ${hrs}h ${mins}m remaining</span>`;
+  }
+}
+renderCountdown();
+setInterval(renderCountdown, 60000);
+
+// ── SHARE ─────────────────────────────────────────────────────────────────────
+function shareEvent() {
+  navigator.clipboard.writeText(window.location.href).catch(() => {});
+  const toast = document.getElementById('share-toast');
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 2400);
+}
+
+// ── MODAL ─────────────────────────────────────────────────────────────────────
+let currentStep = 1;
+const TOTAL_STEPS = 3;
+
+function openModal() {
+  currentStep = 1;
+  renderStep();
+  document.getElementById('modal-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+}
+
+function renderStep() {
+  // Panels
+  ['1','2','3','success'].forEach(id => {
+    const el = document.getElementById(`step-${id}`);
+    el.classList.toggle('active', id === String(currentStep));
+  });
+
+  // Step indicators
+  for (let i = 1; i <= 3; i++) {
+    const si = document.getElementById(`si-${i}`);
+    si.classList.remove('active','done');
+    if (i === currentStep) si.classList.add('active');
+    else if (i < currentStep) si.classList.add('done');
+  }
+  // Lines
+  for (let i = 1; i <= 2; i++) {
+    const ln = document.getElementById(`line-${i}`);
+    ln.classList.toggle('done', i < currentStep);
+  }
+
+  // Footer
+  const footer = document.getElementById('modal-footer');
+  const back   = document.getElementById('modal-back');
+  const next   = document.getElementById('modal-next');
+
+  if (currentStep === 'success') {
+    footer.style.justifyContent = 'center';
+    back.style.display  = 'none';
+    next.textContent    = 'Close';
+    next.disabled       = false;
+    next.onclick        = () => { closeModal(); };
+    return;
+  }
+
+  footer.style.justifyContent = 'space-between';
+  back.style.display  = currentStep > 1 ? 'block' : 'none';
+  next.onclick        = nextStep;
+
+  if (currentStep === TOTAL_STEPS) {
+    next.textContent  = 'Submit application';
+    updateTermsBtn();
+  } else {
+    next.textContent  = 'Continue →';
+    next.disabled     = false;
+  }
+}
+
+function nextStep() {
+  if (currentStep < TOTAL_STEPS) {
+    currentStep++;
+    renderStep();
+  } else if (currentStep === TOTAL_STEPS) {
+    // Submit
+    submitApplication();
+  }
+}
+
+function prevStep() {
+  if (currentStep > 1) { currentStep--; renderStep(); }
+}
+
+function updateTermsBtn() {
+  const checked = document.getElementById('f-terms').checked;
+  document.getElementById('modal-next').disabled = !checked;
+}
+
+function submitApplication() {
+  currentStep = 'success';
+  renderStep();
+  // Update sidebar CTA
+  const btn = document.getElementById('apply-btn');
+  btn.textContent  = '✓ Application submitted';
+  btn.classList.add('submitted');
+  btn.onclick      = null;
+}
+
+function updateCharCount() {
+  const ta    = document.getElementById('f-note');
+  const count = document.getElementById('char-count');
+  const len   = ta.value.length;
+  count.textContent = `${len} / 300`;
+  count.className = 'char-count' + (len >= 300 ? ' over' : len >= 260 ? ' warn' : '');
+}
+
+// ESC to close
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+</script>
+</body>
+</html>

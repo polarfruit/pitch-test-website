@@ -1,0 +1,20 @@
+node_modules/
+
+# SQLite databases & WAL files
+*.db
+*.db-shm
+*.db-wal
+
+# Screenshots (generated, not source)
+screenshots/
+
+# Environment / secrets
+.env
+.env.*
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*

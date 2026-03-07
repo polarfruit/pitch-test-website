@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Join as a Vendor — Pitch.</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --ember:#E8500A; --ember-glow:#FF6B2B; --ember-bg:#E8500A12;
+  --coal:#1A1612; --char:#231E19; --ash:#2E2720; --smoke:#4A3F36;
+  --parchment:#FDF4E7; --cream:#F5EDD8; --linen:#EDE3CC;
+  --herb:#2D8B55; --gold:#C9840A; --terra:#C0392B; --slate:#2B5BA8;
+  --text-hi:#FDF4E7; --text-mid:#A89880; --text-lo:#6B5A4A;
+  --fd:'Fraunces',Georgia,serif; --fb:'Instrument Sans','Helvetica Neue',sans-serif;
+}
+html, body { height:100%; }
+body { background:var(--coal); color:var(--text-hi); font-family:var(--fb); line-height:1.5; display:flex; min-height:100vh; overflow-x:hidden; }
+
+/* ── BRAND PANEL ── */
+.brand-panel {
+  width:420px; flex-shrink:0; min-height:100vh; position:sticky; top:0; height:100vh;
+  background: linear-gradient(160deg, #1A1612 0%, #2D1206 40%, #1A0E06 70%, #0E0A06 100%);
+  display:flex; flex-direction:column; padding:48px 44px;
+  border-right:1px solid #ffffff08; overflow:hidden;
+}
+.brand-panel::before {
+  content:''; position:absolute; inset:0; pointer-events:none;
+  background: radial-gradient(ellipse 70% 50% at 20% 40%, #E8500A18 0%, transparent 60%),
+              radial-gradient(ellipse 50% 40% at 80% 70%, #C9840A0C 0%, transparent 50%);
+}
+.brand-panel::after {
+  content:''; position:absolute; inset:0; pointer-events:none; opacity:0.3;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+}
+.brand-content { position:relative; z-index:1; display:flex; flex-direction:column; height:100%; }
+.brand-logo { font-family:var(--fd); font-size:26px; font-weight:900; letter-spacing:-0.04em; color:var(--text-hi); text-decoration:none; margin-bottom:48px; display:block; }
+.brand-logo .dot { color:var(--ember); }
+.brand-heading { font-family:var(--fd); font-size:clamp(28px,3vw,38px); font-weight:900; letter-spacing:-0.035em; line-height:1.08; color:var(--text-hi); margin-bottom:16px; }
+.brand-sub { font-size:14px; color:var(--text-mid); line-height:1.75; margin-bottom:40px; }
+.brand-features { display:flex; flex-direction:column; gap:16px; margin-bottom:auto; }
+.brand-feature { display:flex; align-items:flex-start; gap:12px; }
+.feature-icon { width:32px; height:32px; border-radius:9px; background:var(--ember-bg); border:1px solid #E8500A20; display:flex; align-items:center; justify-content:center; font-size:15px; flex-shrink:0; margin-top:1px; }
+.feature-text { font-size:13px; color:var(--text-mid); line-height:1.6; }
+.feature-text strong { color:var(--text-hi); font-weight:600; }
+.brand-quote { margin-top:40px; padding:20px 22px; background:#ffffff07; border:1px solid #ffffff0a; border-radius:14px; }
+.quote-text { font-size:13px; color:var(--text-mid); line-height:1.7; font-style:italic; margin-bottom:12px; }
+.quote-author { display:flex; align-items:center; gap:10px; }
+.quote-avatar { width:32px; height:32px; border-radius:8px; background:linear-gradient(135deg,#3D1A06,#6B2E08); display:flex; align-items:center; justify-content:center; font-size:14px; }
+.quote-name { font-size:12px; font-weight:700; color:var(--text-hi); }
+.quote-handle { font-size:11px; color:var(--text-lo); }
+.brand-stats { display:flex; gap:24px; margin-top:24px; }
+.brand-stat { }
+.brand-stat-num { font-family:var(--fd); font-size:22px; font-weight:900; letter-spacing:-0.03em; color:var(--ember); }
+.brand-stat-label { font-size:11px; color:var(--text-lo); }
+
+/* ── FORM PANEL ── */
+.form-panel { flex:1; min-height:100vh; overflow-y:auto; display:flex; flex-direction:column; background:var(--coal); }
+.form-panel-inner { max-width:540px; width:100%; margin:0 auto; padding:48px 40px 80px; }
+
+/* Top bar */
+.form-topbar { display:flex; align-items:center; justify-content:space-between; margin-bottom:40px; }
+.form-topbar-already { font-size:13px; color:var(--text-lo); }
+.form-topbar-already a { color:var(--ember); text-decoration:none; font-weight:600; }
+.form-topbar-already a:hover { color:var(--ember-glow); }
+.form-topbar-switch { font-size:13px; color:var(--text-lo); }
+.form-topbar-switch a { color:var(--text-mid); text-decoration:none; font-weight:600; }
+.form-topbar-switch a:hover { color:var(--text-hi); }
+
+/* Step progress */
+.step-progress { display:flex; align-items:center; margin-bottom:36px; }
+.sp-item { display:flex; align-items:center; gap:0; flex:1; }
+.sp-dot { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  font-size:11px; font-weight:700; flex-shrink:0; border:2px solid transparent; transition:all 0.2s; }
+.sp-dot.done   { background:#2D8B5520; border-color:#2D8B5540; color:var(--herb); }
+.sp-dot.active { background:var(--ember); border-color:var(--ember); color:#fff; }
+.sp-dot.pending { background:#ffffff08; border-color:#ffffff14; color:var(--text-lo); }
+.sp-label { font-size:10px; font-weight:600; color:var(--text-lo); white-space:nowrap; margin-left:6px; }
+.sp-label.active { color:var(--ember); }
+.sp-label.done { color:var(--herb); }
+.sp-line { flex:1; height:2px; background:#ffffff0a; margin:0 6px; }
+.sp-line.done { background:#2D8B5540; }
+
+/* Step panels */
+.step-panel { display:none; }
+.step-panel.active { display:block; }
+
+/* Step headings */
+.step-heading { font-family:var(--fd); font-size:26px; font-weight:900; letter-spacing:-0.03em; color:var(--text-hi); margin-bottom:6px; }
+.step-sub { font-size:14px; color:var(--text-mid); margin-bottom:28px; line-height:1.65; }
+
+/* Form elements */
+.form-group { margin-bottom:18px; }
+.form-label { display:block; font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-lo); margin-bottom:8px; }
+.form-input { width:100%; height:46px; padding:0 16px; background:#ffffff08; border:1px solid #ffffff10; border-radius:11px;
+  font-family:var(--fb); font-size:14px; color:var(--text-hi); outline:none; transition:border-color 0.14s, background 0.14s; }
+.form-input::placeholder { color:var(--text-lo); }
+.form-input:focus { border-color:#E8500A50; background:#ffffff0a; }
+.form-input.error { border-color:#C0392B50; }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.form-textarea { width:100%; padding:14px 16px; resize:vertical; min-height:90px; background:#ffffff08; border:1px solid #ffffff10;
+  border-radius:11px; font-family:var(--fb); font-size:14px; color:var(--text-hi); line-height:1.6; outline:none; transition:border-color 0.14s; }
+.form-textarea:focus { border-color:#E8500A50; }
+.form-textarea::placeholder { color:var(--text-lo); }
+.form-select { width:100%; height:46px; padding:0 16px; padding-right:40px; appearance:none;
+  background:#ffffff08 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23A89880' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 14px center;
+  border:1px solid #ffffff10; border-radius:11px; font-family:var(--fb); font-size:14px; color:var(--text-hi); cursor:pointer; outline:none; }
+.form-select option { background:#231E19; }
+.input-hint { font-size:11px; color:var(--text-lo); margin-top:5px; line-height:1.5; }
+
+/* Password toggle */
+.input-wrap { position:relative; }
+.pw-toggle { position:absolute; right:14px; top:50%; transform:translateY(-50%); background:transparent; border:none; cursor:pointer; font-size:15px; color:var(--text-lo); padding:4px; }
+.pw-toggle:hover { color:var(--text-mid); }
+
+/* ABN verification */
+.abn-row { display:flex; gap:10px; }
+.abn-input { flex:1; }
+.btn-verify { font-family:var(--fb); font-size:13px; font-weight:700; color:var(--ember); background:var(--ember-bg); border:1px solid #E8500A28; padding:0 20px; height:46px; border-radius:11px; cursor:pointer; white-space:nowrap; transition:all 0.14s; flex-shrink:0; }
+.btn-verify:hover { background:#E8500A20; }
+.btn-verify.loading { color:var(--text-lo); background:#ffffff08; border-color:#ffffff10; cursor:wait; }
+.abn-result { display:none; align-items:center; gap:8px; margin-top:10px; padding:10px 14px; border-radius:10px; }
+.abn-result.success { display:flex; background:#2D8B5514; border:1px solid #2D8B5528; }
+.abn-result.fail    { display:flex; background:#C0392B10; border:1px solid #C0392B24; }
+.abn-result-icon { font-size:14px; }
+.abn-result-text { font-size:13px; font-weight:600; }
+.abn-result.success .abn-result-text { color:var(--herb); }
+.abn-result.fail    .abn-result-text { color:var(--terra); }
+
+/* Cuisine / tag selector */
+.tag-selector { display:flex; flex-wrap:wrap; gap:8px; }
+.tag-opt { font-size:12px; font-weight:600; padding:7px 14px; border-radius:100px; cursor:pointer;
+  border:1px solid #ffffff10; background:transparent; color:var(--text-mid); transition:all 0.12s; user-select:none; font-family:var(--fb); }
+.tag-opt:hover { border-color:#E8500A30; color:var(--text-hi); }
+.tag-opt.sel { background:var(--ember-bg); border-color:#E8500A30; color:var(--ember); }
+
+/* Radio cards */
+.radio-cards { display:flex; gap:10px; flex-wrap:wrap; }
+.radio-card { flex:1; min-width:120px; padding:14px 16px; border:1.5px solid #ffffff10; border-radius:12px; cursor:pointer;
+  transition:all 0.14s; user-select:none; display:flex; flex-direction:column; gap:4px; }
+.radio-card input { display:none; }
+.radio-card:has(input:checked) { background:var(--ember-bg); border-color:#E8500A40; }
+.radio-card-icon { font-size:20px; }
+.radio-card-label { font-size:13px; font-weight:700; color:var(--text-hi); }
+.radio-card-sub { font-size:11px; color:var(--text-lo); }
+.radio-card:hover:not(:has(input:checked)) { border-color:#ffffff20; background:#ffffff05; }
+
+/* Toggles */
+.toggle-group { display:flex; flex-direction:column; gap:12px; }
+.toggle-row { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:#ffffff05; border:1px solid #ffffff08; border-radius:11px; }
+.toggle-label-wrap { display:flex; flex-direction:column; gap:2px; }
+.toggle-label { font-size:13px; font-weight:600; color:var(--text-hi); }
+.toggle-sub { font-size:11px; color:var(--text-lo); }
+.toggle-switch { position:relative; width:42px; height:24px; cursor:pointer; flex-shrink:0; }
+.toggle-switch input { opacity:0; width:0; height:0; position:absolute; }
+.toggle-track { position:absolute; inset:0; border-radius:12px; background:#ffffff14; transition:background 0.2s; }
+.toggle-switch input:checked + .toggle-track { background:var(--ember); }
+.toggle-thumb { position:absolute; top:4px; left:4px; width:16px; height:16px; border-radius:50%; background:#fff; transition:transform 0.2s; box-shadow:0 1px 3px rgba(0,0,0,0.3); }
+.toggle-switch input:checked ~ .toggle-thumb { transform:translateX(18px); }
+
+/* Dim row */
+.dim-row { display:flex; align-items:center; gap:10px; }
+.dim-input { width:80px; height:46px; padding:0 12px; background:#ffffff08; border:1px solid #ffffff10;
+  border-radius:11px; font-family:var(--fb); font-size:14px; color:var(--text-hi); outline:none; text-align:center; }
+.dim-input:focus { border-color:#E8500A50; }
+.dim-sep { color:var(--text-lo); }
+
+/* Price range buttons */
+.price-group { display:flex; gap:8px; }
+.price-btn { flex:1; height:46px; border-radius:11px; cursor:pointer; border:1.5px solid #ffffff10; background:transparent;
+  font-family:var(--fd); font-size:17px; font-weight:900; color:var(--text-mid); transition:all 0.12s; }
+.price-btn:hover { border-color:#E8500A30; color:var(--text-hi); }
+.price-btn.active { background:var(--ember-bg); border-color:#E8500A40; color:var(--ember); }
+
+/* Document upload cards */
+.doc-cards { display:flex; flex-direction:column; gap:12px; }
+.doc-card { background:var(--char); border:1px solid #ffffff08; border-radius:14px; padding:18px 20px; }
+.doc-card.optional { border-style:dashed; border-color:#ffffff0a; }
+.doc-card-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:12px; }
+.doc-card-left { display:flex; gap:12px; align-items:flex-start; }
+.doc-card-icon { font-size:22px; margin-top:2px; }
+.doc-card-name { font-size:14px; font-weight:700; color:var(--text-hi); margin-bottom:3px; }
+.doc-card-req { font-size:11px; color:var(--text-lo); line-height:1.5; }
+.doc-optional-tag { font-size:10px; font-weight:700; padding:3px 9px; border-radius:100px; background:#ffffff08; color:var(--text-lo); border:1px solid #ffffff10; }
+.doc-upload-area { border:1.5px dashed #ffffff14; border-radius:10px; padding:18px; text-align:center; cursor:pointer; transition:all 0.14s; }
+.doc-upload-area:hover { border-color:#E8500A30; background:var(--ember-bg); }
+.doc-upload-icon { font-size:20px; margin-bottom:6px; }
+.doc-upload-text { font-size:12px; color:var(--text-mid); margin-bottom:2px; }
+.doc-upload-hint { font-size:10px; color:var(--text-lo); }
+.doc-uploaded { display:none; align-items:center; gap:10px; padding:12px 14px; background:#2D8B5510; border:1px solid #2D8B5528; border-radius:10px; }
+.doc-uploaded.show { display:flex; }
+.doc-uploaded-icon { font-size:16px; }
+.doc-uploaded-name { font-size:13px; color:var(--herb); font-weight:600; flex:1; }
+.doc-remove { background:transparent; border:none; cursor:pointer; color:var(--text-lo); font-size:13px; transition:color 0.12s; }
+.doc-remove:hover { color:var(--terra); }
+
+/* Plan cards */
+.plan-cards { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.plan-card { border:2px solid #ffffff10; border-radius:16px; padding:24px 20px; cursor:pointer; transition:all 0.18s; position:relative; }
+.plan-card:hover { border-color:#ffffff20; background:#ffffff04; }
+.plan-card.selected { border-color:var(--ember); background:var(--ember-bg); }
+.plan-card.featured { border-color:#C9840A40; background:linear-gradient(to bottom, #C9840A08, transparent); }
+.plan-card.featured.selected { border-color:var(--ember); background:var(--ember-bg); }
+.plan-featured-label { position:absolute; top:-11px; left:50%; transform:translateX(-50%); background:var(--gold); color:#fff; font-size:9px; font-weight:700; padding:3px 12px; border-radius:100px; letter-spacing:0.08em; white-space:nowrap; }
+.plan-name { font-family:var(--fd); font-size:18px; font-weight:900; letter-spacing:-0.02em; color:var(--text-hi); margin-bottom:4px; }
+.plan-price { font-family:var(--fd); font-size:32px; font-weight:900; letter-spacing:-0.03em; line-height:1; margin-bottom:4px; }
+.plan-price span { font-family:var(--fb); font-size:13px; font-weight:400; color:var(--text-lo); }
+.plan-price-desc { font-size:11px; color:var(--text-lo); margin-bottom:16px; }
+.plan-divider { height:1px; background:#ffffff08; margin-bottom:16px; }
+.plan-features { display:flex; flex-direction:column; gap:8px; }
+.plan-feat { display:flex; align-items:flex-start; gap:8px; font-size:12px; color:var(--text-mid); line-height:1.5; }
+.plan-feat-check { color:var(--herb); font-size:12px; flex-shrink:0; margin-top:1px; }
+.plan-feat-x { color:var(--text-lo); font-size:12px; flex-shrink:0; margin-top:1px; }
+.plan-cta { display:none; }
+.plan-card.selected .plan-name { color:var(--ember); }
+
+/* Nav buttons */
+.step-nav { display:flex; align-items:center; justify-content:space-between; margin-top:28px; padding-top:24px; border-top:1px solid #ffffff08; }
+.btn-back { font-family:var(--fb); font-size:13px; font-weight:600; color:var(--text-lo); background:transparent; border:1px solid #ffffff10; padding:12px 22px; border-radius:11px; cursor:pointer; transition:all 0.14s; }
+.btn-back:hover { color:var(--text-hi); background:#ffffff08; }
+.btn-next { font-family:var(--fb); font-size:14px; font-weight:700; color:#fff; background:var(--ember); border:none; padding:13px 32px; border-radius:11px; cursor:pointer; box-shadow:0 4px 20px #E8500A30; transition:all 0.14s; }
+.btn-next:hover { background:var(--ember-glow); transform:translateY(-1px); }
+.btn-next:disabled { opacity:0.4; cursor:not-allowed; transform:none; box-shadow:none; }
+.btn-publish { background:var(--herb); box-shadow:0 4px 20px #2D8B5530; }
+.btn-publish:hover { background:#3DA86A; }
+
+/* Divider */
+.form-divider { display:flex; align-items:center; gap:12px; margin:18px 0; }
+.form-divider::before, .form-divider::after { content:''; flex:1; height:1px; background:#ffffff0a; }
+.form-divider span { font-size:12px; color:var(--text-lo); }
+
+/* Success screen */
+.success-panel { text-align:center; padding:20px 0; }
+.success-icon { font-size:64px; margin-bottom:20px; }
+.success-heading { font-family:var(--fd); font-size:32px; font-weight:900; letter-spacing:-0.03em; color:var(--text-hi); margin-bottom:10px; }
+.success-sub { font-size:15px; color:var(--text-mid); line-height:1.7; max-width:420px; margin:0 auto 32px; }
+.success-actions { display:flex; flex-direction:column; gap:10px; align-items:stretch; }
+.btn-success-primary { font-family:var(--fb); font-size:14px; font-weight:700; color:#fff; background:var(--ember); border:none; padding:15px; border-radius:12px; cursor:pointer; text-decoration:none; display:block; box-shadow:0 4px 20px #E8500A30; transition:all 0.14s; text-align:center; }
+.btn-success-primary:hover { background:var(--ember-glow); transform:translateY(-1px); }
+.btn-success-secondary { font-family:var(--fb); font-size:14px; font-weight:600; color:var(--text-mid); background:#ffffff08; border:1px solid #ffffff10; padding:14px; border-radius:12px; cursor:pointer; text-decoration:none; display:block; transition:all 0.14s; text-align:center; }
+.btn-success-secondary:hover { color:var(--text-hi); background:#ffffff10; }
+.success-checklist { display:flex; flex-direction:column; gap:10px; text-align:left; margin:28px 0; padding:20px 22px; background:var(--char); border:1px solid #ffffff09; border-radius:14px; }
+.success-check-item { display:flex; align-items:center; gap:10px; font-size:13px; color:var(--text-mid); }
+.success-check-icon { font-size:14px; }
+
+@media (max-width:900px) {
+  body { flex-direction:column; }
+  .brand-panel { width:100%; min-height:auto; height:auto; position:static; padding:32px 24px; }
+  .brand-features, .brand-quote { display:none; }
+  .brand-heading { font-size:24px; }
+  .brand-stats { display:flex; }
+  .form-panel-inner { padding:32px 24px 60px; }
+  .plan-cards { grid-template-columns:1fr; }
+  .form-row { grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- BRAND PANEL -->
+<div class="brand-panel">
+  <div class="brand-content">
+    <a href="/" class="brand-logo">Pitch<span class="dot">.</span></a>
+    <h1 class="brand-heading">Take your food<br>business further.</h1>
+    <p class="brand-sub">Join Australia's marketplace connecting food vendors with local events. Get discovered, apply with one click, and build your event calendar.</p>
+    <div class="brand-features">
+      <div class="brand-feature">
+        <div class="feature-icon">🗓️</div>
+        <div class="feature-text"><strong>Browse hundreds of events</strong> across South Australia and apply in under 2 minutes.</div>
+      </div>
+      <div class="brand-feature">
+        <div class="feature-icon">✓</div>
+        <div class="feature-text"><strong>Verified profile</strong> gives organisers confidence — ABN, food safety cert, and PLI all in one place.</div>
+      </div>
+      <div class="brand-feature">
+        <div class="feature-icon">📊</div>
+        <div class="feature-text"><strong>Track every application</strong> — see your status, manage upcoming events, and read organiser reviews.</div>
+      </div>
+      <div class="brand-feature">
+        <div class="feature-icon">⭐</div>
+        <div class="feature-text"><strong>Pro vendors get priority</strong> — featured first in search results and seen by more organisers.</div>
+      </div>
+    </div>
+    <div class="brand-quote">
+      <p class="quote-text">"Since joining Pitch. we've gone from 4 events a year to 18. The application process is seamless and organisers actually respond."</p>
+      <div class="quote-author">
+        <div class="quote-avatar">🔥</div>
+        <div>
+          <div class="quote-name">Joe Hartley</div>
+          <div class="quote-handle">Smoky Joe's BBQ · Norwood, SA</div>
+        </div>
+      </div>
+    </div>
+    <div class="brand-stats">
+      <div class="brand-stat"><div class="brand-stat-num">2,400+</div><div class="brand-stat-label">Active vendors</div></div>
+      <div class="brand-stat"><div class="brand-stat-num">840+</div><div class="brand-stat-label">Events posted</div></div>
+      <div class="brand-stat"><div class="brand-stat-num">4.8★</div><div class="brand-stat-label">Avg vendor rating</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- FORM PANEL -->
+<div class="form-panel">
+  <div class="form-panel-inner">
+
+    <div class="form-topbar">
+      <span class="form-topbar-already">Already have an account? <a href="/login">Log in →</a></span>
+      <span class="form-topbar-switch">Organiser? <a href="/signup/organiser">Sign up here</a></span>
+    </div>
+
+    <!-- Step progress -->
+    <div class="step-progress" id="step-progress">
+      <div class="sp-item">
+        <div class="sp-dot active" id="d1">1</div>
+        <div class="sp-label active" id="l1">Account</div>
+      </div>
+      <div class="sp-line" id="ln1"></div>
+      <div class="sp-item">
+        <div class="sp-dot pending" id="d2">2</div>
+        <div class="sp-label" id="l2">Business</div>
+      </div>
+      <div class="sp-line" id="ln2"></div>
+      <div class="sp-item">
+        <div class="sp-dot pending" id="d3">3</div>
+        <div class="sp-label" id="l3">Setup</div>
+      </div>
+      <div class="sp-line" id="ln3"></div>
+      <div class="sp-item">
+        <div class="sp-dot pending" id="d4">4</div>
+        <div class="sp-label" id="l4">Documents</div>
+      </div>
+      <div class="sp-line" id="ln4"></div>
+      <div class="sp-item">
+        <div class="sp-dot pending" id="d5">5</div>
+        <div class="sp-label" id="l5">Plan</div>
+      </div>
+      <div class="sp-line" id="ln5"></div>
+      <div class="sp-item">
+        <div class="sp-dot pending" id="d6">6</div>
+        <div class="sp-label" id="l6">Done</div>
+      </div>
+    </div>
+
+    <!-- Step 1: Account -->
+    <div class="step-panel active" id="step-1">
+      <h2 class="step-heading">Create your account</h2>
+      <p class="step-sub">Your personal login — separate from your business profile.</p>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">First name</label><input class="form-input" id="v-first-name" type="text" placeholder="Sarah" /></div>
+        <div class="form-group"><label class="form-label">Last name</label><input class="form-input" id="v-last-name" type="text" placeholder="Chen" /></div>
+      </div>
+      <div class="form-group"><label class="form-label">Email address</label><input class="form-input" id="v-email" type="email" placeholder="sarah@yourfoodtruck.com.au" /></div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <div class="input-wrap"><input class="form-input" type="password" id="pw1" placeholder="At least 8 characters" /><button class="pw-toggle" onclick="togglePw('pw1',this)" type="button">👁</button></div>
+        <div class="input-hint">Must be at least 8 characters with one number or symbol.</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Confirm password</label>
+        <div class="input-wrap"><input class="form-input" type="password" id="pw2" placeholder="Repeat your password" /><button class="pw-toggle" onclick="togglePw('pw2',this)" type="button">👁</button></div>
+      </div>
+      <div class="form-divider"><span>or sign up with</span></div>
+      <div style="display:flex;gap:10px;margin-bottom:4px;">
+        <button style="flex:1;height:46px;border-radius:11px;background:#ffffff08;border:1px solid #ffffff10;font-family:var(--fb);font-size:13px;font-weight:600;color:var(--text-mid);cursor:pointer;transition:all 0.14s;" onmouseover="this.style.background='#ffffff12'" onmouseout="this.style.background='#ffffff08'">🔵 Continue with Google</button>
+        <button style="flex:1;height:46px;border-radius:11px;background:#ffffff08;border:1px solid #ffffff10;font-family:var(--fb);font-size:13px;font-weight:600;color:var(--text-mid);cursor:pointer;transition:all 0.14s;" onmouseover="this.style.background='#ffffff12'" onmouseout="this.style.background='#ffffff08'">🍎 Continue with Apple</button>
+      </div>
+      <div class="step-nav"><div></div><button class="btn-next" onclick="goStep(2)">Next: Business details →</button></div>
+    </div>
+
+    <!-- Step 2: Business details -->
+    <div class="step-panel" id="step-2">
+      <h2 class="step-heading">Your business</h2>
+      <p class="step-sub">This information will appear on your public vendor profile.</p>
+      <div class="form-group"><label class="form-label">Trading / business name</label><input class="form-input" id="v-trading-name" type="text" placeholder="e.g. Smoky Joe's BBQ" /></div>
+      <div class="form-group">
+        <label class="form-label">Australian Business Number (ABN)</label>
+        <div class="abn-row">
+          <input class="form-input abn-input" id="abn-input" type="text" placeholder="11 digit ABN e.g. 51 824 753 556" maxlength="14" />
+          <button class="btn-verify" id="abn-btn" onclick="verifyABN()">Verify ABN →</button>
+        </div>
+        <div class="abn-result" id="abn-result">
+          <span class="abn-result-icon"></span>
+          <span class="abn-result-text"></span>
+        </div>
+        <div class="input-hint">We verify your ABN to display a verified badge on your profile.</div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Mobile number</label><input class="form-input" id="v-mobile" type="tel" placeholder="+61 4XX XXX XXX" /></div>
+        <div class="form-group"><label class="form-label">State</label><select class="form-select" id="v-state"><option>SA</option><option>VIC</option><option>NSW</option><option>QLD</option><option>WA</option><option>TAS</option><option>ACT</option><option>NT</option></select></div>
+      </div>
+      <div class="form-group"><label class="form-label">Suburb (home base)</label><input class="form-input" id="v-suburb" type="text" placeholder="e.g. Norwood" /></div>
+      <div class="form-group"><label class="form-label">Short bio</label><textarea class="form-textarea" id="v-bio" placeholder="Tell organisers who you are, what you serve, and what makes you great at events…" style="min-height:80px;"></textarea></div>
+      <div class="step-nav"><button class="btn-back" onclick="goStep(1)">← Back</button><button class="btn-next" onclick="goStep(3)">Next: Your setup →</button></div>
+    </div>
+
+    <!-- Step 3: Setup -->
+    <div class="step-panel" id="step-3">
+      <h2 class="step-heading">Your setup</h2>
+      <p class="step-sub">Help organisers understand what you need and what you bring.</p>
+      <div class="form-group">
+        <label class="form-label">Cuisine types <span style="color:var(--text-lo);font-weight:400;letter-spacing:0;text-transform:none;">(select all that apply)</span></label>
+        <div class="tag-selector">
+          <button class="tag-opt" onclick="this.classList.toggle('sel')">BBQ</button>
+          <button class="tag-opt" onclick="this.classList.toggle('sel')">Mexican</button>
+          <button class="tag-opt" onclick="this.classList.toggle('sel')">Asian Fusion</button>
+          <button class="tag-opt" onclick="this.classList.toggle('sel')">Italian</button>
+          <button class="tag-opt" onclick="this.classList.toggle('sel')">Desserts</button>
+          <button class="tag-opt" onclick="this.classList.toggle('sel')">Coffee &amp; Drinks</button>
+          <button class="tag-opt" onclick="this.classList.toggle('sel')">Vegan</button>
+          <button class="tag-opt" onclick="this.classList.toggle('sel')">Burgers</button>
+          <button class="tag-opt" onclick="this.classList.toggle('sel')">Seafood</button>
+          <button class="tag-opt" onclick="this.classList.toggle('sel')">Other</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Setup type</label>
+        <div class="radio-cards">
+          <label class="radio-card"><input type="radio" name="setup" value="truck" checked /><div class="radio-card-icon">🚚</div><div class="radio-card-label">Food Truck</div><div class="radio-card-sub">Self-contained vehicle</div></label>
+          <label class="radio-card"><input type="radio" name="setup" value="stall" /><div class="radio-card-icon">🏪</div><div class="radio-card-label">Pop-up Stall</div><div class="radio-card-sub">Marquee / trestle setup</div></label>
+          <label class="radio-card"><input type="radio" name="setup" value="cart" /><div class="radio-card-icon">🛒</div><div class="radio-card-label">Cart</div><div class="radio-card-sub">Small mobile unit</div></label>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Stall footprint (metres)</label>
+        <div class="dim-row">
+          <input class="dim-input" id="v-stall-w" type="number" value="3" min="1" max="20" />
+          <span class="dim-sep">×</span>
+          <input class="dim-input" id="v-stall-d" type="number" value="3" min="1" max="20" />
+          <span style="font-size:13px;color:var(--text-lo);">m (width × depth)</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" style="margin-bottom:12px;">Requirements</label>
+        <div class="toggle-group">
+          <div class="toggle-row">
+            <div class="toggle-label-wrap"><div class="toggle-label">Power required</div><div class="toggle-sub">15A single phase</div></div>
+            <label class="toggle-switch"><input type="checkbox" id="v-power" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-label-wrap"><div class="toggle-label">Water connection needed</div><div class="toggle-sub">Running water at stall</div></div>
+            <label class="toggle-switch"><input type="checkbox" id="v-water" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Price range</label>
+        <div class="price-group">
+          <button class="price-btn active" onclick="setPriceBtn(this)">$</button>
+          <button class="price-btn" onclick="setPriceBtn(this)">$$</button>
+          <button class="price-btn" onclick="setPriceBtn(this)">$$$</button>
+        </div>
+        <div class="input-hint">$ = under $15 · $$ = $15–30 · $$$ = $30+</div>
+      </div>
+      <div class="form-group"><label class="form-label">Instagram handle <span style="color:var(--text-lo);font-weight:400;letter-spacing:0;text-transform:none;">(optional)</span></label><input class="form-input" id="v-instagram" type="text" placeholder="@yourhandle" /></div>
+      <div class="step-nav"><button class="btn-back" onclick="goStep(2)">← Back</button><button class="btn-next" onclick="goStep(4)">Next: Documents →</button></div>
+    </div>
+
+    <!-- Step 4: Documents -->
+    <div class="step-panel" id="step-4">
+      <h2 class="step-heading">Your documents</h2>
+      <p class="step-sub">Upload your compliance documents to get a Verified badge. You can add these later, but many organisers require them before approving applications.</p>
+      <div class="doc-cards">
+        <div class="doc-card">
+          <div class="doc-card-header">
+            <div class="doc-card-left">
+              <div class="doc-card-icon">📜</div>
+              <div>
+                <div class="doc-card-name">Food Safety Certificate</div>
+                <div class="doc-card-req">Current certificate from an approved Food Safety Supervisor course. Required by most events.</div>
+              </div>
+            </div>
+          </div>
+          <div class="doc-upload-area" id="fsc-area" onclick="simulateUpload('fsc')">
+            <div class="doc-upload-icon">📎</div>
+            <div class="doc-upload-text">Click to upload or drag &amp; drop</div>
+            <div class="doc-upload-hint">PDF, JPG or PNG · Max 5MB</div>
+          </div>
+          <div class="doc-uploaded" id="fsc-uploaded">
+            <span class="doc-uploaded-icon">✅</span>
+            <span class="doc-uploaded-name">food_safety_cert_2026.pdf</span>
+            <button class="doc-remove" onclick="removeDoc('fsc')">✕</button>
+          </div>
+        </div>
+        <div class="doc-card">
+          <div class="doc-card-header">
+            <div class="doc-card-left">
+              <div class="doc-card-icon">🛡️</div>
+              <div>
+                <div class="doc-card-name">Public Liability Insurance</div>
+                <div class="doc-card-req">Minimum $10 million coverage. Certificate of currency from your insurer.</div>
+              </div>
+            </div>
+          </div>
+          <div class="doc-upload-area" id="pli-area" onclick="simulateUpload('pli')">
+            <div class="doc-upload-icon">📎</div>
+            <div class="doc-upload-text">Click to upload or drag &amp; drop</div>
+            <div class="doc-upload-hint">PDF, JPG or PNG · Max 5MB</div>
+          </div>
+          <div class="doc-uploaded" id="pli-uploaded">
+            <span class="doc-uploaded-icon">✅</span>
+            <span class="doc-uploaded-name">pli_certificate_2026.pdf</span>
+            <button class="doc-remove" onclick="removeDoc('pli')">✕</button>
+          </div>
+        </div>
+        <div class="doc-card optional">
+          <div class="doc-card-header">
+            <div class="doc-card-left">
+              <div class="doc-card-icon">🏛️</div>
+              <div>
+                <div class="doc-card-name">Council Trading Permit</div>
+                <div class="doc-card-req">Required by some councils. Check with your local council if you operate in multiple areas.</div>
+              </div>
+            </div>
+            <span class="doc-optional-tag">Optional</span>
+          </div>
+          <div class="doc-upload-area" onclick="simulateUpload('ctp')">
+            <div class="doc-upload-icon">📎</div>
+            <div class="doc-upload-text">Click to upload or drag &amp; drop</div>
+            <div class="doc-upload-hint">PDF, JPG or PNG · Max 5MB</div>
+          </div>
+          <div class="doc-uploaded" id="ctp-uploaded">
+            <span class="doc-uploaded-icon">✅</span>
+            <span class="doc-uploaded-name">trading_permit_2026.pdf</span>
+            <button class="doc-remove" onclick="removeDoc('ctp')">✕</button>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:14px;padding:12px 16px;background:#ffffff05;border-radius:10px;font-size:12px;color:var(--text-lo);line-height:1.6;">
+        🔒 Documents are reviewed privately by the Pitch. team and never shared publicly. Only your verification status is shown on your profile.
+      </div>
+      <div class="step-nav"><button class="btn-back" onclick="goStep(3)">← Back</button><button class="btn-next" onclick="goStep(5)">Next: Choose a plan →</button></div>
+    </div>
+
+    <!-- Step 5: Plan -->
+    <div class="step-panel" id="step-5">
+      <h2 class="step-heading">Choose your plan</h2>
+      <p class="step-sub">You can upgrade or downgrade at any time from your dashboard.</p>
+      <div class="plan-cards">
+        <div class="plan-card" id="plan-free" onclick="selectPlan('free')">
+          <div class="plan-name">Free</div>
+          <div class="plan-price">$0<span>/mo</span></div>
+          <div class="plan-price-desc">Forever free</div>
+          <div class="plan-divider"></div>
+          <div class="plan-features">
+            <div class="plan-feat"><span class="plan-feat-check">✓</span>Public vendor profile</div>
+            <div class="plan-feat"><span class="plan-feat-check">✓</span>Up to 5 applications/month</div>
+            <div class="plan-feat"><span class="plan-feat-check">✓</span>Document uploads</div>
+            <div class="plan-feat"><span class="plan-feat-check">✓</span>Application tracking</div>
+            <div class="plan-feat"><span class="plan-feat-x">—</span><span style="color:var(--text-lo);">Priority placement in search</span></div>
+            <div class="plan-feat"><span class="plan-feat-x">—</span><span style="color:var(--text-lo);">Pro badge on profile</span></div>
+            <div class="plan-feat"><span class="plan-feat-x">—</span><span style="color:var(--text-lo);">Unlimited applications</span></div>
+          </div>
+        </div>
+        <div class="plan-card featured selected" id="plan-pro" onclick="selectPlan('pro')">
+          <div class="plan-featured-label">Most popular</div>
+          <div class="plan-name">Pro</div>
+          <div class="plan-price">$79<span>/mo</span></div>
+          <div class="plan-price-desc">Billed monthly · Cancel anytime</div>
+          <div class="plan-divider"></div>
+          <div class="plan-features">
+            <div class="plan-feat"><span class="plan-feat-check">✓</span>Everything in Free</div>
+            <div class="plan-feat"><span class="plan-feat-check">✓</span><strong style="color:var(--text-hi);">Priority placement</strong> in search</div>
+            <div class="plan-feat"><span class="plan-feat-check">✓</span><strong style="color:var(--text-hi);">⭐ Pro badge</strong> on profile</div>
+            <div class="plan-feat"><span class="plan-feat-check">✓</span>Unlimited applications</div>
+            <div class="plan-feat"><span class="plan-feat-check">✓</span>Analytics dashboard</div>
+            <div class="plan-feat"><span class="plan-feat-check">✓</span>Direct organiser messaging</div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:16px;text-align:center;font-size:12px;color:var(--text-lo);">
+        🔒 Payments are secure and processed by Stripe. You won't be charged until after your free trial.
+      </div>
+      <div id="signup-error" style="display:none;margin-top:12px;padding:12px 16px;background:rgba(192,57,43,0.1);border:1px solid rgba(192,57,43,0.3);border-radius:10px;font-size:13px;color:#C0392B;"></div>
+      <div class="step-nav"><button class="btn-back" onclick="goStep(4)">← Back</button><button class="btn-next btn-publish" id="submit-vendor-btn" onclick="submitVendorSignup()">Create my account 🎉</button></div>
+    </div>
+
+    <!-- Step 6: Success -->
+    <div class="step-panel" id="step-6">
+      <div class="success-panel">
+        <div class="success-icon">🎉</div>
+        <h2 class="success-heading">You're on Pitch.</h2>
+        <p class="success-sub">Your vendor profile has been created. Your documents are being reviewed — you'll get an email when your Verified badge is live.</p>
+        <div class="success-checklist">
+          <div class="success-check-item"><span class="success-check-icon">✅</span>Account created</div>
+          <div class="success-check-item"><span class="success-check-icon">✅</span>Business profile set up</div>
+          <div class="success-check-item"><span class="success-check-icon">⏳</span><span>Documents under review <span style="color:var(--text-lo);font-size:11px;">(usually 1–2 business days)</span></span></div>
+          <div class="success-check-item"><span class="success-check-icon">⏳</span><span>ABN verification pending</span></div>
+        </div>
+        <div class="success-actions">
+          <a href="/events" class="btn-success-primary">Browse events and apply →</a>
+          <a href="/dashboard/vendor" class="btn-success-secondary">Go to my dashboard</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+let currentStep = 1;
+
+function goStep(n) {
+  document.getElementById('step-' + currentStep).classList.remove('active');
+  currentStep = n;
+  document.getElementById('step-' + n).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  for (let i = 1; i <= 6; i++) {
+    const d = document.getElementById('d' + i);
+    const l = document.getElementById('l' + i);
+    const ln = document.getElementById('ln' + i);
+    if (i < n)       { d.className='sp-dot done'; d.textContent='✓'; l.className='sp-label done'; if(ln) ln.className='sp-line done'; }
+    else if (i===n)  { d.className='sp-dot active'; d.textContent=i; l.className='sp-label active'; if(ln) ln.className='sp-line'; }
+    else             { d.className='sp-dot pending'; d.textContent=i; l.className='sp-label'; if(ln) ln.className='sp-line'; }
+  }
+}
+
+function togglePw(id, btn) {
+  const inp = document.getElementById(id);
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+  btn.textContent = inp.type === 'password' ? '👁' : '🙈';
+}
+
+function verifyABN() {
+  const abn = document.getElementById('abn-input').value.replace(/\s/g,'');
+  const btn = document.getElementById('abn-btn');
+  const res = document.getElementById('abn-result');
+  if (abn.length < 11) { res.className='abn-result fail'; res.querySelector('.abn-result-icon').textContent='✕'; res.querySelector('.abn-result-text').textContent='Please enter an 11-digit ABN.'; return; }
+  btn.textContent='Verifying…'; btn.classList.add('loading');
+  res.className='abn-result'; res.style.display='none';
+  setTimeout(() => {
+    btn.textContent='Verify ABN →'; btn.classList.remove('loading');
+    res.className='abn-result success';
+    res.querySelector('.abn-result-icon').textContent='✓';
+    res.querySelector('.abn-result-text').textContent='ABN verified — Smoky Joe\'s BBQ Pty Ltd · Active';
+  }, 1400);
+}
+
+function setPriceBtn(btn) {
+  document.querySelectorAll('.price-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function simulateUpload(type) {
+  setTimeout(() => {
+    const el = document.getElementById(type + '-uploaded');
+    if (el) el.classList.add('show');
+    const area = document.getElementById(type + '-area');
+    if (area) area.style.display = 'none';
+  }, 600);
+}
+
+function removeDoc(type) {
+  const el = document.getElementById(type + '-uploaded');
+  if (el) el.classList.remove('show');
+  const area = document.getElementById(type + '-area');
+  if (area) area.style.display = '';
+}
+
+function selectPlan(plan) {
+  document.getElementById('plan-free').classList.toggle('selected', plan === 'free');
+  document.getElementById('plan-pro').classList.toggle('selected', plan === 'pro');
+}
+
+let selectedPlan = 'pro';
+const origSelectPlan = selectPlan;
+window.selectPlan = function(plan) {
+  selectedPlan = plan;
+  origSelectPlan(plan);
+};
+
+async function submitVendorSignup() {
+  const btn = document.getElementById('submit-vendor-btn');
+  const errEl = document.getElementById('signup-error');
+  errEl.style.display = 'none';
+
+  const cuisineTags = Array.from(document.querySelectorAll('#step-3 .tag-opt.sel')).map(t => t.textContent);
+  const setupType = document.querySelector('input[name="setup"]:checked')?.value || 'truck';
+
+  const payload = {
+    first_name:   document.getElementById('v-first-name').value.trim(),
+    last_name:    document.getElementById('v-last-name').value.trim(),
+    email:        document.getElementById('v-email').value.trim(),
+    password:     document.getElementById('pw1').value,
+    trading_name: document.getElementById('v-trading-name').value.trim(),
+    abn:          document.getElementById('abn-input').value.replace(/\s/g, ''),
+    mobile:       document.getElementById('v-mobile').value.trim(),
+    state:        document.getElementById('v-state').value,
+    suburb:       document.getElementById('v-suburb').value.trim(),
+    bio:          document.getElementById('v-bio').value.trim(),
+    cuisine_tags: cuisineTags,
+    setup_type:   setupType,
+    stall_w:      parseFloat(document.getElementById('v-stall-w').value) || 3,
+    stall_d:      parseFloat(document.getElementById('v-stall-d').value) || 3,
+    power:        document.getElementById('v-power').checked,
+    water:        document.getElementById('v-water').checked,
+    price_range:  document.querySelector('.price-btn.active')?.textContent || '$',
+    instagram:    document.getElementById('v-instagram').value.trim(),
+    plan:         selectedPlan,
+  };
+
+  const showErr = msg => {
+    errEl.textContent = msg;
+    errEl.style.display = 'block';
+    errEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  };
+
+  if (!payload.first_name || !payload.last_name || !payload.email || !payload.password || !payload.trading_name) {
+    showErr('Please fill in your name, email, password, and business name before submitting.');
+    return;
+  }
+
+  btn.textContent = 'Creating account…';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch('/api/signup/vendor', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      showErr(data.error || 'Something went wrong. Please try again.');
+      btn.textContent = 'Create my account 🎉';
+      btn.disabled = false;
+      return;
+    }
+    goStep(6);
+    setTimeout(() => { window.location.href = data.redirect; }, 2500);
+  } catch (e) {
+    showErr('Network error — please check your connection and try again.');
+    btn.textContent = 'Create my account 🎉';
+    btn.disabled = false;
+  }
+}
+</script>
+</body>
+</html>

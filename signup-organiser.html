@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign up as an Organiser — Pitch.</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@900&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; font-family: 'Instrument Sans', sans-serif; background: #1A1612; color: #FDF4E7; min-height: 100vh; }
+
+    /* ── Layout ───────────────────────────────────── */
+    .signup-shell { display: flex; min-height: 100vh; }
+
+    /* ── Brand panel ──────────────────────────────── */
+    .brand-panel {
+      width: 420px; flex-shrink: 0; position: sticky; top: 0; height: 100vh; overflow: hidden;
+      background: linear-gradient(160deg, #1A1612 0%, #2D1A0E 45%, #1A1612 100%);
+      display: flex; flex-direction: column; padding: 48px 40px;
+    }
+    .brand-panel::before {
+      content: ''; position: absolute; inset: 0; pointer-events: none;
+      background: radial-gradient(ellipse 70% 60% at 30% 20%, rgba(232,80,10,0.18) 0%, transparent 70%),
+                  radial-gradient(ellipse 60% 50% at 80% 80%, rgba(232,80,10,0.10) 0%, transparent 70%);
+    }
+    .brand-panel > * { position: relative; z-index: 1; }
+
+    .brand-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 48px; }
+    .brand-logo-dot { width: 32px; height: 32px; border-radius: 50%; background: #E8500A; }
+    .brand-logo-text { font-family: 'Fraunces', serif; font-size: 22px; color: #FDF4E7; }
+
+    .brand-heading { font-family: 'Fraunces', serif; font-size: 34px; line-height: 1.15; color: #FDF4E7; margin: 0 0 12px; letter-spacing: -0.02em; }
+    .brand-sub { font-size: 15px; color: #A89880; line-height: 1.65; margin: 0 0 36px; }
+
+    .brand-features { list-style: none; padding: 0; margin: 0 0 auto; display: flex; flex-direction: column; gap: 16px; }
+    .brand-feature { display: flex; align-items: flex-start; gap: 12px; }
+    .brand-feature-icon {
+      width: 32px; height: 32px; border-radius: 8px; background: rgba(232,80,10,0.15);
+      border: 1px solid rgba(232,80,10,0.25); display: flex; align-items: center; justify-content: center;
+      font-size: 15px; flex-shrink: 0; margin-top: 1px;
+    }
+    .brand-feature-text strong { display: block; font-size: 14px; font-weight: 600; color: #FDF4E7; margin-bottom: 2px; }
+    .brand-feature-text span { font-size: 13px; color: #6B5A4A; line-height: 1.5; }
+
+    .brand-quote {
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px; padding: 20px; margin-top: 32px;
+    }
+    .brand-quote p { font-size: 13.5px; color: #A89880; line-height: 1.6; margin: 0 0 12px; font-style: italic; }
+    .brand-quote-author { display: flex; align-items: center; gap: 10px; }
+    .brand-quote-avatar {
+      width: 34px; height: 34px; border-radius: 50%; font-size: 16px;
+      background: linear-gradient(135deg, #E8500A, #C9840A);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .brand-quote-name strong { display: block; font-size: 13px; font-weight: 600; color: #FDF4E7; }
+    .brand-quote-name span { font-size: 12px; color: #6B5A4A; }
+
+    .brand-stats { display: flex; gap: 24px; margin-top: 24px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.07); }
+    .brand-stat span { display: block; }
+    .brand-stat .val { font-family: 'Fraunces', serif; font-size: 22px; color: #E8500A; }
+    .brand-stat .lbl { font-size: 12px; color: #6B5A4A; margin-top: 2px; }
+
+    /* ── Form panel ───────────────────────────────── */
+    .form-panel { flex: 1; overflow-y: auto; display: flex; justify-content: center; padding: 60px 32px 80px; }
+    .form-inner { width: 100%; max-width: 540px; }
+
+    /* ── Step progress ────────────────────────────── */
+    .step-progress { display: flex; align-items: center; margin-bottom: 40px; }
+    .step-dot-wrap { display: flex; align-items: center; gap: 0; }
+    .step-dot {
+      width: 28px; height: 28px; border-radius: 50%; border: 2px solid #3A2E26;
+      display: flex; align-items: center; justify-content: center; font-size: 12px;
+      font-weight: 600; color: #6B5A4A; background: #231E19; transition: all 0.25s ease; flex-shrink: 0;
+    }
+    .step-dot.done { background: #E8500A; border-color: #E8500A; color: #fff; }
+    .step-dot.active { background: #231E19; border-color: #E8500A; color: #E8500A; box-shadow: 0 0 0 4px rgba(232,80,10,0.15); }
+    .step-line { height: 2px; flex: 1; background: #3A2E26; margin: 0 6px; transition: background 0.3s; min-width: 24px; }
+    .step-line.done { background: #E8500A; }
+    .step-label { font-size: 12px; color: #6B5A4A; margin-top: 6px; text-align: center; width: 28px; flex-shrink: 0; }
+
+    /* ── Step header ──────────────────────────────── */
+    .step-heading { font-family: 'Fraunces', serif; font-size: 28px; color: #FDF4E7; letter-spacing: -0.02em; margin: 0 0 6px; }
+    .step-sub { font-size: 15px; color: #A89880; margin: 0 0 32px; line-height: 1.5; }
+
+    /* ── Form elements ────────────────────────────── */
+    .field-group { margin-bottom: 20px; }
+    .field-label { display: block; font-size: 13px; font-weight: 600; color: #A89880; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em; }
+    .field-input {
+      width: 100%; background: #231E19; border: 1.5px solid #3A2E26; border-radius: 10px;
+      color: #FDF4E7; font-family: 'Instrument Sans', sans-serif; font-size: 15px;
+      padding: 12px 16px; outline: none; transition: border-color 0.2s;
+    }
+    .field-input:focus { border-color: #E8500A; }
+    .field-input::placeholder { color: #4A3C30; }
+    textarea.field-input { resize: vertical; min-height: 90px; line-height: 1.6; }
+    select.field-input { appearance: none; cursor: pointer; }
+
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+
+    .field-hint { font-size: 12px; color: #6B5A4A; margin-top: 5px; line-height: 1.5; }
+
+    /* ── ABN verify ───────────────────────────────── */
+    .abn-wrap { position: relative; }
+    .abn-btn {
+      position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+      background: #E8500A; color: #fff; border: none; border-radius: 7px;
+      padding: 6px 14px; font-size: 13px; font-weight: 600; font-family: 'Instrument Sans', sans-serif;
+      cursor: pointer; transition: background 0.18s;
+    }
+    .abn-btn:hover { background: #FF6B2B; }
+    .abn-confirm {
+      display: none; margin-top: 7px; font-size: 13px; color: #2D8B55;
+      background: rgba(45,139,85,0.1); border: 1px solid rgba(45,139,85,0.25);
+      border-radius: 7px; padding: 7px 11px; align-items: center; gap: 7px;
+    }
+    .abn-confirm.show { display: flex; }
+    .abn-loading {
+      display: none; margin-top: 7px; font-size: 13px; color: #A89880;
+      align-items: center; gap: 8px;
+    }
+    .abn-loading.show { display: flex; }
+    .spinner {
+      width: 14px; height: 14px; border: 2px solid #3A2E26; border-top-color: #E8500A;
+      border-radius: 50%; animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Tags multi-select ────────────────────────── */
+    .tag-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+    .tag-chip {
+      padding: 7px 14px; border-radius: 20px; border: 1.5px solid #3A2E26;
+      background: #231E19; font-size: 13px; color: #A89880; cursor: pointer;
+      transition: all 0.18s; user-select: none;
+    }
+    .tag-chip:hover { border-color: #E8500A; color: #FDF4E7; }
+    .tag-chip.active { background: rgba(232,80,10,0.15); border-color: #E8500A; color: #E8500A; }
+
+    /* ── Radio cards ──────────────────────────────── */
+    .radio-cards { display: grid; gap: 10px; }
+    .radio-card {
+      display: flex; align-items: flex-start; gap: 14px; padding: 16px;
+      background: #231E19; border: 1.5px solid #3A2E26; border-radius: 12px;
+      cursor: pointer; transition: border-color 0.18s;
+    }
+    .radio-card:hover { border-color: rgba(232,80,10,0.4); }
+    .radio-card.selected { border-color: #E8500A; background: rgba(232,80,10,0.06); }
+    .radio-card-dot {
+      width: 18px; height: 18px; border-radius: 50%; border: 2px solid #3A2E26;
+      flex-shrink: 0; margin-top: 2px; transition: all 0.18s; display: flex; align-items: center; justify-content: center;
+    }
+    .radio-card.selected .radio-card-dot { border-color: #E8500A; background: #E8500A; }
+    .radio-card.selected .radio-card-dot::after { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #fff; }
+    .radio-card-icon { font-size: 22px; flex-shrink: 0; }
+    .radio-card-body strong { display: block; font-size: 14px; font-weight: 600; color: #FDF4E7; margin-bottom: 2px; }
+    .radio-card-body span { font-size: 13px; color: #6B5A4A; }
+
+    /* ── Range slider ─────────────────────────────── */
+    .range-labels { display: flex; justify-content: space-between; font-size: 12px; color: #6B5A4A; margin-top: 6px; }
+    input[type=range] { width: 100%; accent-color: #E8500A; cursor: pointer; }
+
+    /* ── Referral source ──────────────────────────── */
+    .ref-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .ref-card {
+      display: flex; align-items: center; gap: 10px; padding: 13px 14px;
+      background: #231E19; border: 1.5px solid #3A2E26; border-radius: 10px;
+      cursor: pointer; transition: border-color 0.18s; user-select: none;
+    }
+    .ref-card:hover { border-color: rgba(232,80,10,0.4); }
+    .ref-card.selected { border-color: #E8500A; background: rgba(232,80,10,0.06); }
+    .ref-card-icon { font-size: 18px; flex-shrink: 0; }
+    .ref-card-label { font-size: 13px; color: #A89880; font-weight: 500; }
+    .ref-card.selected .ref-card-label { color: #FDF4E7; }
+
+    /* ── Success screen ───────────────────────────── */
+    .success-screen { text-align: center; padding: 20px 0; }
+    .success-icon {
+      width: 80px; height: 80px; border-radius: 50%;
+      background: linear-gradient(135deg, rgba(45,139,85,0.2), rgba(45,139,85,0.05));
+      border: 2px solid rgba(45,139,85,0.4); margin: 0 auto 24px;
+      display: flex; align-items: center; justify-content: center; font-size: 36px;
+    }
+    .success-heading { font-family: 'Fraunces', serif; font-size: 32px; color: #FDF4E7; margin: 0 0 10px; letter-spacing: -0.02em; }
+    .success-sub { font-size: 16px; color: #A89880; margin: 0 auto 36px; max-width: 420px; line-height: 1.65; }
+
+    .checklist { list-style: none; padding: 0; margin: 0 0 36px; display: flex; flex-direction: column; gap: 10px; text-align: left; }
+    .checklist li {
+      display: flex; align-items: center; gap: 12px; padding: 14px 16px;
+      background: #231E19; border: 1px solid #3A2E26; border-radius: 10px;
+      font-size: 14px;
+    }
+    .check-icon { width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 13px; }
+    .check-done { background: rgba(45,139,85,0.15); border: 1px solid rgba(45,139,85,0.3); color: #2D8B55; }
+    .check-pending { background: rgba(201,132,10,0.12); border: 1px solid rgba(201,132,10,0.25); color: #C9840A; }
+    .checklist li span { color: #A89880; }
+    .checklist li strong { color: #FDF4E7; display: block; font-size: 14px; margin-bottom: 1px; }
+
+    /* ── Buttons ──────────────────────────────────── */
+    .btn-primary {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      background: #E8500A; color: #fff; border: none; border-radius: 10px;
+      font-family: 'Instrument Sans', sans-serif; font-size: 15px; font-weight: 600;
+      padding: 14px 28px; cursor: pointer; transition: background 0.18s, transform 0.12s;
+      width: 100%; text-decoration: none;
+    }
+    .btn-primary:hover { background: #FF6B2B; }
+    .btn-primary:active { transform: scale(0.98); }
+    .btn-outline {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      background: transparent; color: #A89880; border: 1.5px solid #3A2E26; border-radius: 10px;
+      font-family: 'Instrument Sans', sans-serif; font-size: 15px; font-weight: 600;
+      padding: 14px 28px; cursor: pointer; transition: border-color 0.18s, color 0.18s;
+      width: 100%; text-decoration: none;
+    }
+    .btn-outline:hover { border-color: #A89880; color: #FDF4E7; }
+    .btn-row { display: flex; gap: 12px; margin-top: 32px; }
+    .btn-row .btn-outline { width: auto; flex-shrink: 0; padding: 14px 24px; }
+    .btn-row .btn-primary { flex: 1; }
+
+    .divider { display: flex; align-items: center; gap: 12px; margin: 20px 0; }
+    .divider hr { flex: 1; border: none; border-top: 1px solid #3A2E26; }
+    .divider span { font-size: 12px; color: #4A3C30; }
+
+    .sso-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .sso-btn {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      background: #231E19; border: 1.5px solid #3A2E26; border-radius: 10px;
+      padding: 11px 16px; font-size: 14px; font-weight: 500; color: #A89880;
+      cursor: pointer; transition: border-color 0.18s, color 0.18s; font-family: inherit;
+    }
+    .sso-btn:hover { border-color: #A89880; color: #FDF4E7; }
+
+    .signin-link { text-align: center; font-size: 14px; color: #6B5A4A; margin-top: 24px; }
+    .signin-link a { color: #E8500A; text-decoration: none; font-weight: 600; }
+    .signin-link a:hover { text-decoration: underline; }
+
+    /* ── Steps visibility ─────────────────────────── */
+    .step-panel { display: none; }
+    .step-panel.active { display: block; }
+
+    /* ── Attendance display ───────────────────────── */
+    .attend-val { font-size: 15px; font-weight: 600; color: #E8500A; text-align: center; margin-bottom: 6px; }
+
+    /* ── Info notice ──────────────────────────────── */
+    .info-notice {
+      background: rgba(43, 91, 168, 0.1); border: 1px solid rgba(43, 91, 168, 0.25);
+      border-radius: 10px; padding: 14px 16px; font-size: 13px; color: #7A9ED0;
+      line-height: 1.6; margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+<div class="signup-shell">
+
+  <!-- ── Brand panel ── -->
+  <aside class="brand-panel">
+    <div class="brand-logo">
+      <div class="brand-logo-dot"></div>
+      <span class="brand-logo-text">Pitch.</span>
+    </div>
+
+    <h1 class="brand-heading">List events. Fill every spot.</h1>
+    <p class="brand-sub">Pitch. connects you with Adelaide's best food vendors — curated, vetted, and ready to perform.</p>
+
+    <ul class="brand-features">
+      <li class="brand-feature">
+        <div class="brand-feature-icon">📋</div>
+        <div class="brand-feature-text">
+          <strong>Smart applications</strong>
+          <span>Vendors apply directly to your event. Review, shortlist, and confirm in one place.</span>
+        </div>
+      </li>
+      <li class="brand-feature">
+        <div class="brand-feature-icon">📊</div>
+        <div class="brand-feature-text">
+          <strong>Fill-rate dashboard</strong>
+          <span>Track stall capacity, confirmed vendors, and waitlists at a glance.</span>
+        </div>
+      </li>
+      <li class="brand-feature">
+        <div class="brand-feature-icon">💬</div>
+        <div class="brand-feature-text">
+          <strong>Built-in messaging</strong>
+          <span>Broadcast updates or chat directly with any vendor in your lineup.</span>
+        </div>
+      </li>
+      <li class="brand-feature">
+        <div class="brand-feature-icon">✅</div>
+        <div class="brand-feature-text">
+          <strong>Compliance handled</strong>
+          <span>Pitch. verifies vendor insurance and permits before they join your event.</span>
+        </div>
+      </li>
+    </ul>
+
+    <div class="brand-quote">
+      <p>"We filled 28 stalls for our night market in under 3 days. The quality of applicants was incredible — vendors we'd never have found on our own."</p>
+      <div class="brand-quote-author">
+        <div class="brand-quote-avatar">🏛</div>
+        <div class="brand-quote-name">
+          <strong>Sarah M.</strong>
+          <span>Adelaide City Council Events</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="brand-stats">
+      <div class="brand-stat"><span class="val">840+</span><span class="lbl">Events listed</span></div>
+      <div class="brand-stat"><span class="val">2,400+</span><span class="lbl">Active vendors</span></div>
+      <div class="brand-stat"><span class="val">4.9★</span><span class="lbl">Organiser rating</span></div>
+    </div>
+  </aside>
+
+  <!-- ── Form panel ── -->
+  <main class="form-panel">
+    <div class="form-inner">
+
+      <!-- Progress indicator -->
+      <div class="step-progress" id="stepProgress">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+          <div class="step-dot active" id="dot-1">1</div>
+        </div>
+        <div class="step-line" id="line-1"></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+          <div class="step-dot" id="dot-2">2</div>
+        </div>
+        <div class="step-line" id="line-2"></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+          <div class="step-dot" id="dot-3">3</div>
+        </div>
+        <div class="step-line" id="line-3"></div>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
+          <div class="step-dot" id="dot-4">4</div>
+        </div>
+      </div>
+
+      <!-- ─── Step 1: Account ─── -->
+      <div class="step-panel active" id="step-1">
+        <h2 class="step-heading">Create your account</h2>
+        <p class="step-sub">Start for free — no credit card required.</p>
+
+        <div class="sso-btns" style="margin-bottom:20px;">
+          <button class="sso-btn">
+            <svg width="18" height="18" viewBox="0 0 18 18"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844a4.14 4.14 0 01-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.616z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
+            Continue with Google
+          </button>
+          <button class="sso-btn">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor"><path d="M12.257 0c.07.93-.263 1.857-.776 2.536-.513.68-1.35 1.213-2.2 1.143-.097-.93.307-1.9.793-2.493C10.573.557 11.47.053 12.257 0zM15.68 12.58c-.38.88-.563 1.27-1.053 2.047-.683 1.04-1.647 2.337-2.843 2.347-.853.01-1.133-.557-2.357-.55-1.22.007-1.527.563-2.387.553-1.193-.013-2.107-1.19-2.79-2.23C2.487 12.51 2.013 9.623 3.073 7.933c.74-1.207 1.903-1.913 3.12-1.913.94 0 1.813.62 2.433.62.61 0 1.55-.707 2.693-.707.447 0 1.73.077 2.547 1.173-.07.043-1.52.89-1.503 2.66.017 2.11 1.853 2.81 1.87 2.817-.017.05-.29.997-1.553 1.997z"/></svg>
+            Continue with Apple
+          </button>
+        </div>
+
+        <div class="divider"><hr/><span>or sign up with email</span><hr/></div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label class="field-label">First name</label>
+            <input class="field-input" id="o-first-name" type="text" placeholder="Sarah" />
+          </div>
+          <div class="field-group">
+            <label class="field-label">Last name</label>
+            <input class="field-input" id="o-last-name" type="text" placeholder="Mitchell" />
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Work email</label>
+          <input class="field-input" id="o-email" type="email" placeholder="sarah@council.sa.gov.au" />
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Password</label>
+          <div style="position:relative;">
+            <input class="field-input" type="password" id="pw1-org" placeholder="8+ characters" style="padding-right:48px;" />
+            <button onclick="togglePw('pw1-org',this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#6B5A4A;font-size:13px;font-family:inherit;font-weight:600;" type="button">Show</button>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Confirm password</label>
+          <div style="position:relative;">
+            <input class="field-input" type="password" id="pw2-org" placeholder="Repeat password" style="padding-right:48px;" />
+            <button onclick="togglePw('pw2-org',this)" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#6B5A4A;font-size:13px;font-family:inherit;font-weight:600;" type="button">Show</button>
+          </div>
+        </div>
+
+        <p style="font-size:12.5px;color:#6B5A4A;line-height:1.6;margin:16px 0 0;">
+          By creating an account you agree to Pitch.'s
+          <a href="#" style="color:#E8500A;text-decoration:none;">Terms of Service</a> and
+          <a href="#" style="color:#E8500A;text-decoration:none;">Privacy Policy</a>.
+        </p>
+
+        <div class="btn-row" style="margin-top:24px;">
+          <button class="btn-primary" onclick="goStep(2)">Create account <span style="font-size:18px;line-height:1;">→</span></button>
+        </div>
+
+        <p class="signin-link">Already have an account? <a href="/login?role=organiser">Sign in</a></p>
+      </div>
+
+      <!-- ─── Step 2: Organisation ─── -->
+      <div class="step-panel" id="step-2">
+        <h2 class="step-heading">Your organisation</h2>
+        <p class="step-sub">Tell us about who's running the show.</p>
+
+        <div class="field-group">
+          <label class="field-label">Organisation / Trading name</label>
+          <input class="field-input" type="text" placeholder="Adelaide City Council Events" id="o-org-name" />
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">ABN (Australian Business Number)</label>
+          <div class="abn-wrap">
+            <input class="field-input" type="text" placeholder="XX XXX XXX XXX" id="abn-org" style="padding-right:100px;" />
+            <button class="abn-btn" onclick="verifyABN_org()">Verify</button>
+          </div>
+          <div class="abn-loading" id="abn-loading-org">
+            <div class="spinner"></div>
+            <span>Verifying with ABR…</span>
+          </div>
+          <div class="abn-confirm" id="abn-confirm-org">
+            <span style="color:#2D8B55;">✓</span>
+            <span>ABN verified — <strong>Adelaide City Council · Active</strong></span>
+          </div>
+          <p class="field-hint">ABN lookup confirms your organisation is registered and active.</p>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Website (optional)</label>
+          <input class="field-input" id="o-website" type="url" placeholder="https://events.adelaidecitycouncil.com.au" />
+        </div>
+
+        <div class="field-row">
+          <div class="field-group">
+            <label class="field-label">State / Territory</label>
+            <select class="field-input" id="o-state">
+              <option value="">Select…</option>
+              <option selected>SA</option>
+              <option>VIC</option>
+              <option>NSW</option>
+              <option>QLD</option>
+              <option>WA</option>
+              <option>TAS</option>
+              <option>ACT</option>
+              <option>NT</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label class="field-label">Suburb</label>
+            <input class="field-input" id="o-suburb" type="text" placeholder="Adelaide" />
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Phone number</label>
+          <input class="field-input" id="o-phone" type="tel" placeholder="+61 4XX XXX XXX" />
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">Organisation bio</label>
+          <textarea class="field-input" id="o-bio" placeholder="Tell vendors a bit about your organisation and the kinds of events you run…"></textarea>
+          <p class="field-hint">This appears on your organiser profile page. Min. 40 characters.</p>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-outline" onclick="goStep(1)">← Back</button>
+          <button class="btn-primary" onclick="goStep(3)">Continue <span style="font-size:18px;line-height:1;">→</span></button>
+        </div>
+      </div>
+
+      <!-- ─── Step 3: About your events ─── -->
+      <div class="step-panel" id="step-3">
+        <h2 class="step-heading">About your events</h2>
+        <p class="step-sub">Help us match you with the right vendors.</p>
+
+        <div class="field-group">
+          <label class="field-label" style="margin-bottom:12px;">What types of events do you run? <span style="color:#6B5A4A;font-weight:400;text-transform:none;">(select all that apply)</span></label>
+          <div class="tag-grid" id="eventTypeTags">
+            <div class="tag-chip active" onclick="toggleTag(this)">Night markets</div>
+            <div class="tag-chip" onclick="toggleTag(this)">Food festivals</div>
+            <div class="tag-chip" onclick="toggleTag(this)">Street fairs</div>
+            <div class="tag-chip" onclick="toggleTag(this)">Corporate events</div>
+            <div class="tag-chip" onclick="toggleTag(this)">Farmers markets</div>
+            <div class="tag-chip" onclick="toggleTag(this)">Pop-up events</div>
+            <div class="tag-chip" onclick="toggleTag(this)">Music festivals</div>
+            <div class="tag-chip" onclick="toggleTag(this)">Sports events</div>
+            <div class="tag-chip" onclick="toggleTag(this)">Community events</div>
+            <div class="tag-chip" onclick="toggleTag(this)">Private functions</div>
+          </div>
+        </div>
+
+        <div class="field-group" style="margin-top:28px;">
+          <label class="field-label">Typical event scale</label>
+          <div class="radio-cards">
+            <label class="radio-card" onclick="selectScale(this)">
+              <div class="radio-card-dot"></div>
+              <div class="radio-card-icon">🏠</div>
+              <div class="radio-card-body">
+                <strong>Small — up to 500 attendees</strong>
+                <span>Intimate events, neighbourhood markets, pop-ups</span>
+              </div>
+            </label>
+            <label class="radio-card selected" onclick="selectScale(this)">
+              <div class="radio-card-dot"></div>
+              <div class="radio-card-icon">🏙</div>
+              <div class="radio-card-body">
+                <strong>Medium — 500–5,000 attendees</strong>
+                <span>Night markets, street fairs, community festivals</span>
+              </div>
+            </label>
+            <label class="radio-card" onclick="selectScale(this)">
+              <div class="radio-card-dot"></div>
+              <div class="radio-card-icon">🎪</div>
+              <div class="radio-card-body">
+                <strong>Large — 5,000+ attendees</strong>
+                <span>Major festivals, council events, multi-day expos</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <div class="field-group" style="margin-top:28px;">
+          <label class="field-label">Typical stall count per event</label>
+          <div class="attend-val" id="stallDisplay">20–30 stalls</div>
+          <input type="range" min="1" max="6" value="3" oninput="updateStalls(this.value)" />
+          <div class="range-labels">
+            <span>1–5</span><span>5–10</span><span>10–20</span><span>20–30</span><span>30–50</span><span>50+</span>
+          </div>
+        </div>
+
+        <div class="field-group" style="margin-top:28px;">
+          <label class="field-label">How did you hear about Pitch.?</label>
+          <div class="ref-grid">
+            <div class="ref-card selected" onclick="selectRef(this)">
+              <span class="ref-card-icon">🔍</span>
+              <span class="ref-card-label">Google / Search</span>
+            </div>
+            <div class="ref-card" onclick="selectRef(this)">
+              <span class="ref-card-icon">📸</span>
+              <span class="ref-card-label">Instagram / Social</span>
+            </div>
+            <div class="ref-card" onclick="selectRef(this)">
+              <span class="ref-card-icon">🤝</span>
+              <span class="ref-card-label">Word of mouth</span>
+            </div>
+            <div class="ref-card" onclick="selectRef(this)">
+              <span class="ref-card-icon">📰</span>
+              <span class="ref-card-label">Press / media</span>
+            </div>
+            <div class="ref-card" onclick="selectRef(this)">
+              <span class="ref-card-icon">📧</span>
+              <span class="ref-card-label">Email / newsletter</span>
+            </div>
+            <div class="ref-card" onclick="selectRef(this)">
+              <span class="ref-card-icon">💬</span>
+              <span class="ref-card-label">Other</span>
+            </div>
+          </div>
+        </div>
+
+        <div id="signup-org-error" style="display:none;margin-top:12px;padding:12px 16px;background:rgba(192,57,43,0.1);border:1px solid rgba(192,57,43,0.3);border-radius:10px;font-size:13px;color:#C0392B;"></div>
+        <div class="btn-row">
+          <button class="btn-outline" onclick="goStep(2)">← Back</button>
+          <button class="btn-primary" id="submit-org-btn" onclick="submitOrganiserSignup()">Submit <span style="font-size:18px;line-height:1;">→</span></button>
+        </div>
+      </div>
+
+      <!-- ─── Step 4: Success ─── -->
+      <div class="step-panel" id="step-4">
+        <div class="success-screen">
+          <div class="success-icon">🎉</div>
+          <h2 class="success-heading">You're all set!</h2>
+          <p class="success-sub">Your organiser account is live. Start posting events and filling your stalls with Adelaide's top food vendors.</p>
+
+          <ul class="checklist">
+            <li>
+              <div class="check-icon check-done">✓</div>
+              <div>
+                <strong>Account created</strong>
+                <span>sarah@council.sa.gov.au is verified</span>
+              </div>
+            </li>
+            <li>
+              <div class="check-icon check-done">✓</div>
+              <div>
+                <strong>Organisation registered</strong>
+                <span>Adelaide City Council Events · ABN verified</span>
+              </div>
+            </li>
+            <li>
+              <div class="check-icon check-done">✓</div>
+              <div>
+                <strong>Profile created</strong>
+                <span>Organiser page is live and discoverable by vendors</span>
+              </div>
+            </li>
+            <li>
+              <div class="check-icon check-pending">○</div>
+              <div>
+                <strong>Post your first event</strong>
+                <span style="color:#C9840A;">Vendors are waiting — publish in under 5 minutes</span>
+              </div>
+            </li>
+            <li>
+              <div class="check-icon check-pending">○</div>
+              <div>
+                <strong>Verify billing contact</strong>
+                <span style="color:#C9840A;">Required before going Pro (optional)</span>
+              </div>
+            </li>
+          </ul>
+
+          <div class="info-notice">
+            Your account has been reviewed and approved instantly. A welcome email has been sent to <strong>sarah@council.sa.gov.au</strong>.
+          </div>
+
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <a href="/dashboard/organiser" class="btn-primary" style="font-size:15px;">
+              Go to Organiser Dashboard →
+            </a>
+            <a href="/events" class="btn-outline" style="width:100%;box-sizing:border-box;">
+              Browse events for inspiration
+            </a>
+          </div>
+
+          <p style="font-size:13px;color:#6B5A4A;margin-top:28px;line-height:1.6;">
+            Questions? Email us at <a href="mailto:hello@pitch.com.au" style="color:#E8500A;text-decoration:none;">hello@pitch.com.au</a>
+          </p>
+        </div>
+      </div>
+
+    </div><!-- /form-inner -->
+  </main>
+</div>
+
+<script>
+  /* ── Step navigation ── */
+  let currentStep = 1;
+  const totalSteps = 4;
+
+  function goStep(n) {
+    document.getElementById('step-' + currentStep).classList.remove('active');
+    currentStep = n;
+    document.getElementById('step-' + currentStep).classList.add('active');
+    updateProgress();
+    document.querySelector('.form-panel').scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function updateProgress() {
+    for (let i = 1; i <= totalSteps; i++) {
+      const dot = document.getElementById('dot-' + i);
+      dot.classList.remove('done', 'active');
+      if (i < currentStep) {
+        dot.classList.add('done');
+        dot.innerHTML = '✓';
+      } else if (i === currentStep) {
+        dot.classList.add('active');
+        dot.innerHTML = i;
+      } else {
+        dot.innerHTML = i;
+      }
+    }
+    for (let i = 1; i < totalSteps; i++) {
+      const line = document.getElementById('line-' + i);
+      if (line) {
+        line.classList.toggle('done', i < currentStep);
+      }
+    }
+    // Hide progress on success
+    document.getElementById('stepProgress').style.display = currentStep === totalSteps ? 'none' : 'flex';
+  }
+
+  /* ── Password toggle ── */
+  function togglePw(id, btn) {
+    const inp = document.getElementById(id);
+    const isPassword = inp.type === 'password';
+    inp.type = isPassword ? 'text' : 'password';
+    btn.textContent = isPassword ? 'Hide' : 'Show';
+  }
+
+  /* ── ABN verify (organiser) ── */
+  function verifyABN_org() {
+    const loading = document.getElementById('abn-loading-org');
+    const confirm = document.getElementById('abn-confirm-org');
+    loading.classList.add('show');
+    confirm.classList.remove('show');
+    setTimeout(() => {
+      loading.classList.remove('show');
+      confirm.classList.add('show');
+    }, 1400);
+  }
+
+  /* ── Tag toggle ── */
+  function toggleTag(el) {
+    el.classList.toggle('active');
+  }
+
+  /* ── Scale selection ── */
+  function selectScale(el) {
+    document.querySelectorAll('.radio-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  /* ── Stall range ── */
+  const stallLabels = ['1–5 stalls', '5–10 stalls', '10–20 stalls', '20–30 stalls', '30–50 stalls', '50+ stalls'];
+  function updateStalls(val) {
+    document.getElementById('stallDisplay').textContent = stallLabels[parseInt(val) - 1];
+  }
+
+  /* ── Referral source ── */
+  function selectRef(el) {
+    document.querySelectorAll('.ref-card').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+  }
+
+  /* ── Submit organiser signup ── */
+  async function submitOrganiserSignup() {
+    const btn = document.getElementById('submit-org-btn');
+    const errEl = document.getElementById('signup-org-error');
+    errEl.style.display = 'none';
+
+    const eventTypes = Array.from(document.querySelectorAll('#eventTypeTags .tag-chip.active')).map(t => t.textContent);
+    const scaleEl = document.querySelector('.radio-card.selected .radio-card-body strong');
+    const eventScale = scaleEl ? scaleEl.textContent : 'Medium';
+    const stallRange = document.getElementById('stallDisplay').textContent;
+    const refEl = document.querySelector('.ref-card.selected .ref-card-label');
+    const referral = refEl ? refEl.textContent : '';
+
+    const payload = {
+      first_name: document.getElementById('o-first-name').value.trim(),
+      last_name:  document.getElementById('o-last-name').value.trim(),
+      email:      document.getElementById('o-email').value.trim(),
+      password:   document.getElementById('pw1-org').value,
+      org_name:   document.getElementById('o-org-name').value.trim(),
+      abn:        document.getElementById('abn-org').value.replace(/\s/g, ''),
+      website:    document.getElementById('o-website').value.trim(),
+      state:      document.getElementById('o-state').value,
+      suburb:     document.getElementById('o-suburb').value.trim(),
+      phone:      document.getElementById('o-phone').value.trim(),
+      bio:        document.getElementById('o-bio').value.trim(),
+      event_types: eventTypes,
+      event_scale: eventScale,
+      stall_range: stallRange,
+      referral,
+    };
+
+    const showErr = msg => {
+      errEl.textContent = msg;
+      errEl.style.display = 'block';
+      errEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    };
+
+    if (!payload.first_name || !payload.last_name || !payload.email || !payload.password || !payload.org_name) {
+      showErr('Please fill in your name, email, password, and organisation name before submitting.');
+      return;
+    }
+
+    btn.textContent = 'Creating account…';
+    btn.disabled = true;
+
+    try {
+      const res = await fetch('/api/signup/organiser', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        showErr(data.error || 'Something went wrong. Please try again.');
+        btn.textContent = 'Submit →';
+        btn.disabled = false;
+        return;
+      }
+      goStep(4);
+      setTimeout(() => { window.location.href = data.redirect; }, 2500);
+    } catch (e) {
+      showErr('Network error — please check your connection and try again.');
+      btn.textContent = 'Submit →';
+      btn.disabled = false;
+    }
+  }
+</script>
+</body>
+</html>

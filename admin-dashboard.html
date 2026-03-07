@@ -1,0 +1,1525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Pitch.</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@900&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin: 0; font-family: 'Instrument Sans', sans-serif; background: #111010; color: #FDF4E7; min-height: 100vh; display: flex; }
+
+    /* ── Sidebar ───────────────────────────────── */
+    .sidebar {
+      width: 220px; flex-shrink: 0; background: #161210; border-right: 1px solid #2A2018;
+      display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; overflow-y: auto;
+    }
+    .sidebar-logo { display: flex; align-items: center; gap: 9px; padding: 20px 18px; border-bottom: 1px solid #2A2018; }
+    .sidebar-logo-dot { width: 26px; height: 26px; border-radius: 50%; background: #E8500A; flex-shrink: 0; }
+    .sidebar-logo-text { font-family: 'Fraunces', serif; font-size: 17px; color: #FDF4E7; }
+    .sidebar-logo-badge { margin-left: auto; background: rgba(232,80,10,0.15); border: 1px solid rgba(232,80,10,0.3); border-radius: 4px; padding: 2px 7px; font-size: 10px; font-weight: 600; color: #E8500A; letter-spacing: 0.05em; }
+
+    .sidebar-section { padding: 16px 12px 8px; }
+    .sidebar-section-label { font-size: 10px; font-weight: 600; color: #4A3C30; text-transform: uppercase; letter-spacing: 0.1em; padding: 0 6px; margin-bottom: 4px; }
+    .nav-item {
+      display: flex; align-items: center; gap: 9px; padding: 8px 10px; border-radius: 7px;
+      font-size: 13.5px; color: #6B5A4A; cursor: pointer; transition: all 0.15s;
+      position: relative; user-select: none;
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.04); color: #A89880; }
+    .nav-item.active { background: rgba(232,80,10,0.1); color: #FDF4E7; }
+    .nav-item.active .nav-icon { color: #E8500A; }
+    .nav-icon { font-size: 16px; width: 18px; text-align: center; flex-shrink: 0; }
+    .nav-badge {
+      margin-left: auto; background: #E8500A; color: #fff; border-radius: 10px;
+      padding: 1px 7px; font-size: 11px; font-weight: 700; min-width: 20px; text-align: center;
+    }
+    .nav-badge.warn { background: #C9840A; }
+    .nav-badge.info { background: #2B5BA8; }
+
+    .sidebar-footer { margin-top: auto; padding: 14px 12px; border-top: 1px solid #2A2018; }
+    .admin-user { display: flex; align-items: center; gap: 9px; }
+    .admin-avatar { width: 32px; height: 32px; border-radius: 50%; background: #2A2018; border: 1px solid #3A2E26; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+    .admin-info strong { display: block; font-size: 13px; font-weight: 600; color: #FDF4E7; }
+    .admin-info span { font-size: 11px; color: #6B5A4A; }
+
+    /* ── Main ──────────────────────────────────── */
+    .main { flex: 1; overflow-y: auto; }
+    .topbar {
+      background: #161210; border-bottom: 1px solid #2A2018; padding: 14px 28px;
+      display: flex; align-items: center; gap: 14px; position: sticky; top: 0; z-index: 10;
+    }
+    .topbar-title { font-size: 15px; font-weight: 600; color: #FDF4E7; }
+    .topbar-sub { font-size: 13px; color: #6B5A4A; }
+    .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 12px; }
+    .topbar-search {
+      background: #231E19; border: 1px solid #2A2018; border-radius: 8px;
+      padding: 7px 12px; font-size: 13px; color: #FDF4E7; font-family: inherit;
+      outline: none; width: 220px;
+    }
+    .topbar-search::placeholder { color: #4A3C30; }
+    .topbar-search:focus { border-color: #E8500A; }
+    .icon-btn {
+      width: 34px; height: 34px; border-radius: 8px; background: #231E19; border: 1px solid #2A2018;
+      display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px;
+      transition: border-color 0.15s;
+    }
+    .icon-btn:hover { border-color: #3A2E26; }
+    .icon-btn.has-dot { position: relative; }
+    .icon-btn.has-dot::after { content:''; position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;background:#E8500A;border:1.5px solid #161210; }
+
+    .panel { display: none; padding: 28px; }
+    .panel.active { display: block; }
+
+    /* ── KPI cards ─────────────────────────────── */
+    .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+    .kpi-card {
+      background: #1C1814; border: 1px solid #2A2018; border-radius: 12px; padding: 18px 20px;
+    }
+    .kpi-label { font-size: 11px; font-weight: 600; color: #6B5A4A; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+    .kpi-val { font-family: 'Fraunces', serif; font-size: 32px; color: #FDF4E7; line-height: 1; margin-bottom: 6px; }
+    .kpi-delta { font-size: 12px; }
+    .kpi-delta.up { color: #2D8B55; }
+    .kpi-delta.down { color: #C0392B; }
+    .kpi-delta.neutral { color: #6B5A4A; }
+
+    /* ── Alert banner ──────────────────────────── */
+    .alert-bar {
+      background: rgba(201,132,10,0.1); border: 1px solid rgba(201,132,10,0.25);
+      border-radius: 10px; padding: 12px 16px; display: flex; align-items: center; gap: 12px;
+      font-size: 13.5px; color: #C9840A; margin-bottom: 22px;
+    }
+    .alert-bar a { color: #E8500A; font-weight: 600; text-decoration: none; cursor: pointer; }
+
+    /* ── Two-col layout ────────────────────────── */
+    .two-col { display: grid; grid-template-columns: 1fr 340px; gap: 20px; }
+
+    /* ── Section cards ─────────────────────────── */
+    .card {
+      background: #1C1814; border: 1px solid #2A2018; border-radius: 12px; overflow: hidden;
+    }
+    .card-header { padding: 16px 20px; border-bottom: 1px solid #2A2018; display: flex; align-items: center; gap: 10px; }
+    .card-title { font-size: 14px; font-weight: 600; color: #FDF4E7; }
+    .card-sub { font-size: 12px; color: #6B5A4A; margin-left: auto; }
+    .card-body { padding: 0; }
+    .card-footer { padding: 12px 20px; border-top: 1px solid #2A2018; }
+
+    /* ── Tables ────────────────────────────────── */
+    .data-table { width: 100%; border-collapse: collapse; }
+    .data-table th {
+      font-size: 11px; font-weight: 600; color: #6B5A4A; text-transform: uppercase;
+      letter-spacing: 0.07em; padding: 11px 20px; text-align: left; border-bottom: 1px solid #2A2018;
+      background: #191511;
+    }
+    .data-table td {
+      padding: 13px 20px; font-size: 13.5px; color: #A89880; border-bottom: 1px solid #1E1916;
+      vertical-align: middle;
+    }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: rgba(255,255,255,0.015); }
+    .data-table td strong { color: #FDF4E7; font-weight: 600; }
+
+    /* ── Badges ────────────────────────────────── */
+    .badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 20px; font-size: 11.5px; font-weight: 600; }
+    .badge-green { background: rgba(45,139,85,0.15); color: #2D8B55; border: 1px solid rgba(45,139,85,0.25); }
+    .badge-amber { background: rgba(201,132,10,0.12); color: #C9840A; border: 1px solid rgba(201,132,10,0.25); }
+    .badge-red { background: rgba(192,57,43,0.12); color: #C0392B; border: 1px solid rgba(192,57,43,0.25); }
+    .badge-blue { background: rgba(43,91,168,0.12); color: #5A8AD4; border: 1px solid rgba(43,91,168,0.25); }
+    .badge-grey { background: rgba(255,255,255,0.06); color: #6B5A4A; border: 1px solid #2A2018; }
+
+    /* ── Action buttons ────────────────────────── */
+    .act-btn {
+      padding: 5px 12px; border-radius: 6px; font-size: 12px; font-weight: 600;
+      font-family: inherit; cursor: pointer; transition: all 0.15s; border: 1px solid;
+    }
+    .act-approve { background: rgba(45,139,85,0.1); color: #2D8B55; border-color: rgba(45,139,85,0.3); }
+    .act-approve:hover { background: rgba(45,139,85,0.2); }
+    .act-reject { background: rgba(192,57,43,0.08); color: #C0392B; border-color: rgba(192,57,43,0.25); }
+    .act-reject:hover { background: rgba(192,57,43,0.15); }
+    .act-suspend { background: rgba(201,132,10,0.08); color: #C9840A; border-color: rgba(201,132,10,0.25); }
+    .act-suspend:hover { background: rgba(201,132,10,0.15); }
+    .act-view { background: rgba(255,255,255,0.05); color: #A89880; border-color: #2A2018; }
+    .act-view:hover { border-color: #3A2E26; color: #FDF4E7; }
+    .act-feature { background: rgba(232,80,10,0.08); color: #E8500A; border-color: rgba(232,80,10,0.25); }
+    .act-feature:hover { background: rgba(232,80,10,0.15); }
+    .act-group { display: flex; gap: 6px; }
+
+    /* ── Filter bar ────────────────────────────── */
+    .filter-bar { display: flex; align-items: center; gap: 10px; padding: 14px 20px; border-bottom: 1px solid #2A2018; }
+    .filter-input {
+      background: #161210; border: 1px solid #2A2018; border-radius: 7px;
+      padding: 6px 12px; font-size: 13px; color: #FDF4E7; font-family: inherit;
+      outline: none; flex: 1; max-width: 280px;
+    }
+    .filter-input:focus { border-color: #E8500A; }
+    .filter-input::placeholder { color: #4A3C30; }
+    .filter-chip {
+      padding: 5px 12px; border-radius: 20px; border: 1px solid #2A2018; background: transparent;
+      font-size: 12px; color: #6B5A4A; cursor: pointer; font-family: inherit; transition: all 0.15s;
+    }
+    .filter-chip:hover { border-color: #3A2E26; color: #A89880; }
+    .filter-chip.active { background: rgba(232,80,10,0.1); border-color: rgba(232,80,10,0.3); color: #E8500A; }
+    .filter-count { margin-left: auto; font-size: 12px; color: #6B5A4A; }
+
+    /* ── Review queue item ─────────────────────── */
+    .queue-item { padding: 16px 20px; border-bottom: 1px solid #1E1916; display: flex; align-items: flex-start; gap: 14px; }
+    .queue-item:last-child { border-bottom: none; }
+    .queue-avatar { width: 36px; height: 36px; border-radius: 8px; font-size: 17px; display: flex; align-items: center; justify-content: center; background: #231E19; border: 1px solid #2A2018; flex-shrink: 0; }
+    .queue-body { flex: 1; min-width: 0; }
+    .queue-name { font-size: 14px; font-weight: 600; color: #FDF4E7; margin-bottom: 3px; }
+    .queue-meta { font-size: 12px; color: #6B5A4A; line-height: 1.5; }
+    .queue-actions { display: flex; flex-direction: column; gap: 5px; align-items: flex-end; }
+    .queue-time { font-size: 11px; color: #4A3C30; white-space: nowrap; }
+
+    /* ── Activity feed ─────────────────────────── */
+    .feed-item { padding: 12px 20px; border-bottom: 1px solid #1E1916; display: flex; align-items: flex-start; gap: 10px; }
+    .feed-item:last-child { border-bottom: none; }
+    .feed-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+    .feed-dot.green { background: #2D8B55; }
+    .feed-dot.amber { background: #C9840A; }
+    .feed-dot.red { background: #C0392B; }
+    .feed-dot.blue { background: #2B5BA8; }
+    .feed-dot.ember { background: #E8500A; }
+    .feed-text { font-size: 13px; color: #A89880; line-height: 1.5; flex: 1; }
+    .feed-text strong { color: #FDF4E7; }
+    .feed-time { font-size: 11px; color: #4A3C30; white-space: nowrap; margin-top: 1px; }
+
+    /* ── Expand row ────────────────────────────── */
+    .expand-row { display: none; background: #161210; }
+    .expand-row.open { display: table-row; }
+    .expand-content { padding: 16px 20px; }
+    .doc-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+    .doc-pill {
+      display: flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 6px;
+      background: rgba(45,139,85,0.1); border: 1px solid rgba(45,139,85,0.25);
+      font-size: 12px; color: #2D8B55; font-weight: 500;
+    }
+    .doc-pill.missing { background: rgba(192,57,43,0.08); border-color: rgba(192,57,43,0.2); color: #C0392B; }
+
+    /* ── Toggle row ────────────────────────────── */
+    .expand-trigger { cursor: pointer; }
+    .expand-trigger:hover td { background: rgba(255,255,255,0.02) !important; }
+
+    /* ── Reports ───────────────────────────────── */
+    .report-card { padding: 16px 20px; border-bottom: 1px solid #1E1916; }
+    .report-card:last-child { border-bottom: none; }
+    .report-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .report-type { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; }
+    .report-body { font-size: 13px; color: #A89880; line-height: 1.6; margin-bottom: 10px; }
+    .report-meta { font-size: 12px; color: #4A3C30; }
+    .report-actions { display: flex; gap: 8px; }
+
+    /* ── Settings ──────────────────────────────── */
+    .settings-section { padding: 24px; border-bottom: 1px solid #2A2018; }
+    .settings-section:last-child { border-bottom: none; }
+    .settings-heading { font-size: 14px; font-weight: 600; color: #FDF4E7; margin: 0 0 4px; }
+    .settings-sub { font-size: 13px; color: #6B5A4A; margin: 0 0 18px; line-height: 1.5; }
+    .settings-row { display: flex; align-items: center; gap: 14px; padding: 13px 0; border-bottom: 1px solid #1E1916; }
+    .settings-row:last-child { border-bottom: none; }
+    .settings-row-label strong { display: block; font-size: 13.5px; color: #FDF4E7; margin-bottom: 2px; }
+    .settings-row-label span { font-size: 12px; color: #6B5A4A; }
+    .settings-row-ctrl { margin-left: auto; }
+
+    /* Toggle switch */
+    .toggle { position: relative; width: 40px; height: 22px; flex-shrink: 0; }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-track {
+      position: absolute; inset: 0; border-radius: 11px; background: #2A2018;
+      cursor: pointer; transition: background 0.2s;
+    }
+    .toggle input:checked + .toggle-track { background: #E8500A; }
+    .toggle-thumb {
+      position: absolute; top: 3px; left: 3px; width: 16px; height: 16px;
+      border-radius: 50%; background: #fff; transition: transform 0.2s; pointer-events: none;
+    }
+    .toggle input:checked ~ .toggle-thumb { transform: translateX(18px); }
+
+    /* ── Modal ─────────────────────────────────── */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+      z-index: 100; align-items: center; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: #1C1814; border: 1px solid #2A2018; border-radius: 14px;
+      width: 480px; max-width: 94vw; overflow: hidden;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.7);
+    }
+    .modal-header { padding: 20px 24px; border-bottom: 1px solid #2A2018; display: flex; align-items: center; gap: 10px; }
+    .modal-title { font-size: 16px; font-weight: 600; color: #FDF4E7; }
+    .modal-close { margin-left: auto; background: none; border: none; color: #6B5A4A; font-size: 20px; cursor: pointer; line-height: 1; }
+    .modal-body { padding: 24px; }
+    .modal-footer { padding: 16px 24px; border-top: 1px solid #2A2018; display: flex; gap: 10px; justify-content: flex-end; }
+
+    .field-label-sm { display: block; font-size: 11px; font-weight: 600; color: #6B5A4A; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 5px; }
+    .field-sm { width: 100%; background: #161210; border: 1px solid #2A2018; border-radius: 8px; color: #FDF4E7; font-family: inherit; font-size: 14px; padding: 9px 12px; outline: none; }
+    .field-sm:focus { border-color: #E8500A; }
+    textarea.field-sm { resize: vertical; min-height: 80px; line-height: 1.5; }
+
+    .btn-sm-primary { background: #E8500A; color: #fff; border: none; border-radius: 8px; padding: 9px 18px; font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; }
+    .btn-sm-primary:hover { background: #FF6B2B; }
+    .btn-sm-outline { background: transparent; color: #A89880; border: 1px solid #2A2018; border-radius: 8px; padding: 9px 18px; font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; }
+    .btn-sm-outline:hover { border-color: #3A2E26; color: #FDF4E7; }
+    .btn-sm-danger { background: rgba(192,57,43,0.1); color: #C0392B; border: 1px solid rgba(192,57,43,0.3); border-radius: 8px; padding: 9px 18px; font-size: 13px; font-weight: 600; font-family: inherit; cursor: pointer; }
+    .btn-sm-danger:hover { background: rgba(192,57,43,0.2); }
+
+    /* ── Mini bar chart ────────────────────────── */
+    .mini-bar { display: flex; align-items: flex-end; gap: 4px; height: 40px; }
+    .mini-bar-col { flex: 1; border-radius: 3px 3px 0 0; background: rgba(232,80,10,0.25); min-height: 4px; transition: background 0.2s; }
+    .mini-bar-col:hover { background: #E8500A; }
+
+    /* ── Stat row ──────────────────────────────── */
+    .stat-row { display: flex; gap: 20px; }
+    .stat-mini { text-align: center; }
+    .stat-mini .val { font-family: 'Fraunces', serif; font-size: 20px; color: #FDF4E7; }
+    .stat-mini .lbl { font-size: 11px; color: #6B5A4A; margin-top: 2px; }
+
+    /* ── Page header ───────────────────────────── */
+    .page-header { margin-bottom: 22px; }
+    .page-header h1 { font-family: 'Fraunces', serif; font-size: 24px; color: #FDF4E7; margin: 0 0 4px; letter-spacing: -0.02em; }
+    .page-header p { font-size: 14px; color: #6B5A4A; margin: 0; }
+  </style>
+</head>
+<body>
+
+<!-- ── Sidebar ── -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="sidebar-logo-dot"></div>
+    <span class="sidebar-logo-text">Pitch.</span>
+    <span class="sidebar-logo-badge">ADMIN</span>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Platform</div>
+    <div class="nav-item active" onclick="showPanel('overview',this)">
+      <span class="nav-icon">📊</span> Overview
+    </div>
+    <div class="nav-item" onclick="showPanel('vendors',this)">
+      <span class="nav-icon">🍔</span> Vendors
+      <span class="nav-badge warn">12</span>
+    </div>
+    <div class="nav-item" onclick="showPanel('organisers',this)">
+      <span class="nav-icon">🏛</span> Organisers
+      <span class="nav-badge">4</span>
+    </div>
+    <div class="nav-item" onclick="showPanel('events',this)">
+      <span class="nav-icon">🎪</span> Events
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Moderation</div>
+    <div class="nav-item" onclick="showPanel('reports',this)">
+      <span class="nav-icon">🚩</span> Reports
+      <span class="nav-badge">7</span>
+    </div>
+    <div class="nav-item" onclick="showPanel('settings',this)">
+      <span class="nav-icon">⚙️</span> Settings
+    </div>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="admin-user">
+      <div class="admin-avatar">👤</div>
+      <div class="admin-info">
+        <strong>Lachlan W.</strong>
+        <span>Super admin</span>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ── Main content ── -->
+<div class="main">
+  <!-- Topbar -->
+  <div class="topbar">
+    <div>
+      <div class="topbar-title" id="topbar-title">Overview</div>
+      <div class="topbar-sub" id="topbar-sub">Platform at a glance</div>
+    </div>
+    <div class="topbar-right">
+      <input class="topbar-search" type="text" placeholder="Search vendors, events…" />
+      <div class="icon-btn has-dot">🔔</div>
+      <div class="icon-btn">⚡</div>
+    </div>
+  </div>
+
+  <!-- ════════════ OVERVIEW ════════════ -->
+  <div class="panel active" id="panel-overview">
+
+    <div class="alert-bar" id="pending-alert">
+      ⚠️ <strong id="pending-count">…</strong> — <a onclick="showPanel('vendors',document.querySelectorAll('.nav-item')[1])">Review now →</a>
+    </div>
+
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Total vendors</div>
+        <div class="kpi-val" id="kpi-vendors">—</div>
+        <div class="kpi-delta up" id="kpi-vendors-sub">Loading…</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Total organisers</div>
+        <div class="kpi-val" id="kpi-organisers">—</div>
+        <div class="kpi-delta up">▲ 6 this week</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Active events</div>
+        <div class="kpi-val">843</div>
+        <div class="kpi-delta neutral">→ 12 new today</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Applications (7d)</div>
+        <div class="kpi-val">1,204</div>
+        <div class="kpi-delta up">▲ 18% vs last week</div>
+      </div>
+    </div>
+
+    <div class="two-col">
+      <!-- Pending review queue -->
+      <div class="card">
+        <div class="card-header">
+          <span style="font-size:16px;">🕐</span>
+          <span class="card-title">Pending approval</span>
+          <span class="card-sub">16 items</span>
+        </div>
+        <div class="card-body">
+          <!-- Vendors -->
+          <div style="padding:10px 20px 8px;font-size:11px;font-weight:600;color:#4A3C30;text-transform:uppercase;letter-spacing:.08em;">Vendor accounts</div>
+          <div class="queue-item">
+            <div class="queue-avatar">🌮</div>
+            <div class="queue-body">
+              <div class="queue-name">Taco Loco SA</div>
+              <div class="queue-meta">Maria Fernandez · ABN verified · FSC ✓ · PLI ✓</div>
+            </div>
+            <div class="queue-actions">
+              <div class="act-group">
+                <button class="act-btn act-approve" onclick="approveItem(this)">Approve</button>
+                <button class="act-btn act-reject" onclick="openRejectModal('Taco Loco SA')">Reject</button>
+              </div>
+              <span class="queue-time">2 min ago</span>
+            </div>
+          </div>
+          <div class="queue-item">
+            <div class="queue-avatar">🍜</div>
+            <div class="queue-body">
+              <div class="queue-name">Noodle Republic</div>
+              <div class="queue-meta">James Huang · ABN verified · FSC ✓ · PLI pending</div>
+            </div>
+            <div class="queue-actions">
+              <div class="act-group">
+                <button class="act-btn act-approve" onclick="approveItem(this)">Approve</button>
+                <button class="act-btn act-reject" onclick="openRejectModal('Noodle Republic')">Reject</button>
+              </div>
+              <span class="queue-time">14 min ago</span>
+            </div>
+          </div>
+          <div class="queue-item">
+            <div class="queue-avatar">🍕</div>
+            <div class="queue-body">
+              <div class="queue-name">Wood Fired Wonders</div>
+              <div class="queue-meta">Rachel Kim · ABN unverified · FSC ✗ · PLI ✗</div>
+            </div>
+            <div class="queue-actions">
+              <div class="act-group">
+                <button class="act-btn act-suspend" onclick="approveItem(this)">Request docs</button>
+                <button class="act-btn act-reject" onclick="openRejectModal('Wood Fired Wonders')">Reject</button>
+              </div>
+              <span class="queue-time">1 hr ago</span>
+            </div>
+          </div>
+
+          <!-- Organisers -->
+          <div style="padding:10px 20px 8px;font-size:11px;font-weight:600;color:#4A3C30;text-transform:uppercase;letter-spacing:.08em;border-top:1px solid #1E1916;margin-top:4px;">Organiser accounts</div>
+          <div class="queue-item">
+            <div class="queue-avatar">🏙</div>
+            <div class="queue-body">
+              <div class="queue-name">Port Adelaide Events Co.</div>
+              <div class="queue-meta">Tom Baker · ABN verified · Website confirmed</div>
+            </div>
+            <div class="queue-actions">
+              <div class="act-group">
+                <button class="act-btn act-approve" onclick="approveItem(this)">Approve</button>
+                <button class="act-btn act-reject" onclick="openRejectModal('Port Adelaide Events Co.')">Reject</button>
+              </div>
+              <span class="queue-time">3 hr ago</span>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer">
+          <button class="act-btn act-view" onclick="showPanel('vendors',document.querySelectorAll('.nav-item')[1])" style="width:100%;padding:8px;">View all pending →</button>
+        </div>
+      </div>
+
+      <!-- Right col -->
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <!-- Signups chart -->
+        <div class="card">
+          <div class="card-header">
+            <span style="font-size:16px;">📈</span>
+            <span class="card-title">Signups (7 days)</span>
+          </div>
+          <div style="padding:16px 20px 18px;">
+            <div style="display:flex;gap:10px;margin-bottom:12px;">
+              <div class="stat-mini"><div class="val">43</div><div class="lbl">Vendors</div></div>
+              <div class="stat-mini"><div class="val">6</div><div class="lbl">Organisers</div></div>
+              <div class="stat-mini"><div class="val">12</div><div class="lbl">Events</div></div>
+            </div>
+            <div class="mini-bar">
+              <div class="mini-bar-col" style="height:45%;"></div>
+              <div class="mini-bar-col" style="height:60%;"></div>
+              <div class="mini-bar-col" style="height:50%;"></div>
+              <div class="mini-bar-col" style="height:80%;"></div>
+              <div class="mini-bar-col" style="height:65%;"></div>
+              <div class="mini-bar-col" style="height:90%;background:rgba(232,80,10,0.5);"></div>
+              <div class="mini-bar-col" style="height:100%;background:#E8500A;"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:11px;color:#4A3C30;margin-top:5px;">
+              <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent activity -->
+        <div class="card">
+          <div class="card-header">
+            <span style="font-size:16px;">⚡</span>
+            <span class="card-title">Activity feed</span>
+          </div>
+          <div class="card-body">
+            <div class="feed-item">
+              <div class="feed-dot green"></div>
+              <div class="feed-text"><strong>Smoky Joe's BBQ</strong> was approved</div>
+              <div class="feed-time">2m</div>
+            </div>
+            <div class="feed-item">
+              <div class="feed-dot ember"></div>
+              <div class="feed-text"><strong>Rundle Mall Night Eats</strong> published a new event</div>
+              <div class="feed-time">8m</div>
+            </div>
+            <div class="feed-item">
+              <div class="feed-dot red"></div>
+              <div class="feed-text"><strong>Report #1048</strong> filed against Street Bao</div>
+              <div class="feed-time">22m</div>
+            </div>
+            <div class="feed-item">
+              <div class="feed-dot amber"></div>
+              <div class="feed-text"><strong>Noodle Republic</strong> has expired PLI document</div>
+              <div class="feed-time">1h</div>
+            </div>
+            <div class="feed-item">
+              <div class="feed-dot blue"></div>
+              <div class="feed-text"><strong>Port Adelaide Events</strong> signup under review</div>
+              <div class="feed-time">3h</div>
+            </div>
+            <div class="feed-item">
+              <div class="feed-dot green"></div>
+              <div class="feed-text"><strong>48 applications</strong> processed today</div>
+              <div class="feed-time">4h</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ VENDORS ════════════ -->
+  <div class="panel" id="panel-vendors">
+    <div class="page-header">
+      <h1>Vendors</h1>
+      <p>Review, approve, and manage all vendor accounts on the platform.</p>
+    </div>
+
+    <div class="card">
+      <div class="filter-bar">
+        <input class="filter-input" type="text" placeholder="Search by name, email, ABN…" />
+        <button class="filter-chip active" onclick="setVFilter(this,'all')">All</button>
+        <button class="filter-chip" onclick="setVFilter(this,'pending')" style="display:flex;align-items:center;gap:5px;">Pending <span style="background:#C9840A;color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700;">12</span></button>
+        <button class="filter-chip" onclick="setVFilter(this,'active')">Active</button>
+        <button class="filter-chip" onclick="setVFilter(this,'suspended')">Suspended</button>
+        <button class="filter-chip" onclick="setVFilter(this,'banned')">Banned</button>
+        <span class="filter-count" id="vendor-count">Loading…</span>
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Vendor</th>
+            <th>ABN</th>
+            <th>Docs</th>
+            <th>Plan</th>
+            <th>Joined</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="vendor-tbody">
+          <!-- Row 1 — expandable -->
+          <tr class="expand-trigger" onclick="toggleExpand('v1')">
+            <td><strong>Smoky Joe's BBQ</strong><br><span style="font-size:12px;color:#4A3C30;">joe@smokyjoes.com.au</span></td>
+            <td><span style="font-size:12px;">51 824 753 556</span></td>
+            <td><span class="badge badge-green">✓ All docs</span></td>
+            <td><span class="badge badge-amber">Pro</span></td>
+            <td><span style="font-size:12px;">Mar 2, 2026</span></td>
+            <td><span class="badge badge-green">Active</span></td>
+            <td><div class="act-group">
+              <button class="act-btn act-suspend" onclick="event.stopPropagation()">Suspend</button>
+              <button class="act-btn act-view" onclick="event.stopPropagation()">View</button>
+            </div></td>
+          </tr>
+          <tr class="expand-row" id="expand-v1">
+            <td colspan="7">
+              <div class="expand-content">
+                <div style="font-size:13px;color:#A89880;margin-bottom:10px;">🍖 <strong style="color:#FDF4E7;">Smoky Joe's BBQ</strong> — Australian BBQ, SA-based, Food Truck setup. 4.9★ average. 18 events attended.</div>
+                <div class="doc-pills">
+                  <div class="doc-pill">✓ Food Safety Certificate — expires Jun 2027</div>
+                  <div class="doc-pill">✓ Public Liability Insurance — expires Nov 2026</div>
+                  <div class="doc-pill">✓ Council Trading Permit — expires Dec 2026</div>
+                </div>
+              </div>
+            </td>
+          </tr>
+
+          <tr class="expand-trigger" onclick="toggleExpand('v2')">
+            <td><strong>Taco Loco SA</strong><br><span style="font-size:12px;color:#4A3C30;">maria@tacoloco.com</span></td>
+            <td><span style="font-size:12px;">72 148 932 017</span></td>
+            <td><span class="badge badge-green">✓ All docs</span></td>
+            <td><span class="badge badge-grey">Free</span></td>
+            <td><span style="font-size:12px;">Mar 7, 2026</span></td>
+            <td><span class="badge badge-amber">Pending</span></td>
+            <td><div class="act-group">
+              <button class="act-btn act-approve" onclick="event.stopPropagation();approveRow(this)">Approve</button>
+              <button class="act-btn act-reject" onclick="event.stopPropagation();openRejectModal('Taco Loco SA')">Reject</button>
+            </div></td>
+          </tr>
+          <tr class="expand-row" id="expand-v2">
+            <td colspan="7">
+              <div class="expand-content">
+                <div style="font-size:13px;color:#A89880;margin-bottom:10px;">🌮 <strong style="color:#FDF4E7;">Taco Loco SA</strong> — Mexican cuisine, SA-based, Pop-up Stall. New account, no event history yet.</div>
+                <div class="doc-pills">
+                  <div class="doc-pill">✓ Food Safety Certificate — expires Feb 2028</div>
+                  <div class="doc-pill">✓ Public Liability Insurance — expires Aug 2027</div>
+                  <div class="doc-pill missing">✗ Council Trading Permit — not uploaded</div>
+                </div>
+              </div>
+            </td>
+          </tr>
+
+          <tr class="expand-trigger" onclick="toggleExpand('v3')">
+            <td><strong>Noodle Republic</strong><br><span style="font-size:12px;color:#4A3C30;">james@noodlerepublic.au</span></td>
+            <td><span style="font-size:12px;">39 502 817 643</span></td>
+            <td><span class="badge badge-amber">PLI pending</span></td>
+            <td><span class="badge badge-grey">Free</span></td>
+            <td><span style="font-size:12px;">Mar 7, 2026</span></td>
+            <td><span class="badge badge-amber">Pending</span></td>
+            <td><div class="act-group">
+              <button class="act-btn act-suspend" onclick="event.stopPropagation()">Request docs</button>
+              <button class="act-btn act-reject" onclick="event.stopPropagation();openRejectModal('Noodle Republic')">Reject</button>
+            </div></td>
+          </tr>
+          <tr class="expand-row" id="expand-v3">
+            <td colspan="7">
+              <div class="expand-content">
+                <div style="font-size:13px;color:#A89880;margin-bottom:10px;">🍜 <strong style="color:#FDF4E7;">Noodle Republic</strong> — Asian Fusion, SA-based, Food Truck. PLI uploaded but expired.</div>
+                <div class="doc-pills">
+                  <div class="doc-pill">✓ Food Safety Certificate — expires Mar 2027</div>
+                  <div class="doc-pill missing">✗ Public Liability Insurance — expired Jan 2026</div>
+                  <div class="doc-pill missing">✗ Council Trading Permit — not uploaded</div>
+                </div>
+              </div>
+            </td>
+          </tr>
+
+          <tr class="expand-trigger" onclick="toggleExpand('v4')">
+            <td><strong>Street Bao Co.</strong><br><span style="font-size:12px;color:#4A3C30;">hello@streetbao.com.au</span></td>
+            <td><span style="font-size:12px;">18 746 291 053</span></td>
+            <td><span class="badge badge-green">✓ All docs</span></td>
+            <td><span class="badge badge-amber">Pro</span></td>
+            <td><span style="font-size:12px;">Jan 14, 2026</span></td>
+            <td><span class="badge badge-red">Suspended</span></td>
+            <td><div class="act-group">
+              <button class="act-btn act-approve" onclick="event.stopPropagation();approveRow(this)">Reinstate</button>
+              <button class="act-btn act-reject" onclick="event.stopPropagation();openRejectModal('Street Bao Co.')">Ban</button>
+            </div></td>
+          </tr>
+          <tr class="expand-row" id="expand-v4">
+            <td colspan="7">
+              <div class="expand-content">
+                <div style="font-size:13px;color:#A89880;margin-bottom:10px;">🥟 <strong style="color:#FDF4E7;">Street Bao Co.</strong> — Suspended following Report #1048. Alleged misleading application claims. Under review.</div>
+                <div class="doc-pills">
+                  <div class="doc-pill">✓ Food Safety Certificate — expires May 2027</div>
+                  <div class="doc-pill">✓ Public Liability Insurance — expires Oct 2026</div>
+                  <div class="doc-pill">✓ Council Trading Permit — expires Dec 2026</div>
+                </div>
+              </div>
+            </td>
+          </tr>
+
+          <tr class="expand-trigger" onclick="toggleExpand('v5')">
+            <td><strong>Gelato Paradiso</strong><br><span style="font-size:12px;color:#4A3C30;">info@gelatoparadiso.com</span></td>
+            <td><span style="font-size:12px;">55 190 374 822</span></td>
+            <td><span class="badge badge-green">✓ All docs</span></td>
+            <td><span class="badge badge-amber">Pro</span></td>
+            <td><span style="font-size:12px;">Nov 8, 2025</span></td>
+            <td><span class="badge badge-green">Active</span></td>
+            <td><div class="act-group">
+              <button class="act-btn act-feature" onclick="event.stopPropagation()">Feature</button>
+              <button class="act-btn act-view" onclick="event.stopPropagation()">View</button>
+            </div></td>
+          </tr>
+          <tr class="expand-row" id="expand-v5">
+            <td colspan="7">
+              <div class="expand-content">
+                <div style="font-size:13px;color:#A89880;margin-bottom:10px;">🍦 <strong style="color:#FDF4E7;">Gelato Paradiso</strong> — Desserts & gelato, SA-based, Cart setup. 4.8★. 31 events attended. Verified vendor.</div>
+                <div class="doc-pills">
+                  <div class="doc-pill">✓ Food Safety Certificate — expires Sep 2027</div>
+                  <div class="doc-pill">✓ Public Liability Insurance — expires Jul 2026</div>
+                  <div class="doc-pill">✓ Council Trading Permit — expires Dec 2026</div>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="card-footer" style="display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-size:13px;color:#6B5A4A;" id="vendor-showing">—</span>
+        <div class="act-group">
+          <button class="act-btn act-view">← Prev</button>
+          <button class="act-btn act-view">Next →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ ORGANISERS ════════════ -->
+  <div class="panel" id="panel-organisers">
+    <div class="page-header">
+      <h1>Organisers</h1>
+      <p>Manage organiser accounts and their event publishing permissions.</p>
+    </div>
+
+    <div class="card">
+      <div class="filter-bar">
+        <input class="filter-input" type="text" placeholder="Search by org name, email, ABN…" />
+        <button class="filter-chip active">All</button>
+        <button class="filter-chip" style="display:flex;align-items:center;gap:5px;">Pending <span style="background:#C9840A;color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700;">4</span></button>
+        <button class="filter-chip">Verified</button>
+        <button class="filter-chip">Suspended</button>
+        <span class="filter-count" id="organiser-count">Loading…</span>
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Organisation</th>
+            <th>ABN</th>
+            <th>Events</th>
+            <th>Stalls sold</th>
+            <th>Joined</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="organiser-tbody">
+          <tr>
+            <td><strong>Adelaide City Council Events</strong><br><span style="font-size:12px;color:#4A3C30;">sarah@adelaidecitycouncil.sa.gov.au</span></td>
+            <td><span style="font-size:12px;">72 091 514 020</span></td>
+            <td><strong>34</strong></td>
+            <td><strong>1,248</strong></td>
+            <td><span style="font-size:12px;">Sep 3, 2024</span></td>
+            <td><span class="badge badge-blue">Verified</span></td>
+            <td><div class="act-group">
+              <button class="act-btn act-feature">Feature</button>
+              <button class="act-btn act-view">View</button>
+            </div></td>
+          </tr>
+          <tr>
+            <td><strong>Port Adelaide Events Co.</strong><br><span style="font-size:12px;color:#4A3C30;">tom@portadelaide.events</span></td>
+            <td><span style="font-size:12px;">38 471 920 614</span></td>
+            <td><strong>0</strong></td>
+            <td><strong>—</strong></td>
+            <td><span style="font-size:12px;">Mar 7, 2026</span></td>
+            <td><span class="badge badge-amber">Pending</span></td>
+            <td><div class="act-group">
+              <button class="act-btn act-approve" onclick="approveRow(this)">Approve</button>
+              <button class="act-btn act-reject" onclick="openRejectModal('Port Adelaide Events Co.')">Reject</button>
+            </div></td>
+          </tr>
+          <tr>
+            <td><strong>Glenelg Market Collective</strong><br><span style="font-size:12px;color:#4A3C30;">hello@glenelgmarket.com</span></td>
+            <td><span style="font-size:12px;">91 625 038 742</span></td>
+            <td><strong>11</strong></td>
+            <td><strong>312</strong></td>
+            <td><span style="font-size:12px;">Feb 1, 2026</span></td>
+            <td><span class="badge badge-green">Active</span></td>
+            <td><div class="act-group">
+              <button class="act-btn act-suspend">Suspend</button>
+              <button class="act-btn act-view">View</button>
+            </div></td>
+          </tr>
+          <tr>
+            <td><strong>Barossa Valley Food Fest</strong><br><span style="font-size:12px;color:#4A3C30;">events@barossafoodfest.com.au</span></td>
+            <td><span style="font-size:12px;">63 819 504 217</span></td>
+            <td><strong>8</strong></td>
+            <td><strong>589</strong></td>
+            <td><span style="font-size:12px;">Oct 22, 2025</span></td>
+            <td><span class="badge badge-blue">Verified</span></td>
+            <td><div class="act-group">
+              <button class="act-btn act-feature">Feature</button>
+              <button class="act-btn act-view">View</button>
+            </div></td>
+          </tr>
+          <tr>
+            <td><strong>Norwood Community Markets</strong><br><span style="font-size:12px;color:#4A3C30;">admin@norwoodmarkets.org.au</span></td>
+            <td><span style="font-size:12px;">45 208 613 971</span></td>
+            <td><strong>0</strong></td>
+            <td><strong>—</strong></td>
+            <td><span style="font-size:12px;">Mar 6, 2026</span></td>
+            <td><span class="badge badge-amber">Pending</span></td>
+            <td><div class="act-group">
+              <button class="act-btn act-approve" onclick="approveRow(this)">Approve</button>
+              <button class="act-btn act-reject" onclick="openRejectModal('Norwood Community Markets')">Reject</button>
+            </div></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="card-footer" style="display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-size:13px;color:#6B5A4A;" id="organiser-showing">—</span>
+        <div class="act-group">
+          <button class="act-btn act-view">← Prev</button>
+          <button class="act-btn act-view">Next →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ EVENTS ════════════ -->
+  <div class="panel" id="panel-events">
+    <div class="page-header">
+      <h1>Events</h1>
+      <p>Browse all published events. Feature, hide, or remove listings.</p>
+    </div>
+
+    <div class="card">
+      <div class="filter-bar">
+        <input class="filter-input" type="text" placeholder="Search events…" />
+        <button class="filter-chip active">All</button>
+        <button class="filter-chip">Published</button>
+        <button class="filter-chip">Draft</button>
+        <button class="filter-chip">Featured</button>
+        <button class="filter-chip">Flagged</button>
+        <span class="filter-count">843 events total</span>
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Event</th>
+            <th>Organiser</th>
+            <th>Date</th>
+            <th>Stalls</th>
+            <th>Fill rate</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Rundle Mall Night Eats</strong><br><span style="font-size:12px;color:#4A3C30;">Rundle Mall, Adelaide CBD</span></td>
+            <td><span style="font-size:13px;">Adelaide City Council</span></td>
+            <td><span style="font-size:12px;">Mar 22, 2026</span></td>
+            <td><strong>28</strong></td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="flex:1;height:6px;background:#2A2018;border-radius:3px;min-width:60px;">
+                  <div style="width:82%;height:100%;background:#2D8B55;border-radius:3px;"></div>
+                </div>
+                <span style="font-size:12px;color:#2D8B55;font-weight:600;">82%</span>
+              </div>
+            </td>
+            <td><span class="badge badge-green">Published</span></td>
+            <td><div class="act-group">
+              <button class="act-btn act-feature">★ Feature</button>
+              <button class="act-btn act-view">View</button>
+            </div></td>
+          </tr>
+          <tr>
+            <td><strong>Barossa Valley Harvest Fest</strong><br><span style="font-size:12px;color:#4A3C30;">Tanunda Oval, Barossa Valley</span></td>
+            <td><span style="font-size:13px;">Barossa Valley Food Fest</span></td>
+            <td><span style="font-size:12px;">Apr 5, 2026</span></td>
+            <td><strong>50</strong></td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="flex:1;height:6px;background:#2A2018;border-radius:3px;min-width:60px;">
+                  <div style="width:40%;height:100%;background:#C9840A;border-radius:3px;"></div>
+                </div>
+                <span style="font-size:12px;color:#C9840A;font-weight:600;">40%</span>
+              </div>
+            </td>
+            <td><span class="badge badge-green">Published</span></td>
+            <td><div class="act-group">
+              <button class="act-btn act-feature">★ Feature</button>
+              <button class="act-btn act-view">View</button>
+            </div></td>
+          </tr>
+          <tr>
+            <td><strong>Glenelg Summer Sundowner</strong><br><span style="font-size:12px;color:#4A3C30;">Moseley Square, Glenelg</span></td>
+            <td><span style="font-size:13px;">Glenelg Market Collective</span></td>
+            <td><span style="font-size:12px;">Mar 29, 2026</span></td>
+            <td><strong>18</strong></td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="flex:1;height:6px;background:#2A2018;border-radius:3px;min-width:60px;">
+                  <div style="width:100%;height:100%;background:#2D8B55;border-radius:3px;"></div>
+                </div>
+                <span style="font-size:12px;color:#2D8B55;font-weight:600;">100%</span>
+              </div>
+            </td>
+            <td><span class="badge badge-blue">Featured</span></td>
+            <td><div class="act-group">
+              <button class="act-btn act-suspend">Unfeature</button>
+              <button class="act-btn act-view">View</button>
+            </div></td>
+          </tr>
+          <tr>
+            <td><strong>Hackney Night Market</strong><br><span style="font-size:12px;color:#4A3C30;">Linear Park, Hackney</span></td>
+            <td><span style="font-size:13px;">Unknown Organiser</span></td>
+            <td><span style="font-size:12px;">Apr 12, 2026</span></td>
+            <td><strong>12</strong></td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="flex:1;height:6px;background:#2A2018;border-radius:3px;min-width:60px;">
+                  <div style="width:8%;height:100%;background:#C0392B;border-radius:3px;"></div>
+                </div>
+                <span style="font-size:12px;color:#C0392B;font-weight:600;">8%</span>
+              </div>
+            </td>
+            <td><span class="badge badge-red">Flagged</span></td>
+            <td><div class="act-group">
+              <button class="act-btn act-reject">Hide</button>
+              <button class="act-btn act-view">Review</button>
+            </div></td>
+          </tr>
+          <tr>
+            <td><strong>Norwood Foodie Weekend</strong><br><span style="font-size:12px;color:#4A3C30;">The Parade, Norwood</span></td>
+            <td><span style="font-size:13px;">Norwood Community Markets</span></td>
+            <td><span style="font-size:12px;">May 3, 2026</span></td>
+            <td><strong>24</strong></td>
+            <td>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="flex:1;height:6px;background:#2A2018;border-radius:3px;min-width:60px;">
+                  <div style="width:0%;height:100%;background:#6B5A4A;border-radius:3px;"></div>
+                </div>
+                <span style="font-size:12px;color:#6B5A4A;font-weight:600;">Draft</span>
+              </div>
+            </td>
+            <td><span class="badge badge-grey">Draft</span></td>
+            <td><div class="act-group">
+              <button class="act-btn act-view">Preview</button>
+              <button class="act-btn act-reject">Delete</button>
+            </div></td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="card-footer" style="display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-size:13px;color:#6B5A4A;">Showing 5 of 843</span>
+        <div class="act-group">
+          <button class="act-btn act-view">← Prev</button>
+          <button class="act-btn act-view">Next →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ REPORTS ════════════ -->
+  <div class="panel" id="panel-reports">
+    <div class="page-header">
+      <h1>Reports &amp; Disputes</h1>
+      <p>Review flagged content and resolve disputes between vendors and organisers.</p>
+    </div>
+
+    <div class="two-col" style="align-items:start;">
+      <div class="card">
+        <div class="filter-bar" style="padding:12px 20px;">
+          <button class="filter-chip active">All <span style="margin-left:4px;background:#E8500A;color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700;">7</span></button>
+          <button class="filter-chip">Vendor complaint</button>
+          <button class="filter-chip">Organiser complaint</button>
+          <button class="filter-chip">Content</button>
+          <button class="filter-chip">Resolved</button>
+        </div>
+
+        <div class="report-card">
+          <div class="report-header">
+            <span class="badge badge-red"><span class="report-type">Vendor complaint</span></span>
+            <span style="font-size:12px;color:#6B5A4A;margin-left:auto;">Report #1048 · Mar 7, 2026</span>
+          </div>
+          <div class="report-body">
+            <strong style="color:#FDF4E7;">Street Bao Co.</strong> allegedly misrepresented their menu and setup at the Rundle Mall Night Eats event. Organiser reports vendor set up outside allocated zone and sold items not listed on application.
+          </div>
+          <div class="report-meta">Reported by: <strong style="color:#A89880;">Adelaide City Council Events</strong> · Against: <strong style="color:#A89880;">Street Bao Co.</strong></div>
+          <div class="report-actions" style="margin-top:12px;">
+            <button class="act-btn act-reject" onclick="openDisputeModal('Street Bao Co.','#1048')">Resolve</button>
+            <button class="act-btn act-suspend">Request info</button>
+            <button class="act-btn act-view">Dismiss</button>
+          </div>
+        </div>
+
+        <div class="report-card">
+          <div class="report-header">
+            <span class="badge badge-amber"><span class="report-type">Organiser complaint</span></span>
+            <span style="font-size:12px;color:#6B5A4A;margin-left:auto;">Report #1047 · Mar 6, 2026</span>
+          </div>
+          <div class="report-body">
+            <strong style="color:#FDF4E7;">Smoky Joe's BBQ</strong> reports that their application to Hackney Night Market was rejected despite meeting all stated requirements. No reason was given by the organiser.
+          </div>
+          <div class="report-meta">Reported by: <strong style="color:#A89880;">Smoky Joe's BBQ</strong> · Against: <strong style="color:#A89880;">Hackney Night Market (org)</strong></div>
+          <div class="report-actions" style="margin-top:12px;">
+            <button class="act-btn act-approve" onclick="approveItem(this)">Mark resolved</button>
+            <button class="act-btn act-suspend">Request info</button>
+            <button class="act-btn act-view">Dismiss</button>
+          </div>
+        </div>
+
+        <div class="report-card">
+          <div class="report-header">
+            <span class="badge badge-blue"><span class="report-type">Content report</span></span>
+            <span style="font-size:12px;color:#6B5A4A;margin-left:auto;">Report #1046 · Mar 5, 2026</span>
+          </div>
+          <div class="report-body">
+            Event listing "Hackney Night Market" contains misleading information — advertised as council-run but appears to be a private commercial event with no council affiliation. Multiple vendors flagged this.
+          </div>
+          <div class="report-meta">Reported by: 3 vendors · Against: <strong style="color:#A89880;">Hackney Night Market listing</strong></div>
+          <div class="report-actions" style="margin-top:12px;">
+            <button class="act-btn act-reject">Hide event</button>
+            <button class="act-btn act-suspend">Warn organiser</button>
+            <button class="act-btn act-view">Dismiss</button>
+          </div>
+        </div>
+
+        <div class="report-card" style="opacity:0.55;">
+          <div class="report-header">
+            <span class="badge badge-grey"><span class="report-type" style="color:#6B5A4A;">Resolved</span></span>
+            <span style="font-size:12px;color:#6B5A4A;margin-left:auto;">Report #1045 · Mar 3, 2026</span>
+          </div>
+          <div class="report-body">
+            Duplicate event listing for "Glenelg Summer Sundowner" removed. Original listing retained.
+          </div>
+          <div class="report-meta">Resolved by: <strong style="color:#A89880;">Lachlan W.</strong> · Mar 4, 2026</div>
+        </div>
+      </div>
+
+      <!-- Right: stats -->
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div class="card">
+          <div class="card-header">
+            <span style="font-size:16px;">📊</span>
+            <span class="card-title">Report stats (30d)</span>
+          </div>
+          <div style="padding:18px 20px;display:flex;flex-direction:column;gap:14px;">
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px;">
+                <span style="color:#A89880;">Vendor complaints</span>
+                <span style="color:#FDF4E7;font-weight:600;">12</span>
+              </div>
+              <div style="height:6px;background:#2A2018;border-radius:3px;">
+                <div style="width:70%;height:100%;background:#C0392B;border-radius:3px;"></div>
+              </div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px;">
+                <span style="color:#A89880;">Organiser complaints</span>
+                <span style="color:#FDF4E7;font-weight:600;">7</span>
+              </div>
+              <div style="height:6px;background:#2A2018;border-radius:3px;">
+                <div style="width:41%;height:100%;background:#C9840A;border-radius:3px;"></div>
+              </div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px;">
+                <span style="color:#A89880;">Content reports</span>
+                <span style="color:#FDF4E7;font-weight:600;">5</span>
+              </div>
+              <div style="height:6px;background:#2A2018;border-radius:3px;">
+                <div style="width:29%;height:100%;background:#2B5BA8;border-radius:3px;"></div>
+              </div>
+            </div>
+            <div style="padding-top:8px;border-top:1px solid #2A2018;">
+              <div style="display:flex;justify-content:space-between;font-size:13px;">
+                <span style="color:#A89880;">Avg resolution time</span>
+                <span style="color:#2D8B55;font-weight:600;">1.4 days</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span style="font-size:16px;">⚡</span>
+            <span class="card-title">Quick actions</span>
+          </div>
+          <div style="padding:16px;display:flex;flex-direction:column;gap:8px;">
+            <button class="act-btn act-view" style="width:100%;padding:10px;text-align:left;" onclick="openBanModal()">🚫 Ban a user</button>
+            <button class="act-btn act-view" style="width:100%;padding:10px;text-align:left;" onclick="openAnnouncementModal()">📢 Post announcement</button>
+            <button class="act-btn act-view" style="width:100%;padding:10px;text-align:left;">📤 Export report log</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ SETTINGS ════════════ -->
+  <div class="panel" id="panel-settings">
+    <div class="page-header">
+      <h1>Platform Settings</h1>
+      <p>Configure global platform behaviour, feature flags, and admin controls.</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+      <!-- Left col -->
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div class="card">
+          <div class="settings-section">
+            <h3 class="settings-heading">Feature flags</h3>
+            <p class="settings-sub">Toggle platform features on or off globally.</p>
+            <div class="settings-row">
+              <div class="settings-row-label"><strong>Pro vendor applications</strong><span>Allow vendors to subscribe to Pro plan</span></div>
+              <div class="settings-row-ctrl">
+                <label class="toggle"><input type="checkbox" checked /><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+              </div>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-label"><strong>Organiser direct messaging</strong><span>Enable organiser → vendor messaging</span></div>
+              <div class="settings-row-ctrl">
+                <label class="toggle"><input type="checkbox" checked /><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+              </div>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-label"><strong>Vendor reviews</strong><span>Allow organisers to leave vendor reviews</span></div>
+              <div class="settings-row-ctrl">
+                <label class="toggle"><input type="checkbox" checked /><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+              </div>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-label"><strong>New organiser signups</strong><span>Open organiser registration</span></div>
+              <div class="settings-row-ctrl">
+                <label class="toggle"><input type="checkbox" checked /><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+              </div>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-label"><strong>Maintenance mode</strong><span>Take site offline for all public users</span></div>
+              <div class="settings-row-ctrl">
+                <label class="toggle"><input type="checkbox" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="settings-section">
+            <h3 class="settings-heading">Approval workflow</h3>
+            <p class="settings-sub">Control how new accounts are approved.</p>
+            <div class="settings-row">
+              <div class="settings-row-label"><strong>Auto-approve vendors with full docs</strong><span>Approve instantly if ABN + FSC + PLI verified</span></div>
+              <div class="settings-row-ctrl">
+                <label class="toggle"><input type="checkbox" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+              </div>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-label"><strong>Require manual organiser review</strong><span>All organiser accounts reviewed by admin</span></div>
+              <div class="settings-row-ctrl">
+                <label class="toggle"><input type="checkbox" checked /><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right col -->
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div class="card">
+          <div class="settings-section">
+            <h3 class="settings-heading">Announcement banner</h3>
+            <p class="settings-sub">Display a notice to all users at the top of every page.</p>
+            <div style="margin-bottom:12px;">
+              <label class="field-label-sm">Banner message</label>
+              <textarea class="field-sm" placeholder="e.g. Scheduled maintenance on Sunday 9–11am AEST…">🎉 Welcome to Pitch. — Australia's food vendor marketplace. Applications now open for Rundle Mall Night Eats.</textarea>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;">
+              <div class="settings-row-label"><strong style="font-size:13px;color:#FDF4E7;">Show banner</strong></div>
+              <label class="toggle" style="margin-left:auto;"><input type="checkbox" checked /><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+            </div>
+            <button class="btn-sm-primary" style="width:100%;">Save banner</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="settings-section">
+            <h3 class="settings-heading">Platform limits</h3>
+            <p class="settings-sub">Configure vendor and event capacity limits.</p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div>
+                <label class="field-label-sm">Max free applications/month</label>
+                <input class="field-sm" type="number" value="5" />
+              </div>
+              <div>
+                <label class="field-label-sm">Max Pro applications/month</label>
+                <input class="field-sm" type="number" value="999" placeholder="Unlimited" />
+              </div>
+              <div>
+                <label class="field-label-sm">Max events per organiser</label>
+                <input class="field-sm" type="number" value="50" />
+              </div>
+              <div>
+                <label class="field-label-sm">Max stalls per event</label>
+                <input class="field-sm" type="number" value="200" />
+              </div>
+            </div>
+            <button class="btn-sm-primary" style="margin-top:14px;width:100%;">Save limits</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="settings-section">
+            <h3 class="settings-heading" style="color:#C0392B;">Danger zone</h3>
+            <p class="settings-sub">Irreversible platform-wide actions.</p>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <button class="btn-sm-danger" style="width:100%;">Purge all draft events</button>
+              <button class="btn-sm-danger" style="width:100%;">Reset all pending approvals</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<!-- ── Reject modal ── -->
+<div class="modal-overlay" id="rejectModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span style="font-size:18px;">🚫</span>
+      <span class="modal-title" id="rejectModalTitle">Reject account</span>
+      <button class="modal-close" onclick="closeModal('rejectModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:14px;color:#A89880;margin:0 0 16px;line-height:1.6;">This will permanently reject the application and notify the applicant by email.</p>
+      <div style="margin-bottom:12px;">
+        <label class="field-label-sm">Rejection reason</label>
+        <select class="field-sm" style="appearance:none;">
+          <option>Incomplete or missing documents</option>
+          <option>ABN could not be verified</option>
+          <option>Does not meet platform standards</option>
+          <option>Duplicate account</option>
+          <option>Fraudulent information suspected</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div>
+        <label class="field-label-sm">Additional notes (sent to applicant)</label>
+        <textarea class="field-sm" placeholder="Optional message to include in the rejection email…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sm-outline" onclick="closeModal('rejectModal')">Cancel</button>
+      <button class="btn-sm-danger" onclick="closeModal('rejectModal')">Reject application</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Dispute resolve modal ── -->
+<div class="modal-overlay" id="disputeModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span style="font-size:18px;">⚖️</span>
+      <span class="modal-title" id="disputeModalTitle">Resolve dispute</span>
+      <button class="modal-close" onclick="closeModal('disputeModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="margin-bottom:14px;">
+        <label class="field-label-sm">Resolution outcome</label>
+        <select class="field-sm" style="appearance:none;">
+          <option>Warn vendor — no further action</option>
+          <option>Suspend vendor account (30 days)</option>
+          <option>Permanently ban vendor</option>
+          <option>Dismiss — no evidence of wrongdoing</option>
+          <option>Mediate between parties</option>
+        </select>
+      </div>
+      <div style="margin-bottom:14px;">
+        <label class="field-label-sm">Admin notes (internal only)</label>
+        <textarea class="field-sm" placeholder="Document findings, evidence reviewed, decision rationale…"></textarea>
+      </div>
+      <div>
+        <label class="field-label-sm">Message to reporter (optional)</label>
+        <textarea class="field-sm" placeholder="Thank the reporter and explain the outcome…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sm-outline" onclick="closeModal('disputeModal')">Cancel</button>
+      <button class="btn-sm-primary" onclick="closeModal('disputeModal')">Submit resolution</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Announcement modal ── -->
+<div class="modal-overlay" id="announcementModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span style="font-size:18px;">📢</span>
+      <span class="modal-title">Post platform announcement</span>
+      <button class="modal-close" onclick="closeModal('announcementModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="margin-bottom:14px;">
+        <label class="field-label-sm">Audience</label>
+        <select class="field-sm" style="appearance:none;">
+          <option>All users</option>
+          <option>Vendors only</option>
+          <option>Organisers only</option>
+          <option>Pro vendors only</option>
+        </select>
+      </div>
+      <div style="margin-bottom:14px;">
+        <label class="field-label-sm">Subject</label>
+        <input class="field-sm" type="text" placeholder="e.g. Platform update — March 2026" />
+      </div>
+      <div>
+        <label class="field-label-sm">Message body</label>
+        <textarea class="field-sm" style="min-height:110px;" placeholder="Write your announcement here…"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sm-outline" onclick="closeModal('announcementModal')">Cancel</button>
+      <button class="btn-sm-primary" onclick="closeModal('announcementModal')">Send announcement</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const panelMeta = {
+    overview:   { title: 'Overview',                 sub: 'Platform at a glance' },
+    vendors:    { title: 'Vendors',                  sub: 'Manage vendor accounts' },
+    organisers: { title: 'Organisers',               sub: 'Manage organiser accounts' },
+    events:     { title: 'Events',                   sub: 'Browse and moderate listings' },
+    reports:    { title: 'Reports & Disputes',       sub: 'Resolve flags and complaints' },
+    settings:   { title: 'Platform Settings',        sub: 'Feature flags and config' },
+  };
+
+  function showPanel(id, navEl) {
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('panel-' + id).classList.add('active');
+    if (navEl) navEl.classList.add('active');
+    const meta = panelMeta[id] || {};
+    document.getElementById('topbar-title').textContent = meta.title || id;
+    document.getElementById('topbar-sub').textContent = meta.sub || '';
+  }
+
+  function toggleExpand(id) {
+    const row = document.getElementById('expand-' + id);
+    row.classList.toggle('open');
+  }
+
+  function approveItem(btn) {
+    const item = btn.closest('.queue-item');
+    if (item) {
+      item.style.opacity = '0.4';
+      item.style.transition = 'opacity 0.3s';
+      btn.textContent = '✓ Approved';
+      btn.disabled = true;
+    }
+  }
+
+  function approveRow(btn) {
+    const row = btn.closest('tr');
+    if (row) {
+      const statusCell = row.querySelector('td:nth-last-child(2)');
+      if (statusCell) statusCell.innerHTML = '<span class="badge badge-green">Active</span>';
+      const actCell = row.querySelector('td:last-child');
+      if (actCell) actCell.innerHTML = '<div class="act-group"><button class="act-btn act-suspend">Suspend</button><button class="act-btn act-view">View</button></div>';
+    }
+  }
+
+  function setVFilter(btn, filter) {
+    document.querySelectorAll('#panel-vendors .filter-chip').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+  }
+
+  /* ── Modals ── */
+  function openRejectModal(name) {
+    document.getElementById('rejectModalTitle').textContent = 'Reject — ' + name;
+    document.getElementById('rejectModal').classList.add('open');
+  }
+
+  function openDisputeModal(name, ref) {
+    document.getElementById('disputeModalTitle').textContent = 'Resolve dispute ' + ref + ' — ' + name;
+    document.getElementById('disputeModal').classList.add('open');
+  }
+
+  function openBanModal() { openRejectModal('Ban user'); }
+  function openAnnouncementModal() {
+    document.getElementById('announcementModal').classList.add('open');
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('open');
+  }
+
+  // Close modal on overlay click
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', e => {
+      if (e.target === overlay) overlay.classList.remove('open');
+    });
+  });
+</script>
+
+<!-- ── Live data loading ── -->
+<script>
+  const statusBadge = s => {
+    const map = { active:'badge-green', pending:'badge-amber', suspended:'badge-red', banned:'badge-red' };
+    return `<span class="badge ${map[s]||'badge-grey'}">${s.charAt(0).toUpperCase()+s.slice(1)}</span>`;
+  };
+  const planBadge = p => p === 'pro'
+    ? `<span class="badge badge-amber">Pro</span>`
+    : `<span class="badge badge-grey">Free</span>`;
+  const fmtDate = d => d ? new Date(d).toLocaleDateString('en-AU', {day:'numeric',month:'short',year:'numeric'}) : '—';
+
+  async function loadStats() {
+    try {
+      const r = await fetch('/api/admin/stats');
+      const { vendors, organisers, pending } = await r.json();
+      document.getElementById('kpi-vendors').textContent    = vendors.toLocaleString();
+      document.getElementById('kpi-organisers').textContent = organisers.toLocaleString();
+      const pendingEl = document.getElementById('pending-count');
+      if (pending > 0) {
+        pendingEl.innerHTML = `<strong>${pending} account${pending===1?'':'s'}</strong> pending approval`;
+        document.getElementById('pending-alert').style.display = '';
+      } else {
+        document.getElementById('pending-alert').style.display = 'none';
+      }
+      // Update sidebar badges
+      const navBadges = document.querySelectorAll('.nav-badge.warn');
+      navBadges.forEach(b => b.textContent = pending);
+    } catch(e) { console.warn('Stats load failed', e); }
+  }
+
+  async function loadVendors(statusFilter) {
+    const url = statusFilter ? `/api/admin/vendors?status=${statusFilter}` : '/api/admin/vendors';
+    try {
+      const r = await fetch(url);
+      const { vendors } = await r.json();
+      const tbody = document.getElementById('vendor-tbody');
+      const count = document.getElementById('vendor-count');
+      const showing = document.getElementById('vendor-showing');
+
+      if (!vendors.length) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#6B5A4A;padding:24px;">No vendors found.</td></tr>`;
+        count.textContent = '0 vendors';
+        showing.textContent = 'No results';
+        return;
+      }
+
+      count.textContent = `${vendors.length} vendor${vendors.length===1?'':'s'}`;
+      showing.textContent = `Showing ${vendors.length} result${vendors.length===1?'':'s'}`;
+
+      tbody.innerHTML = vendors.map(v => {
+        const name = `${v.first_name} ${v.last_name}`;
+        const actions = v.status === 'pending'
+          ? `<div class="act-group">
+               <button class="act-btn act-approve" onclick="setUserStatus(${v.user_id},'active',this)">Approve</button>
+               <button class="act-btn act-reject" onclick="openRejectModal('${v.trading_name}')">Reject</button>
+             </div>`
+          : v.status === 'suspended'
+          ? `<div class="act-group">
+               <button class="act-btn act-approve" onclick="setUserStatus(${v.user_id},'active',this)">Reinstate</button>
+               <button class="act-btn act-reject" onclick="setUserStatus(${v.user_id},'banned',this)">Ban</button>
+             </div>`
+          : `<div class="act-group">
+               <button class="act-btn act-suspend" onclick="setUserStatus(${v.user_id},'suspended',this)">Suspend</button>
+               <button class="act-btn act-view">View</button>
+             </div>`;
+
+        return `<tr>
+          <td><strong>${v.trading_name}</strong><br><span style="font-size:12px;color:#4A3C30;">${v.email}</span></td>
+          <td><span style="font-size:12px;">${v.abn || '—'}</span></td>
+          <td><span class="badge badge-grey">No docs yet</span></td>
+          <td>${planBadge(v.plan)}</td>
+          <td><span style="font-size:12px;">${fmtDate(v.joined)}</span></td>
+          <td>${statusBadge(v.status)}</td>
+          <td>${actions}</td>
+        </tr>`;
+      }).join('');
+    } catch(e) { console.warn('Vendors load failed', e); }
+  }
+
+  async function loadOrganisers(statusFilter) {
+    const url = statusFilter ? `/api/admin/organisers?status=${statusFilter}` : '/api/admin/organisers';
+    try {
+      const r = await fetch(url);
+      const { organisers } = await r.json();
+      const tbody = document.getElementById('organiser-tbody');
+      const count = document.getElementById('organiser-count');
+      const showing = document.getElementById('organiser-showing');
+
+      if (!organisers.length) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#6B5A4A;padding:24px;">No organisers found.</td></tr>`;
+        count.textContent = '0 organisers';
+        showing.textContent = 'No results';
+        return;
+      }
+
+      count.textContent = `${organisers.length} organiser${organisers.length===1?'':'s'}`;
+      showing.textContent = `Showing ${organisers.length} result${organisers.length===1?'':'s'}`;
+
+      tbody.innerHTML = organisers.map(o => {
+        const actions = o.status === 'pending'
+          ? `<div class="act-group">
+               <button class="act-btn act-approve" onclick="setUserStatus(${o.user_id},'active',this)">Approve</button>
+               <button class="act-btn act-reject" onclick="openRejectModal('${o.org_name}')">Reject</button>
+             </div>`
+          : `<div class="act-group">
+               <button class="act-btn act-suspend" onclick="setUserStatus(${o.user_id},'suspended',this)">Suspend</button>
+               <button class="act-btn act-view">View</button>
+             </div>`;
+
+        return `<tr>
+          <td><strong>${o.org_name}</strong><br><span style="font-size:12px;color:#4A3C30;">${o.email}</span></td>
+          <td><span style="font-size:12px;">${o.abn || '—'}</span></td>
+          <td><strong>0</strong></td>
+          <td><strong>—</strong></td>
+          <td><span style="font-size:12px;">${fmtDate(o.joined)}</span></td>
+          <td>${statusBadge(o.status)}</td>
+          <td>${actions}</td>
+        </tr>`;
+      }).join('');
+    } catch(e) { console.warn('Organisers load failed', e); }
+  }
+
+  async function setUserStatus(userId, status, btn) {
+    try {
+      await fetch(`/api/admin/users/${userId}/status`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      });
+      // Reload the active panel
+      await loadVendors();
+      await loadOrganisers();
+      await loadStats();
+    } catch(e) { console.warn('Status update failed', e); }
+  }
+
+  // Override setVFilter to reload real data
+  window.setVFilter = function(btn, filter) {
+    document.querySelectorAll('#panel-vendors .filter-chip').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    loadVendors(filter === 'all' ? null : filter);
+  };
+
+  // Boot
+  loadStats();
+  loadVendors();
+  loadOrganisers();
+</script>
+</body>
+</html>

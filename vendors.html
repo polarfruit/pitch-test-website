@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Vendors — Pitch.</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --ember:      #E8500A;
+  --ember-glow: #FF6B2B;
+  --ember-bg:   #E8500A12;
+  --coal:       #1A1612;
+  --char:       #231E19;
+  --ash:        #2E2720;
+  --smoke:      #4A3F36;
+  --parchment:  #FDF4E7;
+  --cream:      #F5EDD8;
+  --linen:      #EDE3CC;
+  --herb:       #2D8B55;
+  --gold:       #C9840A;
+  --terra:      #C0392B;
+  --slate:      #2B5BA8;
+  --text-hi:    #FDF4E7;
+  --text-mid:   #A89880;
+  --text-lo:    #6B5A4A;
+  --fd:         'Fraunces', Georgia, serif;
+  --fb:         'Instrument Sans', 'Helvetica Neue', sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+body { background: var(--coal); color: var(--text-hi); font-family: var(--fb); line-height: 1.5; overflow-x: hidden; }
+
+body::before {
+  content: ''; position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 0; opacity: 0.45;
+}
+
+/* ── NAV ─────────────────────────────────────────────────────────────────── */
+.navbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  height: 66px; display: flex; align-items: center; justify-content: space-between;
+  padding: 0 52px;
+  background: rgba(26,22,18,0.92); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid #ffffff07;
+}
+.nav-logo { font-family: var(--fd); font-size: 26px; font-weight: 900; letter-spacing: -0.04em; color: var(--text-hi); text-decoration: none; }
+.nav-logo .dot { color: var(--ember); }
+.nav-links { display: flex; align-items: center; gap: 32px; list-style: none; }
+.nav-links a { font-size: 14px; font-weight: 500; color: var(--text-mid); text-decoration: none; transition: color 0.14s; }
+.nav-links a:hover, .nav-links a.active { color: var(--text-hi); }
+.nav-actions { display: flex; align-items: center; gap: 10px; }
+.btn-login { font-family: var(--fb); font-size: 13px; font-weight: 600; color: var(--text-mid); background: transparent; border: none; padding: 9px 16px; border-radius: 8px; cursor: pointer; transition: color 0.14s, background 0.14s; text-decoration: none; }
+.btn-login:hover { color: var(--text-hi); background: #ffffff09; }
+.btn-get-started { font-family: var(--fb); font-size: 13px; font-weight: 700; color: #fff; background: var(--ember); border: none; padding: 10px 22px; border-radius: 9px; cursor: pointer; box-shadow: 0 4px 16px #E8500A2E; transition: background 0.14s, transform 0.14s; text-decoration: none; }
+.btn-get-started:hover { background: var(--ember-glow); transform: translateY(-1px); }
+.nav-hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 8px; border: none; background: transparent; }
+.nav-hamburger span { display: block; width: 22px; height: 2px; background: var(--text-mid); border-radius: 2px; }
+
+/* ── PAGE LAYOUT ─────────────────────────────────────────────────────────── */
+.page-wrap { max-width: 1320px; margin: 0 auto; padding: 104px 52px 80px; position: relative; z-index: 1; }
+
+.page-hero { margin-bottom: 32px; }
+.sec-tag {
+  display: inline-flex; align-items: center; gap: 9px;
+  font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase;
+  color: var(--ember); font-weight: 700; margin-bottom: 10px;
+}
+.sec-tag::before { content: ''; width: 18px; height: 2px; background: var(--ember); border-radius: 1px; }
+.page-title {
+  font-family: var(--fd);
+  font-size: clamp(34px, 4vw, 52px);
+  font-weight: 900; letter-spacing: -0.03em;
+  color: var(--text-hi); line-height: 1.02;
+}
+.page-count {
+  font-family: var(--fb); font-size: 0.45em; font-weight: 400;
+  color: var(--text-mid); letter-spacing: 0; vertical-align: middle; margin-left: 8px;
+}
+
+/* ── FILTER BAR ──────────────────────────────────────────────────────────── */
+.filter-bar {
+  background: var(--char); border: 1px solid #ffffff09;
+  border-radius: 16px; padding: 20px 24px; margin-bottom: 24px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.filter-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.filter-search {
+  flex: 1; min-width: 200px; height: 42px;
+  background: #ffffff08; border: 1px solid #ffffff10; border-radius: 10px;
+  padding: 0 16px; font-family: var(--fb); font-size: 14px; color: var(--text-hi);
+  outline: none; transition: border-color 0.14s;
+}
+.filter-search::placeholder { color: var(--text-lo); }
+.filter-search:focus { border-color: #E8500A40; }
+.filter-select {
+  height: 42px; padding: 0 14px; padding-right: 36px;
+  background: #ffffff08 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23A89880' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 12px center;
+  border: 1px solid #ffffff10; border-radius: 10px;
+  font-family: var(--fb); font-size: 14px; color: var(--text-hi);
+  appearance: none; -webkit-appearance: none; cursor: pointer; outline: none;
+  transition: border-color 0.14s; white-space: nowrap;
+}
+.filter-select:focus { border-color: #E8500A40; }
+.filter-select option { background: #231E19; color: var(--text-hi); }
+.filter-suburb {
+  width: 180px; height: 42px;
+  background: #ffffff08; border: 1px solid #ffffff10; border-radius: 10px;
+  padding: 0 16px; font-family: var(--fb); font-size: 14px; color: var(--text-hi);
+  outline: none; transition: border-color 0.14s;
+}
+.filter-suburb::placeholder { color: var(--text-lo); }
+.filter-suburb:focus { border-color: #E8500A40; }
+
+/* Pro checkbox */
+.pro-filter {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; font-weight: 500; color: var(--text-mid); cursor: pointer;
+  user-select: none; margin-left: auto; white-space: nowrap;
+}
+.pro-filter input[type="checkbox"] {
+  width: 16px; height: 16px; accent-color: var(--ember); cursor: pointer;
+  border-radius: 4px;
+}
+.pro-filter:hover { color: var(--text-hi); }
+
+/* Filter meta + chips */
+.filter-meta { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 4px; }
+.filter-meta-text { font-size: 13px; color: var(--text-lo); }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: #E8500A18; border: 1px solid #E8500A30;
+  color: var(--ember); font-size: 12px; font-weight: 600;
+  padding: 4px 12px; border-radius: 100px; cursor: pointer;
+  transition: background 0.14s;
+}
+.chip:hover { background: #E8500A28; }
+.chip-x { font-size: 11px; opacity: 0.7; }
+.clear-btn {
+  font-family: var(--fb); font-size: 12px; font-weight: 600; color: var(--text-lo);
+  background: transparent; border: none; cursor: pointer; margin-left: auto;
+  transition: color 0.14s;
+}
+.clear-btn:hover { color: var(--ember); }
+
+/* ── VENDOR GRID ──────────────────────────────────────────────────────────── */
+.grid-meta { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.grid-meta-text { font-size: 13px; color: var(--text-lo); }
+
+.vendor-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-bottom: 40px;
+}
+@media (max-width: 1024px) { .vendor-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 640px) { .vendor-grid { grid-template-columns: 1fr; } }
+
+/* ── VENDOR CARD ──────────────────────────────────────────────────────────── */
+.vendor-card {
+  background: var(--parchment);
+  border-radius: 18px; overflow: hidden;
+  text-decoration: none; display: flex; flex-direction: column;
+  transition: transform 0.18s, box-shadow 0.18s;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.18), 0 1px 3px rgba(0,0,0,0.12);
+}
+.vendor-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.28), 0 4px 8px rgba(0,0,0,0.18); }
+
+.vc-top {
+  position: relative; height: 120px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 52px;
+}
+.vc-pro-badge {
+  position: absolute; top: 12px; right: 12px;
+  background: linear-gradient(135deg, #C9840A, #E89B1A);
+  color: #fff; font-family: var(--fb); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.08em; padding: 4px 10px; border-radius: 100px;
+  box-shadow: 0 2px 8px rgba(201,132,10,0.45);
+}
+.vc-setup-badge {
+  position: absolute; bottom: 12px; left: 12px;
+  background: rgba(26,22,18,0.65); backdrop-filter: blur(8px);
+  color: var(--text-hi); font-family: var(--fb); font-size: 10px; font-weight: 600;
+  letter-spacing: 0.06em; padding: 4px 10px; border-radius: 100px;
+}
+
+.vc-body { flex: 1; padding: 16px 18px 18px; }
+.vc-name {
+  font-family: var(--fd); font-size: 17px; font-weight: 900;
+  letter-spacing: -0.02em; color: #1A1612; line-height: 1.15; margin-bottom: 8px;
+}
+.vc-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.vc-tag {
+  font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 100px;
+  background: #E8500A14; color: var(--ember); border: 1px solid #E8500A22;
+}
+
+.vc-stats { display: flex; align-items: center; gap: 14px; padding-top: 12px; border-top: 1px solid #EDE3CC; }
+.vc-rating { display: flex; align-items: center; gap: 5px; }
+.vc-stars { color: #C9840A; font-size: 13px; letter-spacing: -1px; }
+.vc-rating-num { font-size: 13px; font-weight: 700; color: #1A1612; }
+.vc-review-count { font-size: 12px; color: var(--text-lo); }
+.vc-sep { width: 1px; height: 14px; background: #EDE3CC; }
+.vc-events { font-size: 12px; color: var(--text-lo); }
+.vc-events strong { color: #1A1612; font-weight: 700; }
+.vc-suburb { font-size: 12px; color: var(--text-lo); margin-left: auto; display: flex; align-items: center; gap: 4px; }
+
+/* ── EMPTY STATE ─────────────────────────────────────────────────────────── */
+.empty-state {
+  display: none; flex-direction: column; align-items: center; justify-content: center;
+  padding: 80px 20px; text-align: center; grid-column: 1 / -1;
+}
+.empty-state.visible { display: flex; }
+.empty-icon { font-size: 48px; margin-bottom: 16px; }
+.empty-title { font-family: var(--fd); font-size: 22px; font-weight: 900; color: var(--text-hi); margin-bottom: 8px; }
+.empty-sub { font-size: 14px; color: var(--text-mid); }
+
+/* ── PAGINATION ───────────────────────────────────────────────────────────── */
+.pagination { display: flex; align-items: center; justify-content: center; gap: 6px; }
+.pg-btn {
+  min-width: 36px; height: 36px; padding: 0 10px;
+  background: var(--char); border: 1px solid #ffffff0d; border-radius: 9px;
+  font-family: var(--fb); font-size: 13px; font-weight: 600; color: var(--text-mid);
+  cursor: pointer; transition: all 0.14s; display: flex; align-items: center; justify-content: center;
+}
+.pg-btn:hover { background: var(--ash); color: var(--text-hi); }
+.pg-btn.active { background: var(--ember); border-color: var(--ember); color: #fff; box-shadow: 0 2px 10px #E8500A30; }
+.pg-btn:disabled { opacity: 0.3; cursor: default; }
+.pg-dots { color: var(--text-lo); font-size: 13px; padding: 0 4px; }
+
+/* ── FOOTER ───────────────────────────────────────────────────────────────── */
+footer {
+  background: var(--char); border-top: 1px solid #ffffff07;
+  padding: 64px 52px 32px; margin-top: 80px; position: relative; z-index: 1;
+}
+.footer-grid { max-width: 1320px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 48px; }
+.footer-brand { display: flex; flex-direction: column; gap: 14px; }
+.footer-logo { font-family: var(--fd); font-size: 28px; font-weight: 900; letter-spacing: -0.04em; color: var(--text-hi); }
+.footer-logo .dot { color: var(--ember); }
+.footer-desc { font-size: 13px; color: var(--text-mid); line-height: 1.7; max-width: 260px; }
+.footer-socials { display: flex; gap: 10px; margin-top: 4px; }
+.fsoc {
+  width: 34px; height: 34px; border-radius: 8px; background: #ffffff08; border: 1px solid #ffffff0C;
+  display: flex; align-items: center; justify-content: center; font-size: 13px; cursor: pointer;
+  text-decoration: none; color: var(--text-lo); transition: all 0.14s;
+}
+.fsoc:hover { background: #ffffff14; color: var(--text-hi); }
+.footer-col h4 { font-size: 11px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-lo); margin-bottom: 16px; }
+.footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.footer-col ul a { font-size: 13px; color: var(--text-mid); text-decoration: none; transition: color 0.14s; }
+.footer-col ul a:hover { color: var(--text-hi); }
+.footer-bottom { max-width: 1320px; margin: 0 auto; padding-top: 24px; border-top: 1px solid #ffffff07; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+.footer-copy { font-size: 12px; color: var(--text-lo); }
+.footer-legal { display: flex; gap: 24px; }
+.footer-legal a { font-size: 12px; color: var(--text-lo); text-decoration: none; transition: color 0.14s; }
+.footer-legal a:hover { color: var(--text-mid); }
+
+@media (max-width: 900px) {
+  .navbar { padding: 0 24px; }
+  .nav-links, .nav-actions { display: none; }
+  .nav-hamburger { display: flex; }
+  .page-wrap { padding: 90px 24px 60px; }
+  .footer-grid { grid-template-columns: 1fr 1fr; }
+  footer { padding: 48px 24px 24px; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="navbar">
+  <a href="/" class="nav-logo">Pitch<span class="dot">.</span></a>
+  <ul class="nav-links">
+    <li><a href="/events">Events</a></li>
+    <li><a href="/vendors" class="active">Vendors</a></li>
+    <li><a href="/#how-it-works">How it Works</a></li>
+  </ul>
+  <div class="nav-actions">
+    <a href="#" class="btn-login">Log In</a>
+    <a href="#" class="btn-get-started">Get Started</a>
+  </div>
+  <button class="nav-hamburger" onclick="this.classList.toggle('open')">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<main class="page-wrap">
+
+  <!-- PAGE HERO -->
+  <div class="page-hero">
+    <div class="sec-tag">DISCOVER</div>
+    <h1 class="page-title">Vendors on Pitch<span style="color:var(--ember)">.</span><span class="page-count" id="result-count">248 vendors</span></h1>
+  </div>
+
+  <!-- FILTER BAR -->
+  <div class="filter-bar">
+    <div class="filter-row">
+      <input class="filter-search" id="f-search" type="text" placeholder="Search by name or cuisine…" oninput="applyFilters()" />
+    </div>
+    <div class="filter-row">
+      <select class="filter-select" id="f-cuisine" onchange="applyFilters()" style="flex:1;min-width:160px;">
+        <option value="">All Cuisines</option>
+        <option value="BBQ">BBQ</option>
+        <option value="Mexican">Mexican</option>
+        <option value="Asian Fusion">Asian Fusion</option>
+        <option value="Italian">Italian</option>
+        <option value="Desserts">Desserts</option>
+        <option value="Coffee & Drinks">Coffee &amp; Drinks</option>
+        <option value="Vegan">Vegan</option>
+        <option value="Burgers">Burgers</option>
+        <option value="Seafood">Seafood</option>
+        <option value="Other">Other</option>
+      </select>
+      <select class="filter-select" id="f-setup" onchange="applyFilters()" style="min-width:150px;">
+        <option value="">All Setup Types</option>
+        <option value="Food Truck">Food Truck</option>
+        <option value="Pop-up Stall">Pop-up Stall</option>
+        <option value="Cart">Cart</option>
+      </select>
+      <input class="filter-suburb" id="f-suburb" type="text" placeholder="Suburb or area…" oninput="applyFilters()" />
+      <label class="pro-filter">
+        <input type="checkbox" id="f-pro" onchange="applyFilters()" checked />
+        Show Pro vendors first
+      </label>
+    </div>
+    <div id="chips-row" class="filter-meta" style="display:none;">
+      <span class="filter-meta-text">Active filters:</span>
+      <div class="chips" id="chips-container"></div>
+      <button class="clear-btn" onclick="clearFilters()">Clear all</button>
+    </div>
+  </div>
+
+  <!-- GRID META -->
+  <div class="grid-meta">
+    <span class="grid-meta-text" id="grid-meta-text">Showing 1–12 of 248 vendors</span>
+  </div>
+
+  <!-- VENDOR GRID -->
+  <div class="vendor-grid" id="vendor-grid"></div>
+
+  <!-- PAGINATION -->
+  <div class="pagination" id="pagination"></div>
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <div class="footer-logo">Pitch<span class="dot">.</span></div>
+      <p class="footer-desc">Australia's marketplace connecting food vendors with local events. Based in Adelaide, SA.</p>
+      <div class="footer-socials">
+        <a href="#" class="fsoc">𝕏</a>
+        <a href="#" class="fsoc">in</a>
+        <a href="#" class="fsoc">ig</a>
+        <a href="#" class="fsoc">fb</a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>For Vendors</h4>
+      <ul>
+        <li><a href="#">Browse Events</a></li>
+        <li><a href="#">Create Profile</a></li>
+        <li><a href="#">Pricing</a></li>
+        <li><a href="#">Success Stories</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>For Organisers</h4>
+      <ul>
+        <li><a href="#">Post an Event</a></li>
+        <li><a href="#">Find Vendors</a></li>
+        <li><a href="#">Optional Extras</a></li>
+        <li><a href="#">Testimonials</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Company</h4>
+      <ul>
+        <li><a href="#">About</a></li>
+        <li><a href="#">Blog</a></li>
+        <li><a href="#">Contact</a></li>
+        <li><a href="#">Help Centre</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span class="footer-copy">© 2026 Pitch. Pty Ltd — Adelaide, SA</span>
+    <div class="footer-legal">
+      <a href="#">Privacy Policy</a>
+      <a href="#">Terms of Service</a>
+      <a href="#">Cookie Settings</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+const VENDORS = [
+  { id:'smoky-joes-bbq',      name:"Smoky Joe's BBQ",      cuisines:['BBQ'],              setup:'Food Truck',   suburb:'Norwood',       state:'SA', rating:4.9, reviews:62, events:47, isPro:true,  emoji:'🔥', bg:'linear-gradient(135deg,#2D1A0A 0%,#5C2A08 100%)' },
+  { id:'taco-loco',           name:'Taco Loco',             cuisines:['Mexican'],           setup:'Pop-up Stall', suburb:'Glenelg',       state:'SA', rating:4.7, reviews:38, events:23, isPro:true,  emoji:'🌮', bg:'linear-gradient(135deg,#1A2D0A 0%,#2D5C10 100%)' },
+  { id:'wok-and-roll',        name:'Wok & Roll',            cuisines:['Asian Fusion'],      setup:'Food Truck',   suburb:'Adelaide CBD',  state:'SA', rating:4.8, reviews:51, events:31, isPro:true,  emoji:'🥢', bg:'linear-gradient(135deg,#0A1A2D 0%,#0A3060 100%)' },
+  { id:'napoli-express',      name:'Napoli Express',        cuisines:['Italian'],           setup:'Pop-up Stall', suburb:'Hindmarsh',     state:'SA', rating:4.6, reviews:29, events:19, isPro:false, emoji:'🍕', bg:'linear-gradient(135deg,#2D0A0A 0%,#601818 100%)' },
+  { id:'the-dessert-lab',     name:'The Dessert Lab',       cuisines:['Desserts'],          setup:'Cart',         suburb:'North Adelaide', state:'SA', rating:4.9, reviews:44, events:28, isPro:true,  emoji:'🍰', bg:'linear-gradient(135deg,#2D1A2A 0%,#5C2A52 100%)' },
+  { id:'beanery-coffee',      name:'Beanery Coffee Co.',    cuisines:['Coffee & Drinks'],   setup:'Cart',         suburb:'Unley',         state:'SA', rating:4.7, reviews:33, events:35, isPro:false, emoji:'☕', bg:'linear-gradient(135deg,#1A140A 0%,#3D2A10 100%)' },
+  { id:'green-bowl',          name:'Green Bowl',            cuisines:['Vegan'],             setup:'Pop-up Stall', suburb:'Prospect',      state:'SA', rating:4.5, reviews:17, events:14, isPro:false, emoji:'🥗', bg:'linear-gradient(135deg,#0A2010 0%,#144A22 100%)' },
+  { id:'brewski-burgers',     name:'Brewski Burgers',       cuisines:['Burgers'],           setup:'Food Truck',   suburb:'Port Adelaide', state:'SA', rating:4.6, reviews:26, events:22, isPro:false, emoji:'🍔', bg:'linear-gradient(135deg,#1E1408 0%,#4A2C0C 100%)' },
+  { id:'ocean-and-fire',      name:'Ocean & Fire',          cuisines:['Seafood'],           setup:'Pop-up Stall', suburb:'Glenelg',       state:'SA', rating:4.8, reviews:22, events:17, isPro:true,  emoji:'🦞', bg:'linear-gradient(135deg,#0A1A2A 0%,#0A3050 100%)' },
+  { id:'the-churro-stand',    name:'The Churro Stand',      cuisines:['Desserts'],          setup:'Cart',         suburb:'Adelaide CBD',  state:'SA', rating:4.4, reviews:14, events:11, isPro:false, emoji:'🍩', bg:'linear-gradient(135deg,#2A1A08 0%,#604010 100%)' },
+  { id:'punjab-palace',       name:'Punjab Palace',         cuisines:['Other'],             setup:'Food Truck',   suburb:'Elizabeth',     state:'SA', rating:4.7, reviews:31, events:26, isPro:false, emoji:'🍛', bg:'linear-gradient(135deg,#2A1A00 0%,#5A3600 100%)' },
+  { id:'pressed-and-brewed',  name:'Pressed & Brewed',      cuisines:['Coffee & Drinks'],   setup:'Cart',         suburb:'Burnside',      state:'SA', rating:4.5, reviews:12, events:9,  isPro:false, emoji:'🍵', bg:'linear-gradient(135deg,#0E1A0E 0%,#1C3A1A 100%)' },
+];
+
+let currentPage = 1;
+const PER_PAGE = 12;
+
+function stars(r) {
+  const full = Math.floor(r);
+  const half = r % 1 >= 0.5;
+  return '★'.repeat(full) + (half ? '½' : '') + '☆'.repeat(5 - full - (half ? 1 : 0));
+}
+
+function renderCard(v) {
+  return `<a class="vendor-card" href="/vendors/${v.id}">
+    <div class="vc-top" style="background:${v.bg};">
+      ${v.emoji}
+      ${v.isPro ? '<span class="vc-pro-badge">PRO</span>' : ''}
+      <span class="vc-setup-badge">${v.setup}</span>
+    </div>
+    <div class="vc-body">
+      <div class="vc-name">${v.name}</div>
+      <div class="vc-tags">${v.cuisines.map(c => `<span class="vc-tag">${c}</span>`).join('')}</div>
+      <div class="vc-stats">
+        <div class="vc-rating">
+          <span class="vc-stars">★★★★${v.rating >= 4.8 ? '★' : '☆'}</span>
+          <span class="vc-rating-num">${v.rating.toFixed(1)}</span>
+          <span class="vc-review-count">(${v.reviews})</span>
+        </div>
+        <div class="vc-sep"></div>
+        <div class="vc-events"><strong>${v.events}</strong> events</div>
+        <div class="vc-suburb">📍 ${v.suburb}</div>
+      </div>
+    </div>
+  </a>`;
+}
+
+function getFiltered() {
+  const search  = document.getElementById('f-search').value.trim().toLowerCase();
+  const cuisine = document.getElementById('f-cuisine').value;
+  const setup   = document.getElementById('f-setup').value;
+  const suburb  = document.getElementById('f-suburb').value.trim().toLowerCase();
+  const proFirst = document.getElementById('f-pro').checked;
+
+  let list = VENDORS.filter(v => {
+    if (search && !v.name.toLowerCase().includes(search) && !v.cuisines.some(c => c.toLowerCase().includes(search))) return false;
+    if (cuisine && !v.cuisines.includes(cuisine)) return false;
+    if (setup && v.setup !== setup) return false;
+    if (suburb && !v.suburb.toLowerCase().includes(suburb)) return false;
+    return true;
+  });
+
+  if (proFirst) list = [...list.filter(v => v.isPro), ...list.filter(v => !v.isPro)];
+  return list;
+}
+
+function renderChips() {
+  const search  = document.getElementById('f-search').value.trim();
+  const cuisine = document.getElementById('f-cuisine').value;
+  const setup   = document.getElementById('f-setup').value;
+  const suburb  = document.getElementById('f-suburb').value.trim();
+  const chips = [];
+  if (search)  chips.push({ label: `"${search}"`,  clear: () => { document.getElementById('f-search').value = ''; applyFilters(); } });
+  if (cuisine) chips.push({ label: cuisine,         clear: () => { document.getElementById('f-cuisine').value = ''; applyFilters(); } });
+  if (setup)   chips.push({ label: setup,           clear: () => { document.getElementById('f-setup').value = ''; applyFilters(); } });
+  if (suburb)  chips.push({ label: suburb,          clear: () => { document.getElementById('f-suburb').value = ''; applyFilters(); } });
+
+  const row = document.getElementById('chips-row');
+  const cont = document.getElementById('chips-container');
+  if (chips.length === 0) { row.style.display = 'none'; return; }
+  row.style.display = 'flex';
+  cont.innerHTML = chips.map((c, i) => `<button class="chip" onclick="window._chipClear[${i}]()">${c.label} <span class="chip-x">✕</span></button>`).join('');
+  window._chipClear = chips.map(c => c.clear);
+}
+
+function applyFilters() {
+  currentPage = 1;
+  renderGrid();
+  renderChips();
+}
+
+function clearFilters() {
+  document.getElementById('f-search').value = '';
+  document.getElementById('f-cuisine').value = '';
+  document.getElementById('f-setup').value = '';
+  document.getElementById('f-suburb').value = '';
+  applyFilters();
+}
+
+function renderGrid() {
+  const filtered = getFiltered();
+  const total = filtered.length === VENDORS.length ? 248 : filtered.length;
+  const start = (currentPage - 1) * PER_PAGE;
+  const page  = filtered.slice(start, start + PER_PAGE);
+
+  document.getElementById('result-count').textContent = `${total} vendor${total !== 1 ? 's' : ''}`;
+  document.getElementById('grid-meta-text').textContent =
+    `Showing ${Math.min(start + 1, total)}–${Math.min(start + page.length, total)} of ${total} vendor${total !== 1 ? 's' : ''}`;
+
+  const grid = document.getElementById('vendor-grid');
+  if (page.length === 0) {
+    grid.innerHTML = `<div class="empty-state visible"><div class="empty-icon">🔍</div><div class="empty-title">No vendors found</div><div class="empty-sub">Try adjusting your filters to find more vendors.</div></div>`;
+  } else {
+    grid.innerHTML = page.map(renderCard).join('');
+  }
+
+  renderPagination(total);
+}
+
+function renderPagination(total) {
+  const totalPages = Math.ceil(total / PER_PAGE);
+  if (totalPages <= 1) { document.getElementById('pagination').innerHTML = ''; return; }
+
+  let html = `<button class="pg-btn" onclick="goPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>←</button>`;
+  for (let i = 1; i <= Math.min(totalPages, 7); i++) {
+    if (i === 6 && totalPages > 7) { html += `<span class="pg-dots">…</span>`; continue; }
+    if (i === 7 && totalPages > 7) i = totalPages;
+    html += `<button class="pg-btn${i === currentPage ? ' active' : ''}" onclick="goPage(${i})">${i}</button>`;
+  }
+  html += `<button class="pg-btn" onclick="goPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>→</button>`;
+  document.getElementById('pagination').innerHTML = html;
+}
+
+function goPage(n) {
+  const filtered = getFiltered();
+  const total = filtered.length === VENDORS.length ? 248 : filtered.length;
+  const totalPages = Math.ceil(total / PER_PAGE);
+  if (n < 1 || n > totalPages) return;
+  currentPage = n;
+  renderGrid();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+renderGrid();
+</script>
+</body>
+</html>

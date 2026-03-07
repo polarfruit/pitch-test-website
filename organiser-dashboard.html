@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Organiser Dashboard — Pitch.</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --ember:#E8500A; --ember-glow:#FF6B2B; --ember-bg:#E8500A12;
+  --coal:#1A1612; --char:#231E19; --ash:#2E2720; --smoke:#4A3F36;
+  --parchment:#FDF4E7; --cream:#F5EDD8; --linen:#EDE3CC;
+  --herb:#2D8B55; --gold:#C9840A; --terra:#C0392B; --slate:#2B5BA8;
+  --text-hi:#FDF4E7; --text-mid:#A89880; --text-lo:#6B5A4A;
+  --fd:'Fraunces',Georgia,serif; --fb:'Instrument Sans','Helvetica Neue',sans-serif;
+  --sidebar-w:260px;
+}
+html,body { height:100%; }
+body { background:var(--coal); color:var(--text-hi); font-family:var(--fb); line-height:1.5; overflow-x:hidden; display:flex; }
+body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index:0; opacity:0.35;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E"); }
+
+/* ── SIDEBAR ── */
+.sidebar { width:var(--sidebar-w); flex-shrink:0; height:100vh; position:fixed; top:0; left:0;
+  background:var(--char); border-right:1px solid #ffffff08; display:flex; flex-direction:column; z-index:100; overflow-y:auto; }
+.sidebar-logo { padding:24px 24px 20px; border-bottom:1px solid #ffffff07; }
+.logo-mark { font-family:var(--fd); font-size:22px; font-weight:900; letter-spacing:-0.04em; color:var(--text-hi); text-decoration:none; display:block; margin-bottom:16px; }
+.logo-mark .dot { color:var(--ember); }
+.org-card { display:flex; align-items:center; gap:10px; background:#ffffff07; border:1px solid #ffffff0a; border-radius:12px; padding:10px 12px; }
+.org-avatar { width:36px; height:36px; border-radius:10px; background:linear-gradient(135deg,#0A1A2D,#0A3060); display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+.org-info { flex:1; min-width:0; }
+.org-name { font-size:13px; font-weight:700; color:var(--text-hi); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.org-role { font-size:10px; color:var(--text-lo); margin-top:1px; }
+.sidebar-nav { flex:1; padding:16px 12px; display:flex; flex-direction:column; gap:2px; }
+.nav-section-label { font-size:9px; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:var(--text-lo); padding:12px 12px 6px; }
+.nav-link { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; cursor:pointer;
+  font-size:13px; font-weight:600; color:var(--text-mid); transition:all 0.14s; user-select:none;
+  border:none; background:transparent; width:100%; text-align:left; text-decoration:none; font-family:var(--fb); }
+.nav-link:hover { background:#ffffff08; color:var(--text-hi); }
+.nav-link.active { background:var(--ember-bg); color:var(--ember); border:1px solid #E8500A18; }
+.nav-icon { font-size:15px; flex-shrink:0; width:20px; text-align:center; }
+.nav-badge { margin-left:auto; background:var(--ember); color:#fff; font-size:10px; font-weight:700; padding:1px 6px; border-radius:100px; }
+.sidebar-footer { padding:16px 12px; border-top:1px solid #ffffff07; display:flex; flex-direction:column; gap:4px; }
+.sidebar-footer-link { display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:8px; cursor:pointer;
+  font-size:12px; font-weight:500; color:var(--text-lo); transition:all 0.14s; text-decoration:none; border:none; background:transparent; width:100%; font-family:var(--fb); }
+.sidebar-footer-link:hover { color:var(--text-mid); background:#ffffff06; }
+
+/* ── MAIN ── */
+.main { margin-left:var(--sidebar-w); flex:1; min-height:100vh; position:relative; z-index:1; }
+.topbar { position:sticky; top:0; z-index:50; height:60px; display:flex; align-items:center; justify-content:space-between;
+  padding:0 40px; background:rgba(26,22,18,0.88); backdrop-filter:blur(16px); border-bottom:1px solid #ffffff07; }
+.topbar-left { display:flex; align-items:center; gap:12px; }
+.topbar-title { font-family:var(--fd); font-size:18px; font-weight:900; letter-spacing:-0.02em; color:var(--text-hi); }
+.topbar-subtitle { font-size:12px; color:var(--text-lo); }
+.topbar-actions { display:flex; align-items:center; gap:10px; }
+.btn-topbar { font-family:var(--fb); font-size:12px; font-weight:700; color:#fff; background:var(--ember);
+  border:none; padding:8px 16px; border-radius:9px; cursor:pointer; transition:all 0.14s; text-decoration:none; }
+.btn-topbar:hover { background:var(--ember-glow); }
+.topbar-notif { width:36px; height:36px; border-radius:9px; background:#ffffff07; border:1px solid #ffffff0a;
+  display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:15px; position:relative; }
+.notif-dot { position:absolute; top:7px; right:7px; width:7px; height:7px; border-radius:50%; background:var(--ember); border:1.5px solid var(--coal); }
+
+.page-content { padding:32px 40px 60px; }
+.panel { display:none; }
+.panel.active { display:block; }
+
+/* ── SHARED ── */
+.section-title { font-family:var(--fd); font-size:16px; font-weight:900; letter-spacing:-0.02em; color:var(--text-hi); margin-bottom:16px; }
+.card { background:var(--char); border:1px solid #ffffff08; border-radius:16px; padding:24px; }
+.stat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:32px; }
+.stat-card { background:var(--char); border:1px solid #ffffff09; border-radius:16px; padding:22px 24px; position:relative; overflow:hidden; }
+.stat-card::before { content:''; position:absolute; top:-30px; right:-30px; width:80px; height:80px; border-radius:50%; opacity:0.07; }
+.stat-card.ember::before { background:var(--ember); }
+.stat-card.herb::before { background:var(--herb); }
+.stat-card.gold::before { background:var(--gold); }
+.stat-card.slate::before { background:var(--slate); }
+.stat-label { font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-lo); margin-bottom:8px; }
+.stat-value { font-family:var(--fd); font-size:36px; font-weight:900; letter-spacing:-0.03em; line-height:1; margin-bottom:6px; }
+.stat-card.ember .stat-value { color:var(--ember); }
+.stat-card.herb  .stat-value { color:var(--herb); }
+.stat-card.gold  .stat-value { color:var(--gold); }
+.stat-card.slate .stat-value { color:#5B8BE8; }
+.stat-delta { font-size:12px; color:var(--text-lo); }
+.stat-delta.up { color:var(--herb); }
+
+/* ── FILL RATE BAR ── */
+.fill-bar-wrap { display:flex; align-items:center; gap:10px; }
+.fill-bar-track { flex:1; height:6px; border-radius:3px; background:#ffffff0a; overflow:hidden; }
+.fill-bar-fill { height:100%; border-radius:3px; transition:width 0.5s; }
+.fill-bar-label { font-size:11px; font-weight:700; width:32px; text-align:right; flex-shrink:0; }
+
+/* Status badges */
+.badge { display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:700; padding:4px 10px; border-radius:100px; white-space:nowrap; }
+.badge-live     { background:#2D8B5518; color:#3DA86A; border:1px solid #2D8B5530; }
+.badge-draft    { background:#ffffff0a; color:var(--text-lo); border:1px solid #ffffff12; }
+.badge-closed   { background:#C9840A18; color:#D9981A; border:1px solid #C9840A28; }
+.badge-past     { background:#ffffff08; color:var(--text-lo); border:1px solid #ffffff10; }
+.badge-pending  { background:#2B5BA818; color:#5B8BE8; border:1px solid #2B5BA828; }
+.badge-approved { background:#2D8B5518; color:#3DA86A; border:1px solid #2D8B5530; }
+.badge-waitlist { background:#C9840A18; color:#D9981A; border:1px solid #C9840A28; }
+.badge-rejected { background:#C0392B18; color:#D9534F; border:1px solid #C0392B28; }
+
+/* ── OVERVIEW ── */
+.upcoming-list { display:flex; flex-direction:column; gap:0; }
+.upcoming-row { display:flex; align-items:center; gap:16px; padding:14px 16px; margin:0 -16px;
+  border-radius:10px; cursor:pointer; transition:background 0.12s; }
+.upcoming-row:hover { background:#ffffff06; }
+.upcoming-emoji { width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+.upcoming-info { flex:1; min-width:0; }
+.upcoming-name { font-size:13px; font-weight:700; color:var(--text-hi); margin-bottom:3px; }
+.upcoming-meta { font-size:11px; color:var(--text-lo); }
+.upcoming-fill { width:140px; flex-shrink:0; }
+.upcoming-apps { font-size:12px; color:var(--text-lo); width:80px; text-align:right; flex-shrink:0; }
+.upcoming-manage { font-size:12px; font-weight:600; color:var(--ember); background:transparent; border:none; cursor:pointer; padding:0; transition:color 0.12s; }
+.upcoming-manage:hover { color:var(--ember-glow); }
+.upcoming-divider { height:1px; background:#ffffff06; margin:0 -4px; }
+
+/* Recent applications queue */
+.recent-apps-list { display:flex; flex-direction:column; gap:10px; }
+.recent-app-row { display:flex; align-items:center; gap:14px; background:#ffffff05; border:1px solid #ffffff08; border-radius:12px; padding:12px 16px; }
+.app-vendor-avatar { width:38px; height:38px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:17px; flex-shrink:0; }
+.app-vendor-info { flex:1; min-width:0; }
+.app-vendor-name { font-size:13px; font-weight:700; color:var(--text-hi); margin-bottom:2px; }
+.app-event-name { font-size:11px; color:var(--text-lo); }
+.app-quick-actions { display:flex; gap:8px; flex-shrink:0; }
+.btn-approve { font-family:var(--fb); font-size:11px; font-weight:700; color:var(--herb); background:#2D8B5514; border:1px solid #2D8B5528; padding:6px 12px; border-radius:7px; cursor:pointer; transition:all 0.12s; }
+.btn-approve:hover { background:#2D8B5524; }
+.btn-waitlist { font-family:var(--fb); font-size:11px; font-weight:700; color:var(--gold); background:#C9840A12; border:1px solid #C9840A24; padding:6px 12px; border-radius:7px; cursor:pointer; transition:all 0.12s; }
+.btn-waitlist:hover { background:#C9840A22; }
+
+/* ── MY EVENTS TABLE ── */
+.events-table { width:100%; border-collapse:collapse; }
+.events-table thead th { font-size:10px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--text-lo); padding:0 14px 12px; text-align:left; border-bottom:1px solid #ffffff08; white-space:nowrap; }
+.events-table tbody tr { border-bottom:1px solid #ffffff06; transition:background 0.1s; }
+.events-table tbody tr:last-child { border-bottom:none; }
+.events-table tbody tr:hover { background:#ffffff04; }
+.events-table td { padding:14px; font-size:13px; color:var(--text-mid); vertical-align:middle; }
+.td-event { color:var(--text-hi); font-weight:700; font-size:13px; }
+.td-sub { font-size:11px; color:var(--text-lo); margin-top:2px; }
+.spots-text { font-size:12px; color:var(--text-mid); white-space:nowrap; }
+.action-btns { display:flex; gap:6px; }
+.btn-action { font-family:var(--fb); font-size:11px; font-weight:600; padding:5px 10px; border-radius:7px; cursor:pointer; transition:all 0.12s; border:1px solid transparent; }
+.btn-manage { color:var(--ember); background:var(--ember-bg); border-color:#E8500A22; }
+.btn-manage:hover { background:#E8500A20; }
+.btn-edit { color:var(--text-mid); background:#ffffff08; border-color:#ffffff10; }
+.btn-edit:hover { color:var(--text-hi); background:#ffffff10; }
+.btn-hide { color:var(--text-lo); background:transparent; border-color:#ffffff0a; }
+.btn-hide:hover { color:var(--text-mid); background:#ffffff08; }
+
+/* ── EVENT MANAGEMENT TABS ── */
+.mgmt-header { margin-bottom:24px; }
+.mgmt-event-name { font-family:var(--fd); font-size:24px; font-weight:900; letter-spacing:-0.03em; color:var(--text-hi); margin-bottom:6px; }
+.mgmt-meta { display:flex; align-items:center; gap:12px; flex-wrap:wrap; font-size:12px; color:var(--text-lo); }
+.mgmt-meta-item { display:flex; align-items:center; gap:4px; }
+.tab-bar { display:flex; gap:4px; border-bottom:1px solid #ffffff08; margin-bottom:24px; }
+.tab-btn { font-family:var(--fb); font-size:13px; font-weight:600; padding:10px 16px; background:transparent; border:none; cursor:pointer;
+  color:var(--text-lo); border-bottom:2px solid transparent; margin-bottom:-1px; transition:all 0.14s; }
+.tab-btn:hover { color:var(--text-hi); }
+.tab-btn.active { color:var(--ember); border-bottom-color:var(--ember); }
+.tab-count { display:inline-flex; align-items:center; justify-content:center;
+  min-width:18px; height:18px; padding:0 5px; border-radius:9px;
+  background:#ffffff0a; color:var(--text-lo); font-size:10px; font-weight:700; margin-left:6px; }
+.tab-btn.active .tab-count { background:var(--ember-bg); color:var(--ember); }
+.tab-content { display:none; }
+.tab-content.active { display:block; }
+
+/* Application filter row */
+.app-filter-row { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
+.app-filter-btn { font-family:var(--fb); font-size:12px; font-weight:600; padding:6px 14px; border-radius:100px;
+  cursor:pointer; border:1px solid #ffffff10; background:transparent; color:var(--text-mid); transition:all 0.12s; }
+.app-filter-btn:hover { background:#ffffff09; color:var(--text-hi); }
+.app-filter-btn.active { background:var(--ember); border-color:var(--ember); color:#fff; }
+
+/* Application review cards */
+.app-cards-grid { display:flex; flex-direction:column; gap:12px; }
+.app-card { background:var(--char); border:1px solid #ffffff09; border-radius:14px; padding:18px 20px; transition:border-color 0.12s; }
+.app-card:hover { border-color:#ffffff12; }
+.app-card.status-approved { border-color:#2D8B5520; }
+.app-card.status-rejected { border-color:#C0392B18; opacity:0.7; }
+.app-card-top { display:flex; align-items:flex-start; gap:14px; margin-bottom:12px; }
+.app-card-avatar { width:44px; height:44px; border-radius:11px; display:flex; align-items:center; justify-content:center; font-size:20px; flex-shrink:0; }
+.app-card-info { flex:1; min-width:0; }
+.app-card-name { display:flex; align-items:center; gap:8px; margin-bottom:4px; flex-wrap:wrap; }
+.app-card-vendor { font-size:14px; font-weight:700; color:var(--text-hi); text-decoration:none; transition:color 0.12s; }
+.app-card-vendor:hover { color:var(--ember); }
+.app-card-tags { display:flex; gap:6px; flex-wrap:wrap; }
+.app-tag { font-size:10px; font-weight:600; padding:2px 8px; border-radius:100px; background:#E8500A12; color:var(--ember); border:1px solid #E8500A20; }
+.app-tag-gray { background:#ffffff08; color:var(--text-lo); border:1px solid #ffffff10; }
+.app-card-note { font-size:13px; color:var(--text-mid); line-height:1.65; margin-bottom:12px;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.app-card-footer { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; }
+.app-card-meta { font-size:11px; color:var(--text-lo); }
+.app-actions { display:flex; gap:8px; align-items:center; position:relative; }
+.btn-act-approve { font-family:var(--fb); font-size:12px; font-weight:700; color:var(--herb); background:#2D8B5514; border:1px solid #2D8B5528; padding:7px 14px; border-radius:8px; cursor:pointer; transition:all 0.12s; }
+.btn-act-approve:hover { background:#2D8B5522; }
+.btn-act-waitlist { font-family:var(--fb); font-size:12px; font-weight:700; color:var(--gold); background:#C9840A12; border:1px solid #C9840A24; padding:7px 14px; border-radius:8px; cursor:pointer; transition:all 0.12s; }
+.btn-act-waitlist:hover { background:#C9840A20; }
+.btn-act-reject { font-family:var(--fb); font-size:12px; font-weight:700; color:#D9534F; background:#C0392B0e; border:1px solid #C0392B24; padding:7px 14px; border-radius:8px; cursor:pointer; transition:all 0.12s; }
+.btn-act-reject:hover { background:#C0392B1a; }
+.reject-dropdown { display:none; position:absolute; bottom:calc(100% + 6px); right:0; width:260px;
+  background:var(--char); border:1px solid #ffffff12; border-radius:12px; overflow:hidden;
+  box-shadow:0 8px 32px rgba(0,0,0,0.4); z-index:20; }
+.reject-dropdown.open { display:block; }
+.reject-dropdown-header { padding:10px 14px 6px; font-size:10px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--text-lo); }
+.reject-option { display:block; width:100%; padding:10px 14px; text-align:left; background:transparent;
+  border:none; font-family:var(--fb); font-size:12px; color:var(--text-mid); cursor:pointer; transition:background 0.1s; }
+.reject-option:hover { background:#ffffff08; color:var(--text-hi); }
+
+/* Lineup tab */
+.lineup-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+.btn-broadcast { font-family:var(--fb); font-size:12px; font-weight:700; color:var(--ember);
+  background:var(--ember-bg); border:1px solid #E8500A22; padding:8px 16px; border-radius:9px; cursor:pointer; transition:all 0.12s; }
+.btn-broadcast:hover { background:#E8500A20; }
+.lineup-table { width:100%; border-collapse:collapse; }
+.lineup-table thead th { font-size:10px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--text-lo); padding:0 12px 10px; text-align:left; border-bottom:1px solid #ffffff08; }
+.lineup-table tbody tr { border-bottom:1px solid #ffffff06; }
+.lineup-table tbody tr:last-child { border-bottom:none; }
+.lineup-table td { padding:12px; font-size:13px; color:var(--text-mid); vertical-align:middle; }
+.spot-input { background:#ffffff08; border:1px solid #ffffff10; border-radius:7px; padding:5px 10px;
+  font-family:var(--fb); font-size:12px; color:var(--text-hi); width:80px; outline:none; text-align:center; }
+.spot-input:focus { border-color:#E8500A40; }
+.check-icon { color:var(--herb); font-size:13px; }
+.cross-icon { color:var(--text-lo); font-size:13px; }
+
+/* ── POST AN EVENT — multi-step ── */
+.step-progress { display:flex; align-items:center; gap:0; margin-bottom:32px; }
+.step-item { display:flex; flex-direction:column; align-items:center; gap:6px; flex:1; }
+.step-circle { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center;
+  font-size:12px; font-weight:700; border:2px solid transparent; flex-shrink:0; }
+.step-circle.done   { background:#2D8B5520; border-color:#2D8B5540; color:var(--herb); }
+.step-circle.active { background:var(--ember); border-color:var(--ember); color:#fff; }
+.step-circle.pending { background:#ffffff08; border-color:#ffffff14; color:var(--text-lo); }
+.step-label { font-size:10px; font-weight:600; color:var(--text-lo); text-align:center; }
+.step-label.active { color:var(--ember); }
+.step-line { flex:1; height:2px; background:#ffffff0a; margin-bottom:22px; }
+.step-line.done { background:#2D8B5540; }
+
+.step-panel { display:none; }
+.step-panel.active { display:block; }
+.step-nav { display:flex; align-items:center; justify-content:space-between; margin-top:32px; padding-top:24px; border-top:1px solid #ffffff08; }
+.btn-step-back { font-family:var(--fb); font-size:13px; font-weight:600; color:var(--text-mid);
+  background:transparent; border:1px solid #ffffff10; padding:11px 22px; border-radius:10px; cursor:pointer; transition:all 0.14s; }
+.btn-step-back:hover { color:var(--text-hi); background:#ffffff08; }
+.btn-step-next { font-family:var(--fb); font-size:13px; font-weight:700; color:#fff;
+  background:var(--ember); border:none; padding:12px 28px; border-radius:10px; cursor:pointer;
+  box-shadow:0 4px 16px #E8500A2E; transition:all 0.14s; }
+.btn-step-next:hover { background:var(--ember-glow); transform:translateY(-1px); }
+.btn-publish { background:var(--herb); box-shadow:0 4px 16px #2D8B5530; }
+.btn-publish:hover { background:#3DA86A; }
+
+/* Form fields (shared) */
+.form-group { margin-bottom:20px; }
+.form-label { display:block; font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-lo); margin-bottom:8px; }
+.form-input { width:100%; height:42px; padding:0 14px; background:#ffffff08; border:1px solid #ffffff10; border-radius:10px;
+  font-family:var(--fb); font-size:14px; color:var(--text-hi); outline:none; transition:border-color 0.14s; }
+.form-input::placeholder { color:var(--text-lo); }
+.form-input:focus { border-color:#E8500A40; }
+.form-select { height:42px; padding:0 14px; padding-right:36px; appearance:none;
+  background:#ffffff08 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23A89880' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 12px center;
+  border:1px solid #ffffff10; border-radius:10px; font-family:var(--fb); font-size:14px; color:var(--text-hi); cursor:pointer; outline:none; }
+.form-select option { background:#231E19; }
+.form-textarea { width:100%; padding:12px 14px; resize:vertical; min-height:100px; background:#ffffff08; border:1px solid #ffffff10;
+  border-radius:10px; font-family:var(--fb); font-size:14px; color:var(--text-hi); line-height:1.6; outline:none; transition:border-color 0.14s; }
+.form-textarea:focus { border-color:#E8500A40; }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.form-row-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; }
+.toggle-row { display:flex; align-items:center; justify-content:space-between; padding:4px 0; }
+.toggle-label { font-size:13px; font-weight:500; color:var(--text-mid); }
+.toggle-switch { position:relative; width:40px; height:22px; cursor:pointer; flex-shrink:0; }
+.toggle-switch input { opacity:0; width:0; height:0; position:absolute; }
+.toggle-track { position:absolute; inset:0; border-radius:11px; background:#ffffff14; transition:background 0.2s; }
+.toggle-switch input:checked + .toggle-track { background:var(--ember); }
+.toggle-thumb { position:absolute; top:3px; left:3px; width:16px; height:16px; border-radius:50%; background:#fff; transition:transform 0.2s; box-shadow:0 1px 3px rgba(0,0,0,0.3); }
+.toggle-switch input:checked ~ .toggle-thumb { transform:translateX(18px); }
+.tag-selector { display:flex; flex-wrap:wrap; gap:8px; }
+.tag-opt { font-size:12px; font-weight:600; padding:6px 14px; border-radius:100px; cursor:pointer;
+  border:1px solid #ffffff10; background:transparent; color:var(--text-mid); transition:all 0.12s; user-select:none; font-family:var(--fb); }
+.tag-opt:hover { border-color:#E8500A30; color:var(--text-hi); }
+.tag-opt.sel { background:var(--ember-bg); border-color:#E8500A30; color:var(--ember); }
+.fee-range-row { display:flex; align-items:center; gap:12px; }
+.fee-input { width:110px; height:42px; padding:0 14px; background:#ffffff08; border:1px solid #ffffff10;
+  border-radius:10px; font-family:var(--fb); font-size:14px; color:var(--text-hi); outline:none; }
+.fee-sep { color:var(--text-lo); font-size:14px; }
+
+/* Review step */
+.review-field { display:flex; gap:16px; padding:12px 0; border-bottom:1px solid #ffffff07; }
+.review-field:last-child { border-bottom:none; }
+.review-field-label { font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-lo); width:140px; flex-shrink:0; padding-top:2px; }
+.review-field-value { font-size:13px; color:var(--text-hi); flex:1; line-height:1.6; }
+
+/* ── MESSAGES ── */
+.messages-layout { display:grid; grid-template-columns:280px 1fr; gap:0; height:calc(100vh - 60px - 64px); }
+.msg-sidebar { border-right:1px solid #ffffff08; overflow-y:auto; }
+.msg-sidebar-header { padding:16px; border-bottom:1px solid #ffffff08; display:flex; align-items:center; justify-content:space-between; }
+.msg-sidebar-title { font-size:13px; font-weight:700; color:var(--text-hi); }
+.msg-thread-list { }
+.msg-event-group { }
+.msg-event-label { padding:10px 16px 6px; font-size:10px; font-weight:700; letter-spacing:0.15em; text-transform:uppercase; color:var(--text-lo); }
+.msg-thread { display:flex; align-items:flex-start; gap:10px; padding:12px 16px; cursor:pointer; transition:background 0.12s; border-bottom:1px solid #ffffff05; }
+.msg-thread:hover { background:#ffffff06; }
+.msg-thread.active { background:var(--ember-bg); }
+.msg-thread.unread .msg-thread-name { color:var(--text-hi); font-weight:700; }
+.msg-thread-avatar { width:36px; height:36px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+.msg-thread-body { flex:1; min-width:0; }
+.msg-thread-name { font-size:13px; font-weight:600; color:var(--text-mid); margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.msg-thread-preview { font-size:11px; color:var(--text-lo); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.msg-thread-right { display:flex; flex-direction:column; align-items:flex-end; gap:5px; flex-shrink:0; }
+.msg-thread-time { font-size:10px; color:var(--text-lo); }
+.unread-dot { width:8px; height:8px; border-radius:50%; background:var(--ember); }
+
+.msg-main { display:flex; flex-direction:column; overflow:hidden; }
+.msg-main-header { padding:16px 24px; border-bottom:1px solid #ffffff08; display:flex; align-items:center; justify-content:space-between; }
+.msg-main-vendor { font-size:14px; font-weight:700; color:var(--text-hi); }
+.msg-main-event { font-size:11px; color:var(--text-lo); margin-top:2px; }
+.msg-body { flex:1; overflow-y:auto; padding:24px; display:flex; flex-direction:column; gap:16px; }
+.msg-bubble-wrap { display:flex; flex-direction:column; }
+.msg-bubble-wrap.them { align-items:flex-start; }
+.msg-bubble-wrap.us   { align-items:flex-end; }
+.msg-bubble { max-width:70%; padding:12px 16px; border-radius:14px; font-size:13px; line-height:1.65; }
+.msg-bubble.them { background:var(--char); color:var(--text-hi); border:1px solid #ffffff09; border-radius:14px 14px 14px 4px; }
+.msg-bubble.us   { background:var(--ember); color:#fff; border-radius:14px 14px 4px 14px; }
+.msg-timestamp { font-size:10px; color:var(--text-lo); margin-top:5px; padding:0 4px; }
+.msg-compose { padding:16px 24px; border-top:1px solid #ffffff08; display:flex; gap:10px; }
+.msg-input { flex:1; padding:11px 16px; background:#ffffff08; border:1px solid #ffffff10; border-radius:12px;
+  font-family:var(--fb); font-size:13px; color:var(--text-hi); outline:none; transition:border-color 0.14s; }
+.msg-input::placeholder { color:var(--text-lo); }
+.msg-input:focus { border-color:#E8500A40; }
+.btn-send { font-family:var(--fb); font-size:13px; font-weight:700; color:#fff; background:var(--ember);
+  border:none; padding:11px 20px; border-radius:12px; cursor:pointer; transition:all 0.14s; }
+.btn-send:hover { background:var(--ember-glow); }
+
+/* ── SETTINGS ── */
+.settings-card { background:var(--char); border:1px solid #ffffff08; border-radius:16px; padding:24px; margin-bottom:24px; }
+.settings-section-title { font-size:14px; font-weight:700; color:var(--text-hi); margin-bottom:16px; padding-bottom:10px; border-bottom:1px solid #ffffff07; }
+.settings-row { display:flex; align-items:center; justify-content:space-between; padding:14px 0; border-bottom:1px solid #ffffff06; }
+.settings-row:last-child { border-bottom:none; }
+.settings-row-label { font-size:13px; font-weight:600; color:var(--text-hi); margin-bottom:2px; }
+.settings-row-desc { font-size:12px; color:var(--text-lo); }
+.email-display { font-family:'Courier New',monospace; font-size:13px; color:var(--text-mid); background:#ffffff07; padding:9px 14px; border-radius:9px; border:1px solid #ffffff0a; }
+
+/* ── ANALYTICS ── */
+.analytics-grid { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+.chart-card { background:var(--char); border:1px solid #ffffff08; border-radius:16px; padding:22px; }
+.chart-title { font-size:13px; font-weight:700; color:var(--text-hi); margin-bottom:20px; }
+.bar-chart { display:flex; align-items:flex-end; gap:8px; height:120px; }
+.bar-col { display:flex; flex-direction:column; align-items:center; gap:5px; flex:1; }
+.bar-fill { width:100%; border-radius:4px 4px 0 0; background:var(--ember); opacity:0.8; transition:height 0.6s; min-height:2px; }
+.bar-fill.alt { background:#2B5BA8; }
+.bar-label { font-size:9px; color:var(--text-lo); white-space:nowrap; }
+.bar-val { font-size:10px; font-weight:700; color:var(--text-mid); }
+.h-bar-row { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.h-bar-label { font-size:12px; color:var(--text-mid); width:110px; flex-shrink:0; }
+.h-bar-track { flex:1; height:10px; border-radius:5px; background:#ffffff0a; overflow:hidden; }
+.h-bar-fill { height:100%; border-radius:5px; background:var(--ember); }
+.h-bar-val { font-size:11px; font-weight:700; color:var(--text-mid); width:28px; text-align:right; }
+.kpi-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.kpi-item { background:#ffffff06; border-radius:10px; padding:14px 16px; }
+.kpi-label { font-size:10px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-lo); margin-bottom:6px; }
+.kpi-val { font-family:var(--fd); font-size:24px; font-weight:900; letter-spacing:-0.02em; color:var(--text-hi); }
+
+/* ── BROADCAST MODAL ── */
+.modal-overlay { position:fixed; inset:0; z-index:500; display:flex; align-items:center; justify-content:center;
+  background:rgba(26,22,18,0.85); backdrop-filter:blur(10px); opacity:0; pointer-events:none; transition:opacity 0.2s; }
+.modal-overlay.open { opacity:1; pointer-events:all; }
+.modal-box { background:var(--char); border:1px solid #ffffff0d; border-radius:20px; padding:32px; width:500px; max-width:90vw;
+  transform:translateY(12px); transition:transform 0.2s; }
+.modal-overlay.open .modal-box { transform:translateY(0); }
+.modal-title { font-family:var(--fd); font-size:20px; font-weight:900; letter-spacing:-0.02em; color:var(--text-hi); margin-bottom:8px; }
+.modal-desc { font-size:13px; color:var(--text-mid); margin-bottom:20px; }
+.btn-modal-cancel { font-family:var(--fb); font-size:13px; font-weight:600; color:var(--text-mid); background:#ffffff08; border:1px solid #ffffff0d; padding:11px 22px; border-radius:10px; cursor:pointer; transition:all 0.14s; }
+.btn-modal-send { font-family:var(--fb); font-size:13px; font-weight:700; color:#fff; background:var(--ember); border:none; padding:12px 24px; border-radius:10px; cursor:pointer; transition:all 0.14s; }
+.btn-modal-send:hover { background:var(--ember-glow); }
+
+@media (max-width:900px) {
+  .sidebar { display:none; }
+  .main { margin-left:0; }
+  .page-content { padding:20px 16px 60px; }
+  .topbar { padding:0 16px; }
+  .stat-grid { grid-template-columns:repeat(2,1fr); gap:10px; }
+  .form-row, .form-row-3 { grid-template-columns:1fr; }
+  .analytics-grid { grid-template-columns:1fr; }
+  .messages-layout { grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <a href="/" class="logo-mark">Pitch<span class="dot">.</span></a>
+    <div class="org-card">
+      <div class="org-avatar">🏛️</div>
+      <div class="org-info">
+        <div class="org-name">Adelaide City Council</div>
+        <div class="org-role">Event Organiser</div>
+      </div>
+    </div>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Menu</div>
+    <button class="nav-link active" onclick="showPanel('overview',this)"><span class="nav-icon">⬡</span>Overview</button>
+    <button class="nav-link" onclick="showPanel('events',this)"><span class="nav-icon">📅</span>My Events</button>
+    <button class="nav-link" onclick="showPanel('new-event',this)"><span class="nav-icon">＋</span>Post an Event</button>
+    <button class="nav-link" onclick="showPanel('messages',this)"><span class="nav-icon">💬</span>Messages<span class="nav-badge">2</span></button>
+    <button class="nav-link" onclick="showPanel('settings',this)"><span class="nav-icon">⚙️</span>Settings</button>
+  </nav>
+  <div class="sidebar-footer">
+    <a href="/events" class="sidebar-footer-link">↗ View public events</a>
+    <button class="sidebar-footer-link">🚪 Log out</button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-title" id="topbar-title">Overview</div>
+      <div class="topbar-subtitle" id="topbar-subtitle"></div>
+    </div>
+    <div class="topbar-actions">
+      <div class="topbar-notif">🔔<div class="notif-dot"></div></div>
+      <button class="btn-topbar" onclick="showPanel('new-event',null)">+ Post an Event</button>
+    </div>
+  </div>
+
+  <div class="page-content">
+
+    <!-- ── OVERVIEW ── -->
+    <div class="panel active" id="panel-overview">
+      <div class="stat-grid">
+        <div class="stat-card ember">
+          <div class="stat-label">Live Events</div>
+          <div class="stat-value">4</div>
+          <div class="stat-delta">2 accepting applications</div>
+        </div>
+        <div class="stat-card herb">
+          <div class="stat-label">Total Applications</div>
+          <div class="stat-value">106</div>
+          <div class="stat-delta up">↑ 18 this week</div>
+        </div>
+        <div class="stat-card gold">
+          <div class="stat-label">Avg Fill Rate</div>
+          <div class="stat-value">73%</div>
+          <div class="stat-delta">Across all live events</div>
+        </div>
+        <div class="stat-card slate">
+          <div class="stat-label">Vendors Approved</div>
+          <div class="stat-value">57</div>
+          <div class="stat-delta up">↑ 8 this month</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 380px;gap:24px;align-items:start;">
+        <!-- Upcoming events -->
+        <div class="card">
+          <div class="section-title">Your upcoming events</div>
+          <div class="upcoming-list">
+            <div class="upcoming-row" onclick="openEventMgmt('rundle-mall-night-eats','Rundle Mall Night Eats')">
+              <div class="upcoming-emoji" style="background:linear-gradient(135deg,#1A1612,#321A0A);">🌃</div>
+              <div class="upcoming-info">
+                <div class="upcoming-name">Rundle Mall Night Eats</div>
+                <div class="upcoming-meta">Sat 12 Apr · Adelaide CBD · Night Market</div>
+              </div>
+              <div class="upcoming-fill">
+                <div class="fill-bar-wrap">
+                  <div class="fill-bar-track"><div class="fill-bar-fill" style="width:70%;background:#C9840A;"></div></div>
+                  <div class="fill-bar-label" style="color:#C9840A;">70%</div>
+                </div>
+              </div>
+              <div class="upcoming-apps">22 apps</div>
+              <button class="upcoming-manage">Manage →</button>
+            </div>
+            <div class="upcoming-divider"></div>
+            <div class="upcoming-row" onclick="openEventMgmt('showground-harvest','Adelaide Showground Harvest Fair')">
+              <div class="upcoming-emoji" style="background:linear-gradient(135deg,#0A1A0A,#1A3A0A);">🌾</div>
+              <div class="upcoming-info">
+                <div class="upcoming-name">Adelaide Showground Harvest Fair</div>
+                <div class="upcoming-meta">Sun 18 Apr · Wayville · Fair</div>
+              </div>
+              <div class="upcoming-fill">
+                <div class="fill-bar-wrap">
+                  <div class="fill-bar-track"><div class="fill-bar-fill" style="width:44%;background:#C9840A;"></div></div>
+                  <div class="fill-bar-label" style="color:#C9840A;">44%</div>
+                </div>
+              </div>
+              <div class="upcoming-apps">15 apps</div>
+              <button class="upcoming-manage">Manage →</button>
+            </div>
+            <div class="upcoming-divider"></div>
+            <div class="upcoming-row" onclick="openEventMgmt('glenelg-twilight','Glenelg Twilight Market')">
+              <div class="upcoming-emoji" style="background:linear-gradient(135deg,#0A1020,#1A2848);">🌅</div>
+              <div class="upcoming-info">
+                <div class="upcoming-name">Glenelg Twilight Market</div>
+                <div class="upcoming-meta">Sun 3 May · Glenelg · Night Market</div>
+              </div>
+              <div class="upcoming-fill">
+                <div class="fill-bar-wrap">
+                  <div class="fill-bar-track"><div class="fill-bar-fill" style="width:33%;background:#2D8B55;"></div></div>
+                  <div class="fill-bar-label" style="color:#2D8B55;">33%</div>
+                </div>
+              </div>
+              <div class="upcoming-apps">18 apps</div>
+              <button class="upcoming-manage">Manage →</button>
+            </div>
+            <div class="upcoming-divider"></div>
+            <div class="upcoming-row">
+              <div class="upcoming-emoji" style="background:linear-gradient(135deg,#1A0A1A,#3A1A3A);">❄️</div>
+              <div class="upcoming-info">
+                <div class="upcoming-name">Winter Lantern Market</div>
+                <div class="upcoming-meta">Sat 20 Jun · City Gardens · Market</div>
+              </div>
+              <div class="upcoming-fill">
+                <div class="fill-bar-wrap">
+                  <div class="fill-bar-track"><div class="fill-bar-fill" style="width:10%;background:#2D8B55;"></div></div>
+                  <div class="fill-bar-label" style="color:#2D8B55;">10%</div>
+                </div>
+              </div>
+              <div class="upcoming-apps">4 apps</div>
+              <button class="upcoming-manage">Manage →</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent applications -->
+        <div class="card">
+          <div class="section-title">Recent applications</div>
+          <div class="recent-apps-list">
+            <div class="recent-app-row">
+              <div class="app-vendor-avatar" style="background:linear-gradient(135deg,#3D1A06,#6B2E08);">🔥</div>
+              <div class="app-vendor-info">
+                <div class="app-vendor-name">Smoky Joe's BBQ</div>
+                <div class="app-event-name">Glenelg Twilight Market · BBQ</div>
+              </div>
+              <div class="app-quick-actions">
+                <button class="btn-approve" onclick="quickAction(this,'approved')">✓</button>
+                <button class="btn-waitlist" onclick="quickAction(this,'waitlisted')">⏸</button>
+              </div>
+            </div>
+            <div class="recent-app-row">
+              <div class="app-vendor-avatar" style="background:linear-gradient(135deg,#1A2D0A,#2D5C10);">🌮</div>
+              <div class="app-vendor-info">
+                <div class="app-vendor-name">Taco Loco</div>
+                <div class="app-event-name">Rundle Mall Night Eats · Mexican</div>
+              </div>
+              <div class="app-quick-actions">
+                <button class="btn-approve" onclick="quickAction(this,'approved')">✓</button>
+                <button class="btn-waitlist" onclick="quickAction(this,'waitlisted')">⏸</button>
+              </div>
+            </div>
+            <div class="recent-app-row">
+              <div class="app-vendor-avatar" style="background:linear-gradient(135deg,#0A1A2D,#0A3060);">🥢</div>
+              <div class="app-vendor-info">
+                <div class="app-vendor-name">Wok &amp; Roll</div>
+                <div class="app-event-name">Adelaide Showground · Asian Fusion</div>
+              </div>
+              <div class="app-quick-actions">
+                <button class="btn-approve" onclick="quickAction(this,'approved')">✓</button>
+                <button class="btn-waitlist" onclick="quickAction(this,'waitlisted')">⏸</button>
+              </div>
+            </div>
+            <div class="recent-app-row">
+              <div class="app-vendor-avatar" style="background:linear-gradient(135deg,#2D1A2A,#5C2A52);">🍰</div>
+              <div class="app-vendor-info">
+                <div class="app-vendor-name">The Dessert Lab</div>
+                <div class="app-event-name">Glenelg Twilight Market · Desserts</div>
+              </div>
+              <div class="app-quick-actions">
+                <button class="btn-approve" onclick="quickAction(this,'approved')">✓</button>
+                <button class="btn-waitlist" onclick="quickAction(this,'waitlisted')">⏸</button>
+              </div>
+            </div>
+            <div class="recent-app-row">
+              <div class="app-vendor-avatar" style="background:linear-gradient(135deg,#1A140A,#3D2A10);">☕</div>
+              <div class="app-vendor-info">
+                <div class="app-vendor-name">Beanery Coffee Co.</div>
+                <div class="app-event-name">Rundle Mall Night Eats · Coffee</div>
+              </div>
+              <div class="app-quick-actions">
+                <button class="btn-approve" onclick="quickAction(this,'approved')">✓</button>
+                <button class="btn-waitlist" onclick="quickAction(this,'waitlisted')">⏸</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── MY EVENTS ── -->
+    <div class="panel" id="panel-events">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+        <div></div>
+        <button class="btn-topbar" onclick="showPanel('new-event',null)">+ Post an Event</button>
+      </div>
+      <div class="card" style="padding:0;overflow:hidden;">
+        <table class="events-table">
+          <thead>
+            <tr>
+              <th style="padding-left:24px;">Event</th>
+              <th>Date</th>
+              <th>Spots</th>
+              <th>Fill rate</th>
+              <th>Status</th>
+              <th>Apps</th>
+              <th style="padding-right:24px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding-left:24px;"><div class="td-event">Rundle Mall Night Eats</div><div class="td-sub">Night Market · Adelaide CBD</div></td>
+              <td style="white-space:nowrap;">Sat 12 Apr 2026</td>
+              <td><span class="spots-text">14/20</span></td>
+              <td><div class="fill-bar-wrap" style="min-width:100px;"><div class="fill-bar-track"><div class="fill-bar-fill" style="width:70%;background:#C9840A;"></div></div><span class="fill-bar-label" style="color:#C9840A;">70%</span></div></td>
+              <td><span class="badge badge-live">● Live</span></td>
+              <td>22</td>
+              <td style="padding-right:24px;"><div class="action-btns"><button class="btn-action btn-manage" onclick="openEventMgmt('rundle-mall-night-eats','Rundle Mall Night Eats')">Manage</button><button class="btn-action btn-edit">Edit</button><button class="btn-action btn-hide">Hide</button></div></td>
+            </tr>
+            <tr>
+              <td style="padding-left:24px;"><div class="td-event">Adelaide Showground Harvest Fair</div><div class="td-sub">Fair · Wayville, SA</div></td>
+              <td style="white-space:nowrap;">Sun 18 Apr 2026</td>
+              <td><span class="spots-text">8/18</span></td>
+              <td><div class="fill-bar-wrap" style="min-width:100px;"><div class="fill-bar-track"><div class="fill-bar-fill" style="width:44%;background:#C9840A;"></div></div><span class="fill-bar-label" style="color:#C9840A;">44%</span></div></td>
+              <td><span class="badge badge-live">● Live</span></td>
+              <td>15</td>
+              <td style="padding-right:24px;"><div class="action-btns"><button class="btn-action btn-manage" onclick="openEventMgmt('showground','Adelaide Showground Harvest Fair')">Manage</button><button class="btn-action btn-edit">Edit</button><button class="btn-action btn-hide">Hide</button></div></td>
+            </tr>
+            <tr>
+              <td style="padding-left:24px;"><div class="td-event">Glenelg Twilight Market</div><div class="td-sub">Night Market · Glenelg, SA</div></td>
+              <td style="white-space:nowrap;">Sun 3 May 2026</td>
+              <td><span class="spots-text">5/15</span></td>
+              <td><div class="fill-bar-wrap" style="min-width:100px;"><div class="fill-bar-track"><div class="fill-bar-fill" style="width:33%;background:#2D8B55;"></div></div><span class="fill-bar-label" style="color:#2D8B55;">33%</span></div></td>
+              <td><span class="badge badge-live">● Live</span></td>
+              <td>18</td>
+              <td style="padding-right:24px;"><div class="action-btns"><button class="btn-action btn-manage" onclick="openEventMgmt('glenelg','Glenelg Twilight Market')">Manage</button><button class="btn-action btn-edit">Edit</button><button class="btn-action btn-hide">Hide</button></div></td>
+            </tr>
+            <tr>
+              <td style="padding-left:24px;"><div class="td-event">Port Adelaide Night Market</div><div class="td-sub">Night Market · Port Adelaide</div></td>
+              <td style="white-space:nowrap;">Sat 10 May 2026</td>
+              <td><span class="spots-text">0/12</span></td>
+              <td><div class="fill-bar-wrap" style="min-width:100px;"><div class="fill-bar-track"><div class="fill-bar-fill" style="width:0%;background:#2D8B55;"></div></div><span class="fill-bar-label" style="color:var(--text-lo);">0%</span></div></td>
+              <td><span class="badge badge-draft">○ Draft</span></td>
+              <td>0</td>
+              <td style="padding-right:24px;"><div class="action-btns"><button class="btn-action btn-manage">Manage</button><button class="btn-action btn-edit">Edit</button><button class="btn-action btn-hide">Hide</button></div></td>
+            </tr>
+            <tr>
+              <td style="padding-left:24px;"><div class="td-event">Winter Lantern Market</div><div class="td-sub">Market · City Gardens</div></td>
+              <td style="white-space:nowrap;">Sat 20 Jun 2026</td>
+              <td><span class="spots-text">2/20</span></td>
+              <td><div class="fill-bar-wrap" style="min-width:100px;"><div class="fill-bar-track"><div class="fill-bar-fill" style="width:10%;background:#2D8B55;"></div></div><span class="fill-bar-label" style="color:#2D8B55;">10%</span></div></td>
+              <td><span class="badge badge-live">● Live</span></td>
+              <td>4</td>
+              <td style="padding-right:24px;"><div class="action-btns"><button class="btn-action btn-manage">Manage</button><button class="btn-action btn-edit">Edit</button><button class="btn-action btn-hide">Hide</button></div></td>
+            </tr>
+            <tr>
+              <td style="padding-left:24px;"><div class="td-event">Fringe Food Village 2026</div><div class="td-sub">Festival · Various SA venues</div></td>
+              <td style="white-space:nowrap;">Sat 22 Mar 2026</td>
+              <td><span class="spots-text">30/30</span></td>
+              <td><div class="fill-bar-wrap" style="min-width:100px;"><div class="fill-bar-track"><div class="fill-bar-fill" style="width:100%;background:#C0392B;"></div></div><span class="fill-bar-label" style="color:#C0392B;">100%</span></div></td>
+              <td><span class="badge badge-past">● Past</span></td>
+              <td>47</td>
+              <td style="padding-right:24px;"><div class="action-btns"><button class="btn-action btn-manage">View</button><button class="btn-action btn-hide">Archive</button></div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── EVENT MANAGEMENT ── -->
+    <div class="panel" id="panel-event-mgmt">
+      <div class="mgmt-header">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+          <button onclick="showPanel('events',null)" style="background:transparent;border:none;color:var(--text-lo);cursor:pointer;font-size:12px;font-family:var(--fb);">← My Events</button>
+          <span style="color:var(--text-lo);font-size:12px;">/</span>
+          <span style="font-size:12px;color:var(--text-mid);" id="mgmt-breadcrumb">Rundle Mall Night Eats</span>
+        </div>
+        <div class="mgmt-event-name" id="mgmt-event-name">Rundle Mall Night Eats</div>
+        <div class="mgmt-meta">
+          <span class="mgmt-meta-item">📅 Sat 12 Apr 2026</span>
+          <span class="mgmt-meta-item">📍 Adelaide CBD</span>
+          <span class="mgmt-meta-item"><span class="badge badge-live">● Live</span></span>
+          <span class="mgmt-meta-item">14/20 spots filled</span>
+        </div>
+      </div>
+
+      <div class="tab-bar">
+        <button class="tab-btn active" onclick="showTab('applications',this)">Applications<span class="tab-count">22</span></button>
+        <button class="tab-btn" onclick="showTab('lineup',this)">Lineup<span class="tab-count">14</span></button>
+        <button class="tab-btn" onclick="showTab('details',this)">Details</button>
+        <button class="tab-btn" onclick="showTab('analytics',this)">Analytics</button>
+      </div>
+
+      <!-- Applications tab -->
+      <div class="tab-content active" id="tab-applications">
+        <div class="app-filter-row">
+          <button class="app-filter-btn active" onclick="filterMgmtApps('all',this)">All <span style="opacity:0.6;">(22)</span></button>
+          <button class="app-filter-btn" onclick="filterMgmtApps('pending',this)">Pending <span style="opacity:0.6;">(8)</span></button>
+          <button class="app-filter-btn" onclick="filterMgmtApps('approved',this)">Approved <span style="opacity:0.6;">(10)</span></button>
+          <button class="app-filter-btn" onclick="filterMgmtApps('waitlisted',this)">Waitlisted <span style="opacity:0.6;">(2)</span></button>
+          <button class="app-filter-btn" onclick="filterMgmtApps('rejected',this)">Rejected <span style="opacity:0.6;">(2)</span></button>
+        </div>
+        <div class="app-cards-grid" id="mgmt-app-cards">
+          <!-- pending -->
+          <div class="app-card" data-app-status="pending">
+            <div class="app-card-top">
+              <div class="app-card-avatar" style="background:linear-gradient(135deg,#3D1A06,#6B2E08);">🔥</div>
+              <div class="app-card-info">
+                <div class="app-card-name">
+                  <a class="app-card-vendor" href="/vendors/smoky-joes-bbq">Smoky Joe's BBQ</a>
+                  <span class="badge badge-pending">Pending</span>
+                  <span class="badge" style="background:linear-gradient(135deg,#C9840A20,#E89B1A14);border:1px solid #C9840A30;color:var(--gold);font-size:9px;">⭐ PRO</span>
+                </div>
+                <div class="app-card-tags">
+                  <span class="app-tag">BBQ</span>
+                  <span class="app-tag app-tag-gray">🚚 Food Truck</span>
+                  <span class="app-tag app-tag-gray">3×3m</span>
+                  <span class="app-tag app-tag-gray">★ 4.9 (62)</span>
+                </div>
+              </div>
+            </div>
+            <div class="app-card-note">"We've done Rundle Mall three years running and know the space well. Our setup takes 45 min and we always finish pack-down on time. Happy to be placed anywhere along the western corridor."</div>
+            <div class="app-card-footer">
+              <div class="app-card-meta">Applied 2 Apr 2026 · Power required · No water</div>
+              <div class="app-actions">
+                <button class="btn-act-approve" onclick="actOn(this,'approved')">✓ Approve</button>
+                <button class="btn-act-waitlist" onclick="actOn(this,'waitlisted')">⏸ Waitlist</button>
+                <div style="position:relative;">
+                  <button class="btn-act-reject" onclick="toggleRejectDD(this)">✕ Reject ▾</button>
+                  <div class="reject-dropdown">
+                    <div class="reject-dropdown-header">Reason</div>
+                    <button class="reject-option" onclick="actOn(this.closest('.app-card').querySelector('.btn-act-reject'),'rejected','Too many BBQ vendors')">Too many vendors in this cuisine</button>
+                    <button class="reject-option" onclick="actOn(this.closest('.app-card').querySelector('.btn-act-reject'),'rejected','Requirements not met')">Doesn't meet event requirements</button>
+                    <button class="reject-option" onclick="actOn(this.closest('.app-card').querySelector('.btn-act-reject'),'rejected','No availability')">No availability for this setup size</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- approved -->
+          <div class="app-card status-approved" data-app-status="approved">
+            <div class="app-card-top">
+              <div class="app-card-avatar" style="background:linear-gradient(135deg,#1A2D0A,#2D5C10);">🌮</div>
+              <div class="app-card-info">
+                <div class="app-card-name">
+                  <a class="app-card-vendor" href="/vendors/taco-loco">Taco Loco</a>
+                  <span class="badge badge-approved">✓ Approved</span>
+                  <span class="badge" style="background:linear-gradient(135deg,#C9840A20,#E89B1A14);border:1px solid #C9840A30;color:var(--gold);font-size:9px;">⭐ PRO</span>
+                </div>
+                <div class="app-card-tags">
+                  <span class="app-tag">Mexican</span>
+                  <span class="app-tag app-tag-gray">🏪 Pop-up Stall</span>
+                  <span class="app-tag app-tag-gray">3×3m</span>
+                  <span class="app-tag app-tag-gray">★ 4.7 (38)</span>
+                </div>
+              </div>
+            </div>
+            <div class="app-card-note">"Taco Loco at your service! We bring authentic Mexican street food — tacos, burritos, elote. We've done 23 events and pride ourselves on fast service and a clean site."</div>
+            <div class="app-card-footer">
+              <div class="app-card-meta">Applied 28 Mar 2026 · Power required · No water</div>
+              <div class="app-actions"><span style="font-size:12px;color:var(--herb);font-weight:600;">✓ Approved — Spot B4</span></div>
+            </div>
+          </div>
+          <!-- pending 2 -->
+          <div class="app-card" data-app-status="pending">
+            <div class="app-card-top">
+              <div class="app-card-avatar" style="background:linear-gradient(135deg,#0A1A2D,#0A3060);">🥢</div>
+              <div class="app-card-info">
+                <div class="app-card-name">
+                  <a class="app-card-vendor" href="/vendors/wok-and-roll">Wok &amp; Roll</a>
+                  <span class="badge badge-pending">Pending</span>
+                  <span class="badge" style="background:linear-gradient(135deg,#C9840A20,#E89B1A14);border:1px solid #C9840A30;color:var(--gold);font-size:9px;">⭐ PRO</span>
+                </div>
+                <div class="app-card-tags">
+                  <span class="app-tag">Asian Fusion</span>
+                  <span class="app-tag app-tag-gray">🚚 Food Truck</span>
+                  <span class="app-tag app-tag-gray">3×6m</span>
+                  <span class="app-tag app-tag-gray">★ 4.8 (51)</span>
+                </div>
+              </div>
+            </div>
+            <div class="app-card-note">"We offer a fast, high-quality pan-Asian menu with wide appeal. Our truck is self-contained and has operated at Rundle Mall before — familiar with the logistics."</div>
+            <div class="app-card-footer">
+              <div class="app-card-meta">Applied 3 Apr 2026 · Power required · Water preferred</div>
+              <div class="app-actions">
+                <button class="btn-act-approve" onclick="actOn(this,'approved')">✓ Approve</button>
+                <button class="btn-act-waitlist" onclick="actOn(this,'waitlisted')">⏸ Waitlist</button>
+                <div style="position:relative;">
+                  <button class="btn-act-reject" onclick="toggleRejectDD(this)">✕ Reject ▾</button>
+                  <div class="reject-dropdown">
+                    <div class="reject-dropdown-header">Reason</div>
+                    <button class="reject-option" onclick="actOn(this.closest('.app-card').querySelector('.btn-act-reject'),'rejected','Too many similar vendors')">Too many vendors in this cuisine</button>
+                    <button class="reject-option" onclick="actOn(this.closest('.app-card').querySelector('.btn-act-reject'),'rejected','Setup too large')">Setup size exceeds available space</button>
+                    <button class="reject-option" onclick="actOn(this.closest('.app-card').querySelector('.btn-act-reject'),'rejected','No water available')">Water connection not available</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- waitlisted -->
+          <div class="app-card" data-app-status="waitlisted">
+            <div class="app-card-top">
+              <div class="app-card-avatar" style="background:linear-gradient(135deg,#2D1A2A,#5C2A52);">🍰</div>
+              <div class="app-card-info">
+                <div class="app-card-name">
+                  <a class="app-card-vendor" href="/vendors/the-dessert-lab">The Dessert Lab</a>
+                  <span class="badge badge-waitlist">⏸ Waitlisted</span>
+                  <span class="badge" style="background:linear-gradient(135deg,#C9840A20,#E89B1A14);border:1px solid #C9840A30;color:var(--gold);font-size:9px;">⭐ PRO</span>
+                </div>
+                <div class="app-card-tags">
+                  <span class="app-tag">Desserts</span>
+                  <span class="app-tag app-tag-gray">🛒 Cart</span>
+                  <span class="app-tag app-tag-gray">2×2m</span>
+                  <span class="app-tag app-tag-gray">★ 4.9 (44)</span>
+                </div>
+              </div>
+            </div>
+            <div class="app-card-note">"We specialise in elevated desserts — crème brûlée tarts, miso caramel cheesecake, and rotating seasonal specials. Compact cart setup, great for high-foot-traffic spots."</div>
+            <div class="app-card-footer">
+              <div class="app-card-meta">Applied 30 Mar 2026 · No power needed · No water</div>
+              <div class="app-actions"><span style="font-size:12px;color:var(--gold);font-weight:600;">⏸ Waitlisted</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lineup tab -->
+      <div class="tab-content" id="tab-lineup">
+        <div class="lineup-header">
+          <div style="font-size:13px;color:var(--text-lo);">14 vendors confirmed · 6 spots remaining</div>
+          <button class="btn-broadcast" onclick="openBroadcast()">📢 Broadcast message</button>
+        </div>
+        <div class="card" style="padding:0;overflow:hidden;">
+          <table class="lineup-table">
+            <thead>
+              <tr>
+                <th style="padding-left:20px;">Vendor</th>
+                <th>Cuisine</th>
+                <th>Setup</th>
+                <th>Size</th>
+                <th>Power</th>
+                <th>Water</th>
+                <th>Spot #</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td style="padding-left:20px;"><a href="/vendors/taco-loco" style="color:var(--text-hi);font-weight:600;text-decoration:none;font-size:13px;">Taco Loco</a></td><td>Mexican</td><td>Pop-up Stall</td><td>3×3m</td><td><span class="check-icon">✓</span></td><td><span class="cross-icon">—</span></td><td><input class="spot-input" value="B4" /></td></tr>
+              <tr><td style="padding-left:20px;"><a href="/vendors/beanery-coffee" style="color:var(--text-hi);font-weight:600;text-decoration:none;font-size:13px;">Beanery Coffee Co.</a></td><td>Coffee</td><td>Cart</td><td>2×2m</td><td><span class="check-icon">✓</span></td><td><span class="cross-icon">—</span></td><td><input class="spot-input" value="A1" /></td></tr>
+              <tr><td style="padding-left:20px;"><a href="/vendors/napoli-express" style="color:var(--text-hi);font-weight:600;text-decoration:none;font-size:13px;">Napoli Express</a></td><td>Italian</td><td>Pop-up Stall</td><td>3×3m</td><td><span class="check-icon">✓</span></td><td><span class="cross-icon">—</span></td><td><input class="spot-input" value="C2" /></td></tr>
+              <tr><td style="padding-left:20px;"><a href="/vendors/ocean-and-fire" style="color:var(--text-hi);font-weight:600;text-decoration:none;font-size:13px;">Ocean &amp; Fire</a></td><td>Seafood</td><td>Pop-up Stall</td><td>3×3m</td><td><span class="check-icon">✓</span></td><td><span class="check-icon">✓</span></td><td><input class="spot-input" value="B2" /></td></tr>
+              <tr><td style="padding-left:20px;"><a href="/vendors/green-bowl" style="color:var(--text-hi);font-weight:600;text-decoration:none;font-size:13px;">Green Bowl</a></td><td>Vegan</td><td>Pop-up Stall</td><td>3×3m</td><td><span class="check-icon">✓</span></td><td><span class="cross-icon">—</span></td><td><input class="spot-input" value="C5" /></td></tr>
+              <tr><td style="padding-left:20px;"><a href="/vendors/brewski-burgers" style="color:var(--text-hi);font-weight:600;text-decoration:none;font-size:13px;">Brewski Burgers</a></td><td>Burgers</td><td>Food Truck</td><td>3×6m</td><td><span class="check-icon">✓</span></td><td><span class="cross-icon">—</span></td><td><input class="spot-input" value="A6" /></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Details tab -->
+      <div class="tab-content" id="tab-details">
+        <div class="card">
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Event name</label><input class="form-input" value="Rundle Mall Night Eats" /></div>
+            <div class="form-group"><label class="form-label">Category</label><select class="form-select"><option selected>Night Market</option><option>Fair</option><option>Festival</option></select></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Date</label><input class="form-input" type="date" value="2026-04-12" /></div>
+            <div class="form-group"><label class="form-label">Suburb</label><input class="form-input" value="Adelaide CBD" /></div>
+          </div>
+          <div class="form-group"><label class="form-label">Address</label><input class="form-input" value="Rundle Mall, Adelaide SA 5000" /></div>
+          <div class="form-group"><label class="form-label">Public description</label><textarea class="form-textarea">Adelaide's premier weekly night market, drawing 5,000+ visitors each Saturday evening to the heart of the CBD. Now in its 4th year, the event has become a fixture for foodies, families, and Adelaide's vibrant street food culture.</textarea></div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Total spots</label><input class="form-input" type="number" value="20" /></div>
+            <div class="form-group"><label class="form-label">Application deadline</label><input class="form-input" type="date" value="2026-04-05" /></div>
+          </div>
+          <button class="btn-step-next" style="margin-top:8px;">Save changes</button>
+        </div>
+      </div>
+
+      <!-- Analytics tab -->
+      <div class="tab-content" id="tab-analytics">
+        <div class="analytics-grid">
+          <div class="chart-card">
+            <div class="chart-title">Applications this week</div>
+            <div class="bar-chart" id="apps-chart">
+              <div class="bar-col"><div class="bar-val">2</div><div class="bar-fill" style="height:20px;"></div><div class="bar-label">Mon</div></div>
+              <div class="bar-col"><div class="bar-val">5</div><div class="bar-fill" style="height:50px;"></div><div class="bar-label">Tue</div></div>
+              <div class="bar-col"><div class="bar-val">3</div><div class="bar-fill" style="height:30px;"></div><div class="bar-label">Wed</div></div>
+              <div class="bar-col"><div class="bar-val">8</div><div class="bar-fill" style="height:80px;"></div><div class="bar-label">Thu</div></div>
+              <div class="bar-col"><div class="bar-val">6</div><div class="bar-fill" style="height:60px;"></div><div class="bar-label">Fri</div></div>
+              <div class="bar-col"><div class="bar-val">4</div><div class="bar-fill" style="height:40px;"></div><div class="bar-label">Sat</div></div>
+              <div class="bar-col"><div class="bar-val">1</div><div class="bar-fill" style="height:10px;"></div><div class="bar-label">Sun</div></div>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">Cuisine breakdown (applicants)</div>
+            <div>
+              <div class="h-bar-row"><span class="h-bar-label">BBQ</span><div class="h-bar-track"><div class="h-bar-fill" style="width:36%;"></div></div><span class="h-bar-val">8</span></div>
+              <div class="h-bar-row"><span class="h-bar-label">Asian Fusion</span><div class="h-bar-track"><div class="h-bar-fill" style="width:23%;background:#2B5BA8;"></div></div><span class="h-bar-val">5</span></div>
+              <div class="h-bar-row"><span class="h-bar-label">Mexican</span><div class="h-bar-track"><div class="h-bar-fill" style="width:18%;background:#2D8B55;"></div></div><span class="h-bar-val">4</span></div>
+              <div class="h-bar-row"><span class="h-bar-label">Desserts</span><div class="h-bar-track"><div class="h-bar-fill" style="width:14%;background:#C9840A;"></div></div><span class="h-bar-val">3</span></div>
+              <div class="h-bar-row"><span class="h-bar-label">Coffee</span><div class="h-bar-track"><div class="h-bar-fill" style="width:9%;background:#4A3F36;"></div></div><span class="h-bar-val">2</span></div>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">Key metrics</div>
+            <div class="kpi-grid">
+              <div class="kpi-item"><div class="kpi-label">Acceptance rate</div><div class="kpi-val">64%</div></div>
+              <div class="kpi-item"><div class="kpi-label">Avg response time</div><div class="kpi-val">1.4d</div></div>
+              <div class="kpi-item"><div class="kpi-label">Fill rate</div><div class="kpi-val" style="color:var(--gold);">70%</div></div>
+              <div class="kpi-item"><div class="kpi-label">Spots remaining</div><div class="kpi-val">6</div></div>
+            </div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">Applications vs approvals (last 4 events)</div>
+            <div class="bar-chart">
+              <div class="bar-col"><div class="bar-val" style="font-size:8px;line-height:1.2;">22/14</div><div style="display:flex;gap:3px;align-items:flex-end;"><div class="bar-fill" style="height:88px;width:18px;"></div><div class="bar-fill alt" style="height:56px;width:18px;"></div></div><div class="bar-label">Rundle</div></div>
+              <div class="bar-col"><div class="bar-val" style="font-size:8px;line-height:1.2;">15/8</div><div style="display:flex;gap:3px;align-items:flex-end;"><div class="bar-fill" style="height:60px;width:18px;"></div><div class="bar-fill alt" style="height:32px;width:18px;"></div></div><div class="bar-label">Showgrd</div></div>
+              <div class="bar-col"><div class="bar-val" style="font-size:8px;line-height:1.2;">47/30</div><div style="display:flex;gap:3px;align-items:flex-end;"><div class="bar-fill" style="height:94px;width:18px;"></div><div class="bar-fill alt" style="height:60px;width:18px;"></div></div><div class="bar-label">Fringe</div></div>
+              <div class="bar-col"><div class="bar-val" style="font-size:8px;line-height:1.2;">18/5</div><div style="display:flex;gap:3px;align-items:flex-end;"><div class="bar-fill" style="height:72px;width:18px;"></div><div class="bar-fill alt" style="height:20px;width:18px;"></div></div><div class="bar-label">Glenelg</div></div>
+            </div>
+            <div style="display:flex;gap:16px;margin-top:12px;">
+              <div style="display:flex;align-items:center;gap:6px;"><div style="width:10px;height:10px;border-radius:2px;background:var(--ember);opacity:0.8;"></div><span style="font-size:11px;color:var(--text-lo);">Applications</span></div>
+              <div style="display:flex;align-items:center;gap:6px;"><div style="width:10px;height:10px;border-radius:2px;background:#2B5BA8;"></div><span style="font-size:11px;color:var(--text-lo);">Approved</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── POST AN EVENT ── -->
+    <div class="panel" id="panel-new-event">
+      <!-- Progress bar -->
+      <div class="step-progress" id="step-progress">
+        <div class="step-item"><div class="step-circle active" id="sc1">1</div><div class="step-label active" id="sl1">Basics</div></div>
+        <div class="step-line" id="sline1"></div>
+        <div class="step-item"><div class="step-circle pending" id="sc2">2</div><div class="step-label" id="sl2">Booth specs</div></div>
+        <div class="step-line" id="sline2"></div>
+        <div class="step-item"><div class="step-circle pending" id="sc3">3</div><div class="step-label" id="sl3">Requirements</div></div>
+        <div class="step-line" id="sline3"></div>
+        <div class="step-item"><div class="step-circle pending" id="sc4">4</div><div class="step-label" id="sl4">Terms</div></div>
+        <div class="step-line" id="sline4"></div>
+        <div class="step-item"><div class="step-circle pending" id="sc5">5</div><div class="step-label" id="sl5">Review</div></div>
+      </div>
+
+      <!-- Step 1: Basics -->
+      <div class="step-panel active" id="step-1">
+        <div class="card">
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Event name</label><input class="form-input" placeholder="e.g. Rundle Mall Night Eats" /></div>
+            <div class="form-group"><label class="form-label">Category</label><select class="form-select"><option value="">Select category…</option><option>Night Market</option><option>Fair</option><option>Festival</option><option>Farmers Market</option><option>Private Event</option><option>Other</option></select></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Event date</label><input class="form-input" type="date" /></div>
+            <div class="form-group"><label class="form-label">End date (if multi-day)</label><input class="form-input" type="date" /></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Suburb</label><input class="form-input" placeholder="e.g. Adelaide CBD" /></div>
+            <div class="form-group"><label class="form-label">State</label><select class="form-select"><option>SA</option><option>VIC</option><option>NSW</option><option>QLD</option><option>WA</option><option>TAS</option><option>ACT</option><option>NT</option></select></div>
+          </div>
+          <div class="form-group"><label class="form-label">Full address</label><input class="form-input" placeholder="Street address for vendors" /></div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Expected attendance</label><input class="form-input" type="number" placeholder="e.g. 5000" /></div>
+            <div class="form-group"><label class="form-label">Event website (optional)</label><input class="form-input" type="url" placeholder="https://…" /></div>
+          </div>
+          <div class="form-group"><label class="form-label">Public description</label><textarea class="form-textarea" placeholder="Describe your event to potential vendors — what makes it special, your audience, the vibe…" style="min-height:120px;"></textarea></div>
+        </div>
+        <div class="step-nav"><div></div><button class="btn-step-next" onclick="goStep(2)">Next: Booth specs →</button></div>
+      </div>
+
+      <!-- Step 2: Booth specs -->
+      <div class="step-panel" id="step-2">
+        <div class="card">
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Total vendor spots</label><input class="form-input" type="number" placeholder="e.g. 20" /></div>
+            <div class="form-group"><label class="form-label">Standard booth size</label><input class="form-input" placeholder="e.g. 3m × 3m" /></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Power available</label>
+            <div style="display:flex;flex-direction:column;gap:12px;">
+              <div class="toggle-row"><span class="toggle-label">Power available at this event</span><label class="toggle-switch"><input type="checkbox" checked id="power-toggle" onchange="document.getElementById('power-amps').style.display=this.checked?'block':'none'" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+              <div id="power-amps"><div class="form-group" style="margin-bottom:0;"><label class="form-label">Amps available</label><select class="form-select" style="width:200px;"><option>15A single phase</option><option>20A single phase</option><option>32A single phase</option><option>3-phase available</option></select></div></div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Water available</label>
+            <div class="toggle-row"><span class="toggle-label">Water connection available at this event</span><label class="toggle-switch"><input type="checkbox" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Booth fee range</label>
+            <div class="fee-range-row">
+              <div style="position:relative;"><span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-lo);font-size:14px;">$</span><input class="fee-input" type="number" placeholder="Min" style="padding-left:26px;" /></div>
+              <span class="fee-sep">—</span>
+              <div style="position:relative;"><span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-lo);font-size:14px;">$</span><input class="fee-input" type="number" placeholder="Max" style="padding-left:26px;" /></div>
+              <span style="font-size:12px;color:var(--text-lo);">GST inclusive</span>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Setup time</label><input class="form-input" placeholder="e.g. 2:00pm – 4:30pm" /></div>
+            <div class="form-group"><label class="form-label">Pack-down time</label><input class="form-input" placeholder="e.g. 10:00pm – 11:30pm" /></div>
+          </div>
+        </div>
+        <div class="step-nav"><button class="btn-step-back" onclick="goStep(1)">← Back</button><button class="btn-step-next" onclick="goStep(3)">Next: Requirements →</button></div>
+      </div>
+
+      <!-- Step 3: Requirements -->
+      <div class="step-panel" id="step-3">
+        <div class="card">
+          <div class="form-group">
+            <label class="form-label">Cuisine categories wanted</label>
+            <div class="tag-selector">
+              <button class="tag-opt sel" onclick="this.classList.toggle('sel')">BBQ</button>
+              <button class="tag-opt sel" onclick="this.classList.toggle('sel')">Mexican</button>
+              <button class="tag-opt sel" onclick="this.classList.toggle('sel')">Asian Fusion</button>
+              <button class="tag-opt" onclick="this.classList.toggle('sel')">Italian</button>
+              <button class="tag-opt sel" onclick="this.classList.toggle('sel')">Desserts</button>
+              <button class="tag-opt sel" onclick="this.classList.toggle('sel')">Coffee &amp; Drinks</button>
+              <button class="tag-opt" onclick="this.classList.toggle('sel')">Vegan</button>
+              <button class="tag-opt" onclick="this.classList.toggle('sel')">Burgers</button>
+              <button class="tag-opt" onclick="this.classList.toggle('sel')">Seafood</button>
+              <button class="tag-opt" onclick="this.classList.toggle('sel')">Other</button>
+            </div>
+          </div>
+          <div class="form-group"><label class="form-label">Application deadline</label><input class="form-input" type="date" style="width:200px;" /></div>
+          <div class="form-group">
+            <label class="form-label">Exclusivity rules</label>
+            <div class="toggle-row"><span class="toggle-label">Only one vendor per cuisine category</span><label class="toggle-switch"><input type="checkbox" checked /><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+          </div>
+          <div class="form-group"><label class="form-label">Custom requirements</label><textarea class="form-textarea" placeholder="Any specific requirements for vendors at this event — e.g. health certificates, setup rules, equipment restrictions…"></textarea></div>
+        </div>
+        <div class="step-nav"><button class="btn-step-back" onclick="goStep(2)">← Back</button><button class="btn-step-next" onclick="goStep(4)">Next: Terms →</button></div>
+      </div>
+
+      <!-- Step 4: Terms -->
+      <div class="step-panel" id="step-4">
+        <div class="card">
+          <div class="form-group">
+            <label class="form-label">Cancellation policy</label>
+            <textarea class="form-textarea" style="min-height:140px;">Vendors who cancel more than 14 days before the event will receive a full refund. Cancellations within 7–14 days will receive a 50% refund. No refund will be provided for cancellations within 7 days of the event. In the event of cancellation by the organiser due to circumstances beyond our control (weather, council order, etc.), vendors will receive a full refund of their booth fee.</textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Payment terms</label>
+            <select class="form-select" style="max-width:320px;">
+              <option>Full payment due on approval</option>
+              <option>50% on approval, 50% one week before event</option>
+              <option>Full payment due 7 days before event</option>
+              <option>Full payment due on the day</option>
+            </select>
+          </div>
+        </div>
+        <div class="step-nav"><button class="btn-step-back" onclick="goStep(3)">← Back</button><button class="btn-step-next" onclick="goStep(5)">Review listing →</button></div>
+      </div>
+
+      <!-- Step 5: Review -->
+      <div class="step-panel" id="step-5">
+        <div class="card">
+          <div style="font-size:13px;color:var(--text-mid);margin-bottom:20px;">Review your event listing before publishing. You can edit any details after posting.</div>
+          <div class="review-field"><div class="review-field-label">Event name</div><div class="review-field-value">My New Event</div></div>
+          <div class="review-field"><div class="review-field-label">Category</div><div class="review-field-value">Night Market</div></div>
+          <div class="review-field"><div class="review-field-label">Date</div><div class="review-field-value">TBC</div></div>
+          <div class="review-field"><div class="review-field-label">Location</div><div class="review-field-value">TBC</div></div>
+          <div class="review-field"><div class="review-field-label">Total spots</div><div class="review-field-value">TBC</div></div>
+          <div class="review-field"><div class="review-field-label">Booth fee</div><div class="review-field-value">TBC</div></div>
+          <div class="review-field"><div class="review-field-label">Cuisines wanted</div><div class="review-field-value"><span class="app-tag">BBQ</span> <span class="app-tag">Mexican</span> <span class="app-tag">Asian Fusion</span> <span class="app-tag">Desserts</span> <span class="app-tag">Coffee &amp; Drinks</span></div></div>
+          <div class="review-field"><div class="review-field-label">Exclusivity</div><div class="review-field-value">One vendor per cuisine</div></div>
+        </div>
+        <div class="step-nav"><button class="btn-step-back" onclick="goStep(4)">← Back</button><button class="btn-step-next btn-publish" onclick="publishEvent()">🚀 Publish event</button></div>
+      </div>
+    </div>
+
+    <!-- ── MESSAGES ── -->
+    <div class="panel" id="panel-messages">
+      <div class="messages-layout">
+        <div class="msg-sidebar">
+          <div class="msg-sidebar-header">
+            <span class="msg-sidebar-title">Messages</span>
+            <button class="btn-broadcast" style="font-size:11px;padding:5px 10px;" onclick="openBroadcast()">📢 Broadcast</button>
+          </div>
+          <div class="msg-thread-list">
+            <div class="msg-event-label">Rundle Mall Night Eats</div>
+            <div class="msg-thread active unread" onclick="openThread(this,'Smoky Joe\'s BBQ','Rundle Mall Night Eats')">
+              <div class="msg-thread-avatar" style="background:linear-gradient(135deg,#3D1A06,#6B2E08);">🔥</div>
+              <div class="msg-thread-body">
+                <div class="msg-thread-name">Smoky Joe's BBQ</div>
+                <div class="msg-thread-preview">Quick question about power access…</div>
+              </div>
+              <div class="msg-thread-right"><span class="msg-thread-time">2m</span><div class="unread-dot"></div></div>
+            </div>
+            <div class="msg-thread" onclick="openThread(this,'Beanery Coffee Co.','Rundle Mall Night Eats')">
+              <div class="msg-thread-avatar" style="background:linear-gradient(135deg,#1A140A,#3D2A10);">☕</div>
+              <div class="msg-thread-body">
+                <div class="msg-thread-name">Beanery Coffee Co.</div>
+                <div class="msg-thread-preview">Thanks for the approval! See you there 🙌</div>
+              </div>
+              <div class="msg-thread-right"><span class="msg-thread-time">1h</span></div>
+            </div>
+            <div class="msg-event-label">Adelaide Showground Harvest Fair</div>
+            <div class="msg-thread unread" onclick="openThread(this,'Wok & Roll','Adelaide Showground Harvest Fair')">
+              <div class="msg-thread-avatar" style="background:linear-gradient(135deg,#0A1A2D,#0A3060);">🥢</div>
+              <div class="msg-thread-body">
+                <div class="msg-thread-name">Wok &amp; Roll</div>
+                <div class="msg-thread-preview">Will there be a water connection near…</div>
+              </div>
+              <div class="msg-thread-right"><span class="msg-thread-time">3h</span><div class="unread-dot"></div></div>
+            </div>
+            <div class="msg-event-label">Glenelg Twilight Market</div>
+            <div class="msg-thread" onclick="openThread(this,'Green Bowl','Glenelg Twilight Market')">
+              <div class="msg-thread-avatar" style="background:linear-gradient(135deg,#0A2010,#144A22);">🥗</div>
+              <div class="msg-thread-body">
+                <div class="msg-thread-name">Green Bowl</div>
+                <div class="msg-thread-preview">Hi — we're excited to apply for your…</div>
+              </div>
+              <div class="msg-thread-right"><span class="msg-thread-time">1d</span></div>
+            </div>
+            <div class="msg-thread" onclick="openThread(this,'Taco Loco','Glenelg Twilight Market')">
+              <div class="msg-thread-avatar" style="background:linear-gradient(135deg,#1A2D0A,#2D5C10);">🌮</div>
+              <div class="msg-thread-body">
+                <div class="msg-thread-name">Taco Loco</div>
+                <div class="msg-thread-preview">All confirmed, thanks for your quick reply</div>
+              </div>
+              <div class="msg-thread-right"><span class="msg-thread-time">2d</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="msg-main" id="msg-main">
+          <div class="msg-main-header">
+            <div>
+              <div class="msg-main-vendor" id="msg-vendor-name">Smoky Joe's BBQ</div>
+              <div class="msg-main-event" id="msg-event-name-thread">Rundle Mall Night Eats</div>
+            </div>
+            <a href="/vendors/smoky-joes-bbq" style="font-size:12px;color:var(--ember);text-decoration:none;">View profile →</a>
+          </div>
+          <div class="msg-body" id="msg-body">
+            <div class="msg-bubble-wrap them">
+              <div class="msg-bubble them">Hi! Quick question about the power setup at Rundle Mall — will there be 15A single phase available near the western end? We're at a new spot this year and want to confirm before we finalise our equipment.</div>
+              <div class="msg-timestamp">Smoky Joe's BBQ · 2 min ago</div>
+            </div>
+            <div class="msg-bubble-wrap us">
+              <div class="msg-bubble us">Hey Joe! Yes, there are 15A outlets every 10m along the western corridor. Your spot will be near B4 so you should be well covered. Let me know if you need anything else before the event.</div>
+              <div class="msg-timestamp">You · Sent</div>
+            </div>
+            <div class="msg-bubble-wrap them">
+              <div class="msg-bubble them">Perfect, that's exactly what I needed to know. Thanks for the quick reply — see you on the 12th! 🔥</div>
+              <div class="msg-timestamp">Smoky Joe's BBQ · Just now</div>
+            </div>
+          </div>
+          <div class="msg-compose">
+            <input class="msg-input" id="msg-input" placeholder="Type a message…" onkeydown="if(event.key==='Enter')sendMsg()" />
+            <button class="btn-send" onclick="sendMsg()">Send</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SETTINGS ── -->
+    <div class="panel" id="panel-settings">
+      <div style="max-width:600px;">
+        <div class="settings-card">
+          <div class="settings-section-title">Account</div>
+          <div class="settings-row">
+            <div><div class="settings-row-label">Organisation name</div><div class="settings-row-desc">Displayed on all your event listings.</div></div>
+            <input class="form-input" value="Adelaide City Council Events" style="width:240px;" />
+          </div>
+          <div class="settings-row">
+            <div><div class="settings-row-label">Email address</div><div class="settings-row-desc">To change your email, contact support.</div></div>
+            <div class="email-display">events@adelaidecitycouncil.com.au</div>
+          </div>
+        </div>
+        <div class="settings-card">
+          <div class="settings-section-title">Notifications</div>
+          <div class="settings-row"><div class="settings-row-left"><div class="settings-row-label">New applications</div><div class="settings-row-desc">Email me when a vendor applies to one of my events.</div></div><label class="toggle-switch"><input type="checkbox" checked /><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+          <div class="settings-row"><div class="settings-row-left"><div class="settings-row-label">Event deadline reminders</div><div class="settings-row-desc">Email me 7 days before my application deadlines close.</div></div><label class="toggle-switch"><input type="checkbox" checked /><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+          <div class="settings-row"><div class="settings-row-left"><div class="settings-row-label">Vendor messages</div><div class="settings-row-desc">Email me when a vendor sends a message.</div></div><label class="toggle-switch"><input type="checkbox" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+        </div>
+        <div class="settings-card">
+          <div class="settings-section-title" style="color:var(--terra);">Danger zone</div>
+          <div style="background:#C0392B06;border:1px solid #C0392B22;border-radius:12px;padding:18px 20px;">
+            <div style="font-size:13px;font-weight:700;color:var(--terra);margin-bottom:6px;">⚠️ Delete organisation account</div>
+            <div style="font-size:13px;color:var(--text-lo);margin-bottom:14px;line-height:1.6;">Permanently deletes your account and all event listings. Active vendor applications will be cancelled.</div>
+            <button style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--terra);background:#C0392B10;border:1.5px solid #C0392B30;padding:10px 20px;border-radius:10px;cursor:pointer;">Delete account</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- BROADCAST MODAL -->
+<div class="modal-overlay" id="broadcast-modal" onclick="if(event.target===this)closeBroadcast()">
+  <div class="modal-box">
+    <div class="modal-title">📢 Broadcast message</div>
+    <div class="modal-desc">Send a message to all confirmed vendors at this event.</div>
+    <div class="form-group"><label class="form-label">Event</label><select class="form-select"><option>Rundle Mall Night Eats (14 vendors)</option><option>Glenelg Twilight Market (5 vendors)</option><option>Adelaide Showground Harvest Fair (8 vendors)</option></select></div>
+    <div class="form-group" style="margin-bottom:20px;"><label class="form-label">Message</label><textarea class="form-textarea" placeholder="Write your message to all confirmed vendors…" style="min-height:100px;"></textarea></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end;">
+      <button class="btn-modal-cancel" onclick="closeBroadcast()">Cancel</button>
+      <button class="btn-modal-send" onclick="closeBroadcast()">Send to all vendors</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const PANEL_TITLES = { overview:'Overview', events:'My Events', 'event-mgmt':'Event Management', 'new-event':'Post an Event', messages:'Messages', settings:'Settings' };
+
+function showPanel(name, clickedEl) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  document.querySelectorAll('.sidebar .nav-link').forEach(l => l.classList.remove('active'));
+  if (clickedEl) clickedEl.classList.add('active');
+  document.getElementById('topbar-title').textContent = PANEL_TITLES[name] || name;
+  document.getElementById('topbar-subtitle').textContent = '';
+}
+
+function openEventMgmt(id, name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-event-mgmt').classList.add('active');
+  document.getElementById('mgmt-event-name').textContent = name;
+  document.getElementById('mgmt-breadcrumb').textContent = name;
+  document.getElementById('topbar-title').textContent = name;
+  // reset to applications tab
+  showTab('applications', document.querySelector('.tab-btn'));
+}
+
+function showTab(name, btn) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+
+function filterMgmtApps(status, btn) {
+  document.querySelectorAll('.app-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.app-card').forEach(card => {
+    card.style.display = (status === 'all' || card.dataset.appStatus === status) ? '' : 'none';
+  });
+}
+
+function actOn(btn, status, reason) {
+  const card = btn.closest('.app-card');
+  const actionsEl = card.querySelector('.app-actions');
+  card.dataset.appStatus = status;
+  // close any open dropdowns
+  card.querySelectorAll('.reject-dropdown').forEach(d => d.classList.remove('open'));
+  const labels = { approved: '<span style="font-size:12px;color:var(--herb);font-weight:600;">✓ Approved</span>', waitlisted: '<span style="font-size:12px;color:var(--gold);font-weight:600;">⏸ Waitlisted</span>', rejected: `<span style="font-size:12px;color:var(--terra);font-weight:600;">✕ Rejected${reason ? ' — ' + reason : ''}</span>` };
+  actionsEl.innerHTML = labels[status] || '';
+  const badge = card.querySelector('.badge');
+  if (badge) { badge.className = 'badge badge-' + (status === 'rejected' ? 'rejected' : status === 'approved' ? 'approved' : 'waitlist'); badge.textContent = status === 'approved' ? '✓ Approved' : status === 'waitlisted' ? '⏸ Waitlisted' : '✕ Rejected'; }
+  if (status === 'approved') card.classList.add('status-approved');
+  if (status === 'rejected') card.classList.add('status-rejected');
+}
+
+function toggleRejectDD(btn) {
+  // close all others first
+  document.querySelectorAll('.reject-dropdown').forEach(d => { if (d !== btn.nextElementSibling) d.classList.remove('open'); });
+  btn.nextElementSibling.classList.toggle('open');
+}
+document.addEventListener('click', e => { if (!e.target.closest('.app-actions')) document.querySelectorAll('.reject-dropdown').forEach(d => d.classList.remove('open')); });
+
+function quickAction(btn, status) {
+  const row = btn.closest('.recent-app-row');
+  const actRow = row.querySelector('.app-quick-actions');
+  const colors = { approved: 'var(--herb)', waitlisted: 'var(--gold)' };
+  const labels = { approved: '✓ Approved', waitlisted: '⏸ Waitlisted' };
+  actRow.innerHTML = `<span style="font-size:12px;font-weight:700;color:${colors[status]};">${labels[status]}</span>`;
+}
+
+// Multi-step form
+let currentStep = 1;
+function goStep(n) {
+  document.getElementById('step-' + currentStep).classList.remove('active');
+  currentStep = n;
+  document.getElementById('step-' + n).classList.add('active');
+  for (let i = 1; i <= 5; i++) {
+    const c = document.getElementById('sc' + i);
+    const l = document.getElementById('sl' + i);
+    const line = document.getElementById('sline' + i);
+    if (i < n)       { c.className = 'step-circle done'; c.textContent = '✓'; l.className = 'step-label done'; if (line) line.className = 'step-line done'; }
+    else if (i === n){ c.className = 'step-circle active'; c.textContent = i; l.className = 'step-label active'; }
+    else             { c.className = 'step-circle pending'; c.textContent = i; l.className = 'step-label'; if (line) line.className = 'step-line'; }
+  }
+}
+
+function publishEvent() {
+  const btn = event.target;
+  btn.textContent = '✓ Published!';
+  btn.style.background = 'var(--herb)';
+  setTimeout(() => { showPanel('events', null); btn.textContent = '🚀 Publish event'; btn.style.background = ''; goStep(1); }, 1500);
+}
+
+// Messages
+function openThread(el, vendor, eventName) {
+  document.querySelectorAll('.msg-thread').forEach(t => { t.classList.remove('active'); t.classList.remove('unread'); });
+  el.classList.add('active');
+  document.getElementById('msg-vendor-name').textContent = vendor;
+  document.getElementById('msg-event-name-thread').textContent = eventName;
+}
+
+function sendMsg() {
+  const input = document.getElementById('msg-input');
+  const text = input.value.trim();
+  if (!text) return;
+  const body = document.getElementById('msg-body');
+  const div = document.createElement('div');
+  div.className = 'msg-bubble-wrap us';
+  div.innerHTML = `<div class="msg-bubble us">${text}</div><div class="msg-timestamp">You · Just now</div>`;
+  body.appendChild(div);
+  input.value = '';
+  body.scrollTop = body.scrollHeight;
+}
+
+// Broadcast modal
+function openBroadcast() { document.getElementById('broadcast-modal').classList.add('open'); }
+function closeBroadcast() { document.getElementById('broadcast-modal').classList.remove('open'); }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeBroadcast(); });
+</script>
+</body>
+</html>
