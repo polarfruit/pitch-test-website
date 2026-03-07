@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Events — Pitch.</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --ember:      #E8500A;
+  --ember-glow: #FF6B2B;
+  --ember-bg:   #E8500A12;
+  --coal:       #1A1612;
+  --char:       #231E19;
+  --ash:        #2E2720;
+  --smoke:      #4A3F36;
+  --parchment:  #FDF4E7;
+  --cream:      #F5EDD8;
+  --linen:      #EDE3CC;
+  --herb:       #2D8B55;
+  --gold:       #C9840A;
+  --terra:      #C0392B;
+  --slate:      #2B5BA8;
+  --text-hi:    #FDF4E7;
+  --text-mid:   #A89880;
+  --text-lo:    #6B5A4A;
+  --fd:         'Fraunces', Georgia, serif;
+  --fb:         'Instrument Sans', 'Helvetica Neue', sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+body { background: var(--coal); color: var(--text-hi); font-family: var(--fb); line-height: 1.5; overflow-x: hidden; }
+
+body::before {
+  content: ''; position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 0; opacity: 0.45;
+}
+
+/* ── NAV ────────────────────────────────────────────────────────────────── */
+.navbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  height: 66px; display: flex; align-items: center; justify-content: space-between;
+  padding: 0 52px;
+  background: rgba(26,22,18,0.92); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid #ffffff07;
+}
+.nav-logo { font-family: var(--fd); font-size: 26px; font-weight: 900; letter-spacing: -0.04em; color: var(--text-hi); text-decoration: none; }
+.nav-logo .dot { color: var(--ember); }
+.nav-links { display: flex; align-items: center; gap: 32px; list-style: none; }
+.nav-links a { font-size: 14px; font-weight: 500; color: var(--text-mid); text-decoration: none; transition: color 0.14s; }
+.nav-links a:hover, .nav-links a.active { color: var(--text-hi); }
+.nav-actions { display: flex; align-items: center; gap: 10px; }
+.btn-login { font-family: var(--fb); font-size: 13px; font-weight: 600; color: var(--text-mid); background: transparent; border: none; padding: 9px 16px; border-radius: 8px; cursor: pointer; transition: color 0.14s, background 0.14s; text-decoration: none; }
+.btn-login:hover { color: var(--text-hi); background: #ffffff09; }
+.btn-get-started { font-family: var(--fb); font-size: 13px; font-weight: 700; color: #fff; background: var(--ember); border: none; padding: 10px 22px; border-radius: 9px; cursor: pointer; box-shadow: 0 4px 16px #E8500A2E; transition: background 0.14s, transform 0.14s; text-decoration: none; }
+.btn-get-started:hover { background: var(--ember-glow); transform: translateY(-1px); }
+.nav-hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 8px; border: none; background: transparent; }
+.nav-hamburger span { display: block; width: 22px; height: 2px; background: var(--text-mid); border-radius: 2px; }
+
+/* ── PAGE HERO ──────────────────────────────────────────────────────────── */
+.page-wrap { max-width: 1320px; margin: 0 auto; padding: 104px 52px 80px; position: relative; z-index: 1; }
+
+.page-hero { margin-bottom: 32px; }
+.sec-tag {
+  display: inline-flex; align-items: center; gap: 9px;
+  font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase;
+  color: var(--ember); font-weight: 700; margin-bottom: 10px;
+}
+.sec-tag::before { content: ''; width: 18px; height: 2px; background: var(--ember); border-radius: 1px; }
+.page-title {
+  font-family: var(--fd);
+  font-size: clamp(34px, 4vw, 52px);
+  font-weight: 900; letter-spacing: -0.03em;
+  color: var(--text-hi); line-height: 1.02;
+}
+.page-count {
+  font-family: var(--fb); font-size: 0.45em; font-weight: 400;
+  color: var(--text-lo); letter-spacing: 0; vertical-align: middle;
+  margin-left: 8px;
+}
+
+/* ── FILTER BAR ──────────────────────────────────────────────────────────── */
+.filter-bar {
+  background: var(--char);
+  border: 1px solid #ffffff09;
+  border-radius: 16px;
+  padding: 16px 20px;
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.filter-search-wrap { position: relative; flex: 2; min-width: 200px; }
+.filter-search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 14px; color: var(--text-lo); pointer-events: none; }
+
+.filter-input, .filter-select {
+  background: var(--ash); border: 1px solid #ffffff0A;
+  border-radius: 9px; padding: 9px 14px;
+  font-family: var(--fb); font-size: 13px; color: var(--text-hi);
+  outline: none; height: 40px; width: 100%;
+  transition: border-color 0.14s, box-shadow 0.14s;
+}
+.filter-input:focus, .filter-select:focus { border-color: #E8500A40; box-shadow: 0 0 0 3px #E8500A12; }
+.filter-input::placeholder { color: var(--text-lo); }
+
+.filter-search-wrap .filter-input { padding-left: 36px; }
+
+.filter-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7' viewBox='0 0 12 7'%3E%3Cpath d='M1 1l5 4.5L11 1' stroke='%236B5A4A' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 12px center;
+  padding-right: 32px; cursor: pointer; min-width: 162px; flex-shrink: 0;
+}
+.filter-select option { background: var(--char); color: var(--text-hi); }
+
+.filter-date-wrap { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.filter-date-label { font-size: 11px; color: var(--text-lo); font-weight: 600; white-space: nowrap; }
+.filter-input-date { min-width: 130px; flex-shrink: 0; color-scheme: dark; }
+
+.filter-clear {
+  font-size: 12px; font-weight: 600; color: var(--text-lo); cursor: pointer;
+  background: none; border: none; font-family: var(--fb); white-space: nowrap;
+  padding: 9px 6px; transition: color 0.14s; flex-shrink: 0;
+}
+.filter-clear:hover { color: var(--ember); }
+
+/* ── RESULTS META ─────────────────────────────────────────────────────────── */
+.results-meta {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 24px;
+}
+.results-count { font-size: 13px; color: var(--text-lo); }
+.results-count strong { color: var(--text-mid); font-weight: 600; }
+
+.active-filters { display: flex; gap: 6px; flex-wrap: wrap; }
+.active-filter-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: var(--ember-bg); border: 1px solid #E8500A20;
+  border-radius: 100px; padding: 3px 10px;
+  font-size: 11px; font-weight: 600; color: var(--ember);
+}
+.chip-remove { cursor: pointer; font-size: 13px; line-height: 1; }
+
+/* ── EVENTS GRID ──────────────────────────────────────────────────────────── */
+.events-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-bottom: 48px;
+}
+
+/* ── EVENT CARD ───────────────────────────────────────────────────────────── */
+.ec {
+  background: var(--parchment); border: 1px solid var(--linen);
+  border-radius: 18px; overflow: hidden; color: var(--coal);
+  transition: transform 0.18s, box-shadow 0.18s;
+  cursor: pointer; text-decoration: none; display: block;
+}
+.ec:hover { transform: translateY(-4px); box-shadow: 0 20px 52px #00000024; }
+
+.ec-img {
+  height: 156px; display: flex; align-items: center; justify-content: center;
+  font-size: 50px; position: relative; overflow: hidden;
+}
+.ec-img-night   { background: linear-gradient(135deg, #1A1612 0%, #321A0A 100%); }
+.ec-img-farm    { background: linear-gradient(135deg, #162214 0%, #243416 100%); }
+.ec-img-fest    { background: linear-gradient(135deg, #16101A 0%, #2C1A3A 100%); }
+.ec-img-barossa { background: linear-gradient(135deg, #1C0E0A 0%, #3C1E08 100%); }
+.ec-img-twi     { background: linear-gradient(135deg, #0E1420 0%, #182A3E 100%); }
+.ec-img-port    { background: linear-gradient(135deg, #101220 0%, #182040 100%); }
+.ec-img-norwood { background: linear-gradient(135deg, #161020 0%, #2A1840 100%); }
+.ec-img-corp    { background: linear-gradient(135deg, #101418 0%, #1C2230 100%); }
+
+.ec-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(26,22,18,0.52) 0%, transparent 55%); }
+.ec-cat { position: absolute; top: 12px; left: 12px; font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 100px; font-family: var(--fb); letter-spacing: 0.06em; }
+.ec-spots { position: absolute; top: 12px; right: 12px; font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 100px; font-family: var(--fb); }
+
+.ec-body { padding: 18px 20px 20px; }
+.ec-name { font-family: var(--fd); font-size: 16px; font-weight: 800; color: var(--coal); margin-bottom: 3px; line-height: 1.25; }
+.ec-loc  { font-size: 12px; color: #9A8870; margin-bottom: 2px; }
+.ec-date { font-size: 12px; color: #9A8870; margin-bottom: 14px; }
+
+.ec-fill-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+.ec-fill-row span { font-size: 10px; color: #9A8870; }
+.ec-bar-bg { height: 4px; background: var(--linen); border-radius: 2px; overflow: hidden; margin-bottom: 14px; }
+.ec-bar { height: 100%; border-radius: 2px; }
+
+.ec-foot { display: flex; justify-content: space-between; align-items: center; padding-top: 12px; border-top: 1px solid var(--linen); }
+.ec-fee { font-size: 12px; color: #9A8870; }
+.ec-fee strong { color: var(--coal); font-weight: 700; }
+.ec-dl { font-size: 11px; color: #9A8870; }
+
+/* Empty state */
+.empty-state { text-align: center; padding: 80px 0; grid-column: 1/-1; }
+.empty-icon { font-size: 48px; margin-bottom: 16px; }
+.empty-title { font-family: var(--fd); font-size: 22px; font-weight: 800; color: var(--text-hi); margin-bottom: 8px; }
+.empty-desc { font-size: 14px; color: var(--text-lo); }
+
+/* ── PAGINATION ───────────────────────────────────────────────────────────── */
+.pagination {
+  display: flex; align-items: center; gap: 5px;
+  justify-content: center; padding-bottom: 16px;
+}
+.pg-btn {
+  min-width: 38px; height: 38px; padding: 0 10px;
+  border-radius: 10px; font-family: var(--fb); font-size: 13px; font-weight: 600;
+  cursor: pointer; background: var(--char); border: 1px solid #ffffff09;
+  color: var(--text-mid); transition: all 0.14s; display: flex; align-items: center; justify-content: center; gap: 4px;
+}
+.pg-btn:hover:not(:disabled):not(.dots) { background: var(--ash); color: var(--text-hi); }
+.pg-btn.active { background: var(--ember); color: #fff; border-color: transparent; box-shadow: 0 3px 12px #E8500A28; }
+.pg-btn.dots { background: transparent; border-color: transparent; color: var(--text-lo); cursor: default; }
+.pg-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+/* ── FOOTER ──────────────────────────────────────────────────────────────── */
+footer { background: var(--char); border-top: 1px solid #ffffff07; position: relative; z-index: 1; }
+.footer-main { max-width: 1320px; margin: 0 auto; padding: 56px 52px 36px; display: grid; grid-template-columns: 1.8fr 1fr 1fr 1fr; gap: 48px; }
+.footer-logo { font-family: var(--fd); font-size: 24px; font-weight: 900; letter-spacing: -0.04em; color: var(--text-hi); margin-bottom: 10px; text-decoration: none; display: inline-block; }
+.footer-logo .dot { color: var(--ember); }
+.footer-desc { font-size: 13px; color: var(--text-lo); line-height: 1.8; max-width: 220px; margin-bottom: 20px; }
+.footer-socials { display: flex; gap: 8px; }
+.fsoc { width: 34px; height: 34px; border-radius: 8px; background: #ffffff08; border: 1px solid #ffffff0C; display: flex; align-items: center; justify-content: center; font-size: 13px; cursor: pointer; text-decoration: none; color: var(--text-lo); transition: all 0.14s; }
+.fsoc:hover { background: var(--ember-bg); border-color: #E8500A22; color: var(--ember); }
+.footer-col-title { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-lo); font-weight: 700; margin-bottom: 16px; }
+.footer-links { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.footer-links a { font-size: 13px; color: var(--text-mid); text-decoration: none; transition: color 0.14s; }
+.footer-links a:hover { color: var(--text-hi); }
+.footer-bottom { max-width: 1320px; margin: 0 auto; padding: 18px 52px 24px; border-top: 1px solid #ffffff06; display: flex; justify-content: space-between; align-items: center; }
+.footer-copy { font-size: 12px; color: var(--text-lo); }
+.footer-bl { font-family: var(--fd); font-size: 18px; font-weight: 900; letter-spacing: -0.04em; color: var(--text-mid); text-decoration: none; }
+.footer-bl .dot { color: var(--ember); }
+
+/* ── SCROLLBAR ─────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--coal); }
+::-webkit-scrollbar-thumb { background: var(--ash); border-radius: 3px; }
+
+/* ── RESPONSIVE ──────────────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .navbar { padding: 0 28px; }
+  .nav-links { display: none; }
+  .nav-actions { display: none; }
+  .nav-hamburger { display: flex; }
+  .page-wrap { padding: 96px 28px 64px; }
+  .events-grid { grid-template-columns: repeat(2, 1fr); }
+  .footer-main { grid-template-columns: 1fr 1fr; gap: 28px; padding: 40px 28px 28px; }
+  .footer-bottom { padding: 16px 28px 20px; }
+}
+@media (max-width: 640px) {
+  .events-grid { grid-template-columns: 1fr; }
+  .filter-bar { flex-direction: column; align-items: stretch; }
+  .filter-search-wrap, .filter-select { min-width: unset; }
+  .filter-date-wrap { flex-wrap: wrap; }
+  .footer-main { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── NAV ────────────────────────────────────────────────────────────────── -->
+<nav class="navbar">
+  <a href="/" class="nav-logo">Pitch<span class="dot">.</span></a>
+  <ul class="nav-links">
+    <li><a href="/events" class="active">Events</a></li>
+    <li><a href="/vendors">Vendors</a></li>
+    <li><a href="/#how-it-works">How It Works</a></li>
+  </ul>
+  <div class="nav-actions">
+    <a href="/login" class="btn-login">Log in</a>
+    <a href="/signup" class="btn-get-started">Get Started</a>
+  </div>
+  <button class="nav-hamburger" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- ── MAIN ───────────────────────────────────────────────────────────────── -->
+<main>
+<div class="page-wrap">
+
+  <!-- Page header -->
+  <div class="page-hero">
+    <div class="sec-tag">Discover</div>
+    <h1 class="page-title">Upcoming Events<span class="page-count" id="event-count-display">(124 events)</span></h1>
+  </div>
+
+  <!-- Filter bar -->
+  <div class="filter-bar">
+    <div class="filter-search-wrap">
+      <span class="filter-search-icon">🔍</span>
+      <input class="filter-input" id="f-search" type="text" placeholder="Search by name or suburb…" oninput="applyFilters()" />
+    </div>
+
+    <select class="filter-select" id="f-category" onchange="applyFilters()">
+      <option value="">All Categories</option>
+      <option value="Night Market">Night Market</option>
+      <option value="Festival">Festival</option>
+      <option value="Farmers Market">Farmers Market</option>
+      <option value="Corporate">Corporate</option>
+      <option value="Pop-up">Pop-up</option>
+      <option value="Twilight Market">Twilight Market</option>
+    </select>
+
+    <input class="filter-input" id="f-suburb" type="text" placeholder="Suburb or area…" style="min-width:140px;flex-shrink:0;" oninput="applyFilters()" />
+
+    <div class="filter-date-wrap">
+      <span class="filter-date-label">From</span>
+      <input class="filter-input filter-input-date" id="f-from" type="date" style="min-width:140px;" onchange="applyFilters()" />
+    </div>
+    <div class="filter-date-wrap">
+      <span class="filter-date-label">To</span>
+      <input class="filter-input filter-input-date" id="f-to" type="date" style="min-width:140px;" onchange="applyFilters()" />
+    </div>
+
+    <button class="filter-clear" onclick="clearFilters()">Clear filters</button>
+  </div>
+
+  <!-- Results meta -->
+  <div class="results-meta">
+    <div class="results-count" id="results-count">Showing <strong>12</strong> events</div>
+    <div class="active-filters" id="active-filters"></div>
+  </div>
+
+  <!-- Events grid -->
+  <div class="events-grid" id="events-grid"></div>
+
+  <!-- Pagination -->
+  <div class="pagination" id="pagination"></div>
+
+</div>
+</main>
+
+<!-- ── FOOTER ─────────────────────────────────────────────────────────────── -->
+<footer>
+  <div class="footer-main">
+    <div>
+      <a href="/" class="footer-logo">Pitch<span class="dot">.</span></a>
+      <p class="footer-desc">Australia's marketplace connecting food vendors with local events.</p>
+      <div class="footer-socials">
+        <a href="#" class="fsoc">𝕏</a><a href="#" class="fsoc">◈</a>
+        <a href="#" class="fsoc">in</a><a href="#" class="fsoc">f</a>
+      </div>
+    </div>
+    <div>
+      <div class="footer-col-title">For Vendors</div>
+      <ul class="footer-links">
+        <li><a href="/signup?role=vendor">Sign up</a></li>
+        <li><a href="/#how-it-works">How it works</a></li>
+        <li><a href="/pricing">Pricing</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">For Organisers</div>
+      <ul class="footer-links">
+        <li><a href="/events/new">Post an event</a></li>
+        <li><a href="/#how-it-works">How it works</a></li>
+        <li><a href="/contact">Talk to sales</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">Company</div>
+      <ul class="footer-links">
+        <li><a href="/about">About</a></li>
+        <li><a href="/contact">Contact</a></li>
+        <li><a href="/terms">Terms</a></li>
+        <li><a href="/privacy">Privacy</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span class="footer-copy">© 2026 Pitch. Adelaide, Australia.</span>
+    <a href="/" class="footer-bl">Pitch<span class="dot">.</span></a>
+  </div>
+</footer>
+
+<script>
+// ── MOCK DATA ────────────────────────────────────────────────────────────────
+const EVENTS = [
+  { id:'rundle-mall-night-eats',    name:'Rundle Mall Night Eats',           category:'Night Market',   suburb:'Adelaide CBD',  state:'SA', date:'2026-04-12', dateLabel:'Sat 12 Apr 2026', time:'5pm–10pm',  total:20, filled:14, feeMin:200, feeMax:350, deadline:'2026-04-05', emoji:'🌃', bg:'night'   },
+  { id:'showground-harvest-fair',   name:'Adelaide Showground Harvest Fair', category:'Farmers Market', suburb:'Wayville',       state:'SA', date:'2026-04-19', dateLabel:'Sun 19 Apr 2026', time:'8am–1pm',   total:20, filled:18, feeMin:150, feeMax:280, deadline:'2026-04-06', emoji:'🌾', bg:'farm'    },
+  { id:'fringe-food-village',       name:'Fringe Food Village 2026',         category:'Festival',       suburb:'Adelaide CBD',  state:'SA', date:'2026-03-22', dateLabel:'2–22 Mar 2026',   time:'Various',   total:40, filled:28, feeMin:400, feeMax:700, deadline:'2026-03-08', emoji:'🎪', bg:'fest'    },
+  { id:'barossa-food-wine',         name:'Barossa Valley Food & Wine',       category:'Festival',       suburb:'Tanunda',        state:'SA', date:'2026-04-26', dateLabel:'Sun 26 Apr 2026', time:'11am–5pm',  total:20, filled:12, feeMin:300, feeMax:500, deadline:'2026-04-12', emoji:'🍷', bg:'barossa' },
+  { id:'glenelg-twilight',          name:'Glenelg Twilight Market',          category:'Twilight Market',suburb:'Glenelg',        state:'SA', date:'2026-05-03', dateLabel:'Sun 3 May 2026',  time:'4pm–9pm',   total:20, filled:16, feeMin:120, feeMax:200, deadline:'2026-04-19', emoji:'🌅', bg:'twi'     },
+  { id:'port-adelaide-night-market',name:'Port Adelaide Night Market',       category:'Night Market',   suburb:'Port Adelaide',  state:'SA', date:'2026-05-10', dateLabel:'Sun 10 May 2026', time:'5pm–10pm',  total:20, filled:9,  feeMin:150, feeMax:250, deadline:'2026-04-26', emoji:'🌊', bg:'port'    },
+  { id:'norwood-food-bazaar',       name:'Norwood Food Bazaar',              category:'Pop-up',         suburb:'Norwood',        state:'SA', date:'2026-05-17', dateLabel:'Sun 17 May 2026', time:'10am–3pm',  total:10, filled:9,  feeMin:100, feeMax:180, deadline:'2026-05-03', emoji:'⚡', bg:'norwood' },
+  { id:'victor-harbor-summer-fair', name:'Victor Harbor Summer Fair',        category:'Festival',       suburb:'Victor Harbor',  state:'SA', date:'2026-05-24', dateLabel:'Sun 24 May 2026', time:'10am–4pm',  total:30, filled:16, feeMin:250, feeMax:450, deadline:'2026-05-10', emoji:'🎡', bg:'fest'    },
+  { id:'prospect-farmers-market',   name:'Prospect Farmers Market',          category:'Farmers Market', suburb:'Prospect',       state:'SA', date:'2026-05-31', dateLabel:'Sun 31 May 2026', time:'8am–12pm',  total:24, filled:18, feeMin:80,  feeMax:150, deadline:'2026-05-17', emoji:'🌿', bg:'farm'    },
+  { id:'westpac-corporate-day',     name:'Westpac Corporate Food Day',       category:'Corporate',      suburb:'Adelaide CBD',  state:'SA', date:'2026-06-07', dateLabel:'Sun 7 Jun 2026',  time:'11am–2pm',  total:8,  filled:8,  feeMin:300, feeMax:400, deadline:'2026-05-24', emoji:'🏢', bg:'corp'    },
+  { id:'henley-sunset-market',      name:'Henley Beach Sunset Market',       category:'Twilight Market',suburb:'Henley Beach',   state:'SA', date:'2026-06-14', dateLabel:'Sun 14 Jun 2026', time:'4pm–8pm',   total:16, filled:6,  feeMin:120, feeMax:200, deadline:'2026-05-31', emoji:'🌅', bg:'twi'     },
+  { id:'marion-popup',              name:'Marion Shopping Centre Pop-up',    category:'Pop-up',         suburb:'Marion',         state:'SA', date:'2026-06-21', dateLabel:'Sun 21 Jun 2026', time:'10am–4pm',  total:12, filled:10, feeMin:200, feeMax:350, deadline:'2026-06-07', emoji:'🛍️', bg:'norwood' },
+];
+
+const TOTAL_EVENTS = 124;
+const PER_PAGE = 12;
+let currentPage = 1;
+let filtered = [...EVENTS];
+
+// Category badge styles
+const CAT_STYLE = {
+  'Night Market':   { bg:'#2B5BA812', color:'#2B5BA8', border:'#2B5BA820' },
+  'Festival':       { bg:'#E8500A12', color:'#E8500A', border:'#E8500A20' },
+  'Farmers Market': { bg:'#2D8B5512', color:'#2D8B55', border:'#2D8B5520' },
+  'Corporate':      { bg:'#2B5BA812', color:'#2B5BA8', border:'#2B5BA820' },
+  'Pop-up':         { bg:'#C9840A12', color:'#C9840A', border:'#C9840A20' },
+  'Twilight Market':{ bg:'#2D8B5512', color:'#2D8B55', border:'#2D8B5520' },
+};
+
+function fillColor(pct) {
+  if (pct >= 100) return '#C0392B';
+  if (pct > 85)   return '#C0392B';
+  if (pct >= 70)  return '#C9840A';
+  return '#2D8B55';
+}
+
+function spotsInfo(total, filled) {
+  const left = total - filled;
+  const pct  = Math.round((filled / total) * 100);
+  if (left === 0) return { text:'FULL', bg:'#C0392B14', color:'#C0392B', border:'#C0392B28' };
+  if (pct > 85)   return { text:`${left} spot${left>1?'s':''} left`, bg:'#C0392B14', color:'#C0392B', border:'#C0392B28' };
+  if (pct >= 70)  return { text:`${left} spots left`, bg:'#C9840A14', color:'#C9840A', border:'#C9840A28' };
+  return               { text:`${left} spots left`, bg:'#2D8B5514', color:'#2D8B55', border:'#2D8B5528' };
+}
+
+function formatDeadline(str) {
+  const d = new Date(str);
+  return d.toLocaleDateString('en-AU', { day:'numeric', month:'short' });
+}
+
+function renderCard(ev) {
+  const pct  = Math.round((ev.filled / ev.total) * 100);
+  const fc   = fillColor(pct);
+  const sp   = spotsInfo(ev.total, ev.filled);
+  const cs   = CAT_STYLE[ev.category] || { bg:'#ffffff12', color:ev.text, border:'#ffffff20' };
+  return `
+  <a href="/events/${ev.id}" class="ec">
+    <div class="ec-img ec-img-${ev.bg}">
+      ${ev.emoji}
+      <div class="ec-overlay"></div>
+      <span class="ec-cat" style="background:${cs.bg};color:${cs.color};border:1px solid ${cs.border};">${ev.category}</span>
+      <span class="ec-spots" style="background:${sp.bg};color:${sp.color};border:1px solid ${sp.border};">${sp.text}</span>
+    </div>
+    <div class="ec-body">
+      <div class="ec-name">${ev.name}</div>
+      <div class="ec-loc">📍 ${ev.suburb}, ${ev.state}</div>
+      <div class="ec-date">📅 ${ev.dateLabel} · ${ev.time}</div>
+      <div class="ec-fill-row">
+        <span>${ev.filled}/${ev.total} spots filled</span>
+        <span style="color:${fc};font-weight:700;">${pct}%</span>
+      </div>
+      <div class="ec-bar-bg"><div class="ec-bar" style="width:${pct}%;background:${fc};"></div></div>
+      <div class="ec-foot">
+        <div class="ec-fee">Booth: <strong>$${ev.feeMin}–$${ev.feeMax}</strong></div>
+        <div class="ec-dl">Apply by ${formatDeadline(ev.deadline)}</div>
+      </div>
+    </div>
+  </a>`;
+}
+
+function applyFilters() {
+  const search   = document.getElementById('f-search').value.toLowerCase().trim();
+  const category = document.getElementById('f-category').value;
+  const suburb   = document.getElementById('f-suburb').value.toLowerCase().trim();
+  const from     = document.getElementById('f-from').value;
+  const to       = document.getElementById('f-to').value;
+
+  filtered = EVENTS.filter(ev => {
+    if (search   && !ev.name.toLowerCase().includes(search) && !ev.suburb.toLowerCase().includes(search)) return false;
+    if (category && ev.category !== category) return false;
+    if (suburb   && !ev.suburb.toLowerCase().includes(suburb)) return false;
+    if (from     && ev.date < from) return false;
+    if (to       && ev.date > to)   return false;
+    return true;
+  });
+
+  currentPage = 1;
+  renderGrid();
+  renderMeta();
+  renderPagination();
+}
+
+function clearFilters() {
+  document.getElementById('f-search').value   = '';
+  document.getElementById('f-category').value = '';
+  document.getElementById('f-suburb').value   = '';
+  document.getElementById('f-from').value     = '';
+  document.getElementById('f-to').value       = '';
+  applyFilters();
+}
+
+function renderGrid() {
+  const grid  = document.getElementById('events-grid');
+  const start = (currentPage - 1) * PER_PAGE;
+  const page  = filtered.slice(start, start + PER_PAGE);
+
+  if (page.length === 0) {
+    grid.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">🔍</div>
+        <div class="empty-title">No events found</div>
+        <div class="empty-desc">Try adjusting your filters or <button onclick="clearFilters()" style="background:none;border:none;color:var(--ember);font-size:14px;cursor:pointer;font-family:var(--fb);font-weight:700;">clear all filters</button></div>
+      </div>`;
+  } else {
+    grid.innerHTML = page.map(renderCard).join('');
+  }
+}
+
+function renderMeta() {
+  const hasFilters = document.getElementById('f-search').value ||
+                     document.getElementById('f-category').value ||
+                     document.getElementById('f-suburb').value ||
+                     document.getElementById('f-from').value ||
+                     document.getElementById('f-to').value;
+
+  const total = hasFilters ? filtered.length : TOTAL_EVENTS;
+  const showing = Math.min(filtered.length, PER_PAGE);
+
+  document.getElementById('results-count').innerHTML =
+    `Showing <strong>${showing}</strong> of <strong>${total}</strong> events`;
+
+  // Active filter chips
+  const chips = [];
+  const cat  = document.getElementById('f-category').value;
+  const srch = document.getElementById('f-search').value;
+  const sub  = document.getElementById('f-suburb').value;
+  if (cat)  chips.push(`<span class="active-filter-chip">${cat} <span class="chip-remove" onclick="document.getElementById('f-category').value='';applyFilters()">×</span></span>`);
+  if (srch) chips.push(`<span class="active-filter-chip">"${srch}" <span class="chip-remove" onclick="document.getElementById('f-search').value='';applyFilters()">×</span></span>`);
+  if (sub)  chips.push(`<span class="active-filter-chip">${sub} <span class="chip-remove" onclick="document.getElementById('f-suburb').value='';applyFilters()">×</span></span>`);
+  document.getElementById('active-filters').innerHTML = chips.join('');
+}
+
+function renderPagination() {
+  const pg = document.getElementById('pagination');
+  const totalPages = Math.max(1, Math.ceil(TOTAL_EVENTS / PER_PAGE));
+
+  let html = `<button class="pg-btn page-prev" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>← Prev</button>`;
+
+  const pages = [];
+  if (totalPages <= 7) {
+    for (let i = 1; i <= totalPages; i++) pages.push(i);
+  } else {
+    pages.push(1);
+    if (currentPage > 3) pages.push('…');
+    for (let i = Math.max(2, currentPage-1); i <= Math.min(totalPages-1, currentPage+1); i++) pages.push(i);
+    if (currentPage < totalPages - 2) pages.push('…');
+    pages.push(totalPages);
+  }
+
+  pages.forEach(p => {
+    if (p === '…') {
+      html += `<button class="pg-btn dots">…</button>`;
+    } else {
+      html += `<button class="pg-btn ${p===currentPage?'active':''}" onclick="goPage(${p})">${p}</button>`;
+    }
+  });
+
+  html += `<button class="pg-btn page-next" onclick="goPage(${currentPage+1})" ${currentPage===totalPages?'disabled':''}>Next →</button>`;
+  pg.innerHTML = html;
+}
+
+function goPage(n) {
+  const totalPages = Math.ceil(TOTAL_EVENTS / PER_PAGE);
+  if (n < 1 || n > totalPages) return;
+  currentPage = n;
+  // For pages > 1, just show the mock events again (prototype)
+  renderGrid();
+  renderMeta();
+  renderPagination();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// Init
+applyFilters();
+</script>
+</body>
+</html>

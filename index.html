@@ -1,0 +1,1444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Pitch. — Find Your Pitch. Own Your Market.</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,700;9..144,900&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --ember:      #E8500A;
+  --ember-glow: #FF6B2B;
+  --ember-bg:   #E8500A12;
+  --coal:       #1A1612;
+  --char:       #231E19;
+  --ash:        #2E2720;
+  --smoke:      #4A3F36;
+  --parchment:  #FDF4E7;
+  --cream:      #F5EDD8;
+  --linen:      #EDE3CC;
+  --herb:       #2D8B55;
+  --gold:       #C9840A;
+  --terra:      #C0392B;
+  --slate:      #2B5BA8;
+  --text-hi:    #FDF4E7;
+  --text-mid:   #A89880;
+  --text-lo:    #6B5A4A;
+  --fd:         'Fraunces', Georgia, serif;
+  --fb:         'Instrument Sans', 'Helvetica Neue', sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--coal);
+  color: var(--text-hi);
+  font-family: var(--fb);
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+/* grain */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 0; opacity: 0.45;
+}
+
+/* ── NAVBAR ──────────────────────────────────────────────────────────────── */
+.navbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  height: 66px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 52px;
+  background: rgba(26,22,18,0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid #ffffff07;
+}
+
+.nav-logo {
+  font-family: var(--fd);
+  font-size: 26px; font-weight: 900;
+  letter-spacing: -0.04em;
+  color: var(--text-hi);
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.nav-logo .dot { color: var(--ember); }
+
+.nav-links {
+  display: flex; align-items: center; gap: 32px;
+  list-style: none;
+}
+.nav-links a {
+  font-size: 14px; font-weight: 500;
+  color: var(--text-mid);
+  text-decoration: none;
+  transition: color 0.14s;
+  letter-spacing: 0.01em;
+}
+.nav-links a:hover { color: var(--text-hi); }
+
+.nav-actions { display: flex; align-items: center; gap: 10px; }
+
+.btn-login {
+  font-family: var(--fb); font-size: 13px; font-weight: 600;
+  color: var(--text-mid); background: transparent; border: none;
+  padding: 9px 16px; border-radius: 8px; cursor: pointer;
+  transition: color 0.14s, background 0.14s;
+  text-decoration: none;
+}
+.btn-login:hover { color: var(--text-hi); background: #ffffff09; }
+
+.btn-get-started {
+  font-family: var(--fb); font-size: 13px; font-weight: 700;
+  color: #fff; background: var(--ember); border: none;
+  padding: 10px 22px; border-radius: 9px; cursor: pointer;
+  box-shadow: 0 4px 16px #E8500A2E;
+  transition: background 0.14s, box-shadow 0.14s, transform 0.14s;
+  text-decoration: none;
+}
+.btn-get-started:hover {
+  background: var(--ember-glow);
+  box-shadow: 0 6px 22px #E8500A40;
+  transform: translateY(-1px);
+}
+
+/* Auth-aware nav (logged in state) */
+.nav-user { display: none; align-items: center; gap: 8px; position: relative; }
+.nav-user-name {
+  font-size: 13px; font-weight: 600; color: var(--text-hi); cursor: pointer;
+  display: flex; align-items: center; gap: 5px;
+  padding: 8px 12px; border-radius: 8px;
+  transition: background 0.14s;
+}
+.nav-user-name:hover { background: #ffffff09; }
+.nav-user-chevron { font-size: 10px; color: var(--text-lo); }
+.nav-dropdown {
+  display: none; position: absolute; top: calc(100% + 8px); right: 0;
+  background: var(--char); border: 1px solid #ffffff0C;
+  border-radius: 12px; padding: 6px; min-width: 160px;
+  box-shadow: 0 16px 40px #00000040;
+}
+.nav-dropdown a {
+  display: block; padding: 9px 14px; border-radius: 8px;
+  font-size: 13px; color: var(--text-mid); text-decoration: none;
+  transition: background 0.12s, color 0.12s;
+}
+.nav-dropdown a:hover { background: #ffffff08; color: var(--text-hi); }
+.nav-dropdown-divider { height: 1px; background: #ffffff08; margin: 4px 0; }
+.nav-dropdown a.danger { color: var(--terra); }
+.nav-dropdown a.danger:hover { background: #C0392B10; }
+
+/* Hamburger */
+.nav-hamburger {
+  display: none; flex-direction: column; gap: 5px;
+  cursor: pointer; padding: 8px; border: none; background: transparent;
+}
+.nav-hamburger span {
+  display: block; width: 22px; height: 2px;
+  background: var(--text-mid); border-radius: 2px;
+  transition: all 0.2s;
+}
+
+/* Mobile menu */
+.mobile-menu {
+  display: none; position: fixed;
+  top: 66px; left: 0; right: 0; bottom: 0;
+  background: rgba(26,22,18,0.98);
+  z-index: 199; flex-direction: column;
+  align-items: center; justify-content: center; gap: 28px;
+}
+.mobile-menu.open { display: flex; }
+.mobile-menu a {
+  font-family: var(--fd); font-size: 32px; font-weight: 900;
+  letter-spacing: -0.03em; color: var(--text-hi); text-decoration: none;
+  transition: color 0.14s;
+}
+.mobile-menu a:hover { color: var(--ember); }
+.mobile-menu-actions {
+  display: flex; gap: 12px; margin-top: 8px;
+}
+
+/* ── HERO ─────────────────────────────────────────────────────────────────── */
+.hero {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  padding: 120px 52px 80px;
+  position: relative; z-index: 1;
+  gap: 64px;
+  max-width: 1320px;
+  margin: 0 auto;
+}
+
+/* ember radial behind hero */
+.hero-bg {
+  position: fixed; inset: 0; z-index: 0; pointer-events: none;
+}
+.hero-bg::before {
+  content: '';
+  position: absolute;
+  width: 800px; height: 600px;
+  top: 30%; left: 28%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(ellipse, #E8500A12 0%, transparent 65%);
+}
+
+.hero-left { position: relative; z-index: 1; }
+
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: var(--ember-bg); border: 1px solid #E8500A20;
+  border-radius: 100px; padding: 5px 14px;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--ember); margin-bottom: 28px;
+}
+.eyebrow-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--ember);
+  animation: blink 2.2s ease-in-out infinite;
+}
+@keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.25;} }
+
+.hero-heading {
+  font-family: var(--fd);
+  font-size: clamp(52px, 6vw, 88px);
+  font-weight: 900;
+  line-height: 0.93;
+  letter-spacing: -0.04em;
+  color: var(--text-hi);
+  margin-bottom: 22px;
+}
+.hero-heading em { font-style: italic; color: var(--ember); }
+
+.hero-sub {
+  font-size: 17px; color: var(--text-mid);
+  line-height: 1.75; max-width: 460px;
+  margin-bottom: 36px;
+}
+
+.hero-ctas {
+  display: flex; gap: 12px; flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+
+.btn-vendor {
+  font-family: var(--fb); font-weight: 700; font-size: 15px;
+  color: #fff; background: var(--ember); border: none;
+  padding: 15px 32px; border-radius: 11px; cursor: pointer;
+  box-shadow: 0 6px 24px #E8500A30;
+  transition: background 0.14s, box-shadow 0.14s, transform 0.14s;
+  text-decoration: none; display: inline-block;
+}
+.btn-vendor:hover { background: var(--ember-glow); transform: translateY(-2px); box-shadow: 0 10px 32px #E8500A3C; }
+
+.btn-organiser {
+  font-family: var(--fb); font-weight: 700; font-size: 15px;
+  color: var(--text-hi); background: transparent;
+  border: 1.5px solid #ffffff22;
+  padding: 14px 32px; border-radius: 11px; cursor: pointer;
+  transition: border-color 0.14s, background 0.14s, transform 0.14s;
+  text-decoration: none; display: inline-block;
+}
+.btn-organiser:hover { border-color: #ffffff44; background: #ffffff08; transform: translateY(-1px); }
+
+.hero-search {
+  display: flex; align-items: center;
+  background: #ffffff09; border: 1px solid #ffffff12;
+  border-radius: 12px; padding: 0 16px;
+  max-width: 440px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.hero-search:focus-within { border-color: #E8500A40; box-shadow: 0 0 0 3px #E8500A14; }
+.hero-search-icon { font-size: 16px; color: var(--text-lo); flex-shrink: 0; }
+.hero-search input {
+  flex: 1; padding: 13px 12px;
+  background: transparent; border: none; outline: none;
+  color: var(--text-hi); font-family: var(--fb);
+  font-size: 14px;
+}
+.hero-search input::placeholder { color: var(--text-lo); }
+.hero-search-btn {
+  font-family: var(--fb); font-size: 12px; font-weight: 700;
+  color: #fff; background: var(--ember);
+  border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer;
+  flex-shrink: 0; transition: background 0.14s;
+}
+.hero-search-btn:hover { background: var(--ember-glow); }
+
+/* Hero right — stacked preview cards */
+.hero-right {
+  position: relative; z-index: 1;
+  display: flex; align-items: center; justify-content: center;
+  height: 520px;
+}
+
+.hero-card-stack { position: relative; width: 340px; height: 480px; }
+
+.hc {
+  position: absolute;
+  background: var(--parchment);
+  border: 1px solid var(--linen);
+  border-radius: 18px;
+  padding: 20px;
+  color: var(--coal);
+  width: 300px;
+  box-shadow: 0 20px 60px #00000030;
+}
+
+.hc-1 {
+  top: 0; left: 0;
+  transform: rotate(-3deg);
+  z-index: 1;
+  opacity: 0.65;
+}
+.hc-2 {
+  top: 30px; left: 28px;
+  transform: rotate(-1deg);
+  z-index: 2;
+  opacity: 0.82;
+}
+.hc-3 {
+  top: 60px; left: 48px;
+  z-index: 3;
+}
+
+.hc-badge {
+  display: inline-block; font-size: 10px; font-weight: 700;
+  padding: 3px 10px; border-radius: 100px;
+  letter-spacing: 0.06em; font-family: var(--fb);
+  margin-bottom: 10px;
+}
+.hc-badge-blue { background: #2B5BA812; color: #2B5BA8; }
+.hc-badge-ember { background: #E8500A12; color: var(--ember); }
+.hc-badge-herb { background: #2D8B5512; color: var(--herb); }
+
+.hc-title {
+  font-family: var(--fd); font-size: 16px; font-weight: 800;
+  color: var(--coal); margin-bottom: 4px;
+}
+.hc-meta { font-size: 11px; color: #9A8870; margin-bottom: 12px; }
+
+.hc-bar-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+.hc-bar-row span { font-size: 10px; color: #9A8870; }
+.hc-bar-bg { height: 4px; background: var(--linen); border-radius: 2px; margin-bottom: 12px; overflow: hidden; }
+.hc-bar-fill { height: 100%; border-radius: 2px; }
+.fill-g { background: var(--herb); }
+.fill-a { background: var(--gold); }
+.fill-r { background: var(--terra); }
+
+.hc-footer { display: flex; justify-content: space-between; padding-top: 10px; border-top: 1px solid var(--linen); }
+.hc-footer span { font-size: 11px; color: #9A8870; }
+.hc-footer strong { color: var(--coal); }
+
+/* ── STATS BAR ────────────────────────────────────────────────────────────── */
+.stats-bar {
+  background: var(--char);
+  border-top: 1px solid #ffffff06;
+  border-bottom: 1px solid #ffffff06;
+  position: relative; z-index: 1;
+}
+.stats-inner {
+  max-width: 1320px; margin: 0 auto;
+  padding: 40px 52px;
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  text-align: center;
+  gap: 24px;
+}
+.stat-divider { border-right: 1px solid #ffffff08; }
+.stat-n {
+  font-family: var(--fd);
+  font-size: 42px; font-weight: 900;
+  letter-spacing: -0.03em;
+  color: var(--ember); line-height: 1;
+  margin-bottom: 6px;
+}
+.stat-l {
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--text-lo);
+}
+
+/* ── SHARED SECTION STYLES ────────────────────────────────────────────────── */
+.section-wrap { position: relative; z-index: 1; }
+.section-wrap.alt { background: var(--char); border-top: 1px solid #ffffff06; }
+
+.section {
+  max-width: 1320px; margin: 0 auto;
+  padding: 88px 52px;
+}
+
+.sec-tag {
+  display: inline-flex; align-items: center; gap: 9px;
+  font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase;
+  color: var(--ember); font-weight: 700; margin-bottom: 12px;
+}
+.sec-tag::before {
+  content: ''; width: 18px; height: 2px;
+  background: var(--ember); border-radius: 1px;
+}
+
+.sec-title {
+  font-family: var(--fd);
+  font-size: clamp(30px, 3.5vw, 48px);
+  font-weight: 900; letter-spacing: -0.03em;
+  color: var(--text-hi); line-height: 1.02;
+  margin-bottom: 12px;
+}
+.sec-title em { font-style: italic; color: var(--ember); }
+
+.sec-desc {
+  font-size: 15px; color: var(--text-mid);
+  line-height: 1.8; max-width: 520px;
+  margin-bottom: 48px;
+}
+
+.sec-header {
+  display: flex; align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 32px;
+}
+.sec-link {
+  font-size: 13px; font-weight: 700; color: var(--ember);
+  text-decoration: none; display: inline-flex;
+  align-items: center; gap: 5px; flex-shrink: 0;
+  transition: gap 0.14s;
+  margin-bottom: 4px;
+}
+.sec-link:hover { gap: 8px; }
+
+/* ── FEATURED EVENTS ──────────────────────────────────────────────────────── */
+.events-scroll-wrap {
+  overflow-x: auto;
+  padding-bottom: 12px;
+  margin: 0 -52px;
+  padding-left: 52px;
+  padding-right: 52px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--ash) transparent;
+}
+.events-scroll-wrap::-webkit-scrollbar { height: 4px; }
+.events-scroll-wrap::-webkit-scrollbar-track { background: transparent; }
+.events-scroll-wrap::-webkit-scrollbar-thumb { background: var(--ash); border-radius: 2px; }
+
+.events-scroll {
+  display: flex; gap: 18px;
+  width: max-content;
+}
+
+.event-card {
+  width: 288px; flex-shrink: 0;
+  background: var(--parchment);
+  border: 1px solid var(--linen);
+  border-radius: 18px; overflow: hidden;
+  color: var(--coal);
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer; text-decoration: none; display: block;
+}
+.event-card:hover { transform: translateY(-4px); box-shadow: 0 20px 52px #00000024; }
+
+.ec-img {
+  height: 148px; position: relative;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 48px; overflow: hidden;
+}
+.ec-img-night  { background: linear-gradient(135deg, #1A1612, #2E1A0E); }
+.ec-img-farm   { background: linear-gradient(135deg, #162216, #2D3A1A); }
+.ec-img-fest   { background: linear-gradient(135deg, #16101A, #2B1A38); }
+.ec-img-barossa{ background: linear-gradient(135deg, #1A1010, #3A2010); }
+.ec-img-twi    { background: linear-gradient(135deg, #101620, #1A2C3A); }
+.ec-img-port   { background: linear-gradient(135deg, #121218, #1A2030); }
+.ec-img-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(26,22,18,0.5) 0%, transparent 60%); }
+
+.ec-cat-badge {
+  position: absolute; top: 12px; left: 12px;
+  font-size: 10px; font-weight: 700; padding: 3px 10px;
+  border-radius: 100px; font-family: var(--fb); letter-spacing: 0.05em;
+}
+.ec-spots-badge {
+  position: absolute; top: 12px; right: 12px;
+  font-size: 10px; font-weight: 700; padding: 3px 10px;
+  border-radius: 100px; font-family: var(--fb);
+}
+
+.ec-body { padding: 16px 18px 18px; }
+.ec-name { font-family: var(--fd); font-size: 16px; font-weight: 800; color: var(--coal); margin-bottom: 3px; line-height: 1.25; }
+.ec-where { font-size: 11px; color: #9A8870; margin-bottom: 3px; }
+.ec-date  { font-size: 11px; color: #9A8870; margin-bottom: 12px; }
+
+.ec-fill-label { display: flex; justify-content: space-between; margin-bottom: 4px; }
+.ec-fill-label span { font-size: 10px; color: #9A8870; }
+.ec-fill-bg { height: 4px; background: var(--linen); border-radius: 2px; overflow: hidden; margin-bottom: 12px; }
+.ec-fill-inner { height: 100%; border-radius: 2px; }
+
+.ec-footer-row { display: flex; justify-content: space-between; align-items: center; padding-top: 10px; border-top: 1px solid var(--linen); }
+.ec-price { font-size: 11px; color: #9A8870; }
+.ec-price strong { color: var(--coal); font-weight: 700; }
+.ec-spot-count { font-size: 11px; color: #9A8870; font-weight: 600; }
+
+/* ── FEATURED VENDORS ─────────────────────────────────────────────────────── */
+.vendors-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.vendor-card {
+  background: var(--parchment);
+  border: 1px solid var(--linen);
+  border-radius: 18px; padding: 22px;
+  color: var(--coal);
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer; text-decoration: none; display: block;
+}
+.vendor-card:hover { transform: translateY(-3px); box-shadow: 0 18px 48px #00000020; }
+
+.vc-head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.vc-avatar {
+  width: 48px; height: 48px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--fd); font-size: 17px; font-weight: 900;
+  flex-shrink: 0;
+}
+.av-a { background: #E8500A18; color: var(--ember); }
+.av-b { background: #2D8B5518; color: var(--herb); }
+.av-c { background: #2B5BA818; color: var(--slate); }
+.av-d { background: #C9840A18; color: var(--gold); }
+.av-e { background: #C0392B18; color: var(--terra); }
+.av-f { background: #E8500A18; color: #b34008; }
+
+.vc-info { flex: 1; min-width: 0; }
+.vc-name { font-family: var(--fd); font-size: 15px; font-weight: 800; color: var(--coal); display: flex; align-items: center; gap: 6px; }
+.vc-verified { font-size: 9px; font-weight: 700; color: #2B5BA8; background: #2B5BA810; padding: 2px 7px; border-radius: 100px; flex-shrink: 0; }
+.vc-sub { font-size: 11px; color: #9A8870; margin-top: 1px; }
+
+.vc-plan-badge {
+  font-size: 9px; font-weight: 700; padding: 3px 10px; border-radius: 100px;
+  letter-spacing: 0.08em; text-transform: uppercase; font-family: var(--fb);
+  flex-shrink: 0; align-self: flex-start;
+}
+.bdg-pro   { background: #E8500A12; color: var(--ember); border: 1px solid #E8500A22; }
+.bdg-basic { background: #2B5BA812; color: var(--slate); border: 1px solid #2B5BA822; }
+
+.vc-stars { color: var(--ember); font-size: 12px; margin-bottom: 2px; }
+.vc-stars span { color: #9A8870; font-size: 11px; font-family: var(--fb); margin-left: 4px; }
+.vc-events { font-size: 11px; color: #9A8870; margin-bottom: 10px; }
+.vc-tags { display: flex; gap: 5px; flex-wrap: wrap; }
+.vc-tag {
+  font-size: 10px; font-weight: 600; padding: 3px 9px;
+  border-radius: 100px; background: var(--cream);
+  color: #6B5A4A; font-family: var(--fb);
+}
+
+/* ── CATEGORY BROWSE ──────────────────────────────────────────────────────── */
+.cats-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 14px;
+}
+
+.cat-tile {
+  background: var(--char);
+  border: 1px solid #ffffff08;
+  border-radius: 18px; padding: 28px 16px;
+  text-align: center; cursor: pointer;
+  transition: transform 0.18s, border-color 0.18s, background 0.18s;
+  text-decoration: none; display: block;
+}
+.cat-tile:hover { transform: translateY(-4px); border-color: #E8500A28; background: #E8500A08; }
+.cat-emoji { font-size: 32px; margin-bottom: 12px; line-height: 1; }
+.cat-name { font-size: 12px; font-weight: 700; color: var(--text-hi); margin-bottom: 4px; letter-spacing: 0.01em; }
+.cat-count { font-size: 10px; color: var(--text-lo); }
+
+/* ── HOW IT WORKS ─────────────────────────────────────────────────────────── */
+.hiw-cols {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 40px;
+}
+
+.hiw-col-head {
+  font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--ember); font-weight: 700;
+  margin-bottom: 28px;
+  display: flex; align-items: center; gap: 8px;
+}
+.hiw-col-head::before { content: ''; width: 16px; height: 2px; background: var(--ember); border-radius: 1px; }
+
+.hiw-divider {
+  width: 1px; background: linear-gradient(to bottom, transparent, #ffffff10, transparent);
+  align-self: stretch; justify-self: center;
+}
+
+.hiw-steps { display: flex; flex-direction: column; gap: 0; }
+
+.hiw-step {
+  display: flex; gap: 20px; padding: 20px 0;
+  border-bottom: 1px solid #ffffff07;
+  position: relative;
+}
+.hiw-step:last-child { border-bottom: none; }
+
+.hiw-step-left { display: flex; flex-direction: column; align-items: center; gap: 0; }
+.hiw-num {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--ash);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--fd); font-size: 14px; font-weight: 900;
+  color: var(--ember); flex-shrink: 0;
+}
+.hiw-step:not(:last-child) .hiw-step-left::after {
+  content: ''; flex: 1; width: 1px; background: #ffffff09; margin-top: 8px;
+  min-height: 32px;
+}
+.hiw-icon {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: var(--ember-bg); border: 1px solid #E8500A20;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px; flex-shrink: 0;
+}
+.hiw-content { padding-top: 6px; }
+.hiw-step-title { font-family: var(--fd); font-size: 16px; font-weight: 800; color: var(--text-hi); margin-bottom: 5px; }
+.hiw-step-desc { font-size: 13px; color: var(--text-lo); line-height: 1.65; }
+
+/* ── TRUST SECTION ────────────────────────────────────────────────────────── */
+.trust-section { background: var(--char); border-top: 1px solid #ffffff06; }
+
+.trust-inner {
+  max-width: 1320px; margin: 0 auto;
+  padding: 88px 52px;
+}
+
+.trust-heading {
+  font-family: var(--fd);
+  font-size: clamp(28px, 3vw, 44px);
+  font-weight: 900; letter-spacing: -0.03em;
+  color: var(--text-hi); margin-bottom: 10px;
+  text-align: center;
+}
+.trust-heading em { font-style: italic; color: var(--ember); }
+.trust-sub {
+  font-size: 15px; color: var(--text-mid); text-align: center;
+  margin-bottom: 56px; line-height: 1.7;
+}
+
+.trust-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+
+.trust-card {
+  background: var(--coal);
+  border: 1px solid #ffffff08;
+  border-radius: 20px; padding: 32px 28px;
+  text-align: center;
+}
+.trust-icon-wrap {
+  width: 56px; height: 56px; border-radius: 16px;
+  background: var(--ember-bg); border: 1px solid #E8500A22;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px; margin: 0 auto 18px;
+}
+.trust-card-title {
+  font-family: var(--fd); font-size: 17px; font-weight: 800;
+  color: var(--text-hi); margin-bottom: 8px;
+}
+.trust-card-desc { font-size: 13px; color: var(--text-lo); line-height: 1.7; }
+
+/* ── FOOTER ───────────────────────────────────────────────────────────────── */
+footer {
+  background: var(--char);
+  border-top: 1px solid #ffffff07;
+  position: relative; z-index: 1;
+}
+
+.footer-main {
+  max-width: 1320px; margin: 0 auto;
+  padding: 64px 52px 40px;
+  display: grid;
+  grid-template-columns: 1.8fr 1fr 1fr 1fr;
+  gap: 48px;
+}
+
+.footer-logo {
+  font-family: var(--fd); font-size: 26px; font-weight: 900;
+  letter-spacing: -0.04em; color: var(--text-hi);
+  margin-bottom: 10px; text-decoration: none; display: inline-block;
+}
+.footer-logo .dot { color: var(--ember); }
+
+.footer-desc {
+  font-size: 13px; color: var(--text-lo);
+  line-height: 1.8; max-width: 220px; margin-bottom: 22px;
+}
+
+.footer-socials { display: flex; gap: 8px; }
+.fsoc {
+  width: 36px; height: 36px; border-radius: 9px;
+  background: #ffffff08; border: 1px solid #ffffff0C;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; cursor: pointer; text-decoration: none;
+  color: var(--text-lo); transition: all 0.14s;
+}
+.fsoc:hover { background: var(--ember-bg); border-color: #E8500A22; color: var(--ember); }
+
+.footer-col-title {
+  font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--text-lo); font-weight: 700; margin-bottom: 18px;
+}
+
+.footer-links { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.footer-links a {
+  font-size: 13px; color: var(--text-mid); text-decoration: none;
+  transition: color 0.14s;
+}
+.footer-links a:hover { color: var(--text-hi); }
+
+.footer-bottom {
+  max-width: 1320px; margin: 0 auto;
+  padding: 20px 52px 28px;
+  border-top: 1px solid #ffffff06;
+  display: flex; justify-content: space-between; align-items: center;
+  flex-wrap: wrap; gap: 12px;
+}
+.footer-copy { font-size: 12px; color: var(--text-lo); }
+.footer-bottom-logo {
+  font-family: var(--fd); font-size: 20px; font-weight: 900;
+  letter-spacing: -0.04em; color: var(--text-mid); text-decoration: none;
+}
+.footer-bottom-logo .dot { color: var(--ember); }
+
+/* ── SCROLLBAR ────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--coal); }
+::-webkit-scrollbar-thumb { background: var(--ash); border-radius: 3px; }
+
+/* ── RESPONSIVE ───────────────────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .navbar { padding: 0 28px; }
+  .nav-links { display: none; }
+  .nav-actions { display: none; }
+  .nav-hamburger { display: flex; }
+
+  .hero {
+    grid-template-columns: 1fr;
+    padding: 110px 28px 60px;
+    gap: 48px;
+    text-align: center;
+  }
+  .hero-left { display: flex; flex-direction: column; align-items: center; }
+  .hero-sub { text-align: center; }
+  .hero-search { max-width: 100%; }
+  .hero-right { display: none; }
+
+  .stats-inner { grid-template-columns: repeat(2,1fr); gap: 28px; padding: 32px 28px; }
+  .stat-divider { border-right: none; }
+
+  .section { padding: 64px 28px; }
+
+  .events-scroll-wrap { margin: 0 -28px; padding-left: 28px; padding-right: 28px; }
+
+  .vendors-grid { grid-template-columns: repeat(2,1fr); }
+
+  .cats-grid { grid-template-columns: repeat(3,1fr); }
+
+  .hiw-cols { grid-template-columns: 1fr; gap: 0; }
+  .hiw-divider { display: none; }
+
+  .trust-cols { grid-template-columns: 1fr; gap: 16px; }
+
+  .footer-main { grid-template-columns: 1fr 1fr; gap: 32px; padding: 48px 28px 32px; }
+  .footer-bottom { padding: 16px 28px 24px; }
+}
+
+@media (max-width: 600px) {
+  .vendors-grid { grid-template-columns: 1fr; }
+  .cats-grid { grid-template-columns: repeat(2,1fr); }
+  .footer-main { grid-template-columns: 1fr; }
+  .hero-ctas { flex-direction: column; width: 100%; }
+  .btn-vendor, .btn-organiser { width: 100%; text-align: center; }
+  .stats-inner { grid-template-columns: repeat(2,1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- ── HERO BACKGROUND ──────────────────────────────────────────────────────── -->
+<div class="hero-bg"></div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     NAVBAR
+═══════════════════════════════════════════════════════════════════════════ -->
+<nav class="navbar">
+  <a href="/" class="nav-logo">Pitch<span class="dot">.</span></a>
+
+  <ul class="nav-links">
+    <li><a href="#events">Events</a></li>
+    <li><a href="#vendors">Vendors</a></li>
+    <li><a href="#how-it-works">How It Works</a></li>
+  </ul>
+
+  <!-- Logged-out state (default) -->
+  <div class="nav-actions" id="nav-loggedout">
+    <a href="/login" class="btn-login">Log in</a>
+    <a href="/signup" class="btn-get-started">Get Started</a>
+  </div>
+
+  <!-- Logged-in state (hidden by default, shown via JS) -->
+  <div class="nav-user" id="nav-loggedin">
+    <div class="nav-user-name" onclick="toggleDropdown()">
+      <span>Joe Smith</span>
+      <span class="nav-user-chevron">▾</span>
+    </div>
+    <div class="nav-dropdown" id="nav-dropdown">
+      <a href="/dashboard">Dashboard</a>
+      <div class="nav-dropdown-divider"></div>
+      <a href="/logout" class="danger">Log out</a>
+    </div>
+  </div>
+
+  <button class="nav-hamburger" id="hamburger" onclick="toggleMobileMenu()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- Mobile menu -->
+<div class="mobile-menu" id="mobile-menu">
+  <a href="#events" onclick="closeMobileMenu()">Events</a>
+  <a href="#vendors" onclick="closeMobileMenu()">Vendors</a>
+  <a href="#how-it-works" onclick="closeMobileMenu()">How It Works</a>
+  <div class="mobile-menu-actions">
+    <a href="/login" class="btn-login" style="font-size:15px;">Log in</a>
+    <a href="/signup" class="btn-get-started" style="font-size:15px;">Get Started</a>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     HERO
+═══════════════════════════════════════════════════════════════════════════ -->
+<section class="hero">
+
+  <!-- Left -->
+  <div class="hero-left">
+    <div class="hero-eyebrow">
+      <span class="eyebrow-dot"></span>
+      Now live across SA, VIC & QLD
+    </div>
+
+    <h1 class="hero-heading">Find your<br /><em>Pitch.</em></h1>
+
+    <p class="hero-sub">Australia's marketplace connecting food vendors with local events — from night markets to national festivals.</p>
+
+    <div class="hero-ctas">
+      <a href="/signup/vendor" class="btn-vendor">I'm a vendor</a>
+      <a href="/signup/organiser" class="btn-organiser">I'm an organiser</a>
+    </div>
+
+    <div class="hero-search">
+      <span class="hero-search-icon">🔍</span>
+      <input type="text" placeholder="Search events by suburb or name…" />
+      <button class="hero-search-btn">Search</button>
+    </div>
+  </div>
+
+  <!-- Right — stacked event card previews -->
+  <div class="hero-right">
+    <div class="hero-card-stack">
+
+      <!-- Card 1 (back) -->
+      <div class="hc hc-1">
+        <span class="hc-badge hc-badge-herb">Farmers Market</span>
+        <div class="hc-title">Barossa Valley Harvest</div>
+        <div class="hc-meta">📍 Tanunda &nbsp;·&nbsp; 📅 26 Apr 2026</div>
+        <div class="hc-bar-row"><span>12/20 spots</span><span style="color:#2D8B55;font-weight:700;">60%</span></div>
+        <div class="hc-bar-bg"><div class="hc-bar-fill fill-g" style="width:60%"></div></div>
+        <div class="hc-footer"><span>Booth: <strong>$300–$500</strong></span><span>8 left</span></div>
+      </div>
+
+      <!-- Card 2 (middle) -->
+      <div class="hc hc-2">
+        <span class="hc-badge hc-badge-ember">Festival</span>
+        <div class="hc-title">Fringe Food Village 2026</div>
+        <div class="hc-meta">📍 Adelaide CBD &nbsp;·&nbsp; 📅 2–22 Mar 2026</div>
+        <div class="hc-bar-row"><span>28/40 spots</span><span style="color:#2D8B55;font-weight:700;">70%</span></div>
+        <div class="hc-bar-bg"><div class="hc-bar-fill fill-g" style="width:70%"></div></div>
+        <div class="hc-footer"><span>Booth: <strong>$400–$700</strong></span><span>12 left</span></div>
+      </div>
+
+      <!-- Card 3 (front) -->
+      <div class="hc hc-3">
+        <span class="hc-badge hc-badge-blue">Night Market</span>
+        <div class="hc-title">Rundle Mall Night Eats</div>
+        <div class="hc-meta">📍 CBD, Adelaide &nbsp;·&nbsp; 📅 12 Apr 2026</div>
+        <div class="hc-bar-row"><span>14/20 spots</span><span style="color:#2D8B55;font-weight:700;">70%</span></div>
+        <div class="hc-bar-bg"><div class="hc-bar-fill fill-g" style="width:70%"></div></div>
+        <div class="hc-footer"><span>Booth: <strong>$200–$350</strong></span><span>6 left</span></div>
+      </div>
+
+    </div>
+  </div>
+
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     STATS BAR
+═══════════════════════════════════════════════════════════════════════════ -->
+<div class="stats-bar">
+  <div class="stats-inner">
+    <div class="stat-divider">
+      <div class="stat-n">2,400+</div>
+      <div class="stat-l">Vendors</div>
+    </div>
+    <div class="stat-divider">
+      <div class="stat-n">840+</div>
+      <div class="stat-l">Events</div>
+    </div>
+    <div class="stat-divider">
+      <div class="stat-n">18K+</div>
+      <div class="stat-l">Bookings</div>
+    </div>
+    <div>
+      <div class="stat-n">4.9★</div>
+      <div class="stat-l">Average Rating</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     FEATURED EVENTS
+═══════════════════════════════════════════════════════════════════════════ -->
+<div class="section-wrap" id="events">
+<div class="section">
+  <div class="sec-header">
+    <div>
+      <div class="sec-tag">Browse Events</div>
+      <h2 class="sec-title">Events near you</h2>
+    </div>
+    <a href="/events" class="sec-link">See all events →</a>
+  </div>
+
+  <div class="events-scroll-wrap">
+    <div class="events-scroll">
+
+      <!-- Event 1 -->
+      <a href="/events/rundle-mall-night-eats" class="event-card">
+        <div class="ec-img ec-img-night">
+          🌃
+          <div class="ec-img-overlay"></div>
+          <span class="ec-cat-badge" style="background:#2B5BA812;color:#2B5BA8;">Night Market</span>
+          <span class="ec-spots-badge" style="background:#2D8B5514;color:#2D8B55;border:1px solid #2D8B5528;">6 spots left</span>
+        </div>
+        <div class="ec-body">
+          <div class="ec-name">Rundle Mall Night Eats</div>
+          <div class="ec-where">📍 CBD, Adelaide</div>
+          <div class="ec-date">📅 12 Apr 2026</div>
+          <div class="ec-fill-label"><span>14/20 spots filled</span><span style="color:#2D8B55;font-weight:700;">70%</span></div>
+          <div class="ec-fill-bg"><div class="ec-fill-inner" style="width:70%;background:#2D8B55;"></div></div>
+          <div class="ec-footer-row">
+            <div class="ec-price">Booth: <strong>$200–$350</strong></div>
+            <div class="ec-spot-count">Deadline: 28 Mar</div>
+          </div>
+        </div>
+      </a>
+
+      <!-- Event 2 -->
+      <a href="/events/showground-harvest-fair" class="event-card">
+        <div class="ec-img ec-img-farm">
+          🌾
+          <div class="ec-img-overlay"></div>
+          <span class="ec-cat-badge" style="background:#2D8B5512;color:#2D8B55;">Farmers Market</span>
+          <span class="ec-spots-badge" style="background:#C9840A14;color:#C9840A;border:1px solid #C9840A28;">2 spots left</span>
+        </div>
+        <div class="ec-body">
+          <div class="ec-name">Adelaide Showground Harvest Fair</div>
+          <div class="ec-where">📍 Wayville, SA</div>
+          <div class="ec-date">📅 19 Apr 2026</div>
+          <div class="ec-fill-label"><span>18/20 spots filled</span><span style="color:#C9840A;font-weight:700;">90%</span></div>
+          <div class="ec-fill-bg"><div class="ec-fill-inner" style="width:90%;background:#C9840A;"></div></div>
+          <div class="ec-footer-row">
+            <div class="ec-price">Booth: <strong>$150–$280</strong></div>
+            <div class="ec-spot-count">Deadline: 5 Apr</div>
+          </div>
+        </div>
+      </a>
+
+      <!-- Event 3 -->
+      <a href="/events/fringe-food-village" class="event-card">
+        <div class="ec-img ec-img-fest">
+          🎪
+          <div class="ec-img-overlay"></div>
+          <span class="ec-cat-badge" style="background:#E8500A12;color:#E8500A;">Festival</span>
+          <span class="ec-spots-badge" style="background:#2D8B5514;color:#2D8B55;border:1px solid #2D8B5528;">12 spots left</span>
+        </div>
+        <div class="ec-body">
+          <div class="ec-name">Fringe Food Village 2026</div>
+          <div class="ec-where">📍 Gluttony Precinct, Adelaide</div>
+          <div class="ec-date">📅 2–22 Mar 2026</div>
+          <div class="ec-fill-label"><span>28/40 spots filled</span><span style="color:#2D8B55;font-weight:700;">70%</span></div>
+          <div class="ec-fill-bg"><div class="ec-fill-inner" style="width:70%;background:#2D8B55;"></div></div>
+          <div class="ec-footer-row">
+            <div class="ec-price">Booth: <strong>$400–$700</strong></div>
+            <div class="ec-spot-count">Deadline: 14 Feb</div>
+          </div>
+        </div>
+      </a>
+
+      <!-- Event 4 -->
+      <a href="/events/barossa-food-wine" class="event-card">
+        <div class="ec-img ec-img-barossa">
+          🍷
+          <div class="ec-img-overlay"></div>
+          <span class="ec-cat-badge" style="background:#E8500A12;color:#E8500A;">Festival</span>
+          <span class="ec-spots-badge" style="background:#2D8B5514;color:#2D8B55;border:1px solid #2D8B5528;">8 spots left</span>
+        </div>
+        <div class="ec-body">
+          <div class="ec-name">Barossa Valley Food &amp; Wine</div>
+          <div class="ec-where">📍 Tanunda, SA</div>
+          <div class="ec-date">📅 26 Apr 2026</div>
+          <div class="ec-fill-label"><span>12/20 spots filled</span><span style="color:#2D8B55;font-weight:700;">60%</span></div>
+          <div class="ec-fill-bg"><div class="ec-fill-inner" style="width:60%;background:#2D8B55;"></div></div>
+          <div class="ec-footer-row">
+            <div class="ec-price">Booth: <strong>$300–$500</strong></div>
+            <div class="ec-spot-count">Deadline: 12 Apr</div>
+          </div>
+        </div>
+      </a>
+
+      <!-- Event 5 -->
+      <a href="/events/glenelg-twilight" class="event-card">
+        <div class="ec-img ec-img-twi">
+          🌅
+          <div class="ec-img-overlay"></div>
+          <span class="ec-cat-badge" style="background:#2B5BA812;color:#2B5BA8;">Twilight Market</span>
+          <span class="ec-spots-badge" style="background:#C9840A14;color:#C9840A;border:1px solid #C9840A28;">4 spots left</span>
+        </div>
+        <div class="ec-body">
+          <div class="ec-name">Glenelg Twilight Market</div>
+          <div class="ec-where">📍 Glenelg, SA</div>
+          <div class="ec-date">📅 3 May 2026</div>
+          <div class="ec-fill-label"><span>16/20 spots filled</span><span style="color:#C9840A;font-weight:700;">80%</span></div>
+          <div class="ec-fill-bg"><div class="ec-fill-inner" style="width:80%;background:#C9840A;"></div></div>
+          <div class="ec-footer-row">
+            <div class="ec-price">Booth: <strong>$120–$200</strong></div>
+            <div class="ec-spot-count">Deadline: 19 Apr</div>
+          </div>
+        </div>
+      </a>
+
+      <!-- Event 6 -->
+      <a href="/events/port-adelaide-night-market" class="event-card">
+        <div class="ec-img ec-img-port">
+          🌊
+          <div class="ec-img-overlay"></div>
+          <span class="ec-cat-badge" style="background:#2B5BA812;color:#2B5BA8;">Night Market</span>
+          <span class="ec-spots-badge" style="background:#2D8B5514;color:#2D8B55;border:1px solid #2D8B5528;">11 spots left</span>
+        </div>
+        <div class="ec-body">
+          <div class="ec-name">Port Adelaide Night Market</div>
+          <div class="ec-where">📍 Port Adelaide, SA</div>
+          <div class="ec-date">📅 10 May 2026</div>
+          <div class="ec-fill-label"><span>9/20 spots filled</span><span style="color:#2D8B55;font-weight:700;">45%</span></div>
+          <div class="ec-fill-bg"><div class="ec-fill-inner" style="width:45%;background:#2D8B55;"></div></div>
+          <div class="ec-footer-row">
+            <div class="ec-price">Booth: <strong>$150–$250</strong></div>
+            <div class="ec-spot-count">Deadline: 26 Apr</div>
+          </div>
+        </div>
+      </a>
+
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     FEATURED VENDORS
+═══════════════════════════════════════════════════════════════════════════ -->
+<div class="section-wrap alt" id="vendors">
+<div class="section">
+  <div class="sec-header">
+    <div>
+      <div class="sec-tag">Featured Vendors</div>
+      <h2 class="sec-title">Top vendors on <em>Pitch.</em></h2>
+    </div>
+    <a href="/vendors" class="sec-link">Browse all vendors →</a>
+  </div>
+
+  <div class="vendors-grid">
+
+    <a href="/vendors/smoky-joes-bbq" class="vendor-card">
+      <div class="vc-head">
+        <div class="vc-avatar av-a">SJ</div>
+        <div class="vc-info">
+          <div class="vc-name">Smoky Joe's BBQ <span class="vc-verified">✓</span></div>
+          <div class="vc-sub">Food Truck · Adelaide, SA</div>
+        </div>
+        <span class="vc-plan-badge bdg-pro">⭐ Pro</span>
+      </div>
+      <div class="vc-stars">★★★★★ <span>4.9 · 47 reviews</span></div>
+      <div class="vc-events">23 events completed</div>
+      <div class="vc-tags">
+        <span class="vc-tag">BBQ</span><span class="vc-tag">Burgers</span><span class="vc-tag">Ribs</span>
+      </div>
+    </a>
+
+    <a href="/vendors/the-green-fold" class="vendor-card">
+      <div class="vc-head">
+        <div class="vc-avatar av-b">TG</div>
+        <div class="vc-info">
+          <div class="vc-name">The Green Fold <span class="vc-verified">✓</span></div>
+          <div class="vc-sub">Pop-up Stall · Melbourne, VIC</div>
+        </div>
+        <span class="vc-plan-badge bdg-pro">⭐ Pro</span>
+      </div>
+      <div class="vc-stars">★★★★★ <span>4.8 · 31 reviews</span></div>
+      <div class="vc-events">18 events completed</div>
+      <div class="vc-tags">
+        <span class="vc-tag">Vegan</span><span class="vc-tag">Wraps</span><span class="vc-tag">Gluten-free</span>
+      </div>
+    </a>
+
+    <a href="/vendors/barista-mob" class="vendor-card">
+      <div class="vc-head">
+        <div class="vc-avatar av-c">BM</div>
+        <div class="vc-info">
+          <div class="vc-name">Barista Mob</div>
+          <div class="vc-sub">Mobile Cart · Brisbane, QLD</div>
+        </div>
+        <span class="vc-plan-badge bdg-basic">Basic</span>
+      </div>
+      <div class="vc-stars">★★★★☆ <span>4.6 · 22 reviews</span></div>
+      <div class="vc-events">11 events completed</div>
+      <div class="vc-tags">
+        <span class="vc-tag">Coffee</span><span class="vc-tag">Cold Brew</span><span class="vc-tag">Matcha</span>
+      </div>
+    </a>
+
+    <a href="/vendors/taco-cartel" class="vendor-card">
+      <div class="vc-head">
+        <div class="vc-avatar av-d">TC</div>
+        <div class="vc-info">
+          <div class="vc-name">Taco Cartel <span class="vc-verified">✓</span></div>
+          <div class="vc-sub">Food Truck · Adelaide, SA</div>
+        </div>
+        <span class="vc-plan-badge bdg-pro">⭐ Pro</span>
+      </div>
+      <div class="vc-stars">★★★★★ <span>4.7 · 38 reviews</span></div>
+      <div class="vc-events">15 events completed</div>
+      <div class="vc-tags">
+        <span class="vc-tag">Mexican</span><span class="vc-tag">Tacos</span><span class="vc-tag">Burritos</span>
+      </div>
+    </a>
+
+    <a href="/vendors/noodle-kingdom" class="vendor-card">
+      <div class="vc-head">
+        <div class="vc-avatar av-e">NK</div>
+        <div class="vc-info">
+          <div class="vc-name">Noodle Kingdom</div>
+          <div class="vc-sub">Pop-up Stall · Sydney, NSW</div>
+        </div>
+        <span class="vc-plan-badge bdg-basic">Basic</span>
+      </div>
+      <div class="vc-stars">★★★★☆ <span>4.5 · 19 reviews</span></div>
+      <div class="vc-events">9 events completed</div>
+      <div class="vc-tags">
+        <span class="vc-tag">Asian</span><span class="vc-tag">Ramen</span><span class="vc-tag">Dumplings</span>
+      </div>
+    </a>
+
+    <a href="/vendors/sweet-surrender" class="vendor-card">
+      <div class="vc-head">
+        <div class="vc-avatar av-f">SS</div>
+        <div class="vc-info">
+          <div class="vc-name">Sweet Surrender <span class="vc-verified">✓</span></div>
+          <div class="vc-sub">Mobile Cart · Adelaide, SA</div>
+        </div>
+        <span class="vc-plan-badge bdg-pro">⭐ Pro</span>
+      </div>
+      <div class="vc-stars">★★★★★ <span>4.8 · 26 reviews</span></div>
+      <div class="vc-events">14 events completed</div>
+      <div class="vc-tags">
+        <span class="vc-tag">Desserts</span><span class="vc-tag">Gelato</span><span class="vc-tag">Crepes</span>
+      </div>
+    </a>
+
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     CATEGORY BROWSE
+═══════════════════════════════════════════════════════════════════════════ -->
+<div class="section-wrap">
+<div class="section">
+  <div class="sec-tag">Categories</div>
+  <h2 class="sec-title">Find your <em>category.</em></h2>
+  <p class="sec-desc" style="margin-bottom:40px;">Browse events by type — from weekly night markets to one-off festivals and corporate catering gigs.</p>
+
+  <div class="cats-grid">
+    <a href="/events?category=night-market" class="cat-tile">
+      <div class="cat-emoji">🌙</div>
+      <div class="cat-name">Night Markets</div>
+      <div class="cat-count">48 active events</div>
+    </a>
+    <a href="/events?category=festival" class="cat-tile">
+      <div class="cat-emoji">🎪</div>
+      <div class="cat-name">Festivals</div>
+      <div class="cat-count">32 active events</div>
+    </a>
+    <a href="/events?category=farmers-market" class="cat-tile">
+      <div class="cat-emoji">🌾</div>
+      <div class="cat-name">Farmers Markets</div>
+      <div class="cat-count">27 active events</div>
+    </a>
+    <a href="/events?category=corporate" class="cat-tile">
+      <div class="cat-emoji">🏢</div>
+      <div class="cat-name">Corporate Events</div>
+      <div class="cat-count">19 active events</div>
+    </a>
+    <a href="/events?category=pop-up" class="cat-tile">
+      <div class="cat-emoji">⚡</div>
+      <div class="cat-name">Pop-ups</div>
+      <div class="cat-count">41 active events</div>
+    </a>
+    <a href="/events?category=twilight-market" class="cat-tile">
+      <div class="cat-emoji">🌅</div>
+      <div class="cat-name">Twilight Markets</div>
+      <div class="cat-count">23 active events</div>
+    </a>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     HOW IT WORKS
+═══════════════════════════════════════════════════════════════════════════ -->
+<div class="section-wrap alt" id="how-it-works">
+<div class="section">
+  <div class="sec-tag">How It Works</div>
+  <h2 class="sec-title" style="margin-bottom:48px;">Your pitch, <em>simplified.</em></h2>
+
+  <div class="hiw-cols">
+
+    <!-- For Vendors -->
+    <div>
+      <div class="hiw-col-head">For vendors</div>
+      <div class="hiw-steps">
+
+        <div class="hiw-step">
+          <div class="hiw-step-left">
+            <div class="hiw-icon">🏪</div>
+          </div>
+          <div class="hiw-content">
+            <div class="hiw-step-title">Create your profile</div>
+            <div class="hiw-step-desc">Build a vendor profile with photos, cuisine tags, certifications, and your past event history. First impressions matter.</div>
+          </div>
+        </div>
+
+        <div class="hiw-step">
+          <div class="hiw-step-left">
+            <div class="hiw-icon">✅</div>
+          </div>
+          <div class="hiw-content">
+            <div class="hiw-step-title">Get verified</div>
+            <div class="hiw-step-desc">Submit your ABN, food safety cert, and public liability insurance. Verified vendors get priority placement in search.</div>
+          </div>
+        </div>
+
+        <div class="hiw-step">
+          <div class="hiw-step-left">
+            <div class="hiw-icon">🔍</div>
+          </div>
+          <div class="hiw-content">
+            <div class="hiw-step-title">Apply to events</div>
+            <div class="hiw-step-desc">Browse events by location, date, category, and fee range. One-click applications — no chasing emails or phone calls.</div>
+          </div>
+        </div>
+
+        <div class="hiw-step">
+          <div class="hiw-step-left">
+            <div class="hiw-icon">⚡</div>
+          </div>
+          <div class="hiw-content">
+            <div class="hiw-step-title">Get confirmed</div>
+            <div class="hiw-step-desc">Organizers review and confirm within 48 hours. You'll always hear back. No ghosting, no uncertainty.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Divider -->
+    <div class="hiw-divider"></div>
+
+    <!-- For Organisers -->
+    <div>
+      <div class="hiw-col-head">For organisers</div>
+      <div class="hiw-steps">
+
+        <div class="hiw-step">
+          <div class="hiw-step-left">
+            <div class="hiw-icon">📝</div>
+          </div>
+          <div class="hiw-content">
+            <div class="hiw-step-title">Post your event</div>
+            <div class="hiw-step-desc">List your event with dates, location, booth specifications, fees, and requirements. Takes less than 5 minutes.</div>
+          </div>
+        </div>
+
+        <div class="hiw-step">
+          <div class="hiw-step-left">
+            <div class="hiw-icon">📥</div>
+          </div>
+          <div class="hiw-content">
+            <div class="hiw-step-title">Receive applications</div>
+            <div class="hiw-step-desc">Verified vendors apply directly to your event. Review their profiles, ratings, certifications, and past events in one place.</div>
+          </div>
+        </div>
+
+        <div class="hiw-step">
+          <div class="hiw-step-left">
+            <div class="hiw-icon">🎯</div>
+          </div>
+          <div class="hiw-content">
+            <div class="hiw-step-title">Approve your lineup</div>
+            <div class="hiw-step-desc">One-click approve or decline. Automatic notifications sent to vendors. Build a diverse, quality food lineup with confidence.</div>
+          </div>
+        </div>
+
+        <div class="hiw-step">
+          <div class="hiw-step-left">
+            <div class="hiw-icon">🎪</div>
+          </div>
+          <div class="hiw-content">
+            <div class="hiw-step-title">Event day</div>
+            <div class="hiw-step-desc">Your vendor roster is confirmed, contracts are signed, and everyone knows where to show up. You focus on the event.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     TRUST SECTION
+═══════════════════════════════════════════════════════════════════════════ -->
+<div class="trust-section">
+  <div class="trust-inner">
+    <h2 class="trust-heading">Every vendor is <em>verified.</em></h2>
+    <p class="trust-sub">Organizers trust Pitch because every vendor on the platform has passed our three-point verification process before they can apply to a single event.</p>
+
+    <div class="trust-cols">
+
+      <div class="trust-card">
+        <div class="trust-icon-wrap">🏛️</div>
+        <div class="trust-card-title">ABN Verified</div>
+        <div class="trust-card-desc">Every vendor's Australian Business Number is confirmed with the ATO before their profile goes live — no unregistered operators on Pitch.</div>
+      </div>
+
+      <div class="trust-card">
+        <div class="trust-icon-wrap">🍽️</div>
+        <div class="trust-card-title">Food Safety Certified</div>
+        <div class="trust-card-desc">We check that vendors hold a current food safety supervisor certificate and that their local council registration is up to date.</div>
+      </div>
+
+      <div class="trust-card">
+        <div class="trust-icon-wrap">🛡️</div>
+        <div class="trust-card-title">$10M Public Liability Insured</div>
+        <div class="trust-card-desc">All vendors must provide proof of at least $10 million in public liability insurance — the standard requirement for Australian events.</div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     FOOTER
+═══════════════════════════════════════════════════════════════════════════ -->
+<footer>
+  <div class="footer-main">
+    <div>
+      <a href="/" class="footer-logo">Pitch<span class="dot">.</span></a>
+      <p class="footer-desc">Australia's marketplace connecting food vendors with local events. Find your pitch. Own your market.</p>
+      <div class="footer-socials">
+        <a href="#" class="fsoc" title="X">𝕏</a>
+        <a href="#" class="fsoc" title="Instagram">◈</a>
+        <a href="#" class="fsoc" title="LinkedIn">in</a>
+        <a href="#" class="fsoc" title="Facebook">f</a>
+      </div>
+    </div>
+
+    <div>
+      <div class="footer-col-title">For Vendors</div>
+      <ul class="footer-links">
+        <li><a href="/signup?role=vendor">Sign up</a></li>
+        <li><a href="#how-it-works">How it works</a></li>
+        <li><a href="/pricing">Pricing</a></li>
+        <li><a href="/vendors">Browse vendors</a></li>
+        <li><a href="/blog">Resources</a></li>
+      </ul>
+    </div>
+
+    <div>
+      <div class="footer-col-title">For Organisers</div>
+      <ul class="footer-links">
+        <li><a href="/events/new">Post an event</a></li>
+        <li><a href="#how-it-works">How it works</a></li>
+        <li><a href="/pricing">Pricing</a></li>
+        <li><a href="/contact">Talk to sales</a></li>
+      </ul>
+    </div>
+
+    <div>
+      <div class="footer-col-title">Company</div>
+      <ul class="footer-links">
+        <li><a href="/about">About</a></li>
+        <li><a href="/contact">Contact</a></li>
+        <li><a href="/terms">Terms</a></li>
+        <li><a href="/privacy">Privacy</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <span class="footer-copy">© 2026 Pitch. Adelaide, Australia.</span>
+    <a href="/" class="footer-bottom-logo">Pitch<span class="dot">.</span></a>
+  </div>
+</footer>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     SCRIPTS
+═══════════════════════════════════════════════════════════════════════════ -->
+<script>
+// Mobile menu toggle
+function toggleMobileMenu() {
+  const menu = document.getElementById('mobile-menu');
+  menu.classList.toggle('open');
+}
+function closeMobileMenu() {
+  document.getElementById('mobile-menu').classList.remove('open');
+}
+
+// User dropdown (logged-in state)
+function toggleDropdown() {
+  const dd = document.getElementById('nav-dropdown');
+  dd.style.display = dd.style.display === 'block' ? 'none' : 'block';
+}
+document.addEventListener('click', (e) => {
+  const dd = document.getElementById('nav-dropdown');
+  if (dd && !e.target.closest('.nav-user')) dd.style.display = 'none';
+});
+
+// Demo: toggle auth state (remove in production)
+// To simulate logged-in: document.getElementById('nav-loggedout').style.display='none'; document.getElementById('nav-loggedin').style.display='flex';
+</script>
+
+</body>
+</html>

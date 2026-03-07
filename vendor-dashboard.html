@@ -1,0 +1,1428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Vendor Dashboard — Pitch.</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --ember:      #E8500A;
+  --ember-glow: #FF6B2B;
+  --ember-bg:   #E8500A12;
+  --coal:       #1A1612;
+  --char:       #231E19;
+  --ash:        #2E2720;
+  --smoke:      #4A3F36;
+  --parchment:  #FDF4E7;
+  --cream:      #F5EDD8;
+  --linen:      #EDE3CC;
+  --herb:       #2D8B55;
+  --gold:       #C9840A;
+  --terra:      #C0392B;
+  --slate:      #2B5BA8;
+  --text-hi:    #FDF4E7;
+  --text-mid:   #A89880;
+  --text-lo:    #6B5A4A;
+  --fd:         'Fraunces', Georgia, serif;
+  --fb:         'Instrument Sans', 'Helvetica Neue', sans-serif;
+  --sidebar-w:  260px;
+}
+
+html, body { height: 100%; }
+body {
+  background: var(--coal); color: var(--text-hi);
+  font-family: var(--fb); line-height: 1.5; overflow-x: hidden;
+  display: flex;
+}
+
+/* ── GRAIN TEXTURE ──────────────────────────────────────────────────────── */
+body::before {
+  content: ''; position: fixed; inset: 0; pointer-events: none; z-index: 0; opacity: 0.35;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+}
+
+/* ── SIDEBAR ─────────────────────────────────────────────────────────────── */
+.sidebar {
+  width: var(--sidebar-w); flex-shrink: 0;
+  height: 100vh; position: fixed; top: 0; left: 0;
+  background: var(--char); border-right: 1px solid #ffffff08;
+  display: flex; flex-direction: column;
+  z-index: 100; overflow-y: auto;
+}
+
+.sidebar-logo {
+  padding: 24px 24px 20px;
+  border-bottom: 1px solid #ffffff07;
+}
+.logo-mark {
+  font-family: var(--fd); font-size: 22px; font-weight: 900;
+  letter-spacing: -0.04em; color: var(--text-hi); text-decoration: none;
+  display: block; margin-bottom: 16px;
+}
+.logo-mark .dot { color: var(--ember); }
+
+.vendor-card-mini {
+  display: flex; align-items: center; gap: 10px;
+  background: #ffffff07; border: 1px solid #ffffff0a;
+  border-radius: 12px; padding: 10px 12px;
+}
+.vendor-avatar {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: linear-gradient(135deg, #3D1A06, #6B2E08);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.vendor-info { flex: 1; min-width: 0; }
+.vendor-mini-name {
+  font-size: 13px; font-weight: 700; color: var(--text-hi);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.plan-pill {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: linear-gradient(135deg, #C9840A20, #E89B1A14);
+  border: 1px solid #C9840A28; color: var(--gold);
+  font-size: 9px; font-weight: 700; letter-spacing: 0.08em;
+  padding: 2px 7px; border-radius: 100px; margin-top: 2px;
+}
+
+/* Sidebar nav */
+.sidebar-nav { flex: 1; padding: 16px 12px; display: flex; flex-direction: column; gap: 2px; }
+.nav-section-label {
+  font-size: 9px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--text-lo); padding: 12px 12px 6px;
+}
+.nav-link {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: 10px; cursor: pointer;
+  font-size: 13px; font-weight: 600; color: var(--text-mid);
+  transition: all 0.14s; user-select: none; border: none;
+  background: transparent; width: 100%; text-align: left; text-decoration: none;
+}
+.nav-link:hover { background: #ffffff08; color: var(--text-hi); }
+.nav-link.active { background: var(--ember-bg); color: var(--ember); border: 1px solid #E8500A18; }
+.nav-icon { font-size: 15px; flex-shrink: 0; width: 20px; text-align: center; }
+.nav-badge {
+  margin-left: auto; background: var(--ember); color: #fff;
+  font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 100px;
+}
+
+.sidebar-footer {
+  padding: 16px 12px; border-top: 1px solid #ffffff07;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.sidebar-footer-link {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 12px; border-radius: 8px; cursor: pointer;
+  font-size: 12px; font-weight: 500; color: var(--text-lo);
+  transition: all 0.14s; text-decoration: none; border: none; background: transparent; width: 100%;
+}
+.sidebar-footer-link:hover { color: var(--text-mid); background: #ffffff06; }
+
+/* ── MAIN CONTENT ───────────────────────────────────────────────────────── */
+.main {
+  margin-left: var(--sidebar-w); flex: 1; min-height: 100vh;
+  position: relative; z-index: 1;
+}
+
+.topbar {
+  position: sticky; top: 0; z-index: 50;
+  height: 60px; display: flex; align-items: center; justify-content: space-between;
+  padding: 0 40px;
+  background: rgba(26,22,18,0.88); backdrop-filter: blur(16px);
+  border-bottom: 1px solid #ffffff07;
+}
+.topbar-title { font-family: var(--fd); font-size: 18px; font-weight: 900; letter-spacing: -0.02em; color: var(--text-hi); }
+.topbar-actions { display: flex; align-items: center; gap: 12px; }
+.topbar-notif {
+  width: 36px; height: 36px; border-radius: 9px;
+  background: #ffffff07; border: 1px solid #ffffff0a;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 15px; position: relative;
+  transition: background 0.14s;
+}
+.topbar-notif:hover { background: #ffffff10; }
+.notif-dot {
+  position: absolute; top: 7px; right: 7px;
+  width: 7px; height: 7px; border-radius: 50%; background: var(--ember);
+  border: 1.5px solid var(--coal);
+}
+.topbar-view-profile {
+  font-family: var(--fb); font-size: 12px; font-weight: 600;
+  color: var(--text-mid); background: transparent; border: 1px solid #ffffff10;
+  padding: 7px 14px; border-radius: 8px; cursor: pointer; text-decoration: none;
+  transition: all 0.14s;
+}
+.topbar-view-profile:hover { color: var(--text-hi); border-color: #ffffff20; background: #ffffff08; }
+
+.page-content { padding: 32px 40px 60px; }
+
+/* Panels */
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* ── SHARED COMPONENTS ──────────────────────────────────────────────────── */
+.section-title {
+  font-family: var(--fd); font-size: 16px; font-weight: 900;
+  letter-spacing: -0.02em; color: var(--text-hi); margin-bottom: 16px;
+}
+.card {
+  background: var(--char); border: 1px solid #ffffff08;
+  border-radius: 16px; padding: 24px;
+}
+.divider { height: 1px; background: #ffffff07; margin: 24px 0; }
+
+/* ── OVERVIEW ────────────────────────────────────────────────────────────── */
+.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+@media (max-width: 1100px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
+
+.stat-card {
+  background: var(--char); border: 1px solid #ffffff09;
+  border-radius: 16px; padding: 22px 24px;
+  position: relative; overflow: hidden;
+}
+.stat-card::before {
+  content: ''; position: absolute; top: -30px; right: -30px;
+  width: 80px; height: 80px; border-radius: 50%;
+  opacity: 0.06;
+}
+.stat-card.ember::before { background: var(--ember); }
+.stat-card.herb::before  { background: var(--herb); }
+.stat-card.gold::before  { background: var(--gold); }
+.stat-card.slate::before { background: var(--slate); }
+
+.stat-label { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-lo); margin-bottom: 8px; }
+.stat-value { font-family: var(--fd); font-size: 36px; font-weight: 900; letter-spacing: -0.03em; line-height: 1; margin-bottom: 6px; }
+.stat-card.ember .stat-value { color: var(--ember); }
+.stat-card.herb  .stat-value { color: var(--herb); }
+.stat-card.gold  .stat-value { color: var(--gold); }
+.stat-card.slate .stat-value { color: #5B8BE8; }
+.stat-delta { font-size: 12px; color: var(--text-lo); }
+.stat-delta.up { color: var(--herb); }
+.stat-delta.down { color: var(--terra); }
+
+/* Two-col overview layout */
+.overview-grid { display: grid; grid-template-columns: 1fr 360px; gap: 24px; align-items: start; }
+@media (max-width: 1100px) { .overview-grid { grid-template-columns: 1fr; } }
+
+/* Recommended events */
+.event-mini-list { display: flex; flex-direction: column; gap: 12px; }
+.event-mini {
+  display: flex; align-items: center; gap: 14px;
+  background: #ffffff05; border: 1px solid #ffffff08;
+  border-radius: 12px; padding: 14px 16px; text-decoration: none;
+  transition: all 0.14s;
+}
+.event-mini:hover { background: #ffffff0a; border-color: #E8500A20; }
+.event-mini-icon {
+  width: 44px; height: 44px; border-radius: 10px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; font-size: 20px;
+}
+.event-mini-body { flex: 1; min-width: 0; }
+.event-mini-name { font-size: 13px; font-weight: 700; color: var(--text-hi); margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.event-mini-meta { font-size: 11px; color: var(--text-lo); }
+.event-mini-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.event-mini-fee { font-size: 12px; font-weight: 700; color: var(--text-hi); }
+.event-mini-spots { font-size: 11px; color: var(--text-lo); }
+.btn-apply-mini {
+  font-family: var(--fb); font-size: 11px; font-weight: 700;
+  color: var(--ember); background: var(--ember-bg); border: 1px solid #E8500A22;
+  padding: 5px 12px; border-radius: 7px; cursor: pointer; transition: all 0.14s;
+}
+.btn-apply-mini:hover { background: #E8500A22; }
+
+/* Activity feed */
+.feed-list { display: flex; flex-direction: column; }
+.feed-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 14px 0; border-bottom: 1px solid #ffffff06; position: relative;
+}
+.feed-item:last-child { border-bottom: none; }
+.feed-dot {
+  width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 4px;
+}
+.feed-dot.approved { background: var(--herb); box-shadow: 0 0 6px #2D8B5550; }
+.feed-dot.rejected { background: var(--terra); box-shadow: 0 0 6px #C0392B50; }
+.feed-dot.submitted { background: var(--slate); box-shadow: 0 0 6px #2B5BA850; }
+.feed-dot.review { background: var(--gold); box-shadow: 0 0 6px #C9840A50; }
+.feed-dot.review-star { background: var(--gold); box-shadow: 0 0 6px #C9840A50; }
+.feed-body { flex: 1; }
+.feed-text { font-size: 13px; color: var(--text-mid); line-height: 1.5; }
+.feed-text strong { color: var(--text-hi); font-weight: 600; }
+.feed-text a { color: var(--ember); text-decoration: none; }
+.feed-text a:hover { text-decoration: underline; }
+.feed-time { font-size: 11px; color: var(--text-lo); margin-top: 3px; }
+
+/* ── APPLICATIONS ────────────────────────────────────────────────────────── */
+.app-filter-row { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
+.status-filter-btn {
+  font-family: var(--fb); font-size: 12px; font-weight: 600;
+  padding: 6px 14px; border-radius: 100px; cursor: pointer;
+  border: 1px solid #ffffff10; background: transparent; color: var(--text-mid);
+  transition: all 0.12s;
+}
+.status-filter-btn:hover { background: #ffffff09; color: var(--text-hi); }
+.status-filter-btn.active { background: var(--ember); border-color: var(--ember); color: #fff; }
+
+.app-table { width: 100%; border-collapse: collapse; }
+.app-table thead th {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--text-lo); padding: 0 16px 12px; text-align: left; white-space: nowrap;
+  border-bottom: 1px solid #ffffff08;
+}
+.app-table tbody tr {
+  border-bottom: 1px solid #ffffff06; transition: background 0.1s; cursor: default;
+}
+.app-table tbody tr:last-child { border-bottom: none; }
+.app-table tbody tr:hover { background: #ffffff04; }
+.app-table td { padding: 14px 16px; font-size: 13px; color: var(--text-mid); vertical-align: middle; }
+.td-event-name { color: var(--text-hi); font-weight: 600; font-size: 13px; }
+.td-event-date { font-size: 11px; color: var(--text-lo); margin-top: 2px; }
+
+/* Status badges */
+.status-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 100px;
+  white-space: nowrap;
+}
+.badge-submitted  { background: #2B5BA818; color: #5B8BE8; border: 1px solid #2B5BA828; }
+.badge-review     { background: #C9840A18; color: #D9981A; border: 1px solid #C9840A28; }
+.badge-approved   { background: #2D8B5518; color: #3DA86A; border: 1px solid #2D8B5530; }
+.badge-waitlisted { background: #C9840A18; color: #D9981A; border: 1px solid #C9840A28; }
+.badge-rejected   { background: #C0392B18; color: #D9534F; border: 1px solid #C0392B28; }
+
+.action-link { font-size: 12px; font-weight: 600; color: var(--ember); text-decoration: none; transition: color 0.12s; }
+.action-link:hover { color: var(--ember-glow); }
+
+/* Rejection reason */
+.rejection-reason {
+  display: none; margin-top: 10px; padding: 12px 14px;
+  background: #C0392B0C; border: 1px solid #C0392B20; border-radius: 8px;
+  font-size: 12px; color: #D9534F; line-height: 1.6;
+}
+.rejection-reason.open { display: block; }
+.rejection-toggle {
+  font-size: 11px; font-weight: 600; color: var(--terra);
+  background: transparent; border: none; cursor: pointer; padding: 0;
+  margin-left: 8px; text-decoration: underline; transition: color 0.12s;
+}
+.rejection-toggle:hover { color: #E8534F; }
+
+/* ── PROFILE ─────────────────────────────────────────────────────────────── */
+.profile-grid { display: grid; grid-template-columns: 1fr 300px; gap: 24px; align-items: start; }
+@media (max-width: 1100px) { .profile-grid { grid-template-columns: 1fr; } }
+
+.form-group { margin-bottom: 20px; }
+.form-label {
+  display: block; font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+  text-transform: uppercase; color: var(--text-lo); margin-bottom: 8px;
+}
+.form-input {
+  width: 100%; height: 42px; padding: 0 14px;
+  background: #ffffff08; border: 1px solid #ffffff10; border-radius: 10px;
+  font-family: var(--fb); font-size: 14px; color: var(--text-hi);
+  outline: none; transition: border-color 0.14s;
+}
+.form-input::placeholder { color: var(--text-lo); }
+.form-input:focus { border-color: #E8500A40; }
+.form-textarea {
+  width: 100%; padding: 12px 14px; resize: vertical; min-height: 100px;
+  background: #ffffff08; border: 1px solid #ffffff10; border-radius: 10px;
+  font-family: var(--fb); font-size: 14px; color: var(--text-hi); line-height: 1.6;
+  outline: none; transition: border-color 0.14s;
+}
+.form-textarea:focus { border-color: #E8500A40; }
+.char-counter { font-size: 11px; color: var(--text-lo); margin-top: 5px; text-align: right; }
+.char-counter.warn { color: var(--gold); }
+.char-counter.over { color: var(--terra); }
+
+/* Cuisine tag selector */
+.tag-selector { display: flex; flex-wrap: wrap; gap: 8px; }
+.tag-option {
+  font-size: 12px; font-weight: 600; padding: 6px 14px; border-radius: 100px;
+  cursor: pointer; border: 1px solid #ffffff10; background: transparent;
+  color: var(--text-mid); transition: all 0.12s; user-select: none;
+  font-family: var(--fb);
+}
+.tag-option:hover { border-color: #E8500A30; color: var(--text-hi); }
+.tag-option.selected { background: var(--ember-bg); border-color: #E8500A30; color: var(--ember); }
+
+/* Radio setup type */
+.radio-group { display: flex; gap: 10px; flex-wrap: wrap; }
+.radio-option {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 16px; border-radius: 10px; cursor: pointer;
+  border: 1px solid #ffffff10; background: transparent; font-family: var(--fb);
+  font-size: 13px; font-weight: 600; color: var(--text-mid); transition: all 0.12s;
+}
+.radio-option input { accent-color: var(--ember); width: 15px; height: 15px; }
+.radio-option:has(input:checked) { background: var(--ember-bg); border-color: #E8500A30; color: var(--ember); }
+
+/* Toggle switch */
+.toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 4px 0; }
+.toggle-label { font-size: 13px; font-weight: 500; color: var(--text-mid); }
+.toggle-switch {
+  position: relative; width: 40px; height: 22px; cursor: pointer; flex-shrink: 0;
+}
+.toggle-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+.toggle-track {
+  position: absolute; inset: 0; border-radius: 11px;
+  background: #ffffff14; transition: background 0.2s;
+}
+.toggle-switch input:checked + .toggle-track { background: var(--ember); }
+.toggle-thumb {
+  position: absolute; top: 3px; left: 3px; width: 16px; height: 16px;
+  border-radius: 50%; background: #fff; transition: transform 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+.toggle-switch input:checked ~ .toggle-thumb { transform: translateX(18px); }
+
+/* Price range */
+.price-group { display: flex; gap: 8px; }
+.price-btn {
+  width: 52px; height: 42px; border-radius: 10px; cursor: pointer;
+  border: 1px solid #ffffff10; background: transparent;
+  font-family: var(--fd); font-size: 15px; font-weight: 900; color: var(--text-mid);
+  transition: all 0.12s;
+}
+.price-btn:hover { border-color: #E8500A30; color: var(--text-hi); }
+.price-btn.active { background: var(--ember-bg); border-color: #E8500A40; color: var(--ember); }
+
+/* Photo upload */
+.photo-upload-area {
+  border: 2px dashed #ffffff14; border-radius: 14px; padding: 32px 24px;
+  text-align: center; cursor: pointer; transition: all 0.14s;
+}
+.photo-upload-area:hover, .photo-upload-area.dragover { border-color: #E8500A40; background: var(--ember-bg); }
+.upload-icon { font-size: 28px; margin-bottom: 10px; }
+.upload-text { font-size: 13px; color: var(--text-mid); margin-bottom: 4px; }
+.upload-hint { font-size: 11px; color: var(--text-lo); }
+.photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 14px; }
+.photo-thumb {
+  aspect-ratio: 4/3; border-radius: 8px; overflow: hidden;
+  background: var(--ash); display: flex; align-items: center; justify-content: center;
+  font-size: 24px; position: relative;
+}
+.photo-thumb-remove {
+  position: absolute; top: 5px; right: 5px;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: rgba(26,22,18,0.8); color: var(--text-mid);
+  border: none; cursor: pointer; font-size: 10px; display: flex; align-items: center; justify-content: center;
+  transition: all 0.12s;
+}
+.photo-thumb-remove:hover { background: var(--terra); color: #fff; }
+
+/* Dimensions inputs */
+.dim-row { display: flex; align-items: center; gap: 10px; }
+.dim-input {
+  width: 80px; height: 42px; padding: 0 12px;
+  background: #ffffff08; border: 1px solid #ffffff10; border-radius: 10px;
+  font-family: var(--fb); font-size: 14px; color: var(--text-hi);
+  outline: none; transition: border-color 0.14s; text-align: center;
+}
+.dim-input:focus { border-color: #E8500A40; }
+.dim-sep { font-size: 14px; color: var(--text-lo); }
+
+/* Profile preview card */
+.preview-card {
+  background: var(--parchment); border-radius: 16px; overflow: hidden;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+}
+.preview-top {
+  height: 100px; display: flex; align-items: center; justify-content: center;
+  font-size: 40px; position: relative;
+}
+.preview-body { padding: 14px 16px; }
+.preview-name { font-family: var(--fd); font-size: 16px; font-weight: 900; letter-spacing: -0.02em; color: #1A1612; margin-bottom: 6px; }
+.preview-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
+.preview-tag { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 100px; background: #E8500A14; color: var(--ember); border: 1px solid #E8500A22; }
+.preview-stats { display: flex; align-items: center; gap: 10px; padding-top: 10px; border-top: 1px solid #EDE3CC; font-size: 11px; }
+.preview-rating { color: #C9840A; font-weight: 700; }
+.preview-events { color: var(--text-lo); }
+
+.btn-save {
+  font-family: var(--fb); font-size: 14px; font-weight: 700; color: #fff;
+  background: var(--ember); border: none; padding: 14px 32px; border-radius: 12px;
+  cursor: pointer; box-shadow: 0 4px 16px #E8500A2E; transition: all 0.14s;
+  margin-top: 8px;
+}
+.btn-save:hover { background: var(--ember-glow); transform: translateY(-1px); }
+
+/* ── DOCUMENTS ───────────────────────────────────────────────────────────── */
+.doc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px; }
+@media (max-width: 1100px) { .doc-grid { grid-template-columns: 1fr; } }
+
+.doc-card {
+  background: var(--char); border: 1px solid #ffffff09; border-radius: 16px; padding: 22px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.doc-card.warn { border-color: #C9840A28; background: linear-gradient(to bottom, #C9840A06, var(--char)); }
+.doc-card.missing { border-color: #ffffff0a; border-style: dashed; }
+.doc-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.doc-icon { font-size: 22px; }
+.doc-name { font-size: 13px; font-weight: 700; color: var(--text-hi); margin-bottom: 3px; }
+.doc-optional { font-size: 10px; color: var(--text-lo); }
+.doc-status-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.doc-expiry { font-size: 11px; color: var(--text-lo); }
+.doc-expiry.warn-text { color: var(--gold); font-weight: 600; }
+.doc-warning {
+  display: flex; align-items: center; gap: 7px;
+  background: #C9840A14; border: 1px solid #C9840A24; border-radius: 8px;
+  padding: 8px 12px; font-size: 12px; font-weight: 500; color: #D9981A;
+}
+.btn-upload {
+  font-family: var(--fb); font-size: 12px; font-weight: 700;
+  color: var(--ember); background: var(--ember-bg); border: 1px solid #E8500A22;
+  padding: 8px 16px; border-radius: 9px; cursor: pointer; transition: all 0.14s;
+  width: 100%;
+}
+.btn-upload:hover { background: #E8500A22; }
+.btn-upload.missing-style { color: var(--text-mid); background: #ffffff07; border-color: #ffffff10; }
+.btn-upload.missing-style:hover { color: var(--text-hi); background: #ffffff10; }
+
+/* Document timeline */
+.doc-timeline { }
+.timeline-steps { display: flex; align-items: center; gap: 0; margin-top: 8px; }
+.tl-step { display: flex; flex-direction: column; align-items: center; gap: 6px; flex: 1; }
+.tl-dot {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700;
+  border: 2px solid transparent;
+}
+.tl-dot.done { background: #2D8B5520; border-color: #2D8B5540; color: var(--herb); }
+.tl-dot.active { background: var(--ember-bg); border-color: #E8500A40; color: var(--ember); }
+.tl-dot.pending { background: #ffffff08; border-color: #ffffff14; color: var(--text-lo); }
+.tl-label { font-size: 10px; font-weight: 600; text-align: center; color: var(--text-lo); }
+.tl-label.done { color: var(--herb); }
+.tl-label.active { color: var(--ember); }
+.tl-line {
+  flex: 1; height: 2px; background: #ffffff0a; margin-bottom: 20px;
+}
+.tl-line.done { background: #2D8B5540; }
+
+/* ── SETTINGS ────────────────────────────────────────────────────────────── */
+.settings-section { margin-bottom: 32px; }
+.settings-section-title {
+  font-size: 14px; font-weight: 700; color: var(--text-hi); margin-bottom: 16px;
+  padding-bottom: 10px; border-bottom: 1px solid #ffffff07;
+}
+.settings-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 0; border-bottom: 1px solid #ffffff06;
+}
+.settings-row:last-child { border-bottom: none; }
+.settings-row-label { font-size: 13px; font-weight: 600; color: var(--text-hi); margin-bottom: 2px; }
+.settings-row-desc { font-size: 12px; color: var(--text-lo); }
+.settings-row-left { flex: 1; }
+
+.email-display {
+  font-family: 'Courier New', monospace; font-size: 13px; color: var(--text-mid);
+  background: #ffffff07; padding: 9px 14px; border-radius: 9px;
+  border: 1px solid #ffffff0a;
+}
+
+.plan-card {
+  background: linear-gradient(135deg, #C9840A12, #E89B1A08);
+  border: 1px solid #C9840A24; border-radius: 14px; padding: 20px 22px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.plan-left h3 { font-family: var(--fd); font-size: 18px; font-weight: 900; letter-spacing: -0.02em; color: var(--gold); margin-bottom: 4px; }
+.plan-left p { font-size: 12px; color: var(--text-lo); }
+.plan-price { font-family: var(--fd); font-size: 28px; font-weight: 900; color: var(--text-hi); }
+.plan-price span { font-family: var(--fb); font-size: 13px; font-weight: 400; color: var(--text-lo); }
+.btn-plan-change {
+  font-family: var(--fb); font-size: 12px; font-weight: 600;
+  color: var(--text-mid); background: #ffffff08; border: 1px solid #ffffff10;
+  padding: 8px 16px; border-radius: 9px; cursor: pointer; transition: all 0.14s;
+}
+.btn-plan-change:hover { color: var(--text-hi); background: #ffffff12; }
+
+/* Danger zone */
+.danger-zone {
+  border: 1px solid #C0392B22; border-radius: 14px; padding: 20px 22px;
+  background: #C0392B06;
+}
+.danger-title { font-size: 14px; font-weight: 700; color: var(--terra); margin-bottom: 8px; }
+.danger-desc { font-size: 13px; color: var(--text-lo); margin-bottom: 14px; line-height: 1.6; }
+.btn-delete {
+  font-family: var(--fb); font-size: 13px; font-weight: 700;
+  color: var(--terra); background: #C0392B10; border: 1.5px solid #C0392B30;
+  padding: 10px 20px; border-radius: 10px; cursor: pointer; transition: all 0.14s;
+}
+.btn-delete:hover { background: #C0392B20; border-color: #C0392B50; }
+
+/* Delete confirmation modal */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 500; display: flex;
+  align-items: center; justify-content: center;
+  background: rgba(26,22,18,0.85); backdrop-filter: blur(10px);
+  opacity: 0; pointer-events: none; transition: opacity 0.2s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal-box {
+  background: var(--char); border: 1px solid #ffffff0d; border-radius: 20px;
+  padding: 32px; width: 440px; max-width: 90vw;
+  transform: translateY(12px); transition: transform 0.2s;
+}
+.modal-overlay.open .modal-box { transform: translateY(0); }
+.modal-icon { font-size: 36px; margin-bottom: 16px; text-align: center; }
+.modal-title { font-family: var(--fd); font-size: 22px; font-weight: 900; letter-spacing: -0.02em; color: var(--text-hi); margin-bottom: 10px; text-align: center; }
+.modal-desc { font-size: 13px; color: var(--text-mid); line-height: 1.7; margin-bottom: 24px; text-align: center; }
+.modal-confirm-input {
+  width: 100%; height: 42px; padding: 0 14px; margin-bottom: 20px;
+  background: #ffffff08; border: 1px solid #C0392B28; border-radius: 10px;
+  font-family: var(--fb); font-size: 14px; color: var(--text-hi); outline: none;
+  transition: border-color 0.14s;
+}
+.modal-confirm-input:focus { border-color: #C0392B60; }
+.modal-actions { display: flex; gap: 10px; }
+.btn-modal-cancel {
+  flex: 1; padding: 13px; border-radius: 11px; font-family: var(--fb); font-size: 14px; font-weight: 600;
+  color: var(--text-mid); background: #ffffff08; border: 1px solid #ffffff0d; cursor: pointer; transition: all 0.14s;
+}
+.btn-modal-cancel:hover { color: var(--text-hi); background: #ffffff12; }
+.btn-modal-delete {
+  flex: 1; padding: 13px; border-radius: 11px; font-family: var(--fb); font-size: 14px; font-weight: 700;
+  color: #fff; background: var(--terra); border: none; cursor: pointer; transition: all 0.14s;
+  opacity: 0.4; pointer-events: none;
+}
+.btn-modal-delete.enabled { opacity: 1; pointer-events: all; }
+.btn-modal-delete.enabled:hover { background: #D94040; transform: translateY(-1px); }
+
+/* ── MOBILE BOTTOM TAB BAR ───────────────────────────────────────────────── */
+.mobile-tabs {
+  display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
+  background: var(--char); border-top: 1px solid #ffffff0a;
+  padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+}
+.mobile-tabs-inner { display: flex; justify-content: space-around; }
+.mobile-tab {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 6px 12px; cursor: pointer; font-size: 10px; font-weight: 600;
+  color: var(--text-lo); border: none; background: transparent; transition: color 0.14s;
+  font-family: var(--fb);
+}
+.mobile-tab.active { color: var(--ember); }
+.mobile-tab-icon { font-size: 18px; }
+
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .main { margin-left: 0; }
+  .mobile-tabs { display: block; }
+  .page-content { padding: 20px 16px 80px; }
+  .topbar { padding: 0 16px; }
+  .stat-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .doc-grid { grid-template-columns: 1fr; }
+  .profile-grid { grid-template-columns: 1fr; }
+  .overview-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <a href="/" class="logo-mark">Pitch<span class="dot">.</span></a>
+    <div class="vendor-card-mini">
+      <div class="vendor-avatar">🔥</div>
+      <div class="vendor-info">
+        <div class="vendor-mini-name">Smoky Joe's BBQ</div>
+        <div class="plan-pill">⭐ Pro Vendor</div>
+      </div>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">Menu</div>
+    <button class="nav-link active" onclick="showPanel('overview', this)">
+      <span class="nav-icon">⬡</span> Overview
+    </button>
+    <button class="nav-link" onclick="showPanel('applications', this)">
+      <span class="nav-icon">📋</span> My Applications
+      <span class="nav-badge">3</span>
+    </button>
+    <button class="nav-link" onclick="showPanel('profile', this)">
+      <span class="nav-icon">👤</span> My Profile
+    </button>
+    <button class="nav-link" onclick="showPanel('documents', this)">
+      <span class="nav-icon">📄</span> Documents
+      <span class="nav-badge" style="background:var(--gold);">!</span>
+    </button>
+    <button class="nav-link" onclick="showPanel('settings', this)">
+      <span class="nav-icon">⚙️</span> Settings
+    </button>
+  </nav>
+
+  <div class="sidebar-footer">
+    <a href="/vendors/smoky-joes-bbq" class="sidebar-footer-link">↗ View public profile</a>
+    <button class="sidebar-footer-link" onclick="">🚪 Log out</button>
+  </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<div class="main">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="topbar-title" id="topbar-title">Overview</div>
+    <div class="topbar-actions">
+      <div class="topbar-notif" title="Notifications">
+        🔔 <div class="notif-dot"></div>
+      </div>
+      <a href="/vendors/smoky-joes-bbq" class="topbar-view-profile">↗ View profile</a>
+    </div>
+  </div>
+
+  <div class="page-content">
+
+    <!-- ── PANEL: OVERVIEW ──────────────────────────────────────────────── -->
+    <div class="panel active" id="panel-overview">
+
+      <!-- Stat cards -->
+      <div class="stat-grid">
+        <div class="stat-card ember">
+          <div class="stat-label">Active Applications</div>
+          <div class="stat-value">3</div>
+          <div class="stat-delta">2 under review, 1 submitted</div>
+        </div>
+        <div class="stat-card herb">
+          <div class="stat-label">Confirmed Events</div>
+          <div class="stat-value">12</div>
+          <div class="stat-delta up">↑ 4 more than last year</div>
+        </div>
+        <div class="stat-card gold">
+          <div class="stat-label">Average Rating</div>
+          <div class="stat-value">4.9</div>
+          <div class="stat-delta">From 62 organiser reviews</div>
+        </div>
+        <div class="stat-card slate">
+          <div class="stat-label">Profile Views</div>
+          <div class="stat-value">847</div>
+          <div class="stat-delta up">↑ 23% vs last month</div>
+        </div>
+      </div>
+
+      <!-- Two-col: recommended events + activity feed -->
+      <div class="overview-grid">
+
+        <!-- Recommended events -->
+        <div>
+          <div class="section-title">Recommended events for you</div>
+          <div class="event-mini-list">
+            <a class="event-mini" href="/events/port-adelaide-night-market">
+              <div class="event-mini-icon" style="background:linear-gradient(135deg,#0A1A2D,#0A3060);">🌊</div>
+              <div class="event-mini-body">
+                <div class="event-mini-name">Port Adelaide Night Market</div>
+                <div class="event-mini-meta">📍 Port Adelaide · Sat 10 May 2026 · 5pm–10pm</div>
+              </div>
+              <div class="event-mini-right">
+                <div class="event-mini-fee">$200–$300</div>
+                <div class="event-mini-spots" style="color:var(--herb);">8 spots left</div>
+                <button class="btn-apply-mini">Apply →</button>
+              </div>
+            </a>
+            <a class="event-mini" href="/events/norwood-food-bazaar">
+              <div class="event-mini-icon" style="background:linear-gradient(135deg,#1E1408,#4A2C0C);">⚡</div>
+              <div class="event-mini-body">
+                <div class="event-mini-name">Norwood Food Bazaar</div>
+                <div class="event-mini-meta">📍 Norwood · Sun 17 May 2026 · 10am–3pm</div>
+              </div>
+              <div class="event-mini-right">
+                <div class="event-mini-fee">$150–$250</div>
+                <div class="event-mini-spots" style="color:var(--gold);">3 spots left</div>
+                <button class="btn-apply-mini">Apply →</button>
+              </div>
+            </a>
+            <a class="event-mini" href="/events/prospect-farmers-market">
+              <div class="event-mini-icon" style="background:linear-gradient(135deg,#0A2010,#144A22);">🌿</div>
+              <div class="event-mini-body">
+                <div class="event-mini-name">Prospect Farmers Market</div>
+                <div class="event-mini-meta">📍 Prospect · Sat 31 May 2026 · 8am–1pm</div>
+              </div>
+              <div class="event-mini-right">
+                <div class="event-mini-fee">$100–$200</div>
+                <div class="event-mini-spots" style="color:var(--herb);">10 spots left</div>
+                <button class="btn-apply-mini">Apply →</button>
+              </div>
+            </a>
+            <a class="event-mini" href="/events/victor-harbor-summer-fair">
+              <div class="event-mini-icon" style="background:linear-gradient(135deg,#0A1020,#1A2848);">🎠</div>
+              <div class="event-mini-body">
+                <div class="event-mini-name">Victor Harbor Summer Fair</div>
+                <div class="event-mini-meta">📍 Victor Harbor · Sun 24 May 2026 · 10am–4pm</div>
+              </div>
+              <div class="event-mini-right">
+                <div class="event-mini-fee">$250–$450</div>
+                <div class="event-mini-spots" style="color:var(--terra);">2 spots left</div>
+                <button class="btn-apply-mini">Apply →</button>
+              </div>
+            </a>
+          </div>
+        </div>
+
+        <!-- Activity feed -->
+        <div class="card">
+          <div class="section-title" style="margin-bottom:12px;">Recent activity</div>
+          <div class="feed-list">
+            <div class="feed-item">
+              <div class="feed-dot submitted"></div>
+              <div class="feed-body">
+                <div class="feed-text">Application submitted to <a href="/events/prospect-farmers-market">Prospect Farmers Market</a></div>
+                <div class="feed-time">Just now</div>
+              </div>
+            </div>
+            <div class="feed-item">
+              <div class="feed-dot review"></div>
+              <div class="feed-body">
+                <div class="feed-text"><a href="/events/glenelg-twilight-market">Glenelg Twilight Market</a> — application moved to <strong>Under Review</strong></div>
+                <div class="feed-time">2 hours ago</div>
+              </div>
+            </div>
+            <div class="feed-item">
+              <div class="feed-dot approved"></div>
+              <div class="feed-body">
+                <div class="feed-text">Application <strong style="color:var(--herb);">approved</strong> for <a href="/events/port-adelaide-night-market">Port Adelaide Night Market</a></div>
+                <div class="feed-time">Yesterday, 3:14pm</div>
+              </div>
+            </div>
+            <div class="feed-item">
+              <div class="feed-dot submitted"></div>
+              <div class="feed-body">
+                <div class="feed-text">Application submitted to <a href="/events/glenelg-twilight-market">Glenelg Twilight Market</a></div>
+                <div class="feed-time">2 days ago</div>
+              </div>
+            </div>
+            <div class="feed-item">
+              <div class="feed-dot approved"></div>
+              <div class="feed-body">
+                <div class="feed-text">Application <strong style="color:var(--herb);">approved</strong> for <a href="/events/rundle-mall-night-eats">Rundle Mall Night Eats</a></div>
+                <div class="feed-time">3 days ago</div>
+              </div>
+            </div>
+            <div class="feed-item">
+              <div class="feed-dot review-star"></div>
+              <div class="feed-body">
+                <div class="feed-text">New ★★★★★ review from <strong>Glenelg Foreshore Markets</strong></div>
+                <div class="feed-time">1 week ago</div>
+              </div>
+            </div>
+            <div class="feed-item">
+              <div class="feed-dot rejected"></div>
+              <div class="feed-body">
+                <div class="feed-text">Application <strong style="color:var(--terra);">not accepted</strong> for <a href="#">Barossa Valley Food &amp; Wine</a></div>
+                <div class="feed-time">2 weeks ago</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── PANEL: APPLICATIONS ──────────────────────────────────────────── -->
+    <div class="panel" id="panel-applications">
+      <!-- Status filter -->
+      <div class="app-filter-row">
+        <button class="status-filter-btn active" onclick="filterApps('all', this)">All (10)</button>
+        <button class="status-filter-btn" onclick="filterApps('submitted', this)">Submitted (2)</button>
+        <button class="status-filter-btn" onclick="filterApps('review', this)">Under Review (2)</button>
+        <button class="status-filter-btn" onclick="filterApps('approved', this)">Approved (4)</button>
+        <button class="status-filter-btn" onclick="filterApps('waitlisted', this)">Waitlisted (1)</button>
+        <button class="status-filter-btn" onclick="filterApps('rejected', this)">Rejected (1)</button>
+      </div>
+
+      <div class="card" style="padding:0;overflow:hidden;">
+        <table class="app-table" id="app-table">
+          <thead>
+            <tr>
+              <th style="padding-left:24px;">Event</th>
+              <th>Category</th>
+              <th>Status</th>
+              <th>Applied</th>
+              <th style="padding-right:24px;">Action</th>
+            </tr>
+          </thead>
+          <tbody id="app-tbody">
+            <tr data-status="approved">
+              <td style="padding-left:24px;">
+                <div class="td-event-name">Rundle Mall Night Eats</div>
+                <div class="td-event-date">Sat 12 Apr 2026 · Adelaide CBD</div>
+              </td>
+              <td>Night Market</td>
+              <td><span class="status-badge badge-approved">✓ Approved</span></td>
+              <td>15 Mar 2026</td>
+              <td style="padding-right:24px;"><a class="action-link" href="/events/rundle-mall-night-eats">View event →</a></td>
+            </tr>
+            <tr data-status="review">
+              <td style="padding-left:24px;">
+                <div class="td-event-name">Adelaide Showground Harvest Fair</div>
+                <div class="td-event-date">Sun 18 Apr 2026 · Wayville, SA</div>
+              </td>
+              <td>Fair</td>
+              <td><span class="status-badge badge-review">⏳ Under Review</span></td>
+              <td>20 Mar 2026</td>
+              <td style="padding-right:24px;"><a class="action-link" href="/events/adelaide-showground-harvest-fair">View event →</a></td>
+            </tr>
+            <tr data-status="submitted">
+              <td style="padding-left:24px;">
+                <div class="td-event-name">Glenelg Twilight Market</div>
+                <div class="td-event-date">Sun 3 May 2026 · Glenelg, SA</div>
+              </td>
+              <td>Night Market</td>
+              <td><span class="status-badge badge-submitted">● Submitted</span></td>
+              <td>1 Apr 2026</td>
+              <td style="padding-right:24px;"><a class="action-link" href="/events/glenelg-twilight-market">View event →</a></td>
+            </tr>
+            <tr data-status="waitlisted">
+              <td style="padding-left:24px;">
+                <div class="td-event-name">Victor Harbor Summer Fair</div>
+                <div class="td-event-date">Sun 24 May 2026 · Victor Harbor, SA</div>
+              </td>
+              <td>Fair</td>
+              <td><span class="status-badge badge-waitlisted">⏸ Waitlisted</span></td>
+              <td>10 Feb 2026</td>
+              <td style="padding-right:24px;"><a class="action-link" href="#">View event →</a></td>
+            </tr>
+            <tr data-status="approved">
+              <td style="padding-left:24px;">
+                <div class="td-event-name">Norwood Food Bazaar</div>
+                <div class="td-event-date">Sun 17 Nov 2024 · Norwood, SA</div>
+              </td>
+              <td>Market</td>
+              <td><span class="status-badge badge-approved">✓ Approved</span></td>
+              <td>5 Oct 2024</td>
+              <td style="padding-right:24px;"><a class="action-link" href="#">View event →</a></td>
+            </tr>
+            <tr data-status="rejected">
+              <td style="padding-left:24px;">
+                <div class="td-event-name">Barossa Valley Food &amp; Wine</div>
+                <div class="td-event-date">Sun 20 Apr 2025 · Tanunda, SA</div>
+              </td>
+              <td>Food Festival</td>
+              <td>
+                <span class="status-badge badge-rejected">✕ Rejected</span>
+                <button class="rejection-toggle" onclick="toggleRejection(this)">Why?</button>
+                <div class="rejection-reason">
+                  "We already have 3 BBQ vendors confirmed for this event and don't have capacity for additional BBQ stalls. We'd welcome an application for future years."
+                </div>
+              </td>
+              <td>14 Jan 2026</td>
+              <td style="padding-right:24px;"><a class="action-link" href="#">View event →</a></td>
+            </tr>
+            <tr data-status="approved">
+              <td style="padding-left:24px;">
+                <div class="td-event-name">Port Adelaide Night Market</div>
+                <div class="td-event-date">Sat 10 May 2026 · Port Adelaide, SA</div>
+              </td>
+              <td>Night Market</td>
+              <td><span class="status-badge badge-approved">✓ Approved</span></td>
+              <td>22 Mar 2026</td>
+              <td style="padding-right:24px;"><a class="action-link" href="#">View event →</a></td>
+            </tr>
+            <tr data-status="approved">
+              <td style="padding-left:24px;">
+                <div class="td-event-name">Fringe Food Village 2026</div>
+                <div class="td-event-date">Sat 22 Mar 2026 · Various SA venues</div>
+              </td>
+              <td>Festival</td>
+              <td><span class="status-badge badge-approved">✓ Approved</span></td>
+              <td>8 Feb 2026</td>
+              <td style="padding-right:24px;"><a class="action-link" href="#">View event →</a></td>
+            </tr>
+            <tr data-status="submitted">
+              <td style="padding-left:24px;">
+                <div class="td-event-name">Prospect Farmers Market</div>
+                <div class="td-event-date">Sat 31 May 2026 · Prospect, SA</div>
+              </td>
+              <td>Farmers Market</td>
+              <td><span class="status-badge badge-submitted">● Submitted</span></td>
+              <td>2 Apr 2026</td>
+              <td style="padding-right:24px;"><a class="action-link" href="#">View event →</a></td>
+            </tr>
+            <tr data-status="review">
+              <td style="padding-left:24px;">
+                <div class="td-event-name">The Cedars Winery Harvest Lunch</div>
+                <div class="td-event-date">Sun 15 Jun 2026 · Lyndoch, SA</div>
+              </td>
+              <td>Private Event</td>
+              <td><span class="status-badge badge-review">⏳ Under Review</span></td>
+              <td>28 Mar 2026</td>
+              <td style="padding-right:24px;"><a class="action-link" href="#">View event →</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── PANEL: PROFILE ───────────────────────────────────────────────── -->
+    <div class="panel" id="panel-profile">
+      <div class="profile-grid">
+
+        <!-- Form -->
+        <div class="card">
+          <div class="form-group">
+            <label class="form-label">Business name</label>
+            <input class="form-input" id="prof-name" type="text" value="Smoky Joe's BBQ" oninput="updatePreview()" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Bio <span style="color:var(--text-lo);font-weight:400;letter-spacing:0;text-transform:none;">(max 250 characters)</span></label>
+            <textarea class="form-textarea" id="prof-bio" maxlength="250" oninput="updateBioCounter();updatePreview()">Adelaide's most-loved BBQ food truck, smoking low-and-slow since 2019. Brisket, ribs, and pulled pork rolls slow-cooked over ironbark wood.</textarea>
+            <div class="char-counter" id="bio-counter">140/250</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Cuisine types</label>
+            <div class="tag-selector" id="cuisine-selector">
+              <button class="tag-option selected" onclick="toggleTag(this)">BBQ</button>
+              <button class="tag-option" onclick="toggleTag(this)">Mexican</button>
+              <button class="tag-option" onclick="toggleTag(this)">Asian Fusion</button>
+              <button class="tag-option" onclick="toggleTag(this)">Italian</button>
+              <button class="tag-option" onclick="toggleTag(this)">Desserts</button>
+              <button class="tag-option" onclick="toggleTag(this)">Coffee &amp; Drinks</button>
+              <button class="tag-option" onclick="toggleTag(this)">Vegan</button>
+              <button class="tag-option" onclick="toggleTag(this)">Burgers</button>
+              <button class="tag-option" onclick="toggleTag(this)">Seafood</button>
+              <button class="tag-option" onclick="toggleTag(this)">Other</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Setup type</label>
+            <div class="radio-group">
+              <label class="radio-option"><input type="radio" name="setup" value="Food Truck" checked onchange="updatePreview()" /> Food Truck</label>
+              <label class="radio-option"><input type="radio" name="setup" value="Pop-up Stall" onchange="updatePreview()" /> Pop-up Stall</label>
+              <label class="radio-option"><input type="radio" name="setup" value="Cart" onchange="updatePreview()" /> Cart</label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Stall dimensions (metres)</label>
+            <div class="dim-row">
+              <input class="dim-input" type="number" value="3" min="1" max="20" /> <span class="dim-sep">×</span>
+              <input class="dim-input" type="number" value="3" min="1" max="20" /> <span class="dim-sep" style="color:var(--text-mid);">m</span>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Requirements</label>
+            <div style="display:flex;flex-direction:column;gap:12px;">
+              <div class="toggle-row">
+                <span class="toggle-label">Power required (15A single phase)</span>
+                <label class="toggle-switch">
+                  <input type="checkbox" checked />
+                  <div class="toggle-track"></div>
+                  <div class="toggle-thumb"></div>
+                </label>
+              </div>
+              <div class="toggle-row">
+                <span class="toggle-label">Water connection needed</span>
+                <label class="toggle-switch">
+                  <input type="checkbox" />
+                  <div class="toggle-track"></div>
+                  <div class="toggle-thumb"></div>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Price range</label>
+            <div class="price-group">
+              <button class="price-btn active" onclick="setPrice(this)">$</button>
+              <button class="price-btn" onclick="setPrice(this)">$$</button>
+              <button class="price-btn" onclick="setPrice(this)">$$$</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Instagram handle</label>
+            <input class="form-input" type="text" value="@smokyjoes_bbq" placeholder="@yourhandle" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Photos <span style="color:var(--text-lo);font-weight:400;letter-spacing:0;text-transform:none;">(min 2, max 6)</span></label>
+            <div class="photo-upload-area" ondragover="this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="this.classList.remove('dragover')">
+              <div class="upload-icon">📸</div>
+              <div class="upload-text">Drag &amp; drop photos here, or click to browse</div>
+              <div class="upload-hint">JPG or PNG · Max 5MB each</div>
+            </div>
+            <div class="photo-grid">
+              <div class="photo-thumb" style="background:linear-gradient(135deg,#3D1A06,#6B2E08);">🔥<button class="photo-thumb-remove" title="Remove">✕</button></div>
+              <div class="photo-thumb" style="background:linear-gradient(135deg,#2D1A0A,#4A2808);">🥩<button class="photo-thumb-remove" title="Remove">✕</button></div>
+              <div class="photo-thumb" style="background:linear-gradient(135deg,#1A1208,#382208);">🍖<button class="photo-thumb-remove" title="Remove">✕</button></div>
+              <div class="photo-thumb" style="background:linear-gradient(135deg,#2A1006,#521E08);">🥪<button class="photo-thumb-remove" title="Remove">✕</button></div>
+            </div>
+          </div>
+
+          <button class="btn-save" onclick="saveProfile()">Save changes</button>
+        </div>
+
+        <!-- Live preview -->
+        <div>
+          <div class="section-title">Live preview</div>
+          <p style="font-size:12px;color:var(--text-lo);margin-bottom:14px;">How your card looks to organisers &amp; consumers.</p>
+          <div class="preview-card">
+            <div class="preview-top" style="background:linear-gradient(135deg,#2D1A0A 0%,#5C2A08 100%);">🔥</div>
+            <div class="preview-body">
+              <div class="preview-name" id="preview-name">Smoky Joe's BBQ</div>
+              <div class="preview-tags" id="preview-tags">
+                <span class="preview-tag">BBQ</span>
+                <span class="preview-tag">Food Truck</span>
+              </div>
+              <div class="preview-stats">
+                <span class="preview-rating">★ 4.9</span>
+                <span class="preview-events">47 events</span>
+                <span style="margin-left:auto;font-size:10px;color:var(--text-lo);">📍 Norwood</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── PANEL: DOCUMENTS ─────────────────────────────────────────────── -->
+    <div class="panel" id="panel-documents">
+      <p style="font-size:13px;color:var(--text-mid);margin-bottom:24px;max-width:560px;line-height:1.7;">
+        Keep your documents up to date to maintain your Verified status on Pitch. Organisers can see your document status on your public profile.
+      </p>
+
+      <div class="doc-grid">
+
+        <!-- Food Safety Certificate — Approved, expiry warning -->
+        <div class="doc-card warn">
+          <div class="doc-header">
+            <div>
+              <div class="doc-icon">📜</div>
+            </div>
+            <span class="status-badge badge-approved">✓ Approved</span>
+          </div>
+          <div>
+            <div class="doc-name">Food Safety Certificate</div>
+            <div class="doc-expiry warn-text">⚠️ Expires 30 Jun 2026 — 84 days</div>
+          </div>
+          <div class="doc-warning">
+            ⏰ Renew within 60 days to maintain your Verified status.
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-lo);margin-bottom:10px;">Document status</div>
+            <div class="timeline-steps">
+              <div class="tl-step">
+                <div class="tl-dot done">✓</div>
+                <div class="tl-label done">Uploaded</div>
+              </div>
+              <div class="tl-line done"></div>
+              <div class="tl-step">
+                <div class="tl-dot done">✓</div>
+                <div class="tl-label done">Reviewed</div>
+              </div>
+              <div class="tl-line done"></div>
+              <div class="tl-step">
+                <div class="tl-dot done">✓</div>
+                <div class="tl-label done">Approved</div>
+              </div>
+            </div>
+          </div>
+          <button class="btn-upload">↑ Replace document</button>
+        </div>
+
+        <!-- Public Liability Insurance — Approved -->
+        <div class="doc-card">
+          <div class="doc-header">
+            <div>
+              <div class="doc-icon">🛡️</div>
+            </div>
+            <span class="status-badge badge-approved">✓ Approved</span>
+          </div>
+          <div>
+            <div class="doc-name">Public Liability Insurance</div>
+            <div class="doc-expiry">Expires 1 Jan 2027 — 299 days</div>
+          </div>
+          <div style="height:48px;"></div><!-- spacer to align with warning card -->
+          <div>
+            <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-lo);margin-bottom:10px;">Document status</div>
+            <div class="timeline-steps">
+              <div class="tl-step">
+                <div class="tl-dot done">✓</div>
+                <div class="tl-label done">Uploaded</div>
+              </div>
+              <div class="tl-line done"></div>
+              <div class="tl-step">
+                <div class="tl-dot done">✓</div>
+                <div class="tl-label done">Reviewed</div>
+              </div>
+              <div class="tl-line done"></div>
+              <div class="tl-step">
+                <div class="tl-dot done">✓</div>
+                <div class="tl-label done">Approved</div>
+              </div>
+            </div>
+          </div>
+          <button class="btn-upload">↑ Replace document</button>
+        </div>
+
+        <!-- Council Trading Permit — Missing (optional) -->
+        <div class="doc-card missing">
+          <div class="doc-header">
+            <div>
+              <div class="doc-icon">🏛️</div>
+            </div>
+            <span class="status-badge" style="background:#ffffff08;color:var(--text-lo);border-color:#ffffff12;">Missing</span>
+          </div>
+          <div>
+            <div class="doc-name">Council Trading Permit</div>
+            <div class="doc-optional">Optional — some events require this</div>
+          </div>
+          <div style="height:48px;padding:8px 12px;background:#ffffff05;border-radius:8px;display:flex;align-items:center;">
+            <span style="font-size:12px;color:var(--text-lo);line-height:1.5;">Not uploaded. Some events may require a current council trading permit.</span>
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-lo);margin-bottom:10px;">Document status</div>
+            <div class="timeline-steps">
+              <div class="tl-step">
+                <div class="tl-dot pending">1</div>
+                <div class="tl-label">Upload</div>
+              </div>
+              <div class="tl-line"></div>
+              <div class="tl-step">
+                <div class="tl-dot pending">2</div>
+                <div class="tl-label">Review</div>
+              </div>
+              <div class="tl-line"></div>
+              <div class="tl-step">
+                <div class="tl-dot pending">3</div>
+                <div class="tl-label">Approved</div>
+              </div>
+            </div>
+          </div>
+          <button class="btn-upload missing-style">+ Upload document</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PANEL: SETTINGS ──────────────────────────────────────────────── -->
+    <div class="panel" id="panel-settings">
+      <div style="max-width:600px;">
+
+        <!-- Account -->
+        <div class="settings-section">
+          <div class="settings-section-title">Account</div>
+          <div class="card">
+            <div class="settings-row">
+              <div class="settings-row-left">
+                <div class="settings-row-label">Email address</div>
+                <div class="settings-row-desc">To change your email, contact support.</div>
+              </div>
+              <div class="email-display">joe@smokyjoes.com.au</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notifications -->
+        <div class="settings-section">
+          <div class="settings-section-title">Notifications</div>
+          <div class="card">
+            <div class="settings-row">
+              <div class="settings-row-left">
+                <div class="settings-row-label">Application status changes</div>
+                <div class="settings-row-desc">Email me when an application is approved, rejected, or put on hold.</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" checked />
+                <div class="toggle-track"></div>
+                <div class="toggle-thumb"></div>
+              </label>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-left">
+                <div class="settings-row-label">Certificate expiry reminders</div>
+                <div class="settings-row-desc">Email me 60 days before a document expires.</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" checked />
+                <div class="toggle-track"></div>
+                <div class="toggle-thumb"></div>
+              </label>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-left">
+                <div class="settings-row-label">New reviews</div>
+                <div class="settings-row-desc">Email me when an organiser leaves a review.</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" />
+                <div class="toggle-track"></div>
+                <div class="toggle-thumb"></div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Subscription -->
+        <div class="settings-section">
+          <div class="settings-section-title">Subscription</div>
+          <div class="plan-card">
+            <div class="plan-left">
+              <h3>Pro Vendor</h3>
+              <p>Priority placement · Verified badge · Unlimited applications</p>
+            </div>
+            <div style="text-align:right;">
+              <div class="plan-price">$79<span>/mo</span></div>
+              <button class="btn-plan-change" style="margin-top:8px;">Change plan</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Danger zone -->
+        <div class="settings-section">
+          <div class="settings-section-title" style="color:var(--terra);">Danger zone</div>
+          <div class="danger-zone">
+            <div class="danger-title">⚠️ Delete account</div>
+            <div class="danger-desc">Permanently delete your Pitch. account, including your profile, all applications, and document history. This action cannot be undone and all active confirmed events will be affected.</div>
+            <button class="btn-delete" onclick="openDeleteModal()">Delete my account</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- /page-content -->
+</div><!-- /main -->
+
+<!-- MOBILE TABS -->
+<div class="mobile-tabs">
+  <div class="mobile-tabs-inner">
+    <button class="mobile-tab active" onclick="showPanel('overview', this)"><span class="mobile-tab-icon">⬡</span>Overview</button>
+    <button class="mobile-tab" onclick="showPanel('applications', this)"><span class="mobile-tab-icon">📋</span>Applications</button>
+    <button class="mobile-tab" onclick="showPanel('profile', this)"><span class="mobile-tab-icon">👤</span>Profile</button>
+    <button class="mobile-tab" onclick="showPanel('documents', this)"><span class="mobile-tab-icon">📄</span>Docs</button>
+    <button class="mobile-tab" onclick="showPanel('settings', this)"><span class="mobile-tab-icon">⚙️</span>Settings</button>
+  </div>
+</div>
+
+<!-- DELETE CONFIRMATION MODAL -->
+<div class="modal-overlay" id="delete-modal" onclick="handleModalClick(event)">
+  <div class="modal-box">
+    <div class="modal-icon">🗑️</div>
+    <div class="modal-title">Delete account?</div>
+    <div class="modal-desc">
+      This will permanently delete <strong>Smoky Joe's BBQ</strong> and all associated data. Active confirmed events will be cancelled.<br/><br/>
+      Type <strong>DELETE</strong> to confirm.
+    </div>
+    <input class="modal-confirm-input" type="text" placeholder='Type "DELETE" to confirm' oninput="checkDeleteConfirm(this)" />
+    <div class="modal-actions">
+      <button class="btn-modal-cancel" onclick="closeDeleteModal()">Cancel</button>
+      <button class="btn-modal-delete" id="btn-confirm-delete">Delete account</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── Panel switching ──────────────────────────────────────────────────────── */
+const PANEL_TITLES = {
+  overview: 'Overview',
+  applications: 'My Applications',
+  profile: 'My Profile',
+  documents: 'Documents',
+  settings: 'Settings',
+};
+
+function showPanel(name, clickedEl) {
+  // Hide all panels
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+
+  // Update sidebar
+  document.querySelectorAll('.sidebar .nav-link').forEach(l => l.classList.remove('active'));
+  // Update mobile tabs
+  document.querySelectorAll('.mobile-tab').forEach(t => t.classList.remove('active'));
+
+  if (clickedEl) clickedEl.classList.add('active');
+
+  document.getElementById('topbar-title').textContent = PANEL_TITLES[name];
+}
+
+/* ── Applications filter ─────────────────────────────────────────────────── */
+function filterApps(status, btn) {
+  document.querySelectorAll('.status-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('#app-tbody tr').forEach(row => {
+    row.style.display = (status === 'all' || row.dataset.status === status) ? '' : 'none';
+  });
+}
+
+/* ── Rejection reason toggle ─────────────────────────────────────────────── */
+function toggleRejection(btn) {
+  const reason = btn.nextElementSibling;
+  reason.classList.toggle('open');
+  btn.textContent = reason.classList.contains('open') ? 'Hide ↑' : 'Why?';
+}
+
+/* ── Profile form ─────────────────────────────────────────────────────────── */
+function updateBioCounter() {
+  const ta = document.getElementById('prof-bio');
+  const counter = document.getElementById('bio-counter');
+  const len = ta.value.length;
+  counter.textContent = `${len}/250`;
+  counter.className = 'char-counter' + (len > 240 ? ' over' : len > 200 ? ' warn' : '');
+}
+
+function toggleTag(btn) {
+  btn.classList.toggle('selected');
+  updatePreview();
+}
+
+function setPrice(btn) {
+  document.querySelectorAll('.price-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function updatePreview() {
+  const name = document.getElementById('prof-name').value || 'Your Business';
+  document.getElementById('preview-name').textContent = name;
+
+  const selected = [...document.querySelectorAll('.tag-option.selected')].map(el => el.textContent);
+  const setup = document.querySelector('input[name="setup"]:checked');
+  const setupVal = setup ? setup.value : '';
+  const tags = [...selected, setupVal].filter(Boolean);
+  document.getElementById('preview-tags').innerHTML = tags.slice(0, 4).map(t => `<span class="preview-tag">${t}</span>`).join('');
+}
+
+function saveProfile() {
+  const btn = event.target;
+  btn.textContent = '✓ Saved!';
+  btn.style.background = 'var(--herb)';
+  setTimeout(() => {
+    btn.textContent = 'Save changes';
+    btn.style.background = '';
+  }, 2000);
+}
+
+/* ── Delete modal ─────────────────────────────────────────────────────────── */
+function openDeleteModal() {
+  document.getElementById('delete-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeDeleteModal() {
+  document.getElementById('delete-modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function handleModalClick(e) {
+  if (e.target === document.getElementById('delete-modal')) closeDeleteModal();
+}
+function checkDeleteConfirm(input) {
+  const btn = document.getElementById('btn-confirm-delete');
+  btn.classList.toggle('enabled', input.value === 'DELETE');
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDeleteModal(); });
+
+/* ── Init ─────────────────────────────────────────────────────────────────── */
+updateBioCounter();
+updatePreview();
+</script>
+</body>
+</html>

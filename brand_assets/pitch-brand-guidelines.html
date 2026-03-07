@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Pitch — Brand Guidelines</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=Cabinet+Grotesk:wght@400;500;700;800;900&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,700;9..144,900&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* ── TOKENS ──────────────────────────────────────────────────────────────── */
+:root {
+  /* Primary */
+  --ember:        #E8500A;   /* Deep amber-orange — appetite, fire, warmth, urgency */
+  --ember-glow:   #FF6B2B;   /* Lighter hover — energetic but not aggressive */
+  --ember-bg:     #E8500A10;
+
+  /* Warm Darks — NOT cold black. Charcoal with brown undertone = chalkboard, wood fire */
+  --coal:         #1A1612;   /* Page bg — warm dark, evokes market at night */
+  --char:         #231E19;   /* Card surface — slightly lifted */
+  --ash:          #2E2720;   /* Borders, elevated surfaces */
+  --smoke:        #4A3F36;   /* Muted borders */
+
+  /* Warm Lights — parchment not white. Menus, craft paper, food stall signage */
+  --parchment:    #FDF4E7;   /* Page bg light mode — warm cream */
+  --cream:        #F5EDD8;   /* Card surface light — aged paper */
+  --linen:        #EDE3CC;   /* Border light */
+
+  /* Greens — herb green, not tech green. Basil, sage, fresh produce */
+  --herb:         #2D8B55;   /* Success — evokes fresh produce, not Spotify */
+  --herb-bg:      #2D8B5510;
+
+  /* Amber — golden hour, not warning-yellow */
+  --gold:         #C9840A;   /* Pending / warm alert */
+  --gold-bg:      #C9840A10;
+
+  /* Error — deep terracotta, not alarm red */
+  --terracotta:   #C0392B;   /* Error / rejected */
+  --terracotta-bg:#C0392B10;
+
+  /* Ink blue — for info tags, deep ocean */
+  --slate:        #2B5BA8;
+  --slate-bg:     #2B5BA810;
+
+  /* Text */
+  --text-hi:      #FDF4E7;   /* Headings on dark */
+  --text-mid:     #A89880;   /* Body on dark */
+  --text-lo:      #6B5A4A;   /* Muted on dark */
+
+  --font-display: 'Fraunces', 'Georgia', serif;
+  --font-body:    'Instrument Sans', 'Helvetica Neue', sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+body {
+  background: var(--coal);
+  color: var(--text-hi);
+  font-family: var(--font-body);
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+/* ── TEXTURE OVERLAY ─────────────────────────────────────────────────────── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.6;
+}
+
+/* ── PAGE HEADER ─────────────────────────────────────────────────────────── */
+.cover {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  position: relative;
+  z-index: 1;
+}
+
+.cover-left {
+  padding: 72px 64px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  border-right: 1px solid #ffffff08;
+}
+
+.cover-right {
+  background: var(--char);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Warm glow behind logo */
+.cover-right::before {
+  content: '';
+  position: absolute;
+  width: 500px; height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #E8500A18 0%, transparent 70%);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  animation: breathe 5s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%, 100% { transform: translate(-50%,-50%) scale(1); opacity: 0.8; }
+  50% { transform: translate(-50%,-50%) scale(1.15); opacity: 1; }
+}
+
+.cover-tag {
+  font-size: 10px;
+  letter-spacing: 0.35em;
+  text-transform: uppercase;
+  color: var(--ember);
+  font-weight: 700;
+  margin-bottom: 28px;
+}
+
+.cover-headline {
+  font-family: var(--font-display);
+  font-size: clamp(60px, 8vw, 100px);
+  font-weight: 900;
+  line-height: 0.92;
+  letter-spacing: -0.03em;
+  color: var(--text-hi);
+}
+
+.cover-headline em {
+  font-style: italic;
+  color: var(--ember);
+}
+
+.cover-sub {
+  margin-top: 28px;
+  font-size: 15px;
+  color: var(--text-mid);
+  max-width: 400px;
+  line-height: 1.75;
+}
+
+.cover-meta {
+  display: flex;
+  gap: 40px;
+  padding-top: 36px;
+  border-top: 1px solid #ffffff08;
+  margin-top: 48px;
+}
+
+.cover-stat-n {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 900;
+  color: var(--ember);
+}
+
+.cover-stat-l {
+  font-size: 11px;
+  color: var(--text-lo);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+/* The hero logo */
+.hero-logo {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 40px;
+}
+
+.hero-wordmark {
+  font-family: var(--font-display);
+  font-size: 96px;
+  font-weight: 900;
+  color: var(--text-hi);
+  letter-spacing: -0.05em;
+  line-height: 1;
+  display: block;
+}
+
+.hero-wordmark .dot {
+  color: var(--ember);
+}
+
+.hero-strapline {
+  margin-top: 16px;
+  font-size: 12px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--text-lo);
+  font-weight: 500;
+}
+
+/* ── SECTION SHELL ───────────────────────────────────────────────────────── */
+.section {
+  padding: 96px 72px;
+  max-width: 1400px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.full-section {
+  border-top: 1px solid #ffffff06;
+}
+
+.alt-bg { background: var(--char); }
+
+.sec-tag {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--ember);
+  font-weight: 700;
+  margin-bottom: 12px;
+}
+
+.sec-tag::before {
+  content: '';
+  width: 20px; height: 2px;
+  background: var(--ember);
+  border-radius: 1px;
+}
+
+.sec-title {
+  font-family: var(--font-display);
+  font-size: clamp(32px, 4vw, 48px);
+  font-weight: 900;
+  letter-spacing: -0.025em;
+  color: var(--text-hi);
+  margin-bottom: 16px;
+  line-height: 1.05;
+}
+
+.sec-desc {
+  font-size: 14px;
+  color: var(--text-mid);
+  max-width: 580px;
+  line-height: 1.8;
+  margin-bottom: 52px;
+}
+
+/* ── TOKEN / CODE CHIP ───────────────────────────────────────────────────── */
+.tok {
+  display: inline-block;
+  background: #ffffff08;
+  border: 1px solid #ffffff0C;
+  border-radius: 6px;
+  padding: 2px 9px;
+  font-size: 10px;
+  font-family: 'Courier New', monospace;
+  color: var(--ember);
+  letter-spacing: 0.05em;
+  margin: 2px;
+}
+
+/* ── LOGO SECTION ────────────────────────────────────────────────────────── */
+.logo-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.logo-box {
+  border-radius: 18px;
+  padding: 40px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  aspect-ratio: 3/2;
+  position: relative;
+  overflow: hidden;
+}
+
+.lb-coal { background: var(--coal); border: 1px solid #ffffff0A; }
+.lb-parch { background: var(--parchment); }
+.lb-ember { background: var(--ember); }
+.lb-char { background: var(--char); border: 1px solid #ffffff0A; }
+
+.lb-label {
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #ffffff44;
+  font-weight: 700;
+  font-family: var(--font-body);
+}
+
+.lb-parch .lb-label { color: #00000033; }
+.lb-ember .lb-label { color: #ffffff77; }
+
+.wordmark {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 28px;
+  letter-spacing: -0.03em;
+  color: var(--text-hi);
+}
+
+.wordmark .dot { color: var(--ember); }
+.lb-parch .wordmark { color: var(--coal); }
+.lb-parch .wordmark .dot { color: var(--ember); }
+.lb-ember .wordmark { color: #fff; }
+.lb-ember .wordmark .dot { color: #fff; }
+
+.wordmark-sm {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 18px;
+  letter-spacing: -0.03em;
+  color: var(--text-hi);
+}
+.wordmark-sm .dot { color: var(--ember); }
+.lb-parch .wordmark-sm { color: var(--coal); }
+.lb-ember .wordmark-sm { color: #fff; }
+
+/* ── COLOUR SECTION ──────────────────────────────────────────────────────── */
+.palette-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 14px;
+}
+
+.swatch-card {
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid #ffffff08;
+}
+
+.swatch-top {
+  height: 90px;
+  display: flex;
+  align-items: flex-end;
+  padding: 10px 12px;
+  position: relative;
+}
+
+.swatch-emotion {
+  font-size: 10px;
+  font-style: italic;
+  color: rgba(255,255,255,0.5);
+  font-family: var(--font-display);
+  line-height: 1.3;
+}
+
+.swatch-bottom {
+  background: var(--char);
+  padding: 13px 14px;
+}
+
+.sw-name {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-hi);
+  margin-bottom: 1px;
+}
+
+.sw-role {
+  font-size: 10px;
+  color: var(--text-lo);
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.sw-hex {
+  font-size: 10px;
+  font-family: 'Courier New', monospace;
+  color: var(--text-lo);
+  letter-spacing: 0.05em;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.psych-box {
+  background: var(--char);
+  border: 1px solid #ffffff08;
+  border-radius: 16px;
+  padding: 32px 36px;
+  margin-top: 36px;
+}
+
+.psych-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: var(--text-hi);
+}
+
+.psych-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 24px;
+}
+
+.psych-item-label {
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ember);
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.psych-item-text {
+  font-size: 13px;
+  color: var(--text-mid);
+  line-height: 1.7;
+}
+
+/* ── TYPOGRAPHY ──────────────────────────────────────────────────────────── */
+.type-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 32px;
+}
+
+.type-card {
+  background: var(--char);
+  border: 1px solid #ffffff08;
+  border-radius: 16px;
+  padding: 40px 36px;
+}
+
+.type-tag {
+  font-size: 9px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--ember);
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.type-why {
+  font-size: 12px;
+  color: var(--text-lo);
+  line-height: 1.6;
+  margin-bottom: 24px;
+  max-width: 320px;
+}
+
+.type-specimen {
+  font-size: 88px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: var(--text-hi);
+  margin-bottom: 20px;
+}
+
+.type-abc {
+  font-size: 13px;
+  color: var(--text-lo);
+  line-height: 1.9;
+  letter-spacing: 0.04em;
+}
+
+.type-scale-wrap {
+  background: var(--char);
+  border: 1px solid #ffffff08;
+  border-radius: 16px;
+  padding: 40px 36px;
+}
+
+.ts-row {
+  display: flex;
+  align-items: baseline;
+  gap: 20px;
+  padding: 16px 0;
+  border-bottom: 1px solid #ffffff06;
+}
+.ts-row:last-child { border-bottom: none; }
+
+.ts-meta { width: 90px; flex-shrink: 0; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-lo); font-weight: 700; }
+.ts-px { width: 70px; flex-shrink: 0; font-size: 10px; color: var(--ember); font-weight: 700; font-family: 'Courier New', monospace; }
+
+/* ── BUTTONS ─────────────────────────────────────────────────────────────── */
+.btn-showcase {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  align-items: flex-start;
+  margin-bottom: 40px;
+}
+
+.btn-item { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
+.btn-tag { font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-lo); font-weight: 700; }
+
+.b { font-family: var(--font-body); font-weight: 700; letter-spacing: 0.01em; cursor: default; transition: all 0.18s; border: none; }
+
+.b-primary { padding: 16px 32px; border-radius: 10px; background: var(--ember); color: #fff; font-size: 14px; box-shadow: 0 6px 24px #E8500A3A; }
+.b-primary-lg { padding: 20px 40px; border-radius: 12px; background: var(--ember); color: #fff; font-size: 16px; box-shadow: 0 8px 32px #E8500A3A; }
+.b-secondary { padding: 16px 32px; border-radius: 10px; background: transparent; border: 1.5px solid #ffffff18; color: var(--text-hi); font-size: 14px; }
+.b-outline { padding: 16px 32px; border-radius: 10px; background: transparent; border: 1.5px solid var(--ember); color: var(--ember); font-size: 14px; }
+.b-ghost { padding: 16px 32px; border-radius: 10px; background: transparent; border: none; color: var(--text-mid); font-size: 14px; text-decoration: underline; text-decoration-color: #ffffff22; }
+.b-danger { padding: 16px 32px; border-radius: 10px; background: transparent; border: 1.5px solid var(--terracotta); color: var(--terracotta); font-size: 14px; }
+.b-sm { padding: 8px 16px; border-radius: 8px; background: var(--ember); color: #fff; font-size: 12px; }
+.b-icon { width: 44px; height: 44px; border-radius: 10px; background: #ffffff0A; border: none; color: var(--text-hi); font-size: 18px; display: flex; align-items: center; justify-content: center; }
+
+/* ── BADGES ──────────────────────────────────────────────────────────────── */
+.badge-showcase { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
+
+.bdg {
+  font-size: 10px; font-weight: 700; padding: 4px 12px; border-radius: 100px;
+  letter-spacing: 0.08em; text-transform: uppercase; font-family: var(--font-body);
+}
+.bdg-approved { background: var(--herb-bg); color: var(--herb); border: 1px solid #2D8B5522; }
+.bdg-pending { background: var(--gold-bg); color: var(--gold); border: 1px solid #C9840A22; }
+.bdg-rejected { background: var(--terracotta-bg); color: var(--terracotta); border: 1px solid #C0392B22; }
+.bdg-pro { background: var(--ember-bg); color: var(--ember); border: 1px solid #E8500A22; }
+.bdg-basic { background: var(--slate-bg); color: var(--slate); border: 1px solid #2B5BA822; }
+.bdg-free { background: #ffffff08; color: var(--text-lo); border: 1px solid #ffffff0F; }
+.bdg-full { background: var(--terracotta-bg); color: var(--terracotta); border: 1px solid #C0392B22; }
+.bdg-open { background: var(--herb-bg); color: var(--herb); border: 1px solid #2D8B5522; }
+
+/* ── CARDS ───────────────────────────────────────────────────────────────── */
+.card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+
+.card-wrap { }
+.card-frame-label { font-size: 9px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-lo); font-weight: 700; margin-bottom: 14px; }
+
+.event-card {
+  background: var(--parchment);
+  border-radius: 16px;
+  padding: 22px;
+  color: var(--coal);
+  border: 1px solid var(--linen);
+}
+
+.ec-badges { display: flex; justify-content: space-between; margin-bottom: 12px; }
+.ec-badge { font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 100px; font-family: var(--font-body); letter-spacing: 0.05em; }
+.ec-badge-blue { background: #2B5BA810; color: #2B5BA8; }
+.ec-badge-green { background: #2D8B5510; color: #2D8B55; }
+.ec-title { font-family: var(--font-display); font-size: 18px; font-weight: 800; color: var(--coal); margin-bottom: 4px; }
+.ec-meta { font-size: 12px; color: #6B5A4A; margin-bottom: 12px; }
+.ec-fill-bg { height: 4px; background: var(--linen); border-radius: 2px; overflow: hidden; margin-bottom: 4px; }
+.ec-fill-inner { height: 100%; background: #2D8B55; border-radius: 2px; }
+.ec-fill-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+.ec-fill-row span { font-size: 10px; color: #9A8870; }
+.ec-footer { display: flex; justify-content: space-between; padding-top: 12px; border-top: 1px solid var(--linen); margin-top: 8px; }
+.ec-footer span { font-size: 11px; color: #9A8870; }
+.ec-footer strong { color: var(--coal); font-weight: 700; }
+
+.vendor-card {
+  background: var(--parchment);
+  border-radius: 16px;
+  padding: 20px;
+  color: var(--coal);
+  border: 1px solid var(--linen);
+}
+
+.vc-head { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.vc-avatar { width: 46px; height: 46px; border-radius: 50%; background: #E8500A18; color: var(--ember); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 18px; font-weight: 900; flex-shrink: 0; }
+.vc-name { font-family: var(--font-display); font-size: 15px; font-weight: 800; color: var(--coal); }
+.vc-sub { font-size: 11px; color: #9A8870; }
+.vc-stars { color: var(--ember); font-size: 13px; margin-bottom: 3px; }
+.vc-rev { font-size: 11px; color: #9A8870; margin-bottom: 9px; }
+.vc-bio { font-size: 12px; color: #6B5A4A; line-height: 1.55; margin-bottom: 12px; }
+.vc-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.vc-tag { font-size: 10px; font-weight: 600; padding: 3px 9px; border-radius: 100px; background: var(--cream); color: #6B5A4A; font-family: var(--font-body); }
+
+/* ── ICONS ───────────────────────────────────────────────────────────────── */
+.icon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(76px, 1fr)); gap: 12px; }
+.ic-cell { background: var(--char); border: 1px solid #ffffff07; border-radius: 12px; padding: 18px 10px; display: flex; flex-direction: column; align-items: center; gap: 7px; }
+.ic-icon { font-size: 22px; }
+.ic-name { font-size: 8px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-lo); text-align: center; font-weight: 600; line-height: 1.3; }
+
+/* ── FORMS ───────────────────────────────────────────────────────────────── */
+.form-demo { display: flex; flex-direction: column; gap: 4px; }
+.f-label { font-size: 9px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-lo); font-weight: 700; margin-bottom: 5px; display: block; margin-top: 14px; }
+.f-input { padding: 12px 14px; border-radius: 10px; border: 1px solid #ffffff10; background: #ffffff07; color: var(--text-hi); font-family: var(--font-body); font-size: 14px; outline: none; width: 100%; }
+.f-input::placeholder { color: var(--text-lo); }
+.f-input.focused { border-color: var(--ember); box-shadow: 0 0 0 3px #E8500A1A; }
+.f-input.err { border-color: var(--terracotta); }
+.f-error { font-size: 11px; color: var(--terracotta); margin-top: 4px; }
+
+/* ── SPACING ─────────────────────────────────────────────────────────────── */
+.sp-row { display: flex; align-items: center; gap: 18px; padding: 11px 0; border-bottom: 1px solid #ffffff06; }
+.sp-row:last-child { border-bottom: none; }
+.sp-lbl { width: 55px; flex-shrink: 0; font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-lo); font-weight: 700; }
+.sp-val { width: 70px; flex-shrink: 0; font-size: 10px; color: var(--ember); font-weight: 700; font-family: 'Courier New', monospace; }
+.sp-bar { height: 6px; background: var(--ember); border-radius: 3px; flex-shrink: 0; opacity: 0.7; }
+.sp-use { font-size: 12px; color: var(--text-lo); }
+
+/* ── MOTION ──────────────────────────────────────────────────────────────── */
+.motion-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.m-card { background: var(--char); border: 1px solid #ffffff08; border-radius: 16px; padding: 28px 24px; text-align: center; }
+.m-orb { width: 56px; height: 56px; border-radius: 14px; background: var(--ember-bg); border: 1px solid #E8500A33; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; font-size: 22px; }
+.m-orb.pulse { animation: m-pulse 2.2s ease-in-out infinite; }
+.m-orb.slide { animation: m-slide 2.5s ease-in-out infinite; }
+.m-orb.rise { animation: m-rise 2s ease-in-out infinite; }
+@keyframes m-pulse { 0%,100%{transform:scale(1);opacity:1;} 50%{transform:scale(1.1);opacity:0.6;} }
+@keyframes m-slide { 0%,100%{transform:translateX(0);} 50%{transform:translateX(6px);} }
+@keyframes m-rise { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-8px);} }
+.m-name { font-family: var(--font-display); font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+.m-ease { font-size: 10px; color: var(--ember); font-weight: 700; font-family: 'Courier New', monospace; margin-bottom: 6px; }
+.m-desc { font-size: 12px; color: var(--text-lo); line-height: 1.6; }
+
+/* ── DO / DON'T ──────────────────────────────────────────────────────────── */
+.dd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 40px; }
+.do-card { background: #2D8B5508; border: 1px solid #2D8B5528; border-radius: 14px; padding: 26px; }
+.dn-card { background: #C0392B08; border: 1px solid #C0392B28; border-radius: 14px; padding: 26px; }
+.do-lbl { color: var(--herb); font-size: 10px; font-weight: 800; letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 12px; }
+.dn-lbl { color: var(--terracotta); font-size: 10px; font-weight: 800; letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 12px; }
+.do-card ul, .dn-card ul { padding-left: 16px; }
+.do-card li, .dn-card li { font-size: 13px; color: var(--text-mid); margin-bottom: 8px; line-height: 1.55; }
+
+/* ── NAMING SECTION ──────────────────────────────────────────────────────── */
+.name-hero {
+  text-align: center;
+  padding: 64px 40px;
+  background: var(--char);
+  border-radius: 24px;
+  margin-bottom: 36px;
+  position: relative;
+  overflow: hidden;
+}
+
+.name-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, #E8500A10 0%, transparent 70%);
+}
+
+.name-hero-word {
+  font-family: var(--font-display);
+  font-size: clamp(72px, 12vw, 120px);
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  color: var(--text-hi);
+  position: relative;
+  z-index: 1;
+  line-height: 1;
+}
+
+.name-hero-word .dot { color: var(--ember); }
+
+.name-hero-tag {
+  font-size: 12px;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--text-lo);
+  margin-top: 14px;
+  position: relative;
+  z-index: 1;
+}
+
+.meaning-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+
+.meaning-card {
+  background: var(--char);
+  border: 1px solid #ffffff08;
+  border-radius: 14px;
+  padding: 24px 20px;
+}
+
+.mc-icon { font-size: 28px; margin-bottom: 12px; }
+.mc-title { font-family: var(--font-display); font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+.mc-desc { font-size: 13px; color: var(--text-lo); line-height: 1.6; }
+
+/* ── VOICE/TONE ──────────────────────────────────────────────────────────── */
+.voice-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.voice-card { background: var(--char); border: 1px solid #ffffff08; border-radius: 14px; padding: 24px 20px; }
+.voice-title { font-family: var(--font-display); font-size: 16px; font-weight: 800; margin-bottom: 8px; }
+.voice-quote { font-family: var(--font-display); font-style: italic; font-size: 14px; color: var(--ember); margin-bottom: 10px; line-height: 1.5; }
+.voice-desc { font-size: 12px; color: var(--text-lo); line-height: 1.6; }
+
+/* ── FOOTER ──────────────────────────────────────────────────────────────── */
+.guide-footer {
+  background: var(--char);
+  border-top: 1px solid #ffffff06;
+  padding: 56px 72px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 24px;
+  position: relative;
+  z-index: 1;
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--coal); }
+::-webkit-scrollbar-thumb { background: var(--ash); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     COVER
+══════════════════════════════════════════════════════════════════════════ -->
+<div class="cover">
+  <div class="cover-left">
+    <div>
+      <div class="cover-tag">Pitch · Brand Guidelines · v1.0</div>
+      <h1 class="cover-headline">Brand<br /><em>Guide</em><br />lines.</h1>
+      <p class="cover-sub">Every visual decision here is grounded in psychology — how colour makes vendors feel confident, how typography builds trust, how warmth converts action. This document is the single source of truth for the Pitch brand.</p>
+    </div>
+    <div class="cover-meta">
+      <div><div class="cover-stat-n">8</div><div class="cover-stat-l">Sections</div></div>
+      <div><div class="cover-stat-n">10</div><div class="cover-stat-l">Colours</div></div>
+      <div><div class="cover-stat-n">2</div><div class="cover-stat-l">Typefaces</div></div>
+      <div><div class="cover-stat-n">AU</div><div class="cover-stat-l">Origin</div></div>
+    </div>
+  </div>
+  <div class="cover-right">
+    <div class="hero-logo">
+      <span class="hero-wordmark">Pitch<span class="dot">.</span></span>
+      <div class="hero-strapline">Find your pitch. Own your market.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     00 · NAMING RATIONALE
+══════════════════════════════════════════════════════════════════════════ -->
+<div class="full-section alt-bg">
+<div class="section">
+  <div class="sec-tag">00 · Naming</div>
+  <h2 class="sec-title">Why Pitch.</h2>
+  <p class="sec-desc">Every name decision has a reason. This one has five.</p>
+
+  <div class="name-hero">
+    <div class="name-hero-word">Pitch<span class="dot">.</span></div>
+    <div class="name-hero-tag">Australia's marketplace for food vendors and events</div>
+  </div>
+
+  <div class="meaning-grid">
+    <div class="meaning-card">
+      <div class="mc-icon">🏪</div>
+      <div class="mc-title">Industry Language</div>
+      <div class="mc-desc">"Pitch" is the actual word vendors use for their market spot. <em>"I've got a pitch at the Fringe."</em> It's authentic — not invented jargon.</div>
+    </div>
+    <div class="meaning-card">
+      <div class="mc-icon">🗣️</div>
+      <div class="mc-title">The Vendor's Pitch</div>
+      <div class="mc-desc">You're pitching yourself to events. The name mirrors the core action on the platform — putting yourself forward, making your case.</div>
+    </div>
+    <div class="meaning-card">
+      <div class="mc-icon">🎯</div>
+      <div class="mc-title">Pitch Perfect</div>
+      <div class="mc-desc">Aspiring to quality and precision. A perfect pitch — in music, in sport, in business — signals excellence. That's what we want vendors to feel.</div>
+    </div>
+    <div class="meaning-card">
+      <div class="mc-icon">⚡</div>
+      <div class="mc-title">One Syllable</div>
+      <div class="mc-desc">Easy to say, impossible to misspell. One syllable is rare for a meaningful name. "Pitch" passes the radio test — say it once, it sticks.</div>
+    </div>
+    <div class="meaning-card">
+      <div class="mc-icon">🇦🇺</div>
+      <div class="mc-title">Australian</div>
+      <div class="mc-desc">Used universally across Australian markets, festivals, and events. Every vendor in Adelaide already knows what a pitch is — zero education needed.</div>
+    </div>
+    <div class="meaning-card">
+      <div class="mc-icon">🔗</div>
+      <div class="mc-title">Platform Extensions</div>
+      <div class="mc-desc"><em>"Find your Pitch."</em> &nbsp; <em>"Make your Pitch."</em> &nbsp; <em>"Own your Pitch."</em> The tagline writes itself. Every CTA flows naturally from the name.</div>
+    </div>
+  </div>
+
+  <div style="margin-top:36px;background:var(--coal);border:1px solid #ffffff08;border-radius:16px;padding:28px 32px;display:flex;flex-wrap:wrap;gap:24px;align-items:center;">
+    <div>
+      <div style="font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-lo);font-weight:700;margin-bottom:6px;">Recommended Domain</div>
+      <div style="font-family:var(--font-display);font-size:22px;font-weight:800;">getpitch.com.au</div>
+    </div>
+    <div style="width:1px;height:40px;background:#ffffff0A;"></div>
+    <div>
+      <div style="font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-lo);font-weight:700;margin-bottom:6px;">Also Available</div>
+      <div style="font-size:14px;color:var(--text-mid);">mypitch.com.au &nbsp;·&nbsp; pitchhq.com.au &nbsp;·&nbsp; pitchmarket.com.au</div>
+    </div>
+    <div style="width:1px;height:40px;background:#ffffff0A;"></div>
+    <div>
+      <div style="font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-lo);font-weight:700;margin-bottom:6px;">Social Handle</div>
+      <div style="font-size:14px;color:var(--text-mid);">@getpitch &nbsp;·&nbsp; @pitchhq</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     01 · LOGO
+══════════════════════════════════════════════════════════════════════════ -->
+<div class="full-section">
+<div class="section">
+  <div class="sec-tag">01 · Logo</div>
+  <h2 class="sec-title">The Pitch Mark</h2>
+  <p class="sec-desc">The Pitch wordmark is set in Fraunces — a warm, confident serif that carries both heritage and modernity. The trailing period is intentional: it's final, decisive, done. You found your pitch.</p>
+
+  <div class="logo-grid" style="margin-bottom:16px;">
+    <div class="logo-box lb-coal">
+      <div class="wordmark">Pitch<span class="dot">.</span></div>
+      <span class="lb-label">Dark Background · Primary</span>
+    </div>
+    <div class="logo-box lb-parch">
+      <div class="wordmark">Pitch<span class="dot">.</span></div>
+      <span class="lb-label">Parchment · Light Mode</span>
+    </div>
+    <div class="logo-box lb-ember">
+      <div class="wordmark">Pitch.</div>
+      <span class="lb-label">Brand Ember · Reversed</span>
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:36px;">
+    <div class="logo-box lb-char" style="aspect-ratio:auto;padding:28px 32px;flex-direction:row;justify-content:flex-start;gap:20px;">
+      <div>
+        <div style="font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-lo);font-weight:700;margin-bottom:10px;">With Tagline</div>
+        <div class="wordmark-sm">Pitch<span class="dot">.</span></div>
+        <div style="font-size:10px;color:var(--text-lo);letter-spacing:0.15em;text-transform:uppercase;margin-top:5px;">Find your pitch.</div>
+      </div>
+    </div>
+    <div class="logo-box lb-char" style="aspect-ratio:auto;padding:28px 32px;flex-direction:row;justify-content:flex-start;gap:20px;">
+      <div>
+        <div style="font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-lo);font-weight:700;margin-bottom:10px;">Minimum Size (digital)</div>
+        <div style="font-family:var(--font-display);font-weight:900;font-size:16px;color:var(--text-hi);">Pitch<span style="color:var(--ember);">.</span></div>
+        <div style="font-size:10px;color:var(--text-lo);margin-top:4px;">100px wide minimum</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="dd-grid">
+    <div class="do-card">
+      <div class="do-lbl">✓ Do</div>
+      <ul>
+        <li>Always include the trailing period — it is part of the name</li>
+        <li>Use Fraunces 900 weight exclusively for the wordmark</li>
+        <li>Use on coal, parchment, or Brand Ember backgrounds only</li>
+        <li>Maintain minimum clearspace of 1× cap-height on all sides</li>
+        <li>Use the wordmark-only version (no icon needed)</li>
+      </ul>
+    </div>
+    <div class="dn-card">
+      <div class="dn-lbl">✗ Don't</div>
+      <ul>
+        <li>Don't remove the period — "Pitch" without it is not the logo</li>
+        <li>Don't use a different typeface, weight, or letter-spacing</li>
+        <li>Don't place on complex photographic backgrounds</li>
+        <li>Don't add gradients, shadows, or outlines to the wordmark</li>
+        <li>Don't stretch, rotate, or distort the mark in any direction</li>
+      </ul>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     02 · COLOUR
+══════════════════════════════════════════════════════════════════════════ -->
+<div class="full-section alt-bg">
+<div class="section">
+  <div class="sec-tag">02 · Colour</div>
+  <h2 class="sec-title">The Pitch Palette</h2>
+  <p class="sec-desc">Every colour here was chosen for what it makes people <em>feel</em>, not just how it looks. Food is warm, communal, and alive — the palette reflects that. We avoided cold, techy tones entirely.</p>
+
+  <div class="palette-grid">
+
+    <div class="swatch-card">
+      <div class="swatch-top" style="background:linear-gradient(135deg,#FF6B2B,#E8500A);">
+        <div class="swatch-emotion">"Appetite. Fire.<br />Urgency. Warmth."</div>
+      </div>
+      <div class="swatch-bottom">
+        <div class="sw-name">Brand Ember</div>
+        <div class="sw-role">Primary CTA · Active states · Logo period · Fill bars</div>
+        <span class="sw-hex">HEX · #E8500A</span>
+        <span class="sw-hex">RGB · 232, 80, 10</span>
+        <span class="sw-hex">HSL · 19°, 92%, 47%</span>
+      </div>
+    </div>
+
+    <div class="swatch-card">
+      <div class="swatch-top" style="background:#FF6B2B;">
+        <div class="swatch-emotion">"Energy without<br />aggression."</div>
+      </div>
+      <div class="swatch-bottom">
+        <div class="sw-name">Ember Glow</div>
+        <div class="sw-role">Hover states · Pressed buttons</div>
+        <span class="sw-hex">HEX · #FF6B2B</span>
+        <span class="sw-hex">RGB · 255, 107, 43</span>
+        <span class="sw-hex">HSL · 20°, 100%, 58%</span>
+      </div>
+    </div>
+
+    <div class="swatch-card">
+      <div class="swatch-top" style="background:#1A1612;border-bottom:1px solid #ffffff0A;">
+        <div class="swatch-emotion" style="color:#ffffff33;">"Market at night.<br />Charcoal warmth."</div>
+      </div>
+      <div class="swatch-bottom">
+        <div class="sw-name">Coal</div>
+        <div class="sw-role">Page background · Dark mode base</div>
+        <span class="sw-hex">HEX · #1A1612</span>
+        <span class="sw-hex">RGB · 26, 22, 18</span>
+        <span class="sw-hex">HSL · 30°, 18%, 9% — warm not cold</span>
+      </div>
+    </div>
+
+    <div class="swatch-card">
+      <div class="swatch-top" style="background:#231E19;border-bottom:1px solid #ffffff0A;">
+        <div class="swatch-emotion" style="color:#ffffff33;">"Slightly lifted.<br />Chalkboard."</div>
+      </div>
+      <div class="swatch-bottom">
+        <div class="sw-name">Char</div>
+        <div class="sw-role">Card surfaces · Elevated panels · Sidebar</div>
+        <span class="sw-hex">HEX · #231E19</span>
+        <span class="sw-hex">RGB · 35, 30, 25</span>
+        <span class="sw-hex">HSL · 28°, 17%, 12%</span>
+      </div>
+    </div>
+
+    <div class="swatch-card">
+      <div class="swatch-top" style="background:#FDF4E7;border-bottom:1px solid #EDE3CC;">
+        <div class="swatch-emotion" style="color:#9A8870;">"Parchment. Menu.<br />Craft paper."</div>
+      </div>
+      <div class="swatch-bottom">
+        <div class="sw-name">Parchment</div>
+        <div class="sw-role">Light mode backgrounds · Card whites</div>
+        <span class="sw-hex">HEX · #FDF4E7</span>
+        <span class="sw-hex">RGB · 253, 244, 231</span>
+        <span class="sw-hex">HSL · 38°, 88%, 95% — never pure white</span>
+      </div>
+    </div>
+
+    <div class="swatch-card">
+      <div class="swatch-top" style="background:#F5EDD8;border-bottom:1px solid #EDE3CC;">
+        <div class="swatch-emotion" style="color:#9A8870;">"Aged paper.<br />Artisan craft."</div>
+      </div>
+      <div class="swatch-bottom">
+        <div class="sw-name">Cream</div>
+        <div class="sw-role">Light mode card surface · Tag backgrounds</div>
+        <span class="sw-hex">HEX · #F5EDD8</span>
+        <span class="sw-hex">RGB · 245, 237, 216</span>
+        <span class="sw-hex">HSL · 42°, 64%, 90%</span>
+      </div>
+    </div>
+
+    <div class="swatch-card">
+      <div class="swatch-top" style="background:#2D8B55;">
+        <div class="swatch-emotion">"Fresh herbs.<br />Produce. Confirmed."</div>
+      </div>
+      <div class="swatch-bottom">
+        <div class="sw-name">Herb Green</div>
+        <div class="sw-role">Approved · Confirmed · Spots available · Positive</div>
+        <span class="sw-hex">HEX · #2D8B55</span>
+        <span class="sw-hex">RGB · 45, 139, 85</span>
+        <span class="sw-hex">HSL · 146°, 51%, 36% — warmer than Spotify green</span>
+      </div>
+    </div>
+
+    <div class="swatch-card">
+      <div class="swatch-top" style="background:#C9840A;">
+        <div class="swatch-emotion">"Golden hour.<br />Caution not alarm."</div>
+      </div>
+      <div class="swatch-bottom">
+        <div class="sw-name">Gold</div>
+        <div class="sw-role">Pending · Warning · Cert expiry · Alerts</div>
+        <span class="sw-hex">HEX · #C9840A</span>
+        <span class="sw-hex">RGB · 201, 132, 10</span>
+        <span class="sw-hex">HSL · 39°, 91%, 41%</span>
+      </div>
+    </div>
+
+    <div class="swatch-card">
+      <div class="swatch-top" style="background:#C0392B;">
+        <div class="swatch-emotion">"Terracotta. Clay.<br />Decisive not alarming."</div>
+      </div>
+      <div class="swatch-bottom">
+        <div class="sw-name">Terracotta</div>
+        <div class="sw-role">Rejected · Error · Destructive actions</div>
+        <span class="sw-hex">HEX · #C0392B</span>
+        <span class="sw-hex">RGB · 192, 57, 43</span>
+        <span class="sw-hex">HSL · 5°, 63%, 46% — earthy not digital-red</span>
+      </div>
+    </div>
+
+    <div class="swatch-card">
+      <div class="swatch-top" style="background:#2B5BA8;">
+        <div class="swatch-emotion">"Deep ocean.<br />Credibility. Info."</div>
+      </div>
+      <div class="swatch-bottom">
+        <div class="sw-name">Slate Blue</div>
+        <div class="sw-role">Category tags · Info states · Verified badges</div>
+        <span class="sw-hex">HEX · #2B5BA8</span>
+        <span class="sw-hex">RGB · 43, 91, 168</span>
+        <span class="sw-hex">HSL · 219°, 59%, 41%</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Psychology explanation -->
+  <div class="psych-box">
+    <div class="psych-title">Why These Colours — The Psychology</div>
+    <div class="psych-grid">
+      <div>
+        <div class="psych-item-label">Warm Darks, Not Cold Black</div>
+        <div class="psych-item-text">Pure black (#000) reads as corporate, harsh, and digital. Our Coal (#1A1612) has a 30° warm brown hue — the colour of chalkboard menus, wooden market stalls, and fire pits. It makes food feel at home on the screen.</div>
+      </div>
+      <div>
+        <div class="psych-item-label">Parchment Over White</div>
+        <div class="psych-item-text">White backgrounds trigger "clinical" and "sterile" associations — great for hospitals, terrible for food. Parchment (#FDF4E7) evokes handwritten menus, craft food packaging, and artisan markets. It makes vendors feel seen.</div>
+      </div>
+      <div>
+        <div class="psych-item-label">Ember Orange vs. Bright Orange</div>
+        <div class="psych-item-text">We pulled the primary slightly deeper and warmer than typical app orange. Bright orange can read as cheap. Ember orange reads as fire, heat, and quality — like a wood-fired oven, not a fast food sign.</div>
+      </div>
+      <div>
+        <div class="psych-item-label">Herb Green, Not Spotify Green</div>
+        <div class="psych-item-text">#1DB954 reads as "tech platform". Our Herb Green (#2D8B55) is slightly cooler and more muted — it reads as fresh produce, basil, and approval. It triggers a food association, not a streaming app.</div>
+      </div>
+      <div>
+        <div class="psych-item-label">Gold Over Yellow Amber</div>
+        <div class="psych-item-text">Bright amber yellows trigger anxiety and cheapness. Our Gold (#C9840A) is deep and saturated — it reads as a golden hour warning, not a system alarm. It keeps the platform feeling premium even in cautionary states.</div>
+      </div>
+      <div>
+        <div class="psych-item-label">Terracotta, Not Alarm Red</div>
+        <div class="psych-item-text">Digital red (#FF0000) is jarring and aggressive. Terracotta (#C0392B) is earth-toned — it communicates "stop" or "error" without triggering panic. It keeps the platform warm even when delivering bad news to a vendor.</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     03 · TYPOGRAPHY
+══════════════════════════════════════════════════════════════════════════ -->
+<div class="full-section">
+<div class="section">
+  <div class="sec-tag">03 · Typography</div>
+  <h2 class="sec-title">The Type System</h2>
+  <p class="sec-desc">One serif for character. One sans for clarity. Both chosen for how they make people feel, not just how they look.</p>
+
+  <div class="type-pair">
+    <div class="type-card">
+      <div class="type-tag">Fraunces · Display & Logo</div>
+      <div class="type-why">An "optical size" serif — it was designed to feel completely different at large and small sizes. At display sizes it's expressive, almost poetic. It conveys craft, warmth, and confidence. Used for the logo, all headings, and the hero text. Chosen because it feels like a handpainted market sign scaled up.</div>
+      <div class="type-specimen" style="font-family:var(--font-display);">Ag</div>
+      <div class="type-abc" style="font-family:var(--font-display);font-weight:700;">
+        A B C D E F G H I J K L M<br/>
+        N O P Q R S T U V W X Y Z<br/>
+        a b c d e f g h i j k l m<br/>
+        n o p q r s t u v w x y z<br/>
+        0 1 2 3 4 5 6 7 8 9 ! &amp;
+      </div>
+      <div style="margin-top:18px;display:flex;gap:6px;flex-wrap:wrap;">
+        <span class="tok">300 Light</span>
+        <span class="tok">400 Regular</span>
+        <span class="tok">700 Bold</span>
+        <span class="tok">900 Black ← use this</span>
+      </div>
+    </div>
+
+    <div class="type-card">
+      <div class="type-tag">Instrument Sans · Body & UI</div>
+      <div class="type-why">A contemporary geometric sans that's warm rather than cold. Unlike Inter or Roboto which read as "software", Instrument Sans has humanist details that keep it approachable. Used for all body copy, buttons, labels, navigation, and form fields. Legible at 11px, elegant at 18px.</div>
+      <div class="type-specimen" style="font-family:var(--font-body);font-weight:400;font-size:80px;">Ag</div>
+      <div class="type-abc" style="font-family:var(--font-body);font-weight:400;">
+        A B C D E F G H I J K L M<br/>
+        N O P Q R S T U V W X Y Z<br/>
+        a b c d e f g h i j k l m<br/>
+        n o p q r s t u v w x y z<br/>
+        0 1 2 3 4 5 6 7 8 9 ! &amp;
+      </div>
+      <div style="margin-top:18px;display:flex;gap:6px;flex-wrap:wrap;">
+        <span class="tok">400 Regular</span>
+        <span class="tok">500 Medium</span>
+        <span class="tok">600 SemiBold</span>
+        <span class="tok">700 Bold</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="type-scale-wrap">
+    <p style="font-size:9px;letter-spacing:0.25em;text-transform:uppercase;color:var(--text-lo);font-weight:700;margin-bottom:20px;">Type Scale — Fraunces for display / Instrument Sans for body</p>
+    <div class="ts-row">
+      <span class="ts-meta">Hero</span>
+      <span class="ts-px">80–96px</span>
+      <span style="font-family:var(--font-display);font-size:52px;font-weight:900;letter-spacing:-0.04em;color:var(--text-hi);line-height:1;">Find your Pitch.</span>
+    </div>
+    <div class="ts-row">
+      <span class="ts-meta">H1</span>
+      <span class="ts-px">40–52px</span>
+      <span style="font-family:var(--font-display);font-size:38px;font-weight:900;letter-spacing:-0.025em;color:var(--text-hi);">Browse Events Near You</span>
+    </div>
+    <div class="ts-row">
+      <span class="ts-meta">H2</span>
+      <span class="ts-px">28–36px</span>
+      <span style="font-family:var(--font-display);font-size:28px;font-weight:800;letter-spacing:-0.02em;color:var(--text-hi);">Rundle Mall Night Eats</span>
+    </div>
+    <div class="ts-row">
+      <span class="ts-meta">H3</span>
+      <span class="ts-px">20–24px</span>
+      <span style="font-family:var(--font-display);font-size:20px;font-weight:700;color:var(--text-hi);">Smoky Joe's BBQ</span>
+    </div>
+    <div class="ts-row">
+      <span class="ts-meta">Body LG</span>
+      <span class="ts-px">16–18px</span>
+      <span style="font-size:16px;color:#A89880CC;line-height:1.7;font-family:var(--font-body);">Australia's marketplace connecting food trucks and pop-up stalls with local events.</span>
+    </div>
+    <div class="ts-row">
+      <span class="ts-meta">Body</span>
+      <span class="ts-px">13–15px</span>
+      <span style="font-size:14px;color:var(--text-lo);font-family:var(--font-body);">Award-winning slow-smoked brisket and ribs. Featured in Broadsheet Adelaide, 2024.</span>
+    </div>
+    <div class="ts-row">
+      <span class="ts-meta">Label</span>
+      <span class="ts-px">9–12px</span>
+      <span style="font-size:10px;font-weight:700;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-lo);font-family:var(--font-body);">Featured Events · Night Market · Apply By 28 Mar · Verified Vendor</span>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     04 · ICONOGRAPHY
+══════════════════════════════════════════════════════════════════════════ -->
+<div class="full-section alt-bg">
+<div class="section">
+  <div class="sec-tag">04 · Iconography</div>
+  <h2 class="sec-title">Icon Language</h2>
+  <p class="sec-desc">Pitch uses two icon styles: native emoji for food and context (authentic, immediate) and geometric line icons for system UI (consistent, professional). Never mix them in the same component.</p>
+
+  <div style="margin-bottom:32px;">
+    <p style="font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-lo);font-weight:700;margin-bottom:14px;">Food & Vendor Context — Native Emoji Style</p>
+    <div class="icon-grid">
+      <div class="ic-cell"><span class="ic-icon">🏪</span><span class="ic-name">Brand / Platform</span></div>
+      <div class="ic-cell"><span class="ic-icon">🚚</span><span class="ic-name">Food Truck</span></div>
+      <div class="ic-cell"><span class="ic-icon">⛺</span><span class="ic-name">Pop-up Stall</span></div>
+      <div class="ic-cell"><span class="ic-icon">🛒</span><span class="ic-name">Cart / Mobile</span></div>
+      <div class="ic-cell"><span class="ic-icon">🎪</span><span class="ic-name">Festival</span></div>
+      <div class="ic-cell"><span class="ic-icon">🌮</span><span class="ic-name">Mexican</span></div>
+      <div class="ic-cell"><span class="ic-icon">🍕</span><span class="ic-name">Pizza / Italian</span></div>
+      <div class="ic-cell"><span class="ic-icon">🍱</span><span class="ic-name">Asian Fusion</span></div>
+      <div class="ic-cell"><span class="ic-icon">🥩</span><span class="ic-name">BBQ / Grill</span></div>
+      <div class="ic-cell"><span class="ic-icon">🍦</span><span class="ic-name">Desserts</span></div>
+      <div class="ic-cell"><span class="ic-icon">☕</span><span class="ic-name">Coffee / Bev</span></div>
+      <div class="ic-cell"><span class="ic-icon">🥗</span><span class="ic-name">Vegan / Health</span></div>
+    </div>
+  </div>
+
+  <div>
+    <p style="font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-lo);font-weight:700;margin-bottom:14px;">System UI Icons — Geometric Line Style, 2px stroke, 24×24px</p>
+    <div class="icon-grid">
+      <div class="ic-cell"><span class="ic-icon">📍</span><span class="ic-name">Location</span></div>
+      <div class="ic-cell"><span class="ic-icon">📅</span><span class="ic-name">Date</span></div>
+      <div class="ic-cell"><span class="ic-icon">⚡</span><span class="ic-name">Power</span></div>
+      <div class="ic-cell"><span class="ic-icon">💧</span><span class="ic-name">Water</span></div>
+      <div class="ic-cell"><span class="ic-icon">📐</span><span class="ic-name">Dimensions</span></div>
+      <div class="ic-cell"><span class="ic-icon">💰</span><span class="ic-name">Pricing</span></div>
+      <div class="ic-cell"><span class="ic-icon">📎</span><span class="ic-name">Documents</span></div>
+      <div class="ic-cell"><span class="ic-icon">🔍</span><span class="ic-name">Search</span></div>
+      <div class="ic-cell"><span class="ic-icon">🔔</span><span class="ic-name">Notify</span></div>
+      <div class="ic-cell"><span class="ic-icon">⭐</span><span class="ic-name">Rating</span></div>
+      <div class="ic-cell"><span class="ic-icon">⏰</span><span class="ic-name">Deadline</span></div>
+      <div class="ic-cell"><span class="ic-icon">✅</span><span class="ic-name">Approved</span></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     05 · BUTTONS & BADGES
+══════════════════════════════════════════════════════════════════════════ -->
+<div class="full-section">
+<div class="section">
+  <div class="sec-tag">05 · Buttons & Badges</div>
+  <h2 class="sec-title">UI Controls</h2>
+
+  <p style="font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-lo);font-weight:700;margin-bottom:20px;">Button Library</p>
+  <div class="btn-showcase" style="margin-bottom:48px;">
+    <div class="btn-item"><span class="btn-tag">Primary · LG</span><button class="b b-primary-lg">Find your Pitch →</button></div>
+    <div class="btn-item"><span class="btn-tag">Primary</span><button class="b b-primary">Apply Now →</button></div>
+    <div class="btn-item"><span class="btn-tag">Secondary</span><button class="b b-secondary">Browse Events</button></div>
+    <div class="btn-item"><span class="btn-tag">Outline</span><button class="b b-outline">View Profile</button></div>
+    <div class="btn-item"><span class="btn-tag">Destructive</span><button class="b b-danger">Reject</button></div>
+    <div class="btn-item"><span class="btn-tag">Ghost</span><button class="b b-ghost">Learn more</button></div>
+    <div class="btn-item"><span class="btn-tag">Small</span><button class="b b-sm">Review</button></div>
+    <div class="btn-item"><span class="btn-tag">Icon</span><button class="b b-icon">🔍</button></div>
+  </div>
+
+  <div style="background:var(--char);border:1px solid #ffffff07;border-radius:14px;padding:28px;margin-bottom:48px;">
+    <p style="font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-lo);font-weight:700;margin-bottom:16px;">Button Spec Tokens</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:20px;">
+      <div><div style="font-family:var(--font-display);font-size:13px;font-weight:700;margin-bottom:6px;">Border Radius</div><div style="font-size:12px;color:var(--text-lo);line-height:1.8;"><span class="tok">sm: 8px</span> <span class="tok">md: 10px</span> <span class="tok">lg: 12px</span></div></div>
+      <div><div style="font-family:var(--font-display);font-size:13px;font-weight:700;margin-bottom:6px;">Padding</div><div style="font-size:12px;color:var(--text-lo);line-height:1.8;"><span class="tok">sm: 8/16</span> <span class="tok">md: 16/32</span> <span class="tok">lg: 20/40</span></div></div>
+      <div><div style="font-family:var(--font-display);font-size:13px;font-weight:700;margin-bottom:6px;">Font</div><div style="font-size:12px;color:var(--text-lo);"><span class="tok">Instrument Sans</span> <span class="tok">weight: 700</span></div></div>
+      <div><div style="font-family:var(--font-display);font-size:13px;font-weight:700;margin-bottom:6px;">Primary Shadow</div><div style="font-size:12px;color:var(--text-lo);"><span class="tok">0 6px 24px #E8500A3A</span></div></div>
+    </div>
+  </div>
+
+  <p style="font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-lo);font-weight:700;margin-bottom:14px;">Status & Plan Badges</p>
+  <div class="badge-showcase">
+    <span class="bdg bdg-approved">✓ Approved</span>
+    <span class="bdg bdg-pending">● Pending Review</span>
+    <span class="bdg bdg-rejected">✕ Rejected</span>
+    <span class="bdg bdg-full">SOLD OUT</span>
+    <span class="bdg bdg-open">Spots Available</span>
+  </div>
+  <div class="badge-showcase">
+    <span class="bdg bdg-pro">⭐ Pro Vendor</span>
+    <span class="bdg bdg-basic">Basic</span>
+    <span class="bdg bdg-free">Starter</span>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     06 · CARD PATTERNS
+══════════════════════════════════════════════════════════════════════════ -->
+<div class="full-section alt-bg">
+<div class="section">
+  <div class="sec-tag">06 · Card Patterns</div>
+  <h2 class="sec-title">Core Cards</h2>
+  <p class="sec-desc">All cards use the Parchment background in light mode. The warm cream surface instantly signals "food" and "craft" — not software. Cards are the most repeated UI element; getting them right is everything.</p>
+
+  <div class="card-grid">
+    <div class="card-wrap">
+      <div class="card-frame-label">Event Card · Parchment Surface</div>
+      <div class="event-card">
+        <div class="ec-badges">
+          <span class="ec-badge ec-badge-blue">Night Market</span>
+          <span class="ec-badge ec-badge-green">6 spots left</span>
+        </div>
+        <div class="ec-title">Rundle Mall Night Eats</div>
+        <div class="ec-meta">📍 CBD · 📅 12 Apr 2026</div>
+        <div class="ec-fill-row"><span>14/20 spots filled</span><span style="color:#2D8B55;font-weight:700;">70%</span></div>
+        <div class="ec-fill-bg"><div class="ec-fill-inner" style="width:70%"></div></div>
+        <div class="ec-footer">
+          <span>Booth: <strong>$200–$350</strong></span>
+          <span>Deadline: <strong>28 Mar</strong></span>
+        </div>
+      </div>
+      <div style="margin-top:12px;font-size:11px;color:var(--text-lo);line-height:1.7;">Surface: <span class="tok">Parchment #FDF4E7</span> · Border: <span class="tok">Linen #EDE3CC</span> · Radius: <span class="tok">16px</span> · Hover: <span class="tok">translateY(-2px)</span></div>
+    </div>
+
+    <div class="card-wrap">
+      <div class="card-frame-label">Vendor Card · Parchment Surface</div>
+      <div class="vendor-card">
+        <div class="vc-head">
+          <div class="vc-avatar">SJ</div>
+          <div style="flex:1;">
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div class="vc-name">Smoky Joe's BBQ</div>
+              <span style="font-size:10px;font-weight:700;color:#2B5BA8;background:#2B5BA810;padding:2px 8px;border-radius:100px;font-family:var(--font-body);">✓</span>
+            </div>
+            <div class="vc-sub">Food Truck · Adelaide</div>
+          </div>
+          <span class="bdg bdg-pro" style="font-size:9px;">⭐ Pro</span>
+        </div>
+        <div class="vc-stars">★★★★★ <span style="color:#9A8870;font-size:12px;font-family:var(--font-body);">4.9</span></div>
+        <div class="vc-rev">47 reviews · 23 events done</div>
+        <div class="vc-bio">Award-winning slow-smoked brisket and ribs since 2019. Featured in Broadsheet Adelaide.</div>
+        <div class="vc-tags">
+          <span class="vc-tag">BBQ</span>
+          <span class="vc-tag">Burgers</span>
+        </div>
+      </div>
+      <div style="margin-top:12px;font-size:11px;color:var(--text-lo);line-height:1.7;">Stars: <span class="tok">Ember #E8500A</span> · Avatar bg: generated from name hue · Verified badge: <span class="tok">Slate Blue</span></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     07 · MOTION & SPACING
+══════════════════════════════════════════════════════════════════════════ -->
+<div class="full-section">
+<div class="section">
+  <div class="sec-tag">07 · Motion & Spacing</div>
+  <h2 class="sec-title">Motion Principles</h2>
+
+  <div class="motion-grid" style="margin-bottom:64px;">
+    <div class="m-card">
+      <div class="m-orb rise">🎪</div>
+      <div class="m-name">Entrance</div>
+      <div class="m-ease">ease-out · 280ms</div>
+      <div class="m-desc">Cards and panels entering the screen. Subtle Y-axis rise + opacity fade from 0 → 1. Never bouncy — confident.</div>
+    </div>
+    <div class="m-card">
+      <div class="m-orb pulse">✨</div>
+      <div class="m-name">Transition</div>
+      <div class="m-ease">ease-in-out · 200ms</div>
+      <div class="m-desc">Page changes, tab switches, overlay fades. Smooth and unhurried — the platform knows where it's going.</div>
+    </div>
+    <div class="m-card">
+      <div class="m-orb slide">→</div>
+      <div class="m-name">Micro</div>
+      <div class="m-ease">ease · 140ms</div>
+      <div class="m-desc">Button hovers, badge updates, fill bar fills on load. Fast, responsive, invisible — just feels right.</div>
+    </div>
+  </div>
+
+  <div class="sec-title" style="font-size:28px;margin-bottom:24px;">Spacing Scale</div>
+  <div style="background:var(--char);border:1px solid #ffffff08;border-radius:16px;padding:36px;">
+    <p style="font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-lo);font-weight:700;margin-bottom:18px;">4px base unit — all spacing is a multiple of 4</p>
+    <div class="sp-row"><span class="sp-lbl">xs</span><span class="sp-val">4px</span><div class="sp-bar" style="width:4px;"></div><span class="sp-use">Tight icon gaps, inner badge padding</span></div>
+    <div class="sp-row"><span class="sp-lbl">sm</span><span class="sp-val">8px</span><div class="sp-bar" style="width:8px;"></div><span class="sp-use">Tag gaps, small form spacing</span></div>
+    <div class="sp-row"><span class="sp-lbl">md</span><span class="sp-val">12–16px</span><div class="sp-bar" style="width:16px;"></div><span class="sp-use">Card inner padding, form field gaps</span></div>
+    <div class="sp-row"><span class="sp-lbl">lg</span><span class="sp-val">20–24px</span><div class="sp-bar" style="width:24px;"></div><span class="sp-use">Card padding, section inner gaps</span></div>
+    <div class="sp-row"><span class="sp-lbl">xl</span><span class="sp-val">32–40px</span><div class="sp-bar" style="width:40px;"></div><span class="sp-use">Component-to-component breathing room</span></div>
+    <div class="sp-row"><span class="sp-lbl">2xl</span><span class="sp-val">48–64px</span><div class="sp-bar" style="width:64px;"></div><span class="sp-use">Large section gaps, page layout</span></div>
+    <div class="sp-row" style="border:none;"><span class="sp-lbl">3xl</span><span class="sp-val">80–96px</span><div class="sp-bar" style="width:96px;"></div><span class="sp-use">Section top/bottom padding — generous breathing room</span></div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     08 · VOICE & TONE
+══════════════════════════════════════════════════════════════════════════ -->
+<div class="full-section alt-bg">
+<div class="section">
+  <div class="sec-tag">08 · Voice & Tone</div>
+  <h2 class="sec-title">How Pitch Speaks</h2>
+  <p class="sec-desc">The visual brand is only half of it. How Pitch speaks to vendors and organizers must match the warmth, confidence, and directness of the visual identity.</p>
+
+  <div class="voice-grid">
+    <div class="voice-card">
+      <div class="voice-title">Direct</div>
+      <div class="voice-quote">"Apply now. 6 spots left."</div>
+      <div class="voice-desc">Never bury the action. Tell people what to do and why now. Vendors are busy — respect their time. No corporate waffle.</div>
+    </div>
+    <div class="voice-card">
+      <div class="voice-title">Confident</div>
+      <div class="voice-quote">"Your pitch. Owned."</div>
+      <div class="voice-desc">Pitch makes vendors feel capable. The copy lifts them, not the platform. We don't say "we help you find" — we say "find your pitch."</div>
+    </div>
+    <div class="voice-card">
+      <div class="voice-title">Warm</div>
+      <div class="voice-quote">"Welcome back, Joe."</div>
+      <div class="voice-desc">Every vendor is a person with a craft they're proud of. Pitch recognises that. Never clinical, never robotic — always human.</div>
+    </div>
+  </div>
+
+  <div style="margin-top:24px;background:var(--coal);border:1px solid #ffffff08;border-radius:16px;padding:28px 32px;">
+    <div style="font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-lo);font-weight:700;margin-bottom:20px;">Tagline Options</div>
+    <div style="display:flex;flex-wrap:wrap;gap:12px;">
+      <div style="background:var(--char);border:1px solid var(--ember);border-radius:10px;padding:14px 20px;">
+        <div style="font-family:var(--font-display);font-size:18px;font-weight:800;color:var(--text-hi);">Find your Pitch.</div>
+        <div style="font-size:11px;color:var(--ember);margin-top:4px;font-weight:700;">← Recommended Primary</div>
+      </div>
+      <div style="background:var(--char);border:1px solid #ffffff0A;border-radius:10px;padding:14px 20px;">
+        <div style="font-family:var(--font-display);font-size:18px;font-weight:800;color:var(--text-hi);">Own your market.</div>
+        <div style="font-size:11px;color:var(--text-lo);margin-top:4px;">Vendor-focused secondary</div>
+      </div>
+      <div style="background:var(--char);border:1px solid #ffffff0A;border-radius:10px;padding:14px 20px;">
+        <div style="font-family:var(--font-display);font-size:18px;font-weight:800;color:var(--text-hi);">Where food vendors meet their events.</div>
+        <div style="font-size:11px;color:var(--text-lo);margin-top:4px;">Descriptive / homepage hero</div>
+      </div>
+      <div style="background:var(--char);border:1px solid #ffffff0A;border-radius:10px;padding:14px 20px;">
+        <div style="font-family:var(--font-display);font-size:18px;font-weight:800;color:var(--text-hi);">Make your Pitch.</div>
+        <div style="font-size:11px;color:var(--text-lo);margin-top:4px;">Application / CTA context</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════════
+     FOOTER
+══════════════════════════════════════════════════════════════════════════ -->
+<div class="guide-footer">
+  <div>
+    <div style="font-family:var(--font-display);font-size:22px;font-weight:900;color:var(--text-hi);">Pitch<span style="color:var(--ember);">.</span></div>
+    <div style="font-size:11px;color:var(--text-lo);margin-top:4px;">Brand Guidelines v1.0 · March 2026 · Adelaide, Australia</div>
+  </div>
+  <div style="text-align:center;">
+    <div style="font-family:var(--font-display);font-size:16px;font-weight:700;color:var(--text-hi);margin-bottom:4px;">Find your Pitch.</div>
+    <div style="font-size:12px;color:var(--text-lo);">Australia's marketplace for food vendors and events.</div>
+  </div>
+  <div style="text-align:right;">
+    <div style="font-size:11px;color:var(--text-lo);margin-bottom:4px;">For brand enquiries</div>
+    <div style="font-size:13px;font-weight:700;color:var(--ember);">brand@getpitch.com.au</div>
+  </div>
+</div>
+
+</body>
+</html>
