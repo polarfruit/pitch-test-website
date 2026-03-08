@@ -115,9 +115,123 @@ body::before {
 }
 .filter-select option { background: var(--char); color: var(--text-hi); }
 
-.filter-date-wrap { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
-.filter-date-label { font-size: 11px; color: var(--text-lo); font-weight: 600; white-space: nowrap; }
-.filter-input-date { min-width: 130px; flex-shrink: 0; color-scheme: dark; }
+/* Date range inputs + calendar button */
+.date-range-wrap { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.date-field { display: flex; flex-direction: column; gap: 2px; }
+.date-field-label { font-size: 10px; font-weight: 700; color: var(--text-lo); letter-spacing: 0.06em; text-transform: uppercase; padding-left: 2px; }
+.date-text-input {
+  width: 112px; height: 40px;
+  background: var(--ash); border: 1px solid #ffffff0A;
+  border-radius: 9px; padding: 0 10px;
+  font-family: var(--fb); font-size: 12px; color: var(--text-hi); outline: none;
+  transition: border-color 0.14s, box-shadow 0.14s;
+}
+.date-text-input:focus { border-color: #E8500A40; box-shadow: 0 0 0 3px #E8500A12; }
+.date-text-input::placeholder { color: var(--text-lo); }
+.date-text-input.has-value { border-color: #E8500A40; }
+.date-sep { font-size: 13px; color: var(--text-lo); align-self: flex-end; padding-bottom: 9px; }
+
+.cal-toggle-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; flex-shrink: 0;
+  background: var(--ash); border: 1px solid #ffffff0A;
+  border-radius: 9px; cursor: pointer; color: var(--text-lo); align-self: flex-end;
+  transition: border-color 0.14s, color 0.14s, background 0.14s;
+}
+.cal-toggle-btn:hover, .cal-toggle-btn.active {
+  border-color: #E8500A40; color: var(--ember); background: #E8500A08;
+}
+
+/* Calendar popup */
+.cal-popup {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 500;
+  background: var(--char);
+  border: 1px solid #ffffff12;
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.6), 0 4px 16px rgba(0,0,0,0.4);
+  min-width: 580px;
+}
+.cal-popup.open { display: block; }
+.cal-popup-inner { display: flex; gap: 24px; }
+.cal-month { flex: 1; min-width: 240px; }
+.cal-month-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.cal-month-name {
+  font-family: var(--fd); font-size: 14px; font-weight: 800;
+  color: var(--text-hi); letter-spacing: -0.01em;
+}
+.cal-nav {
+  background: none; border: none; cursor: pointer;
+  color: var(--text-lo); padding: 4px 8px; border-radius: 6px;
+  font-size: 16px; line-height: 1;
+  transition: color 0.12s, background 0.12s;
+}
+.cal-nav:hover { color: var(--text-hi); background: #ffffff0A; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.cal-dow {
+  text-align: center; font-size: 10px; font-weight: 700;
+  color: var(--text-lo); letter-spacing: 0.05em;
+  padding-bottom: 6px;
+}
+.cal-day {
+  aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 500; color: var(--text-mid);
+  border-radius: 8px; cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+  border: none; background: none; font-family: var(--fb);
+}
+.cal-day:hover:not(.empty):not(.out) { background: #ffffff12; color: var(--text-hi); }
+.cal-day.empty, .cal-day.out { cursor: default; color: var(--text-lo); opacity: 0.35; }
+.cal-day.out { pointer-events: none; }
+.cal-day.today { color: var(--ember); font-weight: 700; }
+.cal-day.start, .cal-day.end {
+  background: var(--ember); color: #fff; font-weight: 700;
+}
+.cal-day.in-range {
+  background: #E8500A18; color: var(--text-hi);
+  border-radius: 0;
+}
+.cal-day.start { border-radius: 8px 0 0 8px; }
+.cal-day.end   { border-radius: 0 8px 8px 0; }
+.cal-day.start.end { border-radius: 8px; }
+
+.cal-divider { width: 1px; background: #ffffff0A; flex-shrink: 0; }
+
+.cal-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 16px; padding-top: 14px;
+  border-top: 1px solid #ffffff0A;
+}
+.cal-selected-label { font-size: 12px; color: var(--text-lo); }
+.cal-selected-label strong { color: var(--text-mid); }
+.cal-footer-actions { display: flex; gap: 8px; }
+.cal-btn-clear {
+  font-family: var(--fb); font-size: 12px; font-weight: 600;
+  background: none; border: 1px solid #ffffff12; border-radius: 8px;
+  color: var(--text-lo); padding: 7px 14px; cursor: pointer;
+  transition: color 0.12s, border-color 0.12s;
+}
+.cal-btn-clear:hover { color: var(--text-hi); border-color: #ffffff25; }
+.cal-btn-apply {
+  font-family: var(--fb); font-size: 12px; font-weight: 700;
+  background: var(--ember); border: none; border-radius: 8px;
+  color: #fff; padding: 7px 18px; cursor: pointer;
+  transition: background 0.12s;
+}
+.cal-btn-apply:hover { background: var(--ember-glow); }
+
+@media (max-width: 680px) {
+  .cal-popup { min-width: calc(100vw - 48px); right: 0; left: auto; }
+  .cal-popup-inner { flex-direction: column; }
+  .cal-divider { height: 1px; width: 100%; }
+}
 
 .filter-clear {
   font-size: 12px; font-weight: 600; color: var(--text-lo); cursor: pointer;
@@ -252,7 +366,8 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
   .events-grid { grid-template-columns: 1fr; }
   .filter-bar { flex-direction: column; align-items: stretch; }
   .filter-search-wrap, .filter-select { min-width: unset; }
-  .filter-date-wrap { flex-wrap: wrap; }
+  .date-range-wrap { flex-wrap: wrap; }
+  .date-text-input { width: 100px; }
   .footer-main { grid-template-columns: 1fr; }
 }
 </style>
@@ -305,14 +420,65 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
 
     <input class="filter-input" id="f-suburb" type="text" placeholder="Suburb or area…" style="min-width:140px;flex-shrink:0;" oninput="applyFilters()" />
 
-    <div class="filter-date-wrap">
-      <span class="filter-date-label">From</span>
-      <input class="filter-input filter-input-date" id="f-from" type="date" style="min-width:140px;" onchange="applyFilters()" />
+    <!-- Date range: text inputs + calendar popup -->
+    <div class="date-range-wrap" style="position:relative;">
+      <div class="date-field">
+        <span class="date-field-label">From</span>
+        <input class="date-text-input" id="f-from-text" type="text" placeholder="DD/MM/YYYY"
+               oninput="onDateTextInput('from')" />
+      </div>
+      <span class="date-sep">→</span>
+      <div class="date-field">
+        <span class="date-field-label">To</span>
+        <input class="date-text-input" id="f-to-text" type="text" placeholder="DD/MM/YYYY"
+               oninput="onDateTextInput('to')" />
+      </div>
+
+      <button class="cal-toggle-btn" id="date-range-btn" onclick="toggleCalendar(event)" title="Open calendar">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+          <rect x="1.5" y="2.5" width="11" height="10" rx="2" stroke="currentColor" stroke-width="1.4"/>
+          <path d="M1.5 5.5h11M4.5 1v3M9.5 1v3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+      </button>
+
+      <div class="cal-popup" id="cal-popup">
+        <div class="cal-popup-inner">
+          <!-- Month A -->
+          <div class="cal-month">
+            <div class="cal-month-header">
+              <button class="cal-nav" onclick="calPrev()">‹</button>
+              <span class="cal-month-name" id="cal-month-a"></span>
+              <span></span>
+            </div>
+            <div class="cal-grid" id="cal-grid-a"></div>
+          </div>
+
+          <div class="cal-divider"></div>
+
+          <!-- Month B -->
+          <div class="cal-month">
+            <div class="cal-month-header">
+              <span></span>
+              <span class="cal-month-name" id="cal-month-b"></span>
+              <button class="cal-nav" onclick="calNext()">›</button>
+            </div>
+            <div class="cal-grid" id="cal-grid-b"></div>
+          </div>
+        </div>
+
+        <div class="cal-footer">
+          <div class="cal-selected-label" id="cal-selected-label">Click a date to start</div>
+          <div class="cal-footer-actions">
+            <button class="cal-btn-clear" onclick="calClear()">Clear</button>
+            <button class="cal-btn-apply" onclick="calApply()">Apply</button>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="filter-date-wrap">
-      <span class="filter-date-label">To</span>
-      <input class="filter-input filter-input-date" id="f-to" type="date" style="min-width:140px;" onchange="applyFilters()" />
-    </div>
+
+    <!-- Hidden ISO date values for filter logic -->
+    <input type="hidden" id="f-from" />
+    <input type="hidden" id="f-to" />
 
     <button class="filter-clear" onclick="clearFilters()">Clear filters</button>
   </div>
@@ -472,9 +638,50 @@ function clearFilters() {
   document.getElementById('f-search').value   = '';
   document.getElementById('f-category').value = '';
   document.getElementById('f-suburb').value   = '';
-  document.getElementById('f-from').value     = '';
-  document.getElementById('f-to').value       = '';
+  calClear();
   applyFilters();
+}
+
+// Parse DD/MM/YYYY or YYYY-MM-DD → YYYY-MM-DD (returns '' if invalid)
+function parseDisplayDate(str) {
+  str = str.trim();
+  if (!str) return '';
+  // DD/MM/YYYY or DD-MM-YYYY
+  var dmyMatch = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+  if (dmyMatch) {
+    var d = dmyMatch[1].padStart(2,'0');
+    var m = dmyMatch[2].padStart(2,'0');
+    var y = dmyMatch[3];
+    var iso = y + '-' + m + '-' + d;
+    return /^\d{4}-\d{2}-\d{2}$/.test(iso) ? iso : '';
+  }
+  // YYYY-MM-DD already
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+  return '';
+}
+
+// Format YYYY-MM-DD → DD/MM/YYYY for display
+function toDisplayDate(iso) {
+  if (!iso) return '';
+  var p = iso.split('-');
+  return p[2] + '/' + p[1] + '/' + p[0];
+}
+
+function onDateTextInput(field) {
+  var inp = document.getElementById('f-' + field + '-text');
+  var iso = parseDisplayDate(inp.value);
+  document.getElementById('f-' + field).value = iso;
+  inp.classList.toggle('has-value', !!iso);
+  if (iso) {
+    // Sync cal state
+    if (field === 'from') calStart = iso;
+    if (field === 'to')   calEnd   = iso;
+    applyFilters();
+  } else if (!inp.value.trim()) {
+    if (field === 'from') calStart = null;
+    if (field === 'to')   calEnd   = null;
+    applyFilters();
+  }
 }
 
 function renderGrid() {
@@ -512,9 +719,12 @@ function renderMeta() {
   const cat  = document.getElementById('f-category').value;
   const srch = document.getElementById('f-search').value;
   const sub  = document.getElementById('f-suburb').value;
+  const from = document.getElementById('f-from').value;
+  const to   = document.getElementById('f-to').value;
   if (cat)  chips.push(`<span class="active-filter-chip">${cat} <span class="chip-remove" onclick="document.getElementById('f-category').value='';applyFilters()">×</span></span>`);
   if (srch) chips.push(`<span class="active-filter-chip">"${srch}" <span class="chip-remove" onclick="document.getElementById('f-search').value='';applyFilters()">×</span></span>`);
   if (sub)  chips.push(`<span class="active-filter-chip">${sub} <span class="chip-remove" onclick="document.getElementById('f-suburb').value='';applyFilters()">×</span></span>`);
+  if (from || to) chips.push(`<span class="active-filter-chip">${from||'…'} → ${to||'…'} <span class="chip-remove" onclick="calClear();applyFilters()">×</span></span>`);
   document.getElementById('active-filters').innerHTML = chips.join('');
 }
 
@@ -581,6 +791,166 @@ fetch('/api/events')
     filtered = [...EVENTS];
     applyFilters();
   });
+
+// ── CALENDAR POPUP ─────────────────────────────────────────────────────────
+var calViewYear, calViewMonth; // top-left month
+var calStart = null, calEnd = null, calHover = null;
+
+function isoDate(y, m, d) {
+  return y + '-' + String(m+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+}
+
+function calInit() {
+  var base = calStart ? new Date(calStart + 'T00:00:00') : new Date();
+  calViewYear  = base.getFullYear();
+  calViewMonth = base.getMonth();
+  renderCalendar();
+}
+
+function renderCalendar() {
+  renderMonth('a', calViewYear, calViewMonth);
+  var nextM = calViewMonth === 11 ? 0 : calViewMonth + 1;
+  var nextY = calViewMonth === 11 ? calViewYear + 1 : calViewYear;
+  renderMonth('b', nextY, nextM);
+  updateCalLabel();
+}
+
+function renderMonth(slot, year, month) {
+  var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var DAYS   = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+  document.getElementById('cal-month-' + slot).textContent = MONTHS[month] + ' ' + year;
+
+  var grid = document.getElementById('cal-grid-' + slot);
+  var html = DAYS.map(function(d){ return '<div class="cal-dow">' + d + '</div>'; }).join('');
+
+  var firstDay = new Date(year, month, 1).getDay();
+  var daysInMonth = new Date(year, month + 1, 0).getDate();
+  var today = isoDate(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+
+  for (var i = 0; i < firstDay; i++) {
+    html += '<div class="cal-day empty"></div>';
+  }
+  for (var d = 1; d <= daysInMonth; d++) {
+    var iso = isoDate(year, month, d);
+    var cls = ['cal-day'];
+    var past = iso < today;
+    if (past) cls.push('out');
+    if (iso === today) cls.push('today');
+    if (calStart && iso === calStart) cls.push('start');
+    if (calEnd   && iso === calEnd)   cls.push('end');
+    if (calStart && calEnd && iso > calStart && iso < calEnd) cls.push('in-range');
+    // hover preview
+    if (calStart && !calEnd && calHover && iso > calStart && iso <= calHover) cls.push('in-range');
+
+    html += '<button class="' + cls.join(' ') + '" onclick="calSelectDay(\'' + iso + '\')" onmouseenter="calHoverDay(\'' + iso + '\')">' + d + '</button>';
+  }
+  grid.innerHTML = html;
+}
+
+function calSelectDay(iso) {
+  if (!calStart || (calStart && calEnd)) {
+    // start fresh
+    calStart = iso; calEnd = null;
+  } else {
+    // second click
+    if (iso < calStart) { calEnd = calStart; calStart = iso; }
+    else if (iso === calStart) { calStart = null; }
+    else { calEnd = iso; }
+  }
+  calHover = null;
+  renderCalendar();
+}
+
+function calHoverDay(iso) {
+  if (calStart && !calEnd) {
+    calHover = iso;
+    renderCalendar();
+  }
+}
+
+function updateCalLabel() {
+  var lbl = document.getElementById('cal-selected-label');
+  if (!calStart && !calEnd) {
+    lbl.innerHTML = 'Click a date to start';
+  } else if (calStart && !calEnd) {
+    lbl.innerHTML = '<strong>' + calStart + '</strong> → pick end date';
+  } else {
+    lbl.innerHTML = '<strong>' + calStart + '</strong> → <strong>' + calEnd + '</strong>';
+  }
+}
+
+function calPrev() {
+  if (calViewMonth === 0) { calViewMonth = 11; calViewYear--; }
+  else calViewMonth--;
+  renderCalendar();
+}
+
+function calNext() {
+  if (calViewMonth === 11) { calViewMonth = 0; calViewYear++; }
+  else calViewMonth++;
+  renderCalendar();
+}
+
+function calClear() {
+  calStart = null; calEnd = null; calHover = null;
+  document.getElementById('f-from').value = '';
+  document.getElementById('f-to').value   = '';
+  var fromText = document.getElementById('f-from-text');
+  var toText   = document.getElementById('f-to-text');
+  if (fromText) { fromText.value = ''; fromText.classList.remove('has-value'); }
+  if (toText)   { toText.value   = ''; toText.classList.remove('has-value'); }
+  document.getElementById('date-range-btn').classList.remove('active');
+  renderCalendar();
+  closeCalendar();
+}
+
+function calApply() {
+  if (calStart) {
+    var endVal = calEnd || calStart;
+    document.getElementById('f-from').value = calStart;
+    document.getElementById('f-to').value   = endVal;
+    // Populate the visible text inputs
+    var fromText = document.getElementById('f-from-text');
+    var toText   = document.getElementById('f-to-text');
+    if (fromText) { fromText.value = toDisplayDate(calStart); fromText.classList.add('has-value'); }
+    if (toText)   { toText.value   = toDisplayDate(endVal);   toText.classList.add('has-value'); }
+    applyFilters();
+  }
+  closeCalendar();
+}
+
+function toggleCalendar(e) {
+  e.stopPropagation();
+  var popup = document.getElementById('cal-popup');
+  if (popup.classList.contains('open')) {
+    closeCalendar();
+  } else {
+    // Pre-load any values already typed into the text inputs
+    var fromIso = document.getElementById('f-from').value;
+    var toIso   = document.getElementById('f-to').value;
+    if (fromIso) calStart = fromIso;
+    if (toIso)   calEnd   = toIso;
+    calInit();
+    popup.classList.add('open');
+    document.getElementById('date-range-btn').classList.add('active');
+  }
+}
+
+function closeCalendar() {
+  document.getElementById('cal-popup').classList.remove('open');
+  document.getElementById('date-range-btn').classList.remove('active');
+}
+
+// Close on outside click
+document.addEventListener('click', function(e) {
+  var popup = document.getElementById('cal-popup');
+  var btn   = document.getElementById('date-range-btn');
+  if (popup && popup.classList.contains('open')) {
+    if (!popup.contains(e.target) && e.target !== btn && !btn.contains(e.target)) {
+      closeCalendar();
+    }
+  }
+});
 </script>
 </body>
 </html>

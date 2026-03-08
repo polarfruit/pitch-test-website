@@ -7,23 +7,38 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DB_PATH = process.env.VERCEL ? '/tmp/pitch.db' : path.join(__dirname, 'pitch.db');
 const db = new Database(DB_PATH);
 
-// Enable WAL mode for better concurrency
-db.pragma('journal_mode = WAL');
+// WAL mode is not safe on Vercel's ephemeral /tmp filesystem
+if (!process.env.VERCEL) {
+  db.pragma('journal_mode = WAL');
+}
 db.pragma('foreign_keys = ON');
 
 // ── Schema ─────────────────────────────────────────────────────────────────
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS users (
-    id           INTEGER PRIMARY KEY AUTOINCREMENT,
-    email        TEXT    UNIQUE NOT NULL,
-    password_hash TEXT   NOT NULL,
-    first_name   TEXT    NOT NULL,
-    last_name    TEXT    NOT NULL,
-    role         TEXT    NOT NULL CHECK(role IN ('vendor','organiser','admin')),
-    status       TEXT    NOT NULL DEFAULT 'pending'
-                         CHECK(status IN ('pending','active','suspended','banned')),
-    created_at   DATETIME DEFAULT (datetime('now'))
+    id                INTEGER PRIMARY KEY AUTOINCREMENT,
+    email             TEXT    UNIQUE NOT NULL,
+    password_hash     TEXT    NOT NULL,
+    first_name        TEXT    NOT NULL,
+    last_name         TEXT    NOT NULL,
+    role              TEXT    NOT NULL CHECK(role IN ('vendor','organiser','admin')),
+    status            TEXT    NOT NULL DEFAULT 'pending'
+                              CHECK(status IN ('pending','active','suspended','banned')),
+    email_verified    INTEGER NOT NULL DEFAULT 0,
+    phone_verified    INTEGER NOT NULL DEFAULT 0,
+    created_at        DATETIME DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS verification_codes (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    type        TEXT    NOT NULL CHECK(type IN ('email','phone')),
+    code        TEXT    NOT NULL,
+    target      TEXT    NOT NULL,
+    expires_at  DATETIME NOT NULL,
+    used        INTEGER NOT NULL DEFAULT 0,
+    created_at  DATETIME DEFAULT (datetime('now'))
   );
 
   CREATE TABLE IF NOT EXISTS vendors (
@@ -66,6 +81,17 @@ db.exec(`
     created_at   DATETIME DEFAULT (datetime('now'))
   );
 `);
+
+// ── Migrations: add new columns to existing tables ────────────────────────
+{
+  const cols = db.prepare(`PRAGMA table_info(users)`).all().map(r => r.name);
+  if (!cols.includes('email_verified')) {
+    db.exec(`ALTER TABLE users ADD COLUMN email_verified INTEGER NOT NULL DEFAULT 0`);
+  }
+  if (!cols.includes('phone_verified')) {
+    db.exec(`ALTER TABLE users ADD COLUMN phone_verified INTEGER NOT NULL DEFAULT 0`);
+  }
+}
 
 // ── Events + Payments schema ───────────────────────────────────────────────
 
@@ -251,6 +277,28 @@ export const stmts = {
   updateUserProfile:      db.prepare(`UPDATE users SET first_name=@first_name, last_name=@last_name, email=@email, status=@status WHERE id=@id`),
   updateVendorProfile:    db.prepare(`UPDATE vendors SET trading_name=@trading_name, mobile=@mobile, suburb=@suburb, state=@state, bio=@bio, plan=@plan, instagram=@instagram, setup_type=@setup_type, stall_w=@stall_w, stall_d=@stall_d, power=@power, water=@water, price_range=@price_range, abn=@abn WHERE user_id=@user_id`),
   updateOrganiserProfile: db.prepare(`UPDATE organisers SET org_name=@org_name, phone=@phone, website=@website, suburb=@suburb, state=@state, bio=@bio, event_scale=@event_scale, stall_range=@stall_range, abn=@abn WHERE user_id=@user_id`),
+
+  // verification codes
+  createVerificationCode: db.prepare(`INSERT INTO verification_codes (user_id, type, code, target, expires_at) VALUES (@user_id, @type, @code, @target, @expires_at)`),
+  getVerificationCode:    db.prepare(`SELECT * FROM verification_codes WHERE user_id=? AND type=? AND used=0 AND expires_at > datetime('now') ORDER BY created_at DESC LIMIT 1`),
+  markCodeUsed:           db.prepare(`UPDATE verification_codes SET used=1 WHERE id=?`),
+  setEmailVerified:       db.prepare(`UPDATE users SET email_verified=1 WHERE id=?`),
+  setPhoneVerified:       db.prepare(`UPDATE users SET phone_verified=1 WHERE id=?`),
+
+  // public vendors listing
+  publicVendors: db.prepare(`
+    SELECT v.user_id, v.trading_name, v.suburb, v.state, v.bio, v.cuisine_tags,
+           v.setup_type, v.stall_w, v.stall_d, v.power, v.water, v.price_range,
+           v.instagram, v.plan, u.status
+    FROM vendors v JOIN users u ON v.user_id = u.id
+    WHERE u.status = 'active'
+    ORDER BY v.plan DESC, v.created_at ASC
+  `),
+  publicVendorById: db.prepare(`
+    SELECT v.*, u.status, u.first_name, u.last_name
+    FROM vendors v JOIN users u ON v.user_id = u.id
+    WHERE v.user_id = ? AND u.status = 'active'
+  `),
 };
 
 // ── Transactions ───────────────────────────────────────────────────────────

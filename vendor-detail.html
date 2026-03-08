@@ -904,6 +904,39 @@ if (vendor) {
   });
 }
 
+// ── Overlay DB data (admin edits sync) ─────────────────────────────────────
+// Fetches live vendor data from the API and updates mutable fields on-page.
+if (vendor) {
+  fetch('/api/vendors').then(function(r){ return r.json(); }).then(function(data) {
+    var db = (data.vendors || []).find(function(d) {
+      return d.trading_name && d.trading_name.toLowerCase() === vendor.name.toLowerCase();
+    });
+    if (!db) return;
+
+    // Update page with any changed fields
+    var newName = db.trading_name || vendor.name;
+    document.title = newName + ' \u2014 Pitch.';
+    document.getElementById('vd-breadcrumb').textContent = newName;
+    document.getElementById('vd-name').textContent = newName;
+
+    if (db.bio) document.getElementById('vd-bio').textContent = db.bio;
+
+    var cuisines = (db.cuisine_tags && db.cuisine_tags.length) ? db.cuisine_tags : vendor.cuisines;
+    var setup    = db.setup_type || vendor.setup;
+    var suburb   = db.suburb    || vendor.suburb;
+    var state    = db.state     || vendor.state;
+    var isPro    = db.plan === 'pro';
+
+    document.getElementById('vd-meta-row').innerHTML =
+      cuisines.map(function(c){ return '<span class="vendor-tag">' + c + '</span>'; }).join('') +
+      '<span class="vendor-setup-tag">\uD83D\uDE9A ' + setup + '</span>' +
+      '<span class="vendor-suburb">\uD83D\uDCCD ' + suburb + ', ' + state + '</span>';
+
+    document.getElementById('vd-pro-badge').style.display = isPro ? '' : 'none';
+    document.getElementById('vd-plan-name').textContent = isPro ? 'Pro Vendor' : 'Free Plan';
+  }).catch(function(){});
+}
+
 /* ── Gallery lightbox ─────────────────────────────────────────────────────── */
 var GALLERY_DATA = vendor ? vendor.gallery : [];
 
