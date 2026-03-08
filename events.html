@@ -377,13 +377,13 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
 
 <script src="/data.js"></script>
 <script>
-// ── DATA from shared data.js ──────────────────────────────────────────────────
-const EVENTS = window.PITCH_EVENTS;
+// ── DATA: loaded from API, filtered against data.js ───────────────────────────
+let EVENTS = [];
 
 const TOTAL_EVENTS = 124;
 const PER_PAGE = 12;
 let currentPage = 1;
-let filtered = [...EVENTS];
+let filtered = [];
 
 // Category badge styles
 const CAT_STYLE = {
@@ -558,8 +558,29 @@ function goPage(n) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// Init
-applyFilters();
+// Init — apply URL category param, then fetch published events from DB
+(function() {
+  const params = new URLSearchParams(window.location.search);
+  const cat = params.get('category');
+  if (cat) {
+    const sel = document.getElementById('f-category');
+    if (sel) sel.value = cat;
+  }
+})();
+
+fetch('/api/events')
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    var published = new Set((data.events || []).map(function(e) { return e.slug; }));
+    EVENTS = (window.PITCH_EVENTS || []).filter(function(e) { return published.has(e.id); });
+    filtered = [...EVENTS];
+    applyFilters();
+  })
+  .catch(function() {
+    EVENTS = window.PITCH_EVENTS || [];
+    filtered = [...EVENTS];
+    applyFilters();
+  });
 </script>
 </body>
 </html>

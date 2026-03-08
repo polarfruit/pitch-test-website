@@ -280,6 +280,52 @@
     .page-header { margin-bottom: 22px; }
     .page-header h1 { font-family: 'Fraunces', serif; font-size: 24px; color: #FDF4E7; margin: 0 0 4px; letter-spacing: -0.02em; }
     .page-header p { font-size: 14px; color: #6B5A4A; margin: 0; }
+
+    /* ── Detail drawer ─────────────────────────────────────────────────────── */
+    .detail-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 200; }
+    .detail-overlay.open { display: block; }
+    .detail-drawer {
+      position: fixed; top: 0; right: -520px; width: 520px; height: 100vh;
+      background: #1C1814; border-left: 1px solid #2A2018; z-index: 201;
+      overflow-y: auto; transition: right 0.25s ease; display: flex; flex-direction: column;
+    }
+    .detail-drawer.open { right: 0; }
+    .detail-header { padding: 20px 24px; border-bottom: 1px solid #2A2018; display: flex; align-items: flex-start; gap: 12px; position: sticky; top: 0; background: #1C1814; z-index: 1; }
+    .detail-header-info { flex: 1; }
+    .detail-title { font-family: 'Fraunces', serif; font-size: 18px; color: #FDF4E7; margin-bottom: 3px; }
+    .detail-sub { font-size: 13px; color: #6B5A4A; }
+    .detail-body { padding: 24px; flex: 1; }
+    .detail-section { margin-bottom: 24px; }
+    .detail-section-title { font-size: 10px; font-weight: 700; color: #4A3C30; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #2A2018; }
+    .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .detail-field label { display: block; font-size: 10px; font-weight: 600; color: #6B5A4A; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 4px; }
+    .detail-field span { font-size: 13.5px; color: #FDF4E7; display: block; line-height: 1.5; }
+    .detail-field.full { grid-column: 1 / -1; }
+    .payment-row { display: flex; align-items: center; gap: 14px; padding: 12px 0; border-bottom: 1px solid #1E1916; }
+    .payment-row:last-child { border-bottom: none; }
+    .payment-left { flex: 1; }
+    .payment-amount { font-family: 'Fraunces', serif; font-size: 18px; color: #FDF4E7; line-height: 1; margin-bottom: 3px; }
+    .payment-desc { font-size: 12px; color: #A89880; }
+    .payment-right { text-align: right; }
+    .payment-date { font-size: 11px; color: #4A3C30; margin-bottom: 4px; }
+    .detail-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .df-input, .df-select, .df-textarea {
+      width: 100%; background: #140F0C; border: 1px solid #2A2018; border-radius: 7px;
+      color: #FDF4E7; font-family: 'Instrument Sans', sans-serif; font-size: 13px;
+      padding: 8px 10px; outline: none; transition: border-color 0.15s;
+      box-sizing: border-box;
+    }
+    .df-input:focus, .df-select:focus, .df-textarea:focus { border-color: #E8500A; }
+    .df-select { appearance: none; cursor: pointer; }
+    .df-textarea { resize: vertical; min-height: 80px; line-height: 1.5; }
+    .df-label { display: block; font-size: 10px; font-weight: 600; color: #6B5A4A; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 5px; }
+    .df-field { display: flex; flex-direction: column; }
+    .df-field.full { grid-column: 1 / -1; }
+    .save-bar { position: sticky; bottom: 0; background: #1C1814; border-top: 1px solid #2A2018; padding: 16px 24px; display: flex; gap: 10px; align-items: center; }
+    .save-btn { background: #E8500A; color: #FDF4E7; border: none; border-radius: 8px; padding: 10px 22px; font-family: 'Instrument Sans', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+    .save-btn:hover { background: #FF6B2B; }
+    .save-msg { font-size: 12px; color: #2D8B55; display: none; }
+    .save-msg.err { color: #C0392B; }
   </style>
 </head>
 <body>
@@ -325,7 +371,7 @@
     <div class="admin-user">
       <div class="admin-avatar">👤</div>
       <div class="admin-info">
-        <strong>Lachlan W.</strong>
+        <strong>Leroy Morales</strong>
         <span>Super admin</span>
       </div>
     </div>
@@ -808,7 +854,7 @@
         <button class="filter-chip">Draft</button>
         <button class="filter-chip">Featured</button>
         <button class="filter-chip">Flagged</button>
-        <span class="filter-count">843 events total</span>
+        <span class="filter-count" id="events-count">Loading…</span>
       </div>
       <table class="data-table">
         <thead>
@@ -816,13 +862,12 @@
             <th>Event</th>
             <th>Organiser</th>
             <th>Date</th>
-            <th>Stalls</th>
-            <th>Fill rate</th>
+            <th>Category</th>
             <th>Status</th>
             <th>Actions</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody id="events-tbody">
           <tr>
             <td><strong>Rundle Mall Night Eats</strong><br><span style="font-size:12px;color:#4A3C30;">Rundle Mall, Adelaide CBD</span></td>
             <td><span style="font-size:13px;">Adelaide City Council</span></td>
@@ -921,7 +966,7 @@
         </tbody>
       </table>
       <div class="card-footer" style="display:flex;align-items:center;justify-content:space-between;">
-        <span style="font-size:13px;color:#6B5A4A;">Showing 5 of 843</span>
+        <span style="font-size:13px;color:#6B5A4A;" id="events-showing">—</span>
         <div class="act-group">
           <button class="act-btn act-view">← Prev</button>
           <button class="act-btn act-view">Next →</button>
@@ -1003,7 +1048,7 @@
           <div class="report-body">
             Duplicate event listing for "Glenelg Summer Sundowner" removed. Original listing retained.
           </div>
-          <div class="report-meta">Resolved by: <strong style="color:#A89880;">Lachlan W.</strong> · Mar 4, 2026</div>
+          <div class="report-meta">Resolved by: <strong style="color:#A89880;">Leroy Morales</strong> · Mar 4, 2026</div>
         </div>
       </div>
 
@@ -1295,6 +1340,19 @@
   </div>
 </div>
 
+<!-- ── Detail drawer ── -->
+<div class="detail-overlay" id="detail-overlay" onclick="closeDetailDrawer()"></div>
+<div class="detail-drawer" id="detail-drawer">
+  <div class="detail-header">
+    <div class="detail-header-info">
+      <div class="detail-title" id="dd-title">—</div>
+      <div class="detail-sub" id="dd-sub">—</div>
+    </div>
+    <button class="modal-close" onclick="closeDetailDrawer()" style="font-size:22px;padding:0;">✕</button>
+  </div>
+  <div class="detail-body" id="dd-body"></div>
+</div>
+
 <script>
   const panelMeta = {
     overview:   { title: 'Overview',                 sub: 'Platform at a glance' },
@@ -1313,6 +1371,7 @@
     const meta = panelMeta[id] || {};
     document.getElementById('topbar-title').textContent = meta.title || id;
     document.getElementById('topbar-sub').textContent = meta.sub || '';
+    if (id === 'events') loadAdminEvents();
   }
 
   function toggleExpand(id) {
@@ -1436,7 +1495,7 @@
              </div>`
           : `<div class="act-group">
                <button class="act-btn act-suspend" onclick="setUserStatus(${v.user_id},'suspended',this)">Suspend</button>
-               <button class="act-btn act-view">View</button>
+               <button class="act-btn act-view" onclick="openVendorDetail(${v.user_id})">View</button>
              </div>`;
 
         return `<tr>
@@ -1479,7 +1538,7 @@
              </div>`
           : `<div class="act-group">
                <button class="act-btn act-suspend" onclick="setUserStatus(${o.user_id},'suspended',this)">Suspend</button>
-               <button class="act-btn act-view">View</button>
+               <button class="act-btn act-view" onclick="openOrganiserDetail(${o.user_id})">View</button>
              </div>`;
 
         return `<tr>
@@ -1515,6 +1574,285 @@
     btn.classList.add('active');
     loadVendors(filter === 'all' ? null : filter);
   };
+
+  // ── Admin events ──────────────────────────────────────────────────────────
+  async function loadAdminEvents() {
+    try {
+      const r = await fetch('/api/admin/events');
+      const { events } = await r.json();
+      const tbody = document.getElementById('events-tbody');
+      const countEl = document.getElementById('events-count');
+      const showingEl = document.getElementById('events-showing');
+      countEl.textContent = events.length + ' event' + (events.length === 1 ? '' : 's');
+      showingEl.textContent = 'Showing ' + events.length;
+      if (!events.length) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#6B5A4A;padding:24px;">No events found.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = events.map(ev => {
+        const statusCls = ev.status === 'published' ? 'badge-green' : 'badge-grey';
+        const d = ev.date_sort ? new Date(ev.date_sort + 'T00:00:00').toLocaleDateString('en-AU', { day:'numeric', month:'short', year:'numeric' }) : '—';
+        return `<tr style="${ev.status !== 'published' ? 'opacity:0.5;' : ''}">
+          <td><strong>${ev.name}</strong><br><span style="font-size:12px;color:#4A3C30;">${ev.suburb || ''}, ${ev.state || ''}</span></td>
+          <td><span style="font-size:13px;">${ev.organiser_name || '—'}</span></td>
+          <td><span style="font-size:12px;">${d}</span></td>
+          <td><span class="badge badge-grey" style="font-size:11px;">${ev.category || '—'}</span></td>
+          <td><span class="badge ${statusCls}">${ev.status.charAt(0).toUpperCase() + ev.status.slice(1)}</span></td>
+          <td><div class="act-group">
+            ${ev.status === 'published'
+              ? `<button class="act-btn act-suspend" onclick="archiveEvent(${ev.id})">Archive</button>`
+              : `<button class="act-btn act-approve" onclick="publishEvent(${ev.id})">Publish</button>`}
+            <button class="act-btn act-view" onclick="window.open('/events/${ev.slug}','_blank')">View</button>
+            <button class="act-btn act-reject" onclick="deleteAdminEvent(${ev.id})">Delete</button>
+          </div></td>
+        </tr>`;
+      }).join('');
+    } catch(e) { console.warn('Admin events load failed', e); }
+  }
+
+  async function archiveEvent(id) {
+    await fetch(`/api/admin/events/${id}/status`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'archived' }) });
+    loadAdminEvents();
+  }
+
+  async function publishEvent(id) {
+    await fetch(`/api/admin/events/${id}/status`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'published' }) });
+    loadAdminEvents();
+  }
+
+  async function deleteAdminEvent(id) {
+    if (!confirm('Permanently delete this event? It will be removed from all pages immediately.')) return;
+    await fetch(`/api/admin/events/${id}`, { method: 'DELETE' });
+    loadAdminEvents();
+  }
+
+  // ── Detail drawer ─────────────────────────────────────────────────────────
+  function closeDetailDrawer() {
+    document.getElementById('detail-overlay').classList.remove('open');
+    document.getElementById('detail-drawer').classList.remove('open');
+  }
+
+  function openDetailDrawer(title, sub, bodyHTML) {
+    document.getElementById('dd-title').textContent = title;
+    document.getElementById('dd-sub').textContent = sub;
+    document.getElementById('dd-body').innerHTML = bodyHTML;
+    document.getElementById('detail-overlay').classList.add('open');
+    document.getElementById('detail-drawer').classList.add('open');
+  }
+
+  function detailSection(title, content) {
+    return `<div class="detail-section"><div class="detail-section-title">${title}</div>${content}</div>`;
+  }
+
+  function dfInput(id, label, value, full, type) {
+    return `<div class="df-field${full ? ' full' : ''}">
+      <label class="df-label">${label}</label>
+      <input class="df-input" id="${id}" type="${type||'text'}" value="${(value||'').toString().replace(/"/g,'&quot;')}">
+    </div>`;
+  }
+
+  function dfSelect(id, label, value, options, full) {
+    const opts = options.map(o => `<option value="${o.v}" ${o.v===value?'selected':''}>${o.l}</option>`).join('');
+    return `<div class="df-field${full ? ' full' : ''}">
+      <label class="df-label">${label}</label>
+      <select class="df-select" id="${id}">${opts}</select>
+    </div>`;
+  }
+
+  function dfTextarea(id, label, value) {
+    return `<div class="df-field full">
+      <label class="df-label">${label}</label>
+      <textarea class="df-textarea" id="${id}">${(value||'').replace(/</g,'&lt;')}</textarea>
+    </div>`;
+  }
+
+  function paymentsHTML(payments) {
+    return payments.length
+      ? payments.map(p => `<div class="payment-row">
+          <div class="payment-left">
+            <div class="payment-amount">$${p.amount.toFixed(2)} AUD</div>
+            <div class="payment-desc">${p.description || p.plan + ' plan subscription'}</div>
+          </div>
+          <div class="payment-right">
+            <div class="payment-date">${fmtDate(p.created_at)}</div>
+            <span class="badge ${p.status === 'paid' ? 'badge-green' : p.status === 'failed' ? 'badge-red' : 'badge-grey'}">${p.status}</span>
+          </div>
+        </div>`).join('')
+      : '<p style="color:#6B5A4A;font-size:13px;margin:0;">No payment history.</p>';
+  }
+
+  const AU_STATES = [
+    {v:'',l:'— State —'},{v:'ACT',l:'ACT'},{v:'NSW',l:'NSW'},{v:'NT',l:'NT'},
+    {v:'QLD',l:'QLD'},{v:'SA',l:'SA'},{v:'TAS',l:'TAS'},{v:'VIC',l:'VIC'},{v:'WA',l:'WA'},
+  ];
+
+  async function openVendorDetail(userId) {
+    openDetailDrawer('Loading…', 'Vendor', '<div style="padding:40px;color:#6B5A4A;">Loading…</div>');
+    try {
+      const [vr, pr] = await Promise.all([
+        fetch(`/api/admin/vendors/${userId}`).then(r => r.json()),
+        fetch(`/api/admin/payments/${userId}`).then(r => r.json()),
+      ]);
+      const { vendor, user } = vr;
+      const payments = pr.payments || [];
+
+      const body =
+        detailSection('Account', `<div class="detail-grid">
+          ${dfInput('df-first', 'First name', user.first_name)}
+          ${dfInput('df-last', 'Last name', user.last_name)}
+          ${dfInput('df-email', 'Email', user.email, false, 'email')}
+          ${dfSelect('df-status', 'Status', user.status, [
+            {v:'active',l:'Active'},{v:'pending',l:'Pending'},
+            {v:'suspended',l:'Suspended'},{v:'banned',l:'Banned'}
+          ])}
+        </div>`) +
+        detailSection('Business details', `<div class="detail-grid">
+          ${dfInput('df-trading', 'Trading name', vendor.trading_name)}
+          ${dfInput('df-abn', 'ABN', vendor.abn)}
+          ${dfInput('df-mobile', 'Mobile', vendor.mobile)}
+          ${dfInput('df-instagram', 'Instagram', vendor.instagram)}
+          ${dfInput('df-suburb', 'Suburb', vendor.suburb)}
+          ${dfSelect('df-state', 'State', vendor.state, AU_STATES)}
+          ${dfSelect('df-plan', 'Plan', vendor.plan, [{v:'free',l:'Free'},{v:'pro',l:'Pro'}])}
+          ${dfSelect('df-setup', 'Setup type', vendor.setup_type, [
+            {v:'',l:'— Type —'},{v:'Food truck',l:'Food truck'},{v:'Market stall',l:'Market stall'},
+            {v:'Pop-up tent',l:'Pop-up tent'},{v:'Cart',l:'Cart'},{v:'Trailer',l:'Trailer'}
+          ])}
+          ${dfInput('df-stallw', 'Stall width (m)', vendor.stall_w, false, 'number')}
+          ${dfInput('df-stalld', 'Stall depth (m)', vendor.stall_d, false, 'number')}
+          ${dfSelect('df-price', 'Price range', vendor.price_range, [
+            {v:'',l:'— Range —'},{v:'$',l:'$ Budget'},{v:'$$',l:'$$ Mid'},{v:'$$$',l:'$$$ Premium'}
+          ])}
+          ${dfSelect('df-power', 'Power required', vendor.power?'1':'0', [{v:'1',l:'Yes'},{v:'0',l:'No'}])}
+          ${dfSelect('df-water', 'Water required', vendor.water?'1':'0', [{v:'1',l:'Yes'},{v:'0',l:'No'}])}
+          ${dfTextarea('df-bio', 'Bio', vendor.bio)}
+        </div>`) +
+        detailSection('Payment history', paymentsHTML(payments));
+
+      const saveBar = `<div class="save-bar">
+        <button class="save-btn" onclick="saveVendor(${userId})">Save changes</button>
+        <span class="save-msg" id="save-msg"></span>
+      </div>`;
+
+      openDetailDrawer(vendor.trading_name, 'Vendor · ' + user.email, body + saveBar);
+    } catch(e) { console.warn('Vendor detail failed', e); }
+  }
+
+  async function saveVendor(userId) {
+    const msg = document.getElementById('save-msg');
+    msg.style.display = 'none';
+    try {
+      const profileBody = {
+        first_name: document.getElementById('df-first').value,
+        last_name: document.getElementById('df-last').value,
+        email: document.getElementById('df-email').value,
+        status: document.getElementById('df-status').value,
+      };
+      const vendorBody = {
+        trading_name: document.getElementById('df-trading').value,
+        abn: document.getElementById('df-abn').value,
+        mobile: document.getElementById('df-mobile').value,
+        instagram: document.getElementById('df-instagram').value,
+        suburb: document.getElementById('df-suburb').value,
+        state: document.getElementById('df-state').value,
+        plan: document.getElementById('df-plan').value,
+        setup_type: document.getElementById('df-setup').value,
+        stall_w: document.getElementById('df-stallw').value,
+        stall_d: document.getElementById('df-stalld').value,
+        price_range: document.getElementById('df-price').value,
+        power: document.getElementById('df-power').value === '1',
+        water: document.getElementById('df-water').value === '1',
+        bio: document.getElementById('df-bio').value,
+      };
+      await Promise.all([
+        fetch(`/api/admin/users/${userId}/profile`, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(profileBody) }),
+        fetch(`/api/admin/vendors/${userId}`, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(vendorBody) }),
+      ]);
+      msg.className = 'save-msg'; msg.textContent = 'Saved!'; msg.style.display = 'inline';
+      loadVendors();
+      setTimeout(() => msg.style.display = 'none', 2500);
+    } catch(e) {
+      msg.className = 'save-msg err'; msg.textContent = 'Save failed'; msg.style.display = 'inline';
+    }
+  }
+
+  async function openOrganiserDetail(userId) {
+    openDetailDrawer('Loading…', 'Organiser', '<div style="padding:40px;color:#6B5A4A;">Loading…</div>');
+    try {
+      const [or, pr] = await Promise.all([
+        fetch(`/api/admin/organisers/${userId}`).then(r => r.json()),
+        fetch(`/api/admin/payments/${userId}`).then(r => r.json()),
+      ]);
+      const { organiser, user } = or;
+      const payments = pr.payments || [];
+
+      const body =
+        detailSection('Account', `<div class="detail-grid">
+          ${dfInput('df-first', 'First name', user.first_name)}
+          ${dfInput('df-last', 'Last name', user.last_name)}
+          ${dfInput('df-email', 'Email', user.email, false, 'email')}
+          ${dfSelect('df-status', 'Status', user.status, [
+            {v:'active',l:'Active'},{v:'pending',l:'Pending'},
+            {v:'suspended',l:'Suspended'},{v:'banned',l:'Banned'}
+          ])}
+        </div>`) +
+        detailSection('Organisation details', `<div class="detail-grid">
+          ${dfInput('df-orgname', 'Organisation name', organiser.org_name)}
+          ${dfInput('df-abn', 'ABN', organiser.abn)}
+          ${dfInput('df-phone', 'Phone', organiser.phone)}
+          ${dfInput('df-website', 'Website', organiser.website)}
+          ${dfInput('df-suburb', 'Suburb', organiser.suburb)}
+          ${dfSelect('df-state', 'State', organiser.state, AU_STATES)}
+          ${dfSelect('df-scale', 'Event scale', organiser.event_scale, [
+            {v:'',l:'— Scale —'},{v:'small',l:'Small (<500)'},{v:'medium',l:'Medium (500–2000)'},
+            {v:'large',l:'Large (2000+)'}
+          ])}
+          ${dfInput('df-stallrange', 'Stall range', organiser.stall_range)}
+          ${dfTextarea('df-bio', 'Bio', organiser.bio)}
+        </div>`) +
+        detailSection('Payment history', paymentsHTML(payments));
+
+      const saveBar = `<div class="save-bar">
+        <button class="save-btn" onclick="saveOrganiser(${userId})">Save changes</button>
+        <span class="save-msg" id="save-msg"></span>
+      </div>`;
+
+      openDetailDrawer(organiser.org_name, 'Organiser · ' + user.email, body + saveBar);
+    } catch(e) { console.warn('Organiser detail failed', e); }
+  }
+
+  async function saveOrganiser(userId) {
+    const msg = document.getElementById('save-msg');
+    msg.style.display = 'none';
+    try {
+      const profileBody = {
+        first_name: document.getElementById('df-first').value,
+        last_name: document.getElementById('df-last').value,
+        email: document.getElementById('df-email').value,
+        status: document.getElementById('df-status').value,
+      };
+      const organiserBody = {
+        org_name: document.getElementById('df-orgname').value,
+        abn: document.getElementById('df-abn').value,
+        phone: document.getElementById('df-phone').value,
+        website: document.getElementById('df-website').value,
+        suburb: document.getElementById('df-suburb').value,
+        state: document.getElementById('df-state').value,
+        event_scale: document.getElementById('df-scale').value,
+        stall_range: document.getElementById('df-stallrange').value,
+        bio: document.getElementById('df-bio').value,
+      };
+      await Promise.all([
+        fetch(`/api/admin/users/${userId}/profile`, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(profileBody) }),
+        fetch(`/api/admin/organisers/${userId}`, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(organiserBody) }),
+      ]);
+      msg.className = 'save-msg'; msg.textContent = 'Saved!'; msg.style.display = 'inline';
+      loadOrganisers();
+      setTimeout(() => msg.style.display = 'none', 2500);
+    } catch(e) {
+      msg.className = 'save-msg err'; msg.textContent = 'Save failed'; msg.style.display = 'inline';
+    }
+  }
 
   // Boot
   loadStats();

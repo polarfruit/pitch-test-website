@@ -1,9 +1,11 @@
 import Database from 'better-sqlite3';
+import bcryptjs from 'bcryptjs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const db = new Database(path.join(__dirname, 'pitch.db'));
+const DB_PATH = process.env.VERCEL ? '/tmp/pitch.db' : path.join(__dirname, 'pitch.db');
+const db = new Database(DB_PATH);
 
 // Enable WAL mode for better concurrency
 db.pragma('journal_mode = WAL');
@@ -64,6 +66,106 @@ db.exec(`
     created_at   DATETIME DEFAULT (datetime('now'))
   );
 `);
+
+// ── Events + Payments schema ───────────────────────────────────────────────
+
+db.exec(`
+  CREATE TABLE IF NOT EXISTS events (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    slug           TEXT    UNIQUE NOT NULL,
+    name           TEXT    NOT NULL,
+    category       TEXT,
+    status         TEXT    NOT NULL DEFAULT 'published'
+                           CHECK(status IN ('published','archived','deleted')),
+    suburb         TEXT,
+    state          TEXT,
+    date_sort      TEXT,
+    organiser_name TEXT,
+    created_at     DATETIME DEFAULT (datetime('now'))
+  );
+
+  CREATE TABLE IF NOT EXISTS payments (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    plan        TEXT    NOT NULL DEFAULT 'free',
+    amount      REAL    NOT NULL DEFAULT 0,
+    currency    TEXT    DEFAULT 'AUD',
+    status      TEXT    NOT NULL DEFAULT 'paid'
+                        CHECK(status IN ('paid','failed','refunded','pending')),
+    description TEXT,
+    created_at  DATETIME DEFAULT (datetime('now'))
+  );
+`);
+
+// Seed events (INSERT OR IGNORE so re-runs are safe)
+{
+  const _ins = db.prepare(`INSERT OR IGNORE INTO events (slug, name, category, suburb, state, date_sort, organiser_name) VALUES (@slug, @name, @category, @suburb, @state, @date_sort, @organiser_name)`);
+  db.transaction(() => {
+    for (const ev of [
+      { slug: 'rundle-mall-night-eats',     name: 'Rundle Mall Night Eats',           category: 'Night Market',    suburb: 'Adelaide CBD',  state: 'SA', date_sort: '2026-04-12', organiser_name: 'Adelaide City Council Events' },
+      { slug: 'showground-harvest-fair',    name: 'Adelaide Showground Harvest Fair',  category: 'Farmers Market',  suburb: 'Wayville',      state: 'SA', date_sort: '2026-04-19', organiser_name: 'SA Showground Events' },
+      { slug: 'fringe-food-village',        name: 'Fringe Food Village 2026',          category: 'Festival',        suburb: 'Adelaide CBD',  state: 'SA', date_sort: '2026-03-02', organiser_name: 'Adelaide Fringe Festival' },
+      { slug: 'barossa-food-wine',          name: 'Barossa Valley Food & Wine',        category: 'Festival',        suburb: 'Tanunda',       state: 'SA', date_sort: '2026-04-26', organiser_name: 'Barossa Valley Tourism' },
+      { slug: 'glenelg-twilight',           name: 'Glenelg Twilight Market',           category: 'Twilight Market', suburb: 'Glenelg',       state: 'SA', date_sort: '2026-05-03', organiser_name: 'City of Holdfast Bay' },
+      { slug: 'port-adelaide-night-market', name: 'Port Adelaide Night Market',        category: 'Night Market',    suburb: 'Port Adelaide', state: 'SA', date_sort: '2026-05-10', organiser_name: 'Port Adelaide Enfield Council' },
+      { slug: 'norwood-food-bazaar',        name: 'Norwood Food Bazaar',               category: 'Pop-up',          suburb: 'Norwood',       state: 'SA', date_sort: '2026-05-17', organiser_name: 'Norwood Payneham St Peters Council' },
+      { slug: 'victor-harbor-summer-fair',  name: 'Victor Harbor Summer Fair',         category: 'Festival',        suburb: 'Victor Harbor', state: 'SA', date_sort: '2026-05-24', organiser_name: 'Victor Harbor Council' },
+      { slug: 'prospect-farmers-market',    name: 'Prospect Farmers Market',           category: 'Farmers Market',  suburb: 'Prospect',      state: 'SA', date_sort: '2026-05-31', organiser_name: 'City of Prospect' },
+      { slug: 'westpac-corporate-day',      name: 'Westpac Corporate Food Day',        category: 'Corporate',       suburb: 'Adelaide CBD',  state: 'SA', date_sort: '2026-06-07', organiser_name: 'Westpac Corporate Events' },
+      { slug: 'henley-sunset-market',       name: 'Henley Beach Sunset Market',        category: 'Twilight Market', suburb: 'Henley Beach',  state: 'SA', date_sort: '2026-06-14', organiser_name: 'City of Charles Sturt' },
+      { slug: 'marion-popup',               name: 'Marion Shopping Centre Pop-up',     category: 'Pop-up',          suburb: 'Marion',        state: 'SA', date_sort: '2026-06-21', organiser_name: 'Westfield Marion Events' },
+    ]) _ins.run(ev);
+  })();
+}
+
+// Seed demo vendors + organisers (INSERT OR IGNORE — safe to re-run)
+{
+  const HASH = bcryptjs.hashSync('pitch2026', 8); // shared demo password
+  const _su = db.prepare(`INSERT OR IGNORE INTO users (email,password_hash,first_name,last_name,role,status) VALUES (@email,@hash,@first_name,@last_name,@role,@status)`);
+  const _uid = db.prepare(`SELECT id FROM users WHERE email=?`);
+  const _sv = db.prepare(`INSERT OR IGNORE INTO vendors (user_id,trading_name,suburb,state,bio,cuisine_tags,setup_type,stall_w,stall_d,power,water,price_range,instagram,plan) VALUES (@user_id,@trading_name,@suburb,@state,@bio,@cuisine_tags,@setup_type,@stall_w,@stall_d,@power,@water,@price_range,@instagram,@plan)`);
+  const _so = db.prepare(`INSERT OR IGNORE INTO organisers (user_id,org_name,suburb,state,bio,website,phone,event_types,event_scale,stall_range) VALUES (@user_id,@org_name,@suburb,@state,@bio,@website,@phone,@event_types,@event_scale,@stall_range)`);
+
+  db.transaction(() => {
+    const vendors = [
+      { email:'joe@smokyjoes.com.au',      first_name:'Joe',    last_name:'Smith',      status:'active',  trading_name:"Smoky Joe's BBQ",        suburb:'Norwood',       state:'SA', bio:"Adelaide's most-loved BBQ food truck, smoking low-and-slow since 2019.", cuisine_tags:'["BBQ"]',             setup_type:'Food Truck',  stall_w:3,   stall_d:3,   power:1, water:0, price_range:'$12–$22', instagram:'@smokyjoes_adl',      plan:'pro'  },
+      { email:'maria@tacoloco.com',         first_name:'Maria',  last_name:'Fernandez',  status:'active',  trading_name:'Taco Loco',               suburb:'Glenelg',       state:'SA', bio:'Authentic Mexican street food made from scratch every day.',           cuisine_tags:'["Mexican"]',         setup_type:'Pop-up Stall',stall_w:3,   stall_d:2,   power:0, water:1, price_range:'$8–$16',  instagram:'@tacoloco_glenelg',   plan:'pro'  },
+      { email:'hello@wokandroll.com.au',    first_name:'David',  last_name:'Chen',       status:'active',  trading_name:'Wok & Roll',              suburb:'Adelaide CBD',  state:'SA', bio:'Modern Asian fusion food truck serving bold, wok-fired flavours.',     cuisine_tags:'["Asian Fusion"]',    setup_type:'Food Truck',  stall_w:3,   stall_d:6,   power:0, water:0, price_range:'$10–$18', instagram:'@wokandroll_adl',     plan:'pro'  },
+      { email:'ciao@napoliexpress.com.au',  first_name:'Marco',  last_name:'Rossi',      status:'active',  trading_name:'Napoli Express',          suburb:'Hindmarsh',     state:'SA', bio:'Authentic Neapolitan-style pizza and arancini made fresh on-site.',    cuisine_tags:'["Italian"]',        setup_type:'Pop-up Stall',stall_w:4,   stall_d:3,   power:1, water:1, price_range:'$12–$20', instagram:'@napoliexpressadl',   plan:'free' },
+      { email:'hello@thedessertlab.com.au', first_name:'Sophie', last_name:'Baker',      status:'active',  trading_name:'The Dessert Lab',         suburb:'North Adelaide',state:'SA', bio:'Creative dessert cart serving handcrafted sweets — Instagram-worthy.',  cuisine_tags:'["Desserts"]',        setup_type:'Cart',        stall_w:2,   stall_d:2,   power:1, water:0, price_range:'$7–$14',  instagram:'@thedessertlab',      plan:'pro'  },
+      { email:'brew@beanery.com.au',        first_name:'Liam',   last_name:'Watts',      status:'active',  trading_name:'Beanery Coffee Co.',      suburb:'Unley',         state:'SA', bio:'Specialty coffee on wheels — single-origin beans, La Marzocco cart.',  cuisine_tags:'["Coffee & Drinks"]', setup_type:'Cart',        stall_w:2,   stall_d:1.5, power:1, water:1, price_range:'$4.50–$8', instagram:'@beanery_coffee',    plan:'free' },
+      { email:'eat@greenbowl.com.au',       first_name:'Emma',   last_name:'Park',       status:'active',  trading_name:'Green Bowl',              suburb:'Prospect',      state:'SA', bio:'Wholesome vegan and plant-based street food made fresh on-site.',      cuisine_tags:'["Vegan"]',           setup_type:'Pop-up Stall',stall_w:3,   stall_d:2,   power:0, water:1, price_range:'$12–$18', instagram:'@greenbowl_sa',       plan:'free' },
+      { email:'hey@brewskiburgers.com.au',  first_name:'Jack',   last_name:'Murphy',     status:'active',  trading_name:'Brewski Burgers',         suburb:'Port Adelaide', state:'SA', bio:"Port Adelaide's premier burger truck — smash burgers, SA farm beef.",  cuisine_tags:'["Burgers"]',         setup_type:'Food Truck',  stall_w:3,   stall_d:6,   power:0, water:0, price_range:'$12–$22', instagram:'@brewski_burgers',    plan:'free' },
+      { email:'catch@oceanandfire.com.au',  first_name:'Sam',    last_name:'Taylor',     status:'active',  trading_name:'Ocean & Fire',            suburb:'Glenelg',       state:'SA', bio:'Premium seafood sourced directly from SA fishermen — grilled fresh.',  cuisine_tags:'["Seafood"]',         setup_type:'Pop-up Stall',stall_w:3,   stall_d:3,   power:1, water:1, price_range:'$14–$28', instagram:'@oceanandfire_sa',    plan:'pro'  },
+      { email:'churros@thechurrostand.com.au',first_name:'Carlos',last_name:'Rivera',   status:'active',  trading_name:'The Churro Stand',        suburb:'Adelaide CBD',  state:'SA', bio:'Hot fresh churros with a dozen dipping sauces and creative toppings.', cuisine_tags:'["Desserts"]',        setup_type:'Cart',        stall_w:2,   stall_d:1.5, power:1, water:0, price_range:'$6–$12',  instagram:'@thechurrostand',     plan:'free' },
+      { email:'hello@punjabpalace.com.au',  first_name:'Raj',    last_name:'Singh',      status:'active',  trading_name:'Punjab Palace',           suburb:'Elizabeth',     state:'SA', bio:'Authentic Punjabi cooking — slow-cooked curries, tandoor naan, biryani.', cuisine_tags:'["Indian"]',       setup_type:'Food Truck',  stall_w:3,   stall_d:5,   power:0, water:0, price_range:'$10–$18', instagram:'@punjabpalace_adl',   plan:'free' },
+      { email:'sip@pressedandbrewed.com.au',first_name:'Nina',   last_name:'Harris',     status:'pending', trading_name:'Pressed & Brewed',        suburb:'Burnside',      state:'SA', bio:'Cold-pressed juices and filter coffee. All juice pressed fresh on-site.', cuisine_tags:'["Coffee & Drinks"]',setup_type:'Cart',       stall_w:1.5, stall_d:1.5, power:1, water:1, price_range:'$5–$10',  instagram:'@pressedandbrewed',   plan:'free' },
+    ];
+    for (const v of vendors) {
+      _su.run({ email:v.email, hash:HASH, first_name:v.first_name, last_name:v.last_name, role:'vendor', status:v.status });
+      const { id } = _uid.get(v.email);
+      _sv.run({ user_id:id, trading_name:v.trading_name, suburb:v.suburb, state:v.state, bio:v.bio, cuisine_tags:v.cuisine_tags, setup_type:v.setup_type, stall_w:v.stall_w, stall_d:v.stall_d, power:v.power, water:v.water, price_range:v.price_range, instagram:v.instagram, plan:v.plan });
+    }
+
+    const organisers = [
+      { email:'sarah@adelaidecitycouncil.sa.gov.au', first_name:'Sarah', last_name:'Mitchell', org_name:'Adelaide City Council Events',      suburb:'Adelaide CBD',  state:'SA', website:'adelaidecitycouncil.sa.gov.au', phone:'(08) 8203 7203', bio:'City of Adelaide events team managing major CBD food events.',       event_types:'["Night Market","Festival"]',         event_scale:'Large (500+)',    stall_range:'20–50' },
+      { email:'events@showground.com.au',            first_name:'Tom',   last_name:'Brown',    org_name:'SA Showground Events',               suburb:'Wayville',      state:'SA', website:'sashowground.com.au',           phone:'(08) 8210 5100', bio:'SA Showground hosts premier farmers markets and food events.',      event_types:'["Farmers Market"]',                  event_scale:'Medium (100–500)',stall_range:'10–30' },
+      { email:'vendors@adelaidefringe.com.au',       first_name:'Alice', last_name:'Webb',     org_name:'Adelaide Fringe Festival',           suburb:'Adelaide CBD',  state:'SA', website:'adelaidefringe.com.au',         phone:'(08) 8100 2000', bio:'The world\'s second-largest fringe festival, running annually in March.', event_types:'["Festival"]',                       event_scale:'Large (500+)',    stall_range:'30–60' },
+      { email:'hello@barossatourism.com.au',         first_name:'Ben',   last_name:'Davis',    org_name:'Barossa Valley Tourism',             suburb:'Tanunda',       state:'SA', website:'barossa.com',                  phone:'(08) 8563 0600', bio:'Barossa Valley Tourism promotes world-class food and wine events.',  event_types:'["Festival"]',                        event_scale:'Medium (100–500)',stall_range:'15–25' },
+      { email:'events@holdfast.sa.gov.au',           first_name:'Karen', last_name:'Liu',      org_name:'City of Holdfast Bay',               suburb:'Brighton',      state:'SA', website:'holdfast.sa.gov.au',            phone:'(08) 8229 9999', bio:'Council-run twilight markets and foreshore events in Glenelg.',     event_types:'["Twilight Market","Farmers Market"]', event_scale:'Medium (100–500)',stall_range:'15–30' },
+      { email:'events@pae.sa.gov.au',                first_name:'James', last_name:"O'Brien",  org_name:'Port Adelaide Enfield Council',      suburb:'Port Adelaide', state:'SA', website:'portadelaideenfield.sa.gov.au', phone:'(08) 8405 6600', bio:'Night markets celebrating Port Adelaide\'s maritime heritage.',      event_types:'["Night Market"]',                    event_scale:'Medium (100–500)',stall_range:'15–25' },
+      { email:'events@npsp.sa.gov.au',               first_name:'Lisa',  last_name:'Nguyen',   org_name:'Norwood Payneham St Peters Council', suburb:'Norwood',       state:'SA', website:'npsp.sa.gov.au',               phone:'(08) 8366 4555', bio:'Curated pop-up food events on The Parade and surrounds.',           event_types:'["Pop-up"]',                          event_scale:'Small (<100)',    stall_range:'8–15'  },
+      { email:'events@victorharbor.sa.gov.au',       first_name:'Grant', last_name:'Wilson',   org_name:'Victor Harbor Council',              suburb:'Victor Harbor', state:'SA', website:'victorharbor.sa.gov.au',        phone:'(08) 8551 0500', bio:'Fleurieu Peninsula community festivals drawing statewide crowds.',  event_types:'["Festival"]',                        event_scale:'Large (500+)',    stall_range:'20–40' },
+      { email:'events@prospect.sa.gov.au',           first_name:'Helen', last_name:'Carter',   org_name:'City of Prospect',                   suburb:'Prospect',      state:'SA', website:'prospect.sa.gov.au',            phone:'(08) 8269 5355', bio:'Community-focused farmers market connecting producers with locals.',  event_types:'["Farmers Market"]',                  event_scale:'Small (<100)',    stall_range:'15–30' },
+      { email:'events@charlessturt.sa.gov.au',       first_name:'Paul',  last_name:'Jackson',  org_name:'City of Charles Sturt',              suburb:'Hindmarsh',     state:'SA', website:'charlessturt.sa.gov.au',        phone:'(08) 8408 1111', bio:'Twilight beach markets on Henley Square with live music.',          event_types:'["Twilight Market"]',                 event_scale:'Medium (100–500)',stall_range:'12–20' },
+    ];
+    for (const o of organisers) {
+      _su.run({ email:o.email, hash:HASH, first_name:o.first_name, last_name:o.last_name, role:'organiser', status:'active' });
+      const { id } = _uid.get(o.email);
+      _so.run({ user_id:id, org_name:o.org_name, suburb:o.suburb, state:o.state, bio:o.bio, website:o.website, phone:o.phone, event_types:o.event_types, event_scale:o.event_scale, stall_range:o.stall_range });
+    }
+  })();
+}
 
 // ── Prepared statements ────────────────────────────────────────────────────
 
@@ -128,6 +230,27 @@ export const stmts = {
   countVendors:    db.prepare(`SELECT COUNT(*) as n FROM users WHERE role='vendor'`),
   countOrganisers: db.prepare(`SELECT COUNT(*) as n FROM users WHERE role='organiser'`),
   countPending:    db.prepare(`SELECT COUNT(*) as n FROM users WHERE status='pending'`),
+
+  // events
+  allEvents:           db.prepare(`SELECT * FROM events WHERE status != 'deleted' ORDER BY date_sort ASC`),
+  publishedEvents:     db.prepare(`SELECT * FROM events WHERE status = 'published' ORDER BY date_sort ASC`),
+  getEventBySlug:      db.prepare(`SELECT * FROM events WHERE slug = ? AND status = 'published'`),
+  updateEventStatus:   db.prepare(`UPDATE events SET status = ? WHERE id = ?`),
+  deleteEvent:         db.prepare(`DELETE FROM events WHERE id = ?`),
+  countEvents:         db.prepare(`SELECT COUNT(*) as n FROM events WHERE status = 'published'`),
+
+  // vendor/organiser detail (for admin)
+  getVendorDetail:     db.prepare(`SELECT v.*, u.email, u.first_name, u.last_name, u.status, u.role, u.created_at FROM vendors v JOIN users u ON v.user_id = u.id WHERE v.user_id = ?`),
+  getOrganiserDetail:  db.prepare(`SELECT o.*, u.email, u.first_name, u.last_name, u.status, u.role, u.created_at FROM organisers o JOIN users u ON o.user_id = u.id WHERE o.user_id = ?`),
+
+  // payments
+  getPaymentsByUser:   db.prepare(`SELECT * FROM payments WHERE user_id = ? ORDER BY created_at DESC`),
+  createPayment:       db.prepare(`INSERT INTO payments (user_id, plan, amount, currency, status, description) VALUES (@user_id, @plan, @amount, @currency, @status, @description)`),
+
+  // update profiles (admin)
+  updateUserProfile:      db.prepare(`UPDATE users SET first_name=@first_name, last_name=@last_name, email=@email, status=@status WHERE id=@id`),
+  updateVendorProfile:    db.prepare(`UPDATE vendors SET trading_name=@trading_name, mobile=@mobile, suburb=@suburb, state=@state, bio=@bio, plan=@plan, instagram=@instagram, setup_type=@setup_type, stall_w=@stall_w, stall_d=@stall_d, power=@power, water=@water, price_range=@price_range, abn=@abn WHERE user_id=@user_id`),
+  updateOrganiserProfile: db.prepare(`UPDATE organisers SET org_name=@org_name, phone=@phone, website=@website, suburb=@suburb, state=@state, bio=@bio, event_scale=@event_scale, stall_range=@stall_range, abn=@abn WHERE user_id=@user_id`),
 };
 
 // ── Transactions ───────────────────────────────────────────────────────────
