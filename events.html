@@ -375,22 +375,10 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
   </div>
 </footer>
 
+<script src="/data.js"></script>
 <script>
-// ── MOCK DATA ────────────────────────────────────────────────────────────────
-const EVENTS = [
-  { id:'rundle-mall-night-eats',    name:'Rundle Mall Night Eats',           category:'Night Market',   suburb:'Adelaide CBD',  state:'SA', date:'2026-04-12', dateLabel:'Sat 12 Apr 2026', time:'5pm–10pm',  total:20, filled:14, feeMin:200, feeMax:350, deadline:'2026-04-05', emoji:'🌃', bg:'night'   },
-  { id:'showground-harvest-fair',   name:'Adelaide Showground Harvest Fair', category:'Farmers Market', suburb:'Wayville',       state:'SA', date:'2026-04-19', dateLabel:'Sun 19 Apr 2026', time:'8am–1pm',   total:20, filled:18, feeMin:150, feeMax:280, deadline:'2026-04-06', emoji:'🌾', bg:'farm'    },
-  { id:'fringe-food-village',       name:'Fringe Food Village 2026',         category:'Festival',       suburb:'Adelaide CBD',  state:'SA', date:'2026-03-22', dateLabel:'2–22 Mar 2026',   time:'Various',   total:40, filled:28, feeMin:400, feeMax:700, deadline:'2026-03-08', emoji:'🎪', bg:'fest'    },
-  { id:'barossa-food-wine',         name:'Barossa Valley Food & Wine',       category:'Festival',       suburb:'Tanunda',        state:'SA', date:'2026-04-26', dateLabel:'Sun 26 Apr 2026', time:'11am–5pm',  total:20, filled:12, feeMin:300, feeMax:500, deadline:'2026-04-12', emoji:'🍷', bg:'barossa' },
-  { id:'glenelg-twilight',          name:'Glenelg Twilight Market',          category:'Twilight Market',suburb:'Glenelg',        state:'SA', date:'2026-05-03', dateLabel:'Sun 3 May 2026',  time:'4pm–9pm',   total:20, filled:16, feeMin:120, feeMax:200, deadline:'2026-04-19', emoji:'🌅', bg:'twi'     },
-  { id:'port-adelaide-night-market',name:'Port Adelaide Night Market',       category:'Night Market',   suburb:'Port Adelaide',  state:'SA', date:'2026-05-10', dateLabel:'Sun 10 May 2026', time:'5pm–10pm',  total:20, filled:9,  feeMin:150, feeMax:250, deadline:'2026-04-26', emoji:'🌊', bg:'port'    },
-  { id:'norwood-food-bazaar',       name:'Norwood Food Bazaar',              category:'Pop-up',         suburb:'Norwood',        state:'SA', date:'2026-05-17', dateLabel:'Sun 17 May 2026', time:'10am–3pm',  total:10, filled:9,  feeMin:100, feeMax:180, deadline:'2026-05-03', emoji:'⚡', bg:'norwood' },
-  { id:'victor-harbor-summer-fair', name:'Victor Harbor Summer Fair',        category:'Festival',       suburb:'Victor Harbor',  state:'SA', date:'2026-05-24', dateLabel:'Sun 24 May 2026', time:'10am–4pm',  total:30, filled:16, feeMin:250, feeMax:450, deadline:'2026-05-10', emoji:'🎡', bg:'fest'    },
-  { id:'prospect-farmers-market',   name:'Prospect Farmers Market',          category:'Farmers Market', suburb:'Prospect',       state:'SA', date:'2026-05-31', dateLabel:'Sun 31 May 2026', time:'8am–12pm',  total:24, filled:18, feeMin:80,  feeMax:150, deadline:'2026-05-17', emoji:'🌿', bg:'farm'    },
-  { id:'westpac-corporate-day',     name:'Westpac Corporate Food Day',       category:'Corporate',      suburb:'Adelaide CBD',  state:'SA', date:'2026-06-07', dateLabel:'Sun 7 Jun 2026',  time:'11am–2pm',  total:8,  filled:8,  feeMin:300, feeMax:400, deadline:'2026-05-24', emoji:'🏢', bg:'corp'    },
-  { id:'henley-sunset-market',      name:'Henley Beach Sunset Market',       category:'Twilight Market',suburb:'Henley Beach',   state:'SA', date:'2026-06-14', dateLabel:'Sun 14 Jun 2026', time:'4pm–8pm',   total:16, filled:6,  feeMin:120, feeMax:200, deadline:'2026-05-31', emoji:'🌅', bg:'twi'     },
-  { id:'marion-popup',              name:'Marion Shopping Centre Pop-up',    category:'Pop-up',         suburb:'Marion',         state:'SA', date:'2026-06-21', dateLabel:'Sun 21 Jun 2026', time:'10am–4pm',  total:12, filled:10, feeMin:200, feeMax:350, deadline:'2026-06-07', emoji:'🛍️', bg:'norwood' },
-];
+// ── DATA from shared data.js ──────────────────────────────────────────────────
+const EVENTS = window.PITCH_EVENTS;
 
 const TOTAL_EVENTS = 124;
 const PER_PAGE = 12;

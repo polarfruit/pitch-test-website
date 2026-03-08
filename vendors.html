@@ -399,21 +399,9 @@ footer {
   </div>
 </footer>
 
+<script src="/data.js"></script>
 <script>
-const VENDORS = [
-  { id:'smoky-joes-bbq',      name:"Smoky Joe's BBQ",      cuisines:['BBQ'],              setup:'Food Truck',   suburb:'Norwood',       state:'SA', rating:4.9, reviews:62, events:47, isPro:true,  emoji:'🔥', bg:'linear-gradient(135deg,#2D1A0A 0%,#5C2A08 100%)' },
-  { id:'taco-loco',           name:'Taco Loco',             cuisines:['Mexican'],           setup:'Pop-up Stall', suburb:'Glenelg',       state:'SA', rating:4.7, reviews:38, events:23, isPro:true,  emoji:'🌮', bg:'linear-gradient(135deg,#1A2D0A 0%,#2D5C10 100%)' },
-  { id:'wok-and-roll',        name:'Wok & Roll',            cuisines:['Asian Fusion'],      setup:'Food Truck',   suburb:'Adelaide CBD',  state:'SA', rating:4.8, reviews:51, events:31, isPro:true,  emoji:'🥢', bg:'linear-gradient(135deg,#0A1A2D 0%,#0A3060 100%)' },
-  { id:'napoli-express',      name:'Napoli Express',        cuisines:['Italian'],           setup:'Pop-up Stall', suburb:'Hindmarsh',     state:'SA', rating:4.6, reviews:29, events:19, isPro:false, emoji:'🍕', bg:'linear-gradient(135deg,#2D0A0A 0%,#601818 100%)' },
-  { id:'the-dessert-lab',     name:'The Dessert Lab',       cuisines:['Desserts'],          setup:'Cart',         suburb:'North Adelaide', state:'SA', rating:4.9, reviews:44, events:28, isPro:true,  emoji:'🍰', bg:'linear-gradient(135deg,#2D1A2A 0%,#5C2A52 100%)' },
-  { id:'beanery-coffee',      name:'Beanery Coffee Co.',    cuisines:['Coffee & Drinks'],   setup:'Cart',         suburb:'Unley',         state:'SA', rating:4.7, reviews:33, events:35, isPro:false, emoji:'☕', bg:'linear-gradient(135deg,#1A140A 0%,#3D2A10 100%)' },
-  { id:'green-bowl',          name:'Green Bowl',            cuisines:['Vegan'],             setup:'Pop-up Stall', suburb:'Prospect',      state:'SA', rating:4.5, reviews:17, events:14, isPro:false, emoji:'🥗', bg:'linear-gradient(135deg,#0A2010 0%,#144A22 100%)' },
-  { id:'brewski-burgers',     name:'Brewski Burgers',       cuisines:['Burgers'],           setup:'Food Truck',   suburb:'Port Adelaide', state:'SA', rating:4.6, reviews:26, events:22, isPro:false, emoji:'🍔', bg:'linear-gradient(135deg,#1E1408 0%,#4A2C0C 100%)' },
-  { id:'ocean-and-fire',      name:'Ocean & Fire',          cuisines:['Seafood'],           setup:'Pop-up Stall', suburb:'Glenelg',       state:'SA', rating:4.8, reviews:22, events:17, isPro:true,  emoji:'🦞', bg:'linear-gradient(135deg,#0A1A2A 0%,#0A3050 100%)' },
-  { id:'the-churro-stand',    name:'The Churro Stand',      cuisines:['Desserts'],          setup:'Cart',         suburb:'Adelaide CBD',  state:'SA', rating:4.4, reviews:14, events:11, isPro:false, emoji:'🍩', bg:'linear-gradient(135deg,#2A1A08 0%,#604010 100%)' },
-  { id:'punjab-palace',       name:'Punjab Palace',         cuisines:['Other'],             setup:'Food Truck',   suburb:'Elizabeth',     state:'SA', rating:4.7, reviews:31, events:26, isPro:false, emoji:'🍛', bg:'linear-gradient(135deg,#2A1A00 0%,#5A3600 100%)' },
-  { id:'pressed-and-brewed',  name:'Pressed & Brewed',      cuisines:['Coffee & Drinks'],   setup:'Cart',         suburb:'Burnside',      state:'SA', rating:4.5, reviews:12, events:9,  isPro:false, emoji:'🍵', bg:'linear-gradient(135deg,#0E1A0E 0%,#1C3A1A 100%)' },
-];
+const VENDORS = window.PITCH_VENDORS;
 
 let currentPage = 1;
 const PER_PAGE = 12;
