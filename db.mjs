@@ -251,6 +251,7 @@ export const stmts = {
 
   // admin actions
   updateUserStatus: db.prepare(`UPDATE users SET status = ? WHERE id = ?`),
+  deleteUser:       db.prepare(`DELETE FROM users WHERE id = ?`),
 
   // counts
   countVendors:    db.prepare(`SELECT COUNT(*) as n FROM users WHERE role='vendor'`),
