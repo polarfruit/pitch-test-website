@@ -401,10 +401,34 @@ footer {
 
 <script src="/data.js"></script>
 <script>
-const VENDORS = window.PITCH_VENDORS;
+// Start with static data; API overlays mutable fields when available
+let VENDORS = (window.PITCH_VENDORS || []).map(function(v){ return Object.assign({}, v); });
 
 let currentPage = 1;
 const PER_PAGE = 12;
+
+// Fetch DB vendors and overlay matching records
+fetch('/api/vendors').then(function(r){ return r.json(); }).then(function(data) {
+  var dbVendors = data.vendors || [];
+  VENDORS = VENDORS.map(function(v) {
+    var db = dbVendors.find(function(d) {
+      return d.trading_name && d.trading_name.toLowerCase() === v.name.toLowerCase();
+    });
+    if (!db) return v;
+    return Object.assign({}, v, {
+      name:     db.trading_name || v.name,
+      suburb:   db.suburb      || v.suburb,
+      state:    db.state       || v.state,
+      bio:      db.bio         || v.bio,
+      cuisines: (db.cuisine_tags && db.cuisine_tags.length) ? db.cuisine_tags : v.cuisines,
+      setup:    db.setup_type  || v.setup,
+      isPro:    db.plan === 'pro',
+      _dbUserId: db.user_id,
+    });
+  });
+  renderGrid();
+}).catch(function() { /* use static data as fallback */ });
+
 
 function stars(r) {
   const full = Math.floor(r);

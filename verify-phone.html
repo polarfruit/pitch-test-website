@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Verify Your Phone — Pitch.</title>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --ember:      #E8500A;
+  --ember-glow: #FF6B2B;
+  --coal:       #1A1612;
+  --char:       #231E19;
+  --ash:        #2E2720;
+  --herb:       #2D8B55;
+  --text-hi:    #FDF4E7;
+  --text-mid:   #A89880;
+  --text-lo:    #6B5A4A;
+  --fd:         'Fraunces', Georgia, serif;
+  --fb:         'Instrument Sans', 'Helvetica Neue', sans-serif;
+}
+body {
+  background: var(--coal); color: var(--text-hi); font-family: var(--fb);
+  min-height: 100vh; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; overflow-x: hidden;
+}
+body::before {
+  content: ''; position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 0; opacity: 0.45;
+}
+body::after {
+  content: ''; position: fixed;
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, #2D8B5514 0%, transparent 70%);
+  top: 50%; left: 50%; transform: translate(-50%, -60%);
+  pointer-events: none; z-index: 0;
+}
+
+.wrap {
+  position: relative; z-index: 1;
+  width: 100%; max-width: 440px;
+  padding: 40px 24px; text-align: center;
+}
+
+.logo {
+  font-family: var(--fd); font-size: 28px; font-weight: 900;
+  letter-spacing: -0.04em; color: var(--text-hi);
+  text-decoration: none; display: inline-block; margin-bottom: 40px;
+}
+.logo .dot { color: var(--ember); }
+
+.icon-wrap {
+  width: 72px; height: 72px; background: #2D8B5514; border: 1px solid #2D8B5525;
+  border-radius: 20px; display: flex; align-items: center; justify-content: center;
+  font-size: 32px; margin: 0 auto 24px;
+}
+
+h1 {
+  font-family: var(--fd); font-size: 28px; font-weight: 900;
+  letter-spacing: -0.03em; color: var(--text-hi); margin-bottom: 8px;
+}
+
+.subtitle {
+  font-size: 14px; color: var(--text-mid); margin-bottom: 32px; line-height: 1.6;
+}
+.subtitle strong { color: var(--text-hi); }
+
+.card {
+  background: var(--char); border: 1px solid #ffffff0A;
+  border-radius: 20px; padding: 28px;
+}
+
+/* Phone input to request SMS */
+.phone-section { margin-bottom: 20px; }
+.phone-label { font-size: 12px; font-weight: 600; color: var(--text-lo); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 8px; text-align: left; }
+.phone-row { display: flex; gap: 8px; }
+.phone-input {
+  flex: 1; background: var(--ash); border: 1.5px solid #ffffff12;
+  border-radius: 11px; padding: 11px 14px;
+  font-family: var(--fb); font-size: 14px; color: var(--text-hi); outline: none;
+  transition: border-color 0.14s, box-shadow 0.14s;
+}
+.phone-input:focus { border-color: #2D8B5540; box-shadow: 0 0 0 3px #2D8B5514; }
+.phone-input::placeholder { color: var(--text-lo); }
+.btn-send-sms {
+  padding: 11px 18px; border-radius: 11px;
+  background: #2D8B55; color: #fff; border: none;
+  font-family: var(--fb); font-size: 13px; font-weight: 700;
+  cursor: pointer; white-space: nowrap;
+  transition: background 0.14s;
+}
+.btn-send-sms:hover { background: #35a868; }
+.btn-send-sms:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.divider { height: 1px; background: #ffffff08; margin: 20px 0; }
+
+/* Code entry */
+.code-inputs {
+  display: flex; gap: 8px; justify-content: center; margin-bottom: 24px;
+}
+.code-input {
+  width: 48px; height: 56px;
+  background: var(--ash); border: 1.5px solid #ffffff12;
+  border-radius: 12px; text-align: center;
+  font-family: var(--fd); font-size: 24px; font-weight: 900;
+  color: var(--text-hi); outline: none;
+  transition: border-color 0.14s, box-shadow 0.14s;
+}
+.code-input:focus { border-color: #2D8B5560; box-shadow: 0 0 0 3px #2D8B5514; }
+
+.btn-verify {
+  width: 100%; padding: 13px; border-radius: 11px;
+  background: #2D8B55; color: #fff; border: none;
+  font-family: var(--fb); font-size: 15px; font-weight: 700;
+  cursor: pointer; transition: background 0.14s, transform 0.12s;
+  margin-bottom: 16px;
+}
+.btn-verify:hover { background: #35a868; transform: translateY(-1px); }
+.btn-verify:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+.skip-link {
+  display: block; font-size: 13px; color: var(--text-lo); text-align: center;
+  cursor: pointer; background: none; border: none; font-family: var(--fb); width: 100%;
+}
+.skip-link:hover { color: var(--text-mid); }
+
+.resend-wrap { font-size: 13px; color: var(--text-lo); margin-bottom: 14px; }
+.resend-link {
+  color: #2D8B55; font-weight: 600; cursor: pointer; background: none; border: none;
+  font-family: var(--fb); font-size: 13px; padding: 0;
+}
+.resend-link:disabled { color: var(--text-lo); cursor: not-allowed; }
+
+.msg {
+  font-size: 13px; border-radius: 9px; padding: 10px 14px;
+  margin-bottom: 12px; display: none;
+}
+.msg.error   { background: #C0392B14; border: 1px solid #C0392B25; color: #E57373; }
+.msg.success { background: #2D8B5514; border: 1px solid #2D8B5525; color: #66BB6A; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="/" class="logo">Pitch<span class="dot">.</span></a>
+
+  <div class="icon-wrap">📱</div>
+  <h1>Verify your phone</h1>
+  <p class="subtitle">Enter your mobile number and we'll text you a code to complete verification.</p>
+
+  <div class="card">
+    <div class="msg" id="msg"></div>
+
+    <!-- Step 1: enter phone + request SMS -->
+    <div id="step-phone">
+      <div class="phone-section">
+        <div class="phone-label">Mobile number</div>
+        <div class="phone-row">
+          <input class="phone-input" id="phone-input" type="tel" placeholder="+61 4XX XXX XXX" />
+          <button class="btn-send-sms" id="btn-send" onclick="sendSMS()">Send code</button>
+        </div>
+      </div>
+      <button class="skip-link" onclick="skipPhone()">Skip for now — verify phone later</button>
+    </div>
+
+    <!-- Step 2: enter code -->
+    <div id="step-code" style="display:none;">
+      <div class="code-inputs">
+        <input class="code-input" maxlength="1" type="text" inputmode="numeric" id="c0" />
+        <input class="code-input" maxlength="1" type="text" inputmode="numeric" id="c1" />
+        <input class="code-input" maxlength="1" type="text" inputmode="numeric" id="c2" />
+        <input class="code-input" maxlength="1" type="text" inputmode="numeric" id="c3" />
+        <input class="code-input" maxlength="1" type="text" inputmode="numeric" id="c4" />
+        <input class="code-input" maxlength="1" type="text" inputmode="numeric" id="c5" />
+      </div>
+
+      <button class="btn-verify" id="btn-verify" onclick="submitCode()">Verify Phone</button>
+
+      <div class="resend-wrap">
+        Didn't get it?
+        <button class="resend-link" id="resend-btn" onclick="sendSMS(true)" disabled>Resend</button>
+        <span id="countdown"></span>
+      </div>
+
+      <button class="skip-link" onclick="skipPhone()">Skip for now</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function showMsg(text, type) {
+  var el = document.getElementById('msg');
+  el.textContent = text;
+  el.className = 'msg ' + type;
+  el.style.display = 'block';
+}
+
+async function sendSMS(isResend) {
+  var phone = document.getElementById('phone-input').value.trim();
+  if (!phone) { showMsg('Please enter your mobile number.', 'error'); return; }
+
+  var btn = document.getElementById('btn-send');
+  btn.disabled = true; btn.textContent = 'Sending…';
+
+  try {
+    var r = await fetch('/api/verify/phone/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ phone })
+    });
+    var data = await r.json();
+    if (data.ok) {
+      showMsg('Code sent to ' + phone, 'success');
+      document.getElementById('step-phone').style.display = 'none';
+      document.getElementById('step-code').style.display  = 'block';
+      setupCodeInputs();
+      startCooldown();
+    } else {
+      showMsg(data.error || 'Could not send code. Try again.', 'error');
+      btn.disabled = false; btn.textContent = 'Send code';
+    }
+  } catch(e) {
+    showMsg('Connection error. Please try again.', 'error');
+    btn.disabled = false; btn.textContent = 'Send code';
+  }
+}
+
+function setupCodeInputs() {
+  var inputs = document.querySelectorAll('#step-code .code-input');
+  inputs.forEach(function(inp, i) {
+    inp.addEventListener('input', function() {
+      var val = inp.value.replace(/\D/g, '');
+      inp.value = val.slice(-1);
+      if (val && i < 5) inputs[i+1].focus();
+    });
+    inp.addEventListener('keydown', function(e) {
+      if (e.key === 'Backspace' && !inp.value && i > 0) inputs[i-1].focus();
+    });
+    inp.addEventListener('paste', function(e) {
+      var pasted = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '');
+      if (pasted.length >= 6) {
+        pasted.slice(0,6).split('').forEach(function(ch,j){ if(inputs[j]) inputs[j].value=ch; });
+        inputs[5].focus(); e.preventDefault();
+      }
+    });
+  });
+  inputs[0].focus();
+}
+
+async function submitCode() {
+  var inputs = document.querySelectorAll('#step-code .code-input');
+  var code = Array.from(inputs).map(function(i){ return i.value; }).join('');
+  if (code.length < 6) { showMsg('Enter the full 6-digit code.', 'error'); return; }
+
+  var btn = document.getElementById('btn-verify');
+  btn.disabled = true; btn.textContent = 'Verifying…';
+
+  try {
+    var r = await fetch('/api/verify/phone', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code })
+    });
+    var data = await r.json();
+    if (data.ok) {
+      showMsg('Phone verified! Redirecting…', 'success');
+      setTimeout(function(){ window.location.href = data.redirect || '/'; }, 1200);
+    } else {
+      showMsg(data.error || 'Invalid or expired code.', 'error');
+      btn.disabled = false; btn.textContent = 'Verify Phone';
+    }
+  } catch(e) {
+    showMsg('Connection error.', 'error');
+    btn.disabled = false; btn.textContent = 'Verify Phone';
+  }
+}
+
+async function skipPhone() {
+  try {
+    var r = await fetch('/api/verify/phone/skip', { method: 'POST' });
+    var data = await r.json();
+    window.location.href = data.redirect || '/';
+  } catch(e) {
+    window.location.href = '/';
+  }
+}
+
+var cooldownTimer;
+function startCooldown() {
+  var n = 60;
+  var btn = document.getElementById('resend-btn');
+  var cd  = document.getElementById('countdown');
+  btn.disabled = true;
+  cd.textContent = ' (' + n + 's)';
+  cooldownTimer = setInterval(function(){
+    n--;
+    cd.textContent = ' (' + n + 's)';
+    if (n <= 0) { clearInterval(cooldownTimer); btn.disabled = false; cd.textContent = ''; }
+  }, 1000);
+}
+</script>
+</body>
+</html>

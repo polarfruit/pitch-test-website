@@ -2,14 +2,20 @@
   "version": 2,
   "builds": [
     {
-      "src": "serve.mjs",
-      "use": "@vercel/node"
+      "src": "api/index.mjs",
+      "use": "@vercel/node",
+      "config": {
+        "bundle": false,
+        "includeFiles": [
+          "*.html",
+          "*.mjs",
+          "*.js",
+          "brand_assets/**/*"
+        ]
+      }
     }
   ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "serve.mjs"
-    }
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/api/index.mjs" }
   ]
 }

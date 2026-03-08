@@ -5,6 +5,7 @@ import bcrypt from 'bcryptjs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { stmts, txSignupVendor, txSignupOrganiser } from './db.mjs';
+import { sendVerificationEmail, sendVerificationSMS } from './mailer.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -90,7 +91,11 @@ app.post('/api/signup/vendor', async (req, res) => {
     req.session.userId = userId;
     req.session.role = 'vendor';
     req.session.name = `${first_name} ${last_name}`;
-    res.json({ ok: true, redirect: '/dashboard/vendor' });
+
+    // Send email verification (non-blocking — don't fail signup if email fails)
+    issueEmailCode(userId, email).catch(err => console.error('Email verification send error:', err));
+
+    res.json({ ok: true, redirect: `/verify/email?email=${encodeURIComponent(email)}` });
   } catch (err) {
     console.error('Signup vendor error:', err);
     res.status(500).json({ error: 'Server error during signup' });
@@ -137,11 +142,117 @@ app.post('/api/signup/organiser', async (req, res) => {
     req.session.userId = userId;
     req.session.role = 'organiser';
     req.session.name = `${first_name} ${last_name}`;
-    res.json({ ok: true, redirect: '/dashboard/organiser' });
+
+    // Send email verification (non-blocking)
+    issueEmailCode(userId, email).catch(err => console.error('Email verification send error:', err));
+
+    res.json({ ok: true, redirect: `/verify/email?email=${encodeURIComponent(email)}` });
   } catch (err) {
     console.error('Signup organiser error:', err);
     res.status(500).json({ error: 'Server error during signup' });
   }
+});
+
+// ── Verification helpers ───────────────────────────────────────────────────
+
+function makeCode() {
+  return String(Math.floor(100000 + Math.random() * 900000));
+}
+
+function expiresAt(minutes = 15) {
+  return new Date(Date.now() + minutes * 60 * 1000).toISOString().replace('T', ' ').slice(0, 19);
+}
+
+async function issueEmailCode(userId, email) {
+  const code = makeCode();
+  stmts.createVerificationCode.run({ user_id: userId, type: 'email', code, target: email, expires_at: expiresAt(15) });
+  await sendVerificationEmail(email, code);
+}
+
+async function issuePhoneCode(userId, phone) {
+  const code = makeCode();
+  stmts.createVerificationCode.run({ user_id: userId, type: 'phone', code, target: phone, expires_at: expiresAt(10) });
+  await sendVerificationSMS(phone, code);
+}
+
+// GET /api/verify/status
+app.get('/api/verify/status', requireAuth, (req, res) => {
+  const user = stmts.getUserById.get(req.session.userId);
+  if (!user) return res.status(404).json({ error: 'Not found' });
+  res.json({ email_verified: !!user.email_verified, phone_verified: !!user.phone_verified });
+});
+
+// POST /api/verify/email  — verify code
+app.post('/api/verify/email', requireAuth, (req, res) => {
+  const { code } = req.body;
+  if (!code) return res.status(400).json({ error: 'Code required' });
+
+  const row = stmts.getVerificationCode.get(req.session.userId, 'email');
+  if (!row || row.code !== String(code).trim()) {
+    return res.status(400).json({ error: 'Invalid or expired code. Please request a new one.' });
+  }
+  stmts.markCodeUsed.run(row.id);
+  stmts.setEmailVerified.run(req.session.userId);
+
+  // Determine redirect — if they have a phone to verify, go there
+  const user = stmts.getUserById.get(req.session.userId);
+  const hasPhone = user.role === 'vendor'
+    ? (stmts.getVendorByUserId.get(user.id) || {}).mobile
+    : null;
+
+  res.json({ ok: true, redirect: '/verify/phone' });
+});
+
+// POST /api/verify/email/resend
+app.post('/api/verify/email/resend', requireAuth, async (req, res) => {
+  try {
+    const user = stmts.getUserById.get(req.session.userId);
+    if (!user) return res.status(404).json({ error: 'Not found' });
+    await issueEmailCode(user.id, user.email);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('Resend email code error:', err);
+    res.status(500).json({ error: 'Could not send email' });
+  }
+});
+
+// POST /api/verify/phone/send  — request SMS code
+app.post('/api/verify/phone/send', requireAuth, async (req, res) => {
+  const { phone } = req.body;
+  if (!phone) return res.status(400).json({ error: 'Phone number required' });
+
+  try {
+    await issuePhoneCode(req.session.userId, phone);
+    req.session.pendingPhone = phone; // remember for verification step
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('Send SMS error:', err);
+    res.status(500).json({ error: 'Could not send SMS' });
+  }
+});
+
+// POST /api/verify/phone  — verify code
+app.post('/api/verify/phone', requireAuth, (req, res) => {
+  const { code } = req.body;
+  if (!code) return res.status(400).json({ error: 'Code required' });
+
+  const row = stmts.getVerificationCode.get(req.session.userId, 'phone');
+  if (!row || row.code !== String(code).trim()) {
+    return res.status(400).json({ error: 'Invalid or expired code.' });
+  }
+  stmts.markCodeUsed.run(row.id);
+  stmts.setPhoneVerified.run(req.session.userId);
+
+  const user = stmts.getUserById.get(req.session.userId);
+  const redirect = user.role === 'vendor' ? '/dashboard/vendor' : '/dashboard/organiser';
+  res.json({ ok: true, redirect });
+});
+
+// POST /api/verify/phone/skip
+app.post('/api/verify/phone/skip', requireAuth, (req, res) => {
+  const user = stmts.getUserById.get(req.session.userId);
+  const redirect = user && user.role === 'vendor' ? '/dashboard/vendor' : '/dashboard/organiser';
+  res.json({ ok: true, redirect });
 });
 
 // POST /api/login
@@ -228,6 +339,26 @@ app.get('/api/events/:slug', (req, res) => {
   const ev = stmts.getEventBySlug.get(req.params.slug);
   if (!ev) return res.status(404).json({ error: 'Event not found' });
   res.json({ event: ev });
+});
+
+// ── API: Public vendors ────────────────────────────────────────────────────
+
+app.get('/api/vendors', (req, res) => {
+  const rows = stmts.publicVendors.all();
+  const vendors = rows.map(v => ({
+    ...v,
+    cuisine_tags: (() => { try { return JSON.parse(v.cuisine_tags || '[]'); } catch { return []; } })(),
+  }));
+  res.json({ vendors });
+});
+
+app.get('/api/vendors/:userId', (req, res) => {
+  const row = stmts.publicVendorById.get(req.params.userId);
+  if (!row) return res.status(404).json({ error: 'Vendor not found' });
+  const vendor = { ...row };
+  vendor.cuisine_tags = (() => { try { return JSON.parse(row.cuisine_tags || '[]'); } catch { return []; } })();
+  delete vendor.password_hash;
+  res.json({ vendor });
 });
 
 // ── API: Admin ─────────────────────────────────────────────────────────────
@@ -330,8 +461,11 @@ app.get('/',                    page('index.html'));
 app.get('/events',              page('events.html'));
 app.get('/vendors',             page('vendors.html'));
 app.get('/login',               page('login.html'));
+app.get('/signup',              page('signup.html'));
 app.get('/signup/vendor',       page('signup-vendor.html'));
 app.get('/signup/organiser',    page('signup-organiser.html'));
+app.get('/verify/email',        page('verify-email.html'));
+app.get('/verify/phone',        page('verify-phone.html'));
 app.get('/events/*splat',       page('event-detail.html'));
 app.get('/vendors/*splat',      page('vendor-detail.html'));
 app.get('/dashboard/vendor',    page('vendor-dashboard.html'));
