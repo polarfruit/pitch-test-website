@@ -324,8 +324,10 @@
     .save-bar { position: sticky; bottom: 0; background: #1C1814; border-top: 1px solid #2A2018; padding: 16px 24px; display: flex; gap: 10px; align-items: center; }
     .save-btn { background: #E8500A; color: #FDF4E7; border: none; border-radius: 8px; padding: 10px 22px; font-family: 'Instrument Sans', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
     .save-btn:hover { background: #FF6B2B; }
-    .save-msg { font-size: 12px; color: #2D8B55; display: none; }
+    .save-msg { font-size: 12px; color: #2D8B55; display: none; flex: 1; }
     .save-msg.err { color: #C0392B; }
+    .delete-account-btn { margin-left: auto; background: transparent; color: #C0392B; border: 1px solid #C0392B40; border-radius: 8px; padding: 9px 18px; font-family: 'Instrument Sans', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
+    .delete-account-btn:hover { background: #C0392B15; border-color: #C0392B80; }
   </style>
 </head>
 <body>
@@ -1733,6 +1735,7 @@
       const saveBar = `<div class="save-bar">
         <button class="save-btn" onclick="saveVendor(${userId})">Save changes</button>
         <span class="save-msg" id="save-msg"></span>
+        <button class="delete-account-btn" onclick="deleteAccount(${userId}, '${vendor.trading_name.replace(/'/g,"\\'")}')">🗑 Delete account</button>
       </div>`;
 
       openDetailDrawer(vendor.trading_name, 'Vendor · ' + user.email, body + saveBar);
@@ -1820,6 +1823,7 @@
       const saveBar = `<div class="save-bar">
         <button class="save-btn" onclick="saveOrganiser(${userId})">Save changes</button>
         <span class="save-msg" id="save-msg"></span>
+        <button class="delete-account-btn" onclick="deleteAccount(${userId}, '${organiser.org_name.replace(/'/g,"\\'")}')">🗑 Delete account</button>
       </div>`;
 
       openDetailDrawer(organiser.org_name, 'Organiser · ' + user.email, body + saveBar);
@@ -1859,6 +1863,22 @@
       setTimeout(() => msg.style.display = 'none', 2500);
     } catch(e) {
       msg.className = 'save-msg err'; msg.textContent = 'Save failed'; msg.style.display = 'inline';
+    }
+  }
+
+  async function deleteAccount(userId, name) {
+    const confirmed = confirm(`Permanently delete "${name}" and all their data?\n\nThis cannot be undone.`);
+    if (!confirmed) return;
+    try {
+      const res = await fetch(`/api/admin/users/${userId}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Delete failed');
+      // Close drawer and reload lists
+      document.getElementById('detail-drawer').classList.remove('open');
+      loadVendors();
+      loadOrganisers();
+      loadStats();
+    } catch(e) {
+      alert('Could not delete account: ' + e.message);
     }
   }
 

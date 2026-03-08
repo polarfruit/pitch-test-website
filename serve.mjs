@@ -303,6 +303,11 @@ app.post('/api/logout', (req, res) => {
   req.session.destroy(() => res.json({ ok: true }));
 });
 
+// GET /logout — for nav dropdown link (destroy session and redirect home)
+app.get('/logout', (req, res) => {
+  req.session.destroy(() => res.redirect('/'));
+});
+
 // GET /api/me
 app.get('/api/me', (req, res) => {
   if (!req.session.userId) return res.json({ user: null });
@@ -402,6 +407,13 @@ app.post('/api/admin/users/:id/status', requireAdmin, (req, res) => {
   const allowed = ['active', 'pending', 'suspended', 'banned'];
   if (!allowed.includes(status)) return res.status(400).json({ error: 'Invalid status' });
   stmts.updateUserStatus.run(status, req.params.id);
+  res.json({ ok: true });
+});
+
+// DELETE /api/admin/users/:id — permanently delete account + all related data
+app.delete('/api/admin/users/:id', requireAdmin, (req, res) => {
+  // CASCADE DELETE via foreign keys: deletes vendors/organisers/verification_codes/payments rows too
+  stmts.deleteUser.run(req.params.id);
   res.json({ ok: true });
 });
 
