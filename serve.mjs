@@ -15,9 +15,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 const SQLiteStore = connectSqlite3(session);
+const SESSION_DIR = process.env.VERCEL ? '/tmp' : __dirname;
 app.use(session({
-  store: new SQLiteStore({ db: 'sessions.db', dir: __dirname }),
-  secret: 'pitch-dev-secret-change-in-prod',
+  store: new SQLiteStore({ db: 'sessions.db', dir: SESSION_DIR }),
+  secret: process.env.SESSION_SECRET || 'pitch-dev-secret-change-in-prod',
   resave: false,
   saveUninitialized: false,
   cookie: { maxAge: 7 * 24 * 60 * 60 * 1000 }, // 7 days
@@ -148,6 +149,13 @@ app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
 
+  // Allow admin login from the general login page
+  if (email === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+    req.session.isAdmin = true;
+    req.session.adminFresh = true;
+    return res.json({ ok: true, redirect: '/admin' });
+  }
+
   const user = stmts.getUserByEmail.get(email);
   if (!user) return res.status(401).json({ error: 'Invalid email or password' });
 
@@ -202,11 +210,24 @@ app.post('/api/admin/login', (req, res) => {
     return res.status(401).json({ error: 'Invalid username or password' });
   }
   req.session.isAdmin = true;
+  req.session.adminFresh = true; // consumed on first /admin load
   res.json({ ok: true });
 });
 
 app.post('/api/admin/logout', (req, res) => {
   req.session.destroy(() => res.json({ ok: true }));
+});
+
+// ── API: Public events ─────────────────────────────────────────────────────
+
+app.get('/api/events', (req, res) => {
+  res.json({ events: stmts.publishedEvents.all() });
+});
+
+app.get('/api/events/:slug', (req, res) => {
+  const ev = stmts.getEventBySlug.get(req.params.slug);
+  if (!ev) return res.status(404).json({ error: 'Event not found' });
+  res.json({ event: ev });
 });
 
 // ── API: Admin ─────────────────────────────────────────────────────────────
@@ -243,6 +264,63 @@ app.post('/api/admin/users/:id/status', requireAdmin, (req, res) => {
   res.json({ ok: true });
 });
 
+// Admin events
+app.get('/api/admin/events', requireAdmin, (req, res) => {
+  res.json({ events: stmts.allEvents.all() });
+});
+
+app.patch('/api/admin/events/:id/status', requireAdmin, (req, res) => {
+  const { status } = req.body;
+  const allowed = ['published', 'archived'];
+  if (!allowed.includes(status)) return res.status(400).json({ error: 'Invalid status' });
+  stmts.updateEventStatus.run(status, req.params.id);
+  res.json({ ok: true });
+});
+
+app.delete('/api/admin/events/:id', requireAdmin, (req, res) => {
+  stmts.deleteEvent.run(req.params.id);
+  res.json({ ok: true });
+});
+
+// Admin vendor/organiser detail
+app.get('/api/admin/vendors/:userId', requireAdmin, (req, res) => {
+  const row = stmts.getVendorDetail.get(req.params.userId);
+  if (!row) return res.status(404).json({ error: 'Not found' });
+  const { password_hash, ...safe } = row;
+  res.json({ vendor: safe, user: { id: row.user_id, email: row.email, first_name: row.first_name, last_name: row.last_name, status: row.status, created_at: row.created_at } });
+});
+
+app.get('/api/admin/organisers/:userId', requireAdmin, (req, res) => {
+  const row = stmts.getOrganiserDetail.get(req.params.userId);
+  if (!row) return res.status(404).json({ error: 'Not found' });
+  res.json({ organiser: row, user: { id: row.user_id, email: row.email, first_name: row.first_name, last_name: row.last_name, status: row.status, created_at: row.created_at } });
+});
+
+// Admin payments
+app.get('/api/admin/payments/:userId', requireAdmin, (req, res) => {
+  const payments = stmts.getPaymentsByUser.all(req.params.userId);
+  res.json({ payments });
+});
+
+// Update profiles
+app.put('/api/admin/users/:userId/profile', requireAdmin, (req, res) => {
+  const { first_name, last_name, email, status } = req.body;
+  stmts.updateUserProfile.run({ first_name, last_name, email, status, id: req.params.userId });
+  res.json({ ok: true });
+});
+
+app.put('/api/admin/vendors/:userId', requireAdmin, (req, res) => {
+  const { trading_name, mobile, suburb, state, bio, plan, instagram, setup_type, stall_w, stall_d, power, water, price_range, abn } = req.body;
+  stmts.updateVendorProfile.run({ trading_name, mobile: mobile||null, suburb: suburb||null, state: state||null, bio: bio||null, plan: plan||'free', instagram: instagram||null, setup_type: setup_type||null, stall_w: stall_w||null, stall_d: stall_d||null, power: power?1:0, water: water?1:0, price_range: price_range||null, abn: abn||null, user_id: req.params.userId });
+  res.json({ ok: true });
+});
+
+app.put('/api/admin/organisers/:userId', requireAdmin, (req, res) => {
+  const { org_name, phone, website, suburb, state, bio, event_scale, stall_range, abn } = req.body;
+  stmts.updateOrganiserProfile.run({ org_name, phone: phone||null, website: website||null, suburb: suburb||null, state: state||null, bio: bio||null, event_scale: event_scale||null, stall_range: stall_range||null, abn: abn||null, user_id: req.params.userId });
+  res.json({ ok: true });
+});
+
 // ── Static page routes ─────────────────────────────────────────────────────
 function page(file) {
   return (req, res) => res.sendFile(path.join(__dirname, file));
@@ -261,13 +339,25 @@ app.get('/dashboard/vendor/*splat', page('vendor-dashboard.html'));
 app.get('/dashboard/organiser', page('organiser-dashboard.html'));
 app.get('/dashboard/organiser/*splat', page('organiser-dashboard.html'));
 app.get('/admin/login',         page('admin-login.html'));
-app.get('/admin',               requireAdminPage, page('admin-dashboard.html'));
+app.get('/admin', (req, res) => {
+  if (req.session.adminFresh) {
+    req.session.adminFresh = false; // consume — next visit requires fresh login
+    return res.sendFile(path.join(__dirname, 'admin-dashboard.html'));
+  }
+  // No fresh login — clear admin auth and require re-login
+  delete req.session.isAdmin;
+  res.redirect('/admin/login');
+});
 app.get('/admin/*splat',        requireAdminPage, page('admin-dashboard.html'));
 
 // Static assets (fonts, images, brand_assets, etc.)
 app.use(express.static(__dirname, { index: false }));
 
 // ── Start ──────────────────────────────────────────────────────────────────
-app.listen(PORT, () => {
-  console.log(`Pitch. server running at http://localhost:${PORT}`);
-});
+// Export for Vercel serverless; listen locally otherwise
+export default app;
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`Pitch. server running at http://localhost:${PORT}`);
+  });
+}
