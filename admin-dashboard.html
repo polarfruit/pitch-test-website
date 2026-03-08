@@ -1693,6 +1693,7 @@
         fetch(`/api/admin/vendors/${userId}`).then(r => r.json()),
         fetch(`/api/admin/payments/${userId}`).then(r => r.json()),
       ]);
+      if (!vr.vendor) throw new Error(vr.error || 'Vendor not found');
       const { vendor, user } = vr;
       const payments = pr.payments || [];
 
@@ -1735,7 +1736,10 @@
       </div>`;
 
       openDetailDrawer(vendor.trading_name, 'Vendor · ' + user.email, body + saveBar);
-    } catch(e) { console.warn('Vendor detail failed', e); }
+    } catch(e) {
+      console.error('Vendor detail failed', e);
+      openDetailDrawer('Error', 'Vendor', `<div style="padding:40px;color:#C0392B;">Failed to load vendor profile.<br><small style="color:#6B5A4A;">${e.message}</small><br><br><small style="color:#6B5A4A;">If this keeps happening, try logging out and back into the admin panel.</small></div>`);
+    }
   }
 
   async function saveVendor(userId) {
@@ -1783,6 +1787,7 @@
         fetch(`/api/admin/organisers/${userId}`).then(r => r.json()),
         fetch(`/api/admin/payments/${userId}`).then(r => r.json()),
       ]);
+      if (!or.organiser) throw new Error(or.error || 'Organiser not found');
       const { organiser, user } = or;
       const payments = pr.payments || [];
 
@@ -1818,7 +1823,10 @@
       </div>`;
 
       openDetailDrawer(organiser.org_name, 'Organiser · ' + user.email, body + saveBar);
-    } catch(e) { console.warn('Organiser detail failed', e); }
+    } catch(e) {
+      console.error('Organiser detail failed', e);
+      openDetailDrawer('Error', 'Organiser', `<div style="padding:40px;color:#C0392B;">Failed to load organiser profile.<br><small style="color:#6B5A4A;">${e.message}</small><br><br><small style="color:#6B5A4A;">If this keeps happening, try logging out and back into the admin panel.</small></div>`);
+    }
   }
 
   async function saveOrganiser(userId) {
