@@ -412,9 +412,18 @@ app.post('/api/admin/users/:id/status', requireAdmin, (req, res) => {
 
 // DELETE /api/admin/users/:id — permanently delete account + all related data
 app.delete('/api/admin/users/:id', requireAdmin, (req, res) => {
-  // CASCADE DELETE via foreign keys: deletes vendors/organisers/verification_codes/payments rows too
-  stmts.deleteUser.run(req.params.id);
-  res.json({ ok: true });
+  try {
+    // Manually delete child rows first (in case FK cascade isn't active on this connection)
+    stmts.deleteVendorByUserId.run(req.params.id);
+    stmts.deleteOrganiserByUserId.run(req.params.id);
+    stmts.deleteVerificationCodesByUserId.run(req.params.id);
+    stmts.deletePaymentsByUserId.run(req.params.id);
+    stmts.deleteUser.run(req.params.id);
+    res.json({ ok: true });
+  } catch(err) {
+    console.error('[admin] Delete user error:', err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Admin events

@@ -1871,7 +1871,8 @@
     if (!confirmed) return;
     try {
       const res = await fetch(`/api/admin/users/${userId}`, { method: 'DELETE' });
-      if (!res.ok) throw new Error('Delete failed');
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || `Server returned ${res.status}`);
       // Close drawer and reload lists
       document.getElementById('detail-drawer').classList.remove('open');
       loadVendors();
