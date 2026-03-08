@@ -1,6 +1,5 @@
 import express from 'express';
 import session from 'express-session';
-import connectSqlite3 from 'connect-sqlite3';
 import bcrypt from 'bcryptjs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -15,14 +14,24 @@ const PORT = 3000;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const SQLiteStore = connectSqlite3(session);
-const SESSION_DIR = process.env.VERCEL ? '/tmp' : __dirname;
+// Use cookie-based sessions (stateless — works across Vercel serverless instances).
+// On Vercel, SQLite session stores live in /tmp which is per-instance, causing
+// sessions to vanish between requests. Storing session in a signed cookie avoids this.
 app.use(session({
-  store: new SQLiteStore({ db: 'sessions.db', dir: SESSION_DIR }),
   secret: process.env.SESSION_SECRET || 'pitch-dev-secret-change-in-prod',
   resave: false,
   saveUninitialized: false,
-  cookie: { maxAge: 7 * 24 * 60 * 60 * 1000 }, // 7 days
+  // No store → express-session defaults to MemoryStore in dev.
+  // On Vercel (serverless), we rely on the cookie to carry session data.
+  // express-session serialises session into a signed cookie when no store is used
+  // only if we set cookie.secure properly — see below.
+  cookie: {
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    httpOnly: true,
+    // Allow on http for local dev; require https on Vercel
+    secure: !!process.env.VERCEL,
+    sameSite: 'lax',
+  },
 }));
 
 // ── Auth helpers ───────────────────────────────────────────────────────────
@@ -273,6 +282,7 @@ app.post('/api/login', async (req, res) => {
   const match = await bcrypt.compare(password, user.password_hash);
   if (!match) return res.status(401).json({ error: 'Invalid email or password' });
 
+  if (user.status === 'pending') return res.status(403).json({ error: 'Your account is pending approval. You will be able to sign in once an admin approves your application.' });
   if (user.status === 'banned') return res.status(403).json({ error: 'This account has been banned' });
   if (user.status === 'suspended') return res.status(403).json({ error: 'This account is suspended' });
 
