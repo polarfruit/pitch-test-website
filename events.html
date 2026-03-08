@@ -187,13 +187,14 @@ body::before {
   transition: background 0.1s, color 0.1s;
   border: none; background: none; font-family: var(--fb);
 }
-.cal-day:hover:not(.empty):not(.out) { background: #ffffff12; color: var(--text-hi); }
-.cal-day.empty, .cal-day.out { cursor: default; color: var(--text-lo); opacity: 0.35; }
-.cal-day.out { pointer-events: none; }
+.cal-day:hover:not(.empty) { background: #ffffff12; color: var(--text-hi); }
+.cal-day.empty { cursor: default; color: var(--text-lo); opacity: 0.35; pointer-events: none; }
+.cal-day.past { color: var(--text-lo); opacity: 0.5; }
 .cal-day.today { color: var(--ember); font-weight: 700; }
-.cal-day.start, .cal-day.end {
+.cal-day.start, .cal-day.end, .cal-day.hover-end {
   background: var(--ember); color: #fff; font-weight: 700;
 }
+.cal-day.hover-end { opacity: 0.7; }
 .cal-day.in-range {
   background: #E8500A18; color: var(--text-hi);
   border-radius: 0;
@@ -425,13 +426,13 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
       <div class="date-field">
         <span class="date-field-label">From</span>
         <input class="date-text-input" id="f-from-text" type="text" placeholder="DD/MM/YYYY"
-               oninput="onDateTextInput('from')" />
+               oninput="onDateTextInput('from')" onblur="normalizeDateInput('from')" />
       </div>
       <span class="date-sep">→</span>
       <div class="date-field">
         <span class="date-field-label">To</span>
         <input class="date-text-input" id="f-to-text" type="text" placeholder="DD/MM/YYYY"
-               oninput="onDateTextInput('to')" />
+               oninput="onDateTextInput('to')" onblur="normalizeDateInput('to')" />
       </div>
 
       <button class="cal-toggle-btn" id="date-range-btn" onclick="toggleCalendar(event)" title="Open calendar">
@@ -623,8 +624,10 @@ function applyFilters() {
     if (search   && !ev.name.toLowerCase().includes(search) && !ev.suburb.toLowerCase().includes(search)) return false;
     if (category && ev.category !== category) return false;
     if (suburb   && !ev.suburb.toLowerCase().includes(suburb)) return false;
-    if (from     && ev.date < from) return false;
-    if (to       && ev.date > to)   return false;
+    // For multi-day events use dateEnd; otherwise treat start = end
+    var evEnd = ev.dateEnd || ev.date;
+    if (from && evEnd < from) return false;
+    if (to   && ev.date > to) return false;
     return true;
   });
 
@@ -643,15 +646,18 @@ function clearFilters() {
 }
 
 // Parse DD/MM/YYYY or YYYY-MM-DD → YYYY-MM-DD (returns '' if invalid)
+// Accepts 2-digit years (e.g. 26 → 2026) and 1-digit day/month (e.g. 1/3/26 → 01/03/2026)
 function parseDisplayDate(str) {
   str = str.trim();
   if (!str) return '';
-  // DD/MM/YYYY or DD-MM-YYYY
-  var dmyMatch = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{4})$/);
+  // DD/MM/YY or DD/MM/YYYY (also accepts - as separator)
+  var dmyMatch = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
   if (dmyMatch) {
     var d = dmyMatch[1].padStart(2,'0');
     var m = dmyMatch[2].padStart(2,'0');
     var y = dmyMatch[3];
+    // Expand 2-digit year: treat as 2000s
+    if (y.length === 2) y = '20' + y;
     var iso = y + '-' + m + '-' + d;
     return /^\d{4}-\d{2}-\d{2}$/.test(iso) ? iso : '';
   }
@@ -665,6 +671,15 @@ function toDisplayDate(iso) {
   if (!iso) return '';
   var p = iso.split('-');
   return p[2] + '/' + p[1] + '/' + p[0];
+}
+
+function normalizeDateInput(field) {
+  var inp = document.getElementById('f-' + field + '-text');
+  var iso = parseDisplayDate(inp.value);
+  if (iso) {
+    // Rewrite as zero-padded DD/MM/YYYY
+    inp.value = toDisplayDate(iso);
+  }
 }
 
 function onDateTextInput(field) {
@@ -724,7 +739,7 @@ function renderMeta() {
   if (cat)  chips.push(`<span class="active-filter-chip">${cat} <span class="chip-remove" onclick="document.getElementById('f-category').value='';applyFilters()">×</span></span>`);
   if (srch) chips.push(`<span class="active-filter-chip">"${srch}" <span class="chip-remove" onclick="document.getElementById('f-search').value='';applyFilters()">×</span></span>`);
   if (sub)  chips.push(`<span class="active-filter-chip">${sub} <span class="chip-remove" onclick="document.getElementById('f-suburb').value='';applyFilters()">×</span></span>`);
-  if (from || to) chips.push(`<span class="active-filter-chip">${from||'…'} → ${to||'…'} <span class="chip-remove" onclick="calClear();applyFilters()">×</span></span>`);
+  if (from || to) chips.push(`<span class="active-filter-chip">${toDisplayDate(from)||'…'} → ${toDisplayDate(to)||'…'} <span class="chip-remove" onclick="calClear();applyFilters()">×</span></span>`);
   document.getElementById('active-filters').innerHTML = chips.join('');
 }
 
@@ -793,7 +808,7 @@ fetch('/api/events')
   });
 
 // ── CALENDAR POPUP ─────────────────────────────────────────────────────────
-var calViewYear, calViewMonth; // top-left month
+var calViewYear, calViewMonth;
 var calStart = null, calEnd = null, calHover = null;
 
 function isoDate(y, m, d) {
@@ -823,7 +838,7 @@ function renderMonth(slot, year, month) {
   var grid = document.getElementById('cal-grid-' + slot);
   var html = DAYS.map(function(d){ return '<div class="cal-dow">' + d + '</div>'; }).join('');
 
-  var firstDay = new Date(year, month, 1).getDay();
+  var firstDay   = new Date(year, month, 1).getDay();
   var daysInMonth = new Date(year, month + 1, 0).getDate();
   var today = isoDate(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
 
@@ -833,39 +848,96 @@ function renderMonth(slot, year, month) {
   for (var d = 1; d <= daysInMonth; d++) {
     var iso = isoDate(year, month, d);
     var cls = ['cal-day'];
-    var past = iso < today;
-    if (past) cls.push('out');
+    if (iso < today)  cls.push('past');
     if (iso === today) cls.push('today');
     if (calStart && iso === calStart) cls.push('start');
     if (calEnd   && iso === calEnd)   cls.push('end');
     if (calStart && calEnd && iso > calStart && iso < calEnd) cls.push('in-range');
-    // hover preview
-    if (calStart && !calEnd && calHover && iso > calStart && iso <= calHover) cls.push('in-range');
-
-    html += '<button class="' + cls.join(' ') + '" onclick="calSelectDay(\'' + iso + '\')" onmouseenter="calHoverDay(\'' + iso + '\')">' + d + '</button>';
+    // data-iso used by delegated event handler — no inline onclick
+    html += '<button class="' + cls.join(' ') + '" data-iso="' + iso + '">' + d + '</button>';
   }
   grid.innerHTML = html;
 }
 
-function calSelectDay(iso) {
-  if (!calStart || (calStart && calEnd)) {
-    // start fresh
-    calStart = iso; calEnd = null;
-  } else {
-    // second click
-    if (iso < calStart) { calEnd = calStart; calStart = iso; }
-    else if (iso === calStart) { calStart = null; }
-    else { calEnd = iso; }
-  }
-  calHover = null;
-  renderCalendar();
-}
+// ── Delegated events — set up once, no re-renders on hover ────────────────
+(function setupCalDelegation() {
+  var popup = document.getElementById('cal-popup');
 
-function calHoverDay(iso) {
-  if (calStart && !calEnd) {
+  // All clicks inside the popup are handled here
+  popup.addEventListener('click', function(e) {
+    e.stopPropagation();
+    var day = e.target.closest('.cal-day');
+    if (!day || day.classList.contains('empty') || !day.dataset.iso) return;
+    var iso = day.dataset.iso;
+
+    var fromText = document.getElementById('f-from-text');
+    var toText   = document.getElementById('f-to-text');
+
+    if (!calStart || (calStart && calEnd)) {
+      // First click: set start, clear end
+      calStart = iso; calEnd = null; calHover = null;
+      if (fromText) { fromText.value = toDisplayDate(iso); fromText.classList.add('has-value'); }
+      if (toText)   { toText.value = ''; toText.classList.remove('has-value'); }
+      document.getElementById('f-from').value = iso;
+      document.getElementById('f-to').value   = '';
+      renderCalendar();
+    } else {
+      // Second click: sort into from/to
+      if (iso === calStart) {
+        // Same date — deselect
+        calStart = null; calEnd = null; calHover = null;
+        if (fromText) { fromText.value = ''; fromText.classList.remove('has-value'); }
+        if (toText)   { toText.value = '';   toText.classList.remove('has-value'); }
+        document.getElementById('f-from').value = '';
+        document.getElementById('f-to').value   = '';
+      } else {
+        if (iso < calStart) { calEnd = calStart; calStart = iso; }
+        else                { calEnd = iso; }
+        calHover = null;
+        if (fromText) { fromText.value = toDisplayDate(calStart); fromText.classList.add('has-value'); }
+        if (toText)   { toText.value   = toDisplayDate(calEnd);   toText.classList.add('has-value'); }
+        document.getElementById('f-from').value = calStart;
+        document.getElementById('f-to').value   = calEnd;
+        applyFilters();
+      }
+      renderCalendar();
+    }
+  });
+
+  // Hover preview: toggle classes directly — no re-render
+  popup.addEventListener('mouseover', function(e) {
+    if (!calStart || calEnd) return;
+    var day = e.target.closest('.cal-day');
+    if (!day || day.classList.contains('empty') || !day.dataset.iso) return;
+    var iso = day.dataset.iso;
+    if (iso === calHover) return;
     calHover = iso;
-    renderCalendar();
-  }
+    updateHoverClasses();
+  });
+
+  popup.addEventListener('mouseleave', function() {
+    if (!calHover) return;
+    calHover = null;
+    updateHoverClasses();
+  });
+})();
+
+function updateHoverClasses() {
+  document.querySelectorAll('#cal-popup .cal-day[data-iso]').forEach(function(el) {
+    el.classList.remove('hover-end', 'in-range');
+    var iso = el.dataset.iso;
+    // Restore real selection range
+    if (calStart && calEnd && iso > calStart && iso < calEnd) {
+      el.classList.add('in-range');
+    }
+    // Apply hover preview
+    if (calStart && !calEnd && calHover && calHover !== calStart) {
+      var hMin = calHover < calStart ? calHover : calStart;
+      var hMax = calHover < calStart ? calStart : calHover;
+      if (iso > hMin && iso < hMax) el.classList.add('in-range');
+      if (iso === calHover)         el.classList.add('hover-end');
+    }
+  });
 }
 
 function updateCalLabel() {
@@ -873,9 +945,9 @@ function updateCalLabel() {
   if (!calStart && !calEnd) {
     lbl.innerHTML = 'Click a date to start';
   } else if (calStart && !calEnd) {
-    lbl.innerHTML = '<strong>' + calStart + '</strong> → pick end date';
+    lbl.innerHTML = '<strong>' + toDisplayDate(calStart) + '</strong> → pick end date';
   } else {
-    lbl.innerHTML = '<strong>' + calStart + '</strong> → <strong>' + calEnd + '</strong>';
+    lbl.innerHTML = '<strong>' + toDisplayDate(calStart) + '</strong> → <strong>' + toDisplayDate(calEnd) + '</strong>';
   }
 }
 
@@ -905,17 +977,14 @@ function calClear() {
 }
 
 function calApply() {
-  if (calStart) {
-    var endVal = calEnd || calStart;
-    document.getElementById('f-from').value = calStart;
-    document.getElementById('f-to').value   = endVal;
-    // Populate the visible text inputs
-    var fromText = document.getElementById('f-from-text');
-    var toText   = document.getElementById('f-to-text');
-    if (fromText) { fromText.value = toDisplayDate(calStart); fromText.classList.add('has-value'); }
-    if (toText)   { toText.value   = toDisplayDate(endVal);   toText.classList.add('has-value'); }
-    applyFilters();
+  // If only start picked, treat as single-day range
+  if (calStart && !calEnd) {
+    calEnd = calStart;
+    var toText = document.getElementById('f-to-text');
+    if (toText) { toText.value = toDisplayDate(calStart); toText.classList.add('has-value'); }
+    document.getElementById('f-to').value = calStart;
   }
+  if (calStart) applyFilters();
   closeCalendar();
 }
 
@@ -925,7 +994,6 @@ function toggleCalendar(e) {
   if (popup.classList.contains('open')) {
     closeCalendar();
   } else {
-    // Pre-load any values already typed into the text inputs
     var fromIso = document.getElementById('f-from').value;
     var toIso   = document.getElementById('f-to').value;
     if (fromIso) calStart = fromIso;
