@@ -30,9 +30,14 @@ function requireAuth(req, res, next) {
 }
 
 function requireAdmin(req, res, next) {
-  if (!req.session.userId || req.session.role !== 'admin') {
+  if (!req.session.isAdmin) {
     return res.status(403).json({ error: 'Forbidden' });
   }
+  next();
+}
+
+function requireAdminPage(req, res, next) {
+  if (!req.session.isAdmin) return res.redirect('/admin/login');
   next();
 }
 
@@ -185,9 +190,28 @@ app.get('/api/me', (req, res) => {
   res.json({ user: safe });
 });
 
+// ── API: Admin login ────────────────────────────────────────────────────────
+
+const ADMIN_USERNAME = 'admin';
+const ADMIN_PASSWORD = 'admin';
+
+app.post('/api/admin/login', (req, res) => {
+  const { username, password } = req.body;
+  if (!username || !password) return res.status(400).json({ error: 'Username and password required' });
+  if (username !== ADMIN_USERNAME || password !== ADMIN_PASSWORD) {
+    return res.status(401).json({ error: 'Invalid username or password' });
+  }
+  req.session.isAdmin = true;
+  res.json({ ok: true });
+});
+
+app.post('/api/admin/logout', (req, res) => {
+  req.session.destroy(() => res.json({ ok: true }));
+});
+
 // ── API: Admin ─────────────────────────────────────────────────────────────
 
-app.get('/api/admin/vendors', (req, res) => {
+app.get('/api/admin/vendors', requireAdmin, (req, res) => {
   const { status } = req.query;
   const rows = status
     ? stmts.vendorsByStatus.all(status)
@@ -195,7 +219,7 @@ app.get('/api/admin/vendors', (req, res) => {
   res.json({ vendors: rows });
 });
 
-app.get('/api/admin/organisers', (req, res) => {
+app.get('/api/admin/organisers', requireAdmin, (req, res) => {
   const { status } = req.query;
   const rows = status
     ? stmts.organisersByStatus.all(status)
@@ -203,7 +227,7 @@ app.get('/api/admin/organisers', (req, res) => {
   res.json({ organisers: rows });
 });
 
-app.get('/api/admin/stats', (req, res) => {
+app.get('/api/admin/stats', requireAdmin, (req, res) => {
   res.json({
     vendors:    stmts.countVendors.get().n,
     organisers: stmts.countOrganisers.get().n,
@@ -211,7 +235,7 @@ app.get('/api/admin/stats', (req, res) => {
   });
 });
 
-app.post('/api/admin/users/:id/status', (req, res) => {
+app.post('/api/admin/users/:id/status', requireAdmin, (req, res) => {
   const { status } = req.body;
   const allowed = ['active', 'pending', 'suspended', 'banned'];
   if (!allowed.includes(status)) return res.status(400).json({ error: 'Invalid status' });
@@ -236,8 +260,9 @@ app.get('/dashboard/vendor',    page('vendor-dashboard.html'));
 app.get('/dashboard/vendor/*splat', page('vendor-dashboard.html'));
 app.get('/dashboard/organiser', page('organiser-dashboard.html'));
 app.get('/dashboard/organiser/*splat', page('organiser-dashboard.html'));
-app.get('/admin',               page('admin-dashboard.html'));
-app.get('/admin/*splat',        page('admin-dashboard.html'));
+app.get('/admin/login',         page('admin-login.html'));
+app.get('/admin',               requireAdminPage, page('admin-dashboard.html'));
+app.get('/admin/*splat',        requireAdminPage, page('admin-dashboard.html'));
 
 // Static assets (fonts, images, brand_assets, etc.)
 app.use(express.static(__dirname, { index: false }));

@@ -430,15 +430,15 @@ footer {
 </nav>
 
 <!-- HERO BANNER -->
-<div class="vendor-hero">
-  <div class="vendor-hero-emoji">🔥</div>
+<div class="vendor-hero" id="vd-hero">
+  <div class="vendor-hero-emoji" id="vd-hero-emoji">🔥</div>
   <div class="vendor-hero-overlay"></div>
   <div class="hero-breadcrumb">
     <a href="/">Home</a>
     <span class="sep">/</span>
     <a href="/vendors">Vendors</a>
     <span class="sep">/</span>
-    <span>Smoky Joe's BBQ</span>
+    <span id="vd-breadcrumb">Smoky's Joe's BBQ</span>
   </div>
 </div>
 
@@ -451,16 +451,16 @@ footer {
       <!-- Identity -->
       <div class="vendor-identity">
         <div class="vendor-name-row">
-          <h1 class="vendor-name">Smoky Joe's BBQ</h1>
+          <h1 class="vendor-name" id="vd-name">Smoky Joe's BBQ</h1>
           <span class="verified-badge">✓ Verified</span>
-          <span class="pro-badge-large">★ Pro Vendor</span>
+          <span class="pro-badge-large" id="vd-pro-badge">★ Pro Vendor</span>
         </div>
-        <div class="vendor-meta-row">
+        <div class="vendor-meta-row" id="vd-meta-row">
           <span class="vendor-tag">BBQ</span>
           <span class="vendor-setup-tag">🚚 Food Truck</span>
           <span class="vendor-suburb">📍 Norwood, SA</span>
         </div>
-        <p class="vendor-bio">
+        <p class="vendor-bio" id="vd-bio">
           Adelaide's most-loved BBQ food truck, smoking low-and-slow since 2019. We specialise in American-style pit BBQ — brisket, baby back ribs, and pulled pork rolls — all slow-cooked over ironbark wood for 12–16 hours. We've been a fixture at Rundle Mall Night Eats for three consecutive years and have served over 28,000 people at events across South Australia. Our compact 3×3m setup requires single-phase power and we're known for our punctual pack-down.
         </p>
       </div>
@@ -468,7 +468,7 @@ footer {
       <!-- Photo Gallery -->
       <div class="section-block">
         <h2 class="section-heading">Photos</h2>
-        <div class="gallery-grid">
+        <div class="gallery-grid" id="vd-gallery">
           <div class="gallery-item" onclick="openLightbox(0)">
             <div class="gallery-img" style="background:linear-gradient(135deg,#3D1A06,#6B2E08);">🔥</div>
             <div class="gallery-overlay">🔍</div>
@@ -618,10 +618,10 @@ footer {
       <!-- Rating Summary -->
       <div class="sidebar-card">
         <div class="rating-big">
-          <div class="rating-number">4.9</div>
+          <div class="rating-number" id="vd-rating-num">4.9</div>
           <div class="rating-sub">
             <div class="rating-stars-lg">★★★★★</div>
-            <div class="rating-count">62 organiser reviews</div>
+            <div class="rating-count" id="vd-review-count">62 organiser reviews</div>
           </div>
         </div>
         <div class="rating-bars" id="rating-bars">
@@ -658,7 +658,7 @@ footer {
         <div class="stats-grid">
           <div class="stat-item">
             <div class="stat-label">Events done</div>
-            <div class="stat-value">47</div>
+            <div class="stat-value" id="vd-events-count">47</div>
             <div class="stat-sub">on Pitch.</div>
           </div>
           <div class="stat-item">
@@ -681,7 +681,7 @@ footer {
       <div class="sidebar-card" style="padding: 16px 20px;">
         <div class="plan-badge-row">
           <div class="plan-badge-left">
-            <div class="plan-badge-name">Pro Vendor</div>
+            <div class="plan-badge-name" id="vd-plan-name">Pro Vendor</div>
             <div class="plan-badge-desc">Priority placement · Verified documents</div>
           </div>
           <div class="plan-badge-icon">⭐</div>
@@ -840,18 +840,75 @@ footer {
   </div>
 </footer>
 
+<script src="/data.js"></script>
 <script>
+/* ── PAGE INIT ────────────────────────────────────────────────────────────── */
+var vslug = window.location.pathname.replace(/^\/vendors\//, '').replace(/\/$/, '');
+var vendor = (window.PITCH_VENDORS || []).find(function(v){ return v.id === vslug; });
+
+if (vendor) {
+  document.title = vendor.name + ' \u2014 Pitch.';
+  document.getElementById('vd-breadcrumb').textContent = vendor.name;
+  document.getElementById('vd-hero-emoji').textContent = vendor.emoji;
+  document.getElementById('vd-hero-emoji').style.background = vendor.bg;
+  document.getElementById('vd-hero').style.background = vendor.bg;
+  document.getElementById('vd-name').textContent = vendor.name;
+  document.getElementById('vd-pro-badge').style.display = vendor.isPro ? '' : 'none';
+  document.getElementById('vd-meta-row').innerHTML =
+    vendor.cuisines.map(function(c){ return '<span class="vendor-tag">' + c + '</span>'; }).join('') +
+    '<span class="vendor-setup-tag">\uD83D\uDE9A ' + vendor.setup + '</span>' +
+    '<span class="vendor-suburb">\uD83D\uDCCD ' + vendor.suburb + ', ' + vendor.state + '</span>';
+  document.getElementById('vd-bio').textContent = vendor.bio;
+
+  // Gallery
+  document.getElementById('vd-gallery').innerHTML = vendor.gallery.map(function(g, i){
+    return '<div class="gallery-item" onclick="openLightbox(' + i + ')"><div class="gallery-img" style="background:' + g.bg + ';">' + g.emoji + '</div><div class="gallery-overlay">\uD83D\uDD0D</div></div>';
+  }).join('');
+
+  // Past events
+  document.getElementById('past-events-list').innerHTML = vendor.pastEvents.map(function(pe){
+    return '<a class="pe-item" href="/events/' + pe.id + '"><div class="pe-dot"></div><div class="pe-body"><div class="pe-name">' + pe.name + '</div><div class="pe-date">' + pe.date + '</div></div><span class="pe-arrow">\u2192</span></a>';
+  }).join('');
+  var seeBtn = document.getElementById('see-all-btn');
+  if(seeBtn) seeBtn.textContent = 'See all ' + vendor.events + ' events \u2192';
+
+  // Reviews
+  document.getElementById('review-list').innerHTML = vendor.reviewsList.map(function(r){
+    var stars = '\u2605'.repeat(r.rating) + '\u2606'.repeat(5 - r.rating);
+    return '<div class="review-card"><div class="review-header"><div class="review-org"><div class="review-org-name">' + r.org + '</div><div class="review-event-name">' + r.event + '</div></div><div class="review-meta"><span class="review-stars">' + stars + '</span></div></div><p class="review-text">' + r.text + '</p></div>';
+  }).join('');
+  var lmBtn = document.getElementById('load-more-btn');
+  if(lmBtn) lmBtn.style.display = 'none';
+
+  // Rating
+  document.getElementById('vd-rating-num').textContent = vendor.rating.toFixed(1);
+  document.getElementById('vd-review-count').textContent = vendor.reviews + ' organiser reviews';
+  document.getElementById('vd-events-count').textContent = vendor.events;
+  document.getElementById('vd-plan-name').textContent = vendor.isPro ? 'Pro Vendor' : 'Free Plan';
+
+  // Rating bars (estimate distribution)
+  window.addEventListener('load', function(){
+    setTimeout(function(){
+      var total = vendor.reviews;
+      var five = Math.round(total * 0.82);
+      var four = Math.round(total * 0.12);
+      var three = Math.round(total * 0.04);
+      var two = 0, one = total - five - four - three - two;
+      var data = {5: five, 4: four, 3: three, 2: two, 1: Math.max(0,one)};
+      [5,4,3,2,1].forEach(function(s){
+        var pct = Math.round((data[s] / total) * 100);
+        var el = document.getElementById('rb' + s);
+        if(el) el.style.width = pct + '%';
+      });
+    }, 300);
+  });
+}
+
 /* ── Gallery lightbox ─────────────────────────────────────────────────────── */
-const GALLERY_DATA = [
-  { emoji: '🔥', caption: 'The truck in action at Rundle Mall Night Eats, April 2026' },
-  { emoji: '🥩', caption: 'Slow-smoked brisket — 14 hours over ironbark wood' },
-  { emoji: '🍖', caption: 'Baby back ribs — our most-requested item' },
-  { emoji: '🥪', caption: 'The signature pulled pork roll with house slaw' },
-  { emoji: '🌽', caption: 'Sides: smoked corn and pit beans' },
-];
+var GALLERY_DATA = vendor ? vendor.gallery : [];
 
 function openLightbox(idx) {
-  const d = GALLERY_DATA[idx];
+  var d = GALLERY_DATA[idx];
   document.getElementById('lightbox-img').textContent = d.emoji;
   document.getElementById('lightbox-caption').textContent = d.caption;
   document.getElementById('lightbox').classList.add('open');
@@ -864,18 +921,7 @@ function closeLightbox(e) {
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
 
-/* ── Animate rating bars on load ─────────────────────────────────────────── */
-window.addEventListener('load', () => {
-  setTimeout(() => {
-    const total = 62;
-    const data = { 5: 54, 4: 6, 3: 2, 2: 0, 1: 0 };
-    [5,4,3,2,1].forEach(s => {
-      const pct = Math.round((data[s] / total) * 100);
-      const el = document.getElementById('rb' + s);
-      if (el) el.style.width = pct + '%';
-    });
-  }, 300);
-});
+/* rating bars animated in init */
 
 /* ── Past events toggle ───────────────────────────────────────────────────── */
 let pastExpanded = false;

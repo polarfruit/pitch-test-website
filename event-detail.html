@@ -478,7 +478,7 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
     <span class="breadcrumb-sep">›</span>
     <a href="/events">Events</a>
     <span class="breadcrumb-sep">›</span>
-    <span>Rundle Mall Night Eats</span>
+    <span id="ev-breadcrumb">Rundle Mall Night Eats</span>
   </nav>
 </div>
 
@@ -489,22 +489,22 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
   <div class="detail-main">
 
     <!-- Hero image -->
-    <div class="detail-hero">
-      🌃
+    <div class="detail-hero" id="ev-hero">
+      <span id="ev-emoji">🌃</span>
       <div class="detail-hero-overlay"></div>
-      <span class="detail-hero-badge">Night Market</span>
+      <span class="detail-hero-badge" id="ev-hero-category">Night Market</span>
       <div class="detail-hero-meta">
-        <span class="detail-hero-tag">📍 Adelaide CBD</span>
-        <span class="detail-hero-tag">📅 Sat 12 Apr 2026</span>
-        <span class="detail-hero-tag">🕔 5pm–10pm</span>
+        <span class="detail-hero-tag" id="ev-hero-loc">📍 Adelaide CBD</span>
+        <span class="detail-hero-tag" id="ev-hero-date">📅 Sat 12 Apr 2026</span>
+        <span class="detail-hero-tag" id="ev-hero-time">🕔 5pm–10pm</span>
       </div>
     </div>
 
     <!-- Event name -->
-    <h1 class="detail-event-name">Rundle Mall Night Eats</h1>
+    <h1 class="detail-event-name" id="ev-name">Rundle Mall Night Eats</h1>
 
     <!-- Meta badges -->
-    <div class="detail-meta-row">
+    <div class="detail-meta-row" id="ev-meta-row">
       <span class="meta-badge" style="background:#2B5BA812;color:#2B5BA8;border-color:#2B5BA820;">Night Market</span>
       <span class="meta-badge">📍 Rundle Mall, Adelaide CBD</span>
       <span class="meta-badge">📅 Saturday 12 April 2026</span>
@@ -515,7 +515,7 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
 
     <!-- About -->
     <div class="subsec-title">About this event</div>
-    <p class="about-text">Rundle Mall Night Eats is Adelaide's premier weekly night market, drawing 5,000+ visitors each Saturday evening to the heart of the CBD. Now in its 4th year, the event has become a fixture for foodies, families, and Adelaide's vibrant street food culture. Vendors operate from dedicated 3×3m booths along the pedestrianised mall, with high foot traffic from 5pm through to closing. The event is professionally run by Adelaide City Council Events with full security, waste management, and crowd facilitation provided.</p>
+    <p class="about-text" id="ev-about">Rundle Mall Night Eats is Adelaide's premier weekly night market, drawing 5,000+ visitors each Saturday evening to the heart of the CBD. Now in its 4th year, the event has become a fixture for foodies, families, and Adelaide's vibrant street food culture. Vendors operate from dedicated 3×3m booths along the pedestrianised mall, with high foot traffic from 5pm through to closing. The event is professionally run by Adelaide City Council Events with full security, waste management, and crowd facilitation provided.</p>
 
     <div class="section-divider"></div>
 
@@ -524,43 +524,43 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
     <div class="specs-grid">
       <div class="spec-item">
         <span class="spec-icon">📅</span>
-        <div><div class="spec-label">Date</div><div class="spec-value">Saturday 12 April 2026</div></div>
+        <div><div class="spec-label">Date</div><div class="spec-value" id="sv-date">Saturday 12 April 2026</div></div>
       </div>
       <div class="spec-item">
         <span class="spec-icon">🕔</span>
-        <div><div class="spec-label">Time</div><div class="spec-value">5:00pm – 10:00pm</div></div>
+        <div><div class="spec-label">Time</div><div class="spec-value" id="sv-time">5:00pm – 10:00pm</div></div>
       </div>
       <div class="spec-item">
         <span class="spec-icon">📍</span>
-        <div><div class="spec-label">Location</div><div class="spec-value">Rundle Mall, Adelaide CBD SA 5000</div></div>
+        <div><div class="spec-label">Location</div><div class="spec-value" id="sv-location">Rundle Mall, Adelaide CBD SA 5000</div></div>
       </div>
       <div class="spec-item">
         <span class="spec-icon">👥</span>
-        <div><div class="spec-label">Expected Attendance</div><div class="spec-value">5,000–7,000 visitors</div></div>
+        <div><div class="spec-label">Expected Attendance</div><div class="spec-value" id="sv-attendance">5,000–7,000 visitors</div></div>
       </div>
       <div class="spec-item">
         <span class="spec-icon">🏪</span>
-        <div><div class="spec-label">Total Vendor Spots</div><div class="spec-value">20 spots</div></div>
+        <div><div class="spec-label">Total Vendor Spots</div><div class="spec-value" id="sv-spots">20 spots</div></div>
       </div>
       <div class="spec-item">
         <span class="spec-icon">📐</span>
-        <div><div class="spec-label">Booth Size</div><div class="spec-value">3m × 3m (standard) · 3m × 6m available</div></div>
+        <div><div class="spec-label">Booth Size</div><div class="spec-value" id="sv-size">3m × 3m (standard) · 3m × 6m available</div></div>
       </div>
       <div class="spec-item">
         <span class="spec-icon">⚡</span>
-        <div><div class="spec-label">Power Available</div><div class="spec-value" style="color:#2D8B55;">Yes — 15A single phase included</div></div>
+        <div><div class="spec-label">Power Available</div><div class="spec-value" id="sv-power" style="color:#2D8B55;">Yes — 15A single phase included</div></div>
       </div>
       <div class="spec-item">
         <span class="spec-icon">💧</span>
-        <div><div class="spec-label">Water Available</div><div class="spec-value" style="color:#C9840A;">No — BYO water supply</div></div>
+        <div><div class="spec-label">Water Available</div><div class="spec-value" id="sv-water" style="color:#C9840A;">No — BYO water supply</div></div>
       </div>
       <div class="spec-item">
         <span class="spec-icon">🔧</span>
-        <div><div class="spec-label">Setup Time</div><div class="spec-value">2:00pm – 4:30pm</div></div>
+        <div><div class="spec-label">Setup Time</div><div class="spec-value" id="sv-setup">2:00pm – 4:30pm</div></div>
       </div>
       <div class="spec-item">
         <span class="spec-icon">📦</span>
-        <div><div class="spec-label">Pack-down Time</div><div class="spec-value">10:00pm – 11:30pm</div></div>
+        <div><div class="spec-label">Pack-down Time</div><div class="spec-value" id="sv-packdown">10:00pm – 11:30pm</div></div>
       </div>
     </div>
 
@@ -571,10 +571,10 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
     <div class="booth-fee-box">
       <div>
         <div class="fee-label">Fee range</div>
-        <div class="fee-range">$200 – $350</div>
+        <div class="fee-range" id="ev-fee-range">$200 – $350</div>
         <div class="fee-note">Varies by booth size · GST inclusive</div>
       </div>
-      <div class="fee-inc-items">
+      <div class="fee-inc-items" id="ev-fee-includes">
         <div class="fee-inc-item">Standard 3×3m booth space</div>
         <div class="fee-inc-item">15A power connection</div>
         <div class="fee-inc-item">Council food permit (included)</div>
@@ -587,7 +587,7 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
     <!-- What we're looking for -->
     <div class="subsec-title" style="margin-bottom:12px;">What we're looking for</div>
     <p class="about-text" style="margin-bottom:16px;">We aim to build a diverse lineup that covers a wide range of cuisines and price points. The following categories are preferred — vendors in these categories will receive priority review.</p>
-    <div class="tag-list">
+    <div class="tag-list" id="ev-looking-for">
       <span class="cuisine-tag preferred">🌮 Street Food</span>
       <span class="cuisine-tag preferred">🍱 Asian Cuisine</span>
       <span class="cuisine-tag preferred">🥩 BBQ & Grill</span>
@@ -630,7 +630,7 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
     <!-- Confirmed vendor lineup -->
     <div class="subsec-title" style="margin-bottom:6px;">Confirmed vendors</div>
     <p class="about-text" style="font-size:13px;margin-bottom:18px;">Vendors already confirmed for this event. Check back as more vendors are approved.</p>
-    <div class="vendor-lineup-scroll">
+    <div class="vendor-lineup-scroll" id="ev-lineup">
       <a href="/vendors/smoky-joes-bbq" class="vendor-mini">
         <div class="vm-avatar" style="background:#E8500A18;color:var(--ember);">SJ</div>
         <div><div class="vm-name">Smoky Joe's BBQ</div><div class="vm-type">BBQ & Grill</div></div>
@@ -663,25 +663,25 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
             stroke="#C9840A"
             stroke-dasharray="0 339.3"
             transform="rotate(-90, 70, 70)"/>
-          <text class="fill-ring-label" x="70" y="66" text-anchor="middle" dominant-baseline="middle">70%</text>
-          <text class="fill-ring-sub" x="70" y="86" text-anchor="middle" dominant-baseline="middle">filled</text>
+          <text class="fill-ring-label" id="ev-ring-label" x="70" y="66" text-anchor="middle" dominant-baseline="middle">70%</text>
+          <text class="fill-ring-sub" id="ev-ring-sub" x="70" y="86" text-anchor="middle" dominant-baseline="middle">filled</text>
         </svg>
-        <div class="fill-ring-caption">14 of 20 spots filled — <strong style="color:var(--text-hi);">6 spots remaining</strong></div>
+        <div class="fill-ring-caption" id="ev-ring-caption">14 of 20 spots filled — <strong style="color:var(--text-hi);">6 spots remaining</strong></div>
       </div>
 
       <div class="deadline-row">
         <div>
           <div class="deadline-label">Application deadline</div>
-          <div class="deadline-val">5 April 2026</div>
+          <div class="deadline-val" id="ev-deadline-val">5 April 2026</div>
           <div id="countdown-badge"></div>
         </div>
       </div>
 
       <div class="organiser-row">
-        <div class="org-avatar">AC</div>
+        <div class="org-avatar" id="ev-org-avatar">AC</div>
         <div>
-          <div class="org-name">Adelaide City Council Events</div>
-          <div class="org-meta">34 events posted · 4.8★ avg vendor rating</div>
+          <div class="org-name" id="ev-org-name">Adelaide City Council Events</div>
+          <div class="org-meta" id="ev-org-meta">34 events posted · 4.8★ avg vendor rating</div>
         </div>
       </div>
     </div>
@@ -868,29 +868,69 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
 <!-- Share toast -->
 <div class="share-toast" id="share-toast">🔗 Link copied to clipboard</div>
 
+<script src="/data.js"></script>
 <script>
-// ── FILL RING ANIMATION ──────────────────────────────────────────────────────
-const FILL_PCT    = 70;
-const R           = 54;
-const CIRC        = 2 * Math.PI * R; // 339.29
+// ── PAGE INIT ─────────────────────────────────────────────────────────────────
+var slug = window.location.pathname.replace(/^\/events\//, '').replace(/\/$/, '');
+var ev   = (window.PITCH_EVENTS || []).find(function(e){ return e.id === slug; });
 
-window.addEventListener('load', () => {
-  setTimeout(() => {
-    const ring = document.getElementById('fill-ring-circle');
-    const filled = CIRC * (FILL_PCT / 100);
-    ring.setAttribute('stroke-dasharray', `${filled} ${CIRC - filled}`);
-    // Color based on fill
-    if (FILL_PCT >= 100)     ring.setAttribute('stroke', '#C0392B');
-    else if (FILL_PCT > 85)  ring.setAttribute('stroke', '#C0392B');
-    else if (FILL_PCT >= 70) ring.setAttribute('stroke', '#C9840A');
-    else                     ring.setAttribute('stroke', '#2D8B55');
+if (ev) {
+  document.title = ev.name + ' \u2014 Pitch.';
+  document.getElementById('ev-breadcrumb').textContent = ev.name;
+  document.getElementById('ev-emoji').textContent = ev.emoji;
+  document.getElementById('ev-hero-category').textContent = ev.category;
+  document.getElementById('ev-hero-loc').textContent = '\uD83D\uDCCD ' + ev.suburb;
+  document.getElementById('ev-hero-date').textContent = '\uD83D\uDCC5 ' + ev.dateLabel;
+  document.getElementById('ev-hero-time').textContent = '\uD83D\uDD54 ' + ev.time;
+  document.getElementById('ev-name').textContent = ev.name;
+  document.getElementById('ev-meta-row').innerHTML =
+    '<span class="meta-badge" style="background:#2B5BA812;color:#2B5BA8;border-color:#2B5BA820;">' + ev.category + '</span>' +
+    '<span class="meta-badge">\uD83D\uDCCD ' + ev.location + '</span>' +
+    '<span class="meta-badge">\uD83D\uDCC5 ' + ev.dateLong + '</span>' +
+    '<span class="meta-badge">\uD83D\uDD54 ' + ev.timeLong + '</span>';
+  document.getElementById('ev-about').textContent = ev.about;
+  document.getElementById('sv-date').textContent = ev.dateLong;
+  document.getElementById('sv-time').textContent = ev.timeLong;
+  document.getElementById('sv-location').textContent = ev.location;
+  document.getElementById('sv-attendance').textContent = ev.attendance;
+  document.getElementById('sv-spots').textContent = ev.total + ' spots';
+  document.getElementById('sv-size').textContent = ev.stallSize;
+  var pwrEl = document.getElementById('sv-power');
+  pwrEl.textContent = ev.power ? 'Yes \u2014 15A single phase included' : 'No \u2014 BYO generator required';
+  pwrEl.style.color = ev.power ? '#2D8B55' : '#C9840A';
+  var watEl = document.getElementById('sv-water');
+  watEl.textContent = ev.water ? 'Yes \u2014 Standpipe access provided' : 'No \u2014 BYO water supply';
+  watEl.style.color = ev.water ? '#2D8B55' : '#C9840A';
+  document.getElementById('sv-setup').textContent = ev.setupTime;
+  document.getElementById('sv-packdown').textContent = ev.packdown;
+  document.getElementById('ev-fee-range').textContent = '$' + ev.feeMin + ' \u2013 $' + ev.feeMax;
+  document.getElementById('ev-fee-includes').innerHTML = ev.feeIncludes.map(function(i){ return '<div class="fee-inc-item">' + i + '</div>'; }).join('');
+  document.getElementById('ev-looking-for').innerHTML = ev.lookingFor.map(function(tag){
+    var pref = ev.lookingForPreferred.indexOf(tag) >= 0 ? ' preferred' : '';
+    return '<span class="cuisine-tag' + pref + '">' + tag + '</span>';
+  }).join('');
+  document.getElementById('ev-lineup').innerHTML = ev.vendorLineup.map(function(v){
+    return '<a href="/vendors/' + v.id + '" class="vendor-mini"><div class="vm-avatar" style="background:' + v.color + '18;color:' + v.color + ';">' + v.initials + '</div><div><div class="vm-name">' + v.name + '</div><div class="vm-type">' + v.type + '</div></div></a>';
+  }).join('');
+  var FILL_PCT = Math.round((ev.filled / ev.total) * 100);
+  var R2 = 54, CIRC2 = 2 * Math.PI * R2;
+  setTimeout(function(){
+    var ring = document.getElementById('fill-ring-circle');
+    var filledArc = CIRC2 * (FILL_PCT / 100);
+    ring.setAttribute('stroke-dasharray', filledArc + ' ' + (CIRC2 - filledArc));
+    ring.setAttribute('stroke', FILL_PCT >= 85 ? '#C0392B' : FILL_PCT >= 70 ? '#C9840A' : '#2D8B55');
   }, 200);
-});
+  document.getElementById('ev-ring-label').textContent = FILL_PCT + '%';
+  var rem = ev.total - ev.filled;
+  document.getElementById('ev-ring-caption').innerHTML = ev.filled + ' of ' + ev.total + ' spots filled \u2014 <strong style="color:var(--text-hi);">' + rem + ' spot' + (rem !== 1 ? 's' : '') + ' remaining</strong>';
+  document.getElementById('ev-deadline-val').textContent = ev.deadlineLabel;
+  document.getElementById('ev-org-avatar').textContent = ev.organiser.initials;
+  document.getElementById('ev-org-name').textContent = ev.organiser.name;
+  document.getElementById('ev-org-meta').textContent = ev.organiser.events + ' events posted \u00B7 ' + ev.organiser.rating + '\u2605 avg vendor rating';
+}
 
 // ── COUNTDOWN ────────────────────────────────────────────────────────────────
-// Deadline: 5 April 2026. Today is ~7 March 2026, so ~29 days away → no countdown.
-// To demo the countdown badge, we use a nearer deadline:
-const DEMO_DEADLINE = new Date('2026-03-14T23:59:59');
+var DEMO_DEADLINE = ev ? new Date(ev.deadline + 'T23:59:59') : new Date('2026-04-05T23:59:59');
 
 function renderCountdown() {
   const badge = document.getElementById('countdown-badge');

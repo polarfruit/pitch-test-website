@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Pitch.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@900&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #1A1612; color: #FDF4E7; font-family: 'Instrument Sans', sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
+
+    .card {
+      width: 100%; max-width: 400px;
+      background: #231E19; border: 1px solid #2A2018; border-radius: 18px; padding: 40px;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03);
+    }
+
+    .logo { display: flex; align-items: center; gap: 9px; margin-bottom: 32px; }
+    .logo-dot { width: 28px; height: 28px; border-radius: 50%; background: #E8500A; }
+    .logo-text { font-family: 'Fraunces', serif; font-size: 20px; color: #FDF4E7; }
+
+    .admin-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(232,80,10,0.12); border: 1px solid rgba(232,80,10,0.25);
+      border-radius: 6px; padding: 4px 10px; font-size: 11px; font-weight: 600;
+      color: #E8500A; text-transform: uppercase; letter-spacing: 0.08em;
+      margin-bottom: 16px;
+    }
+
+    h1 { font-family: 'Fraunces', serif; font-size: 26px; color: #FDF4E7; letter-spacing: -0.02em; margin-bottom: 6px; }
+    .sub { font-size: 14px; color: #A89880; margin-bottom: 28px; line-height: 1.6; }
+
+    .field-group { margin-bottom: 16px; }
+    .field-label { display: block; font-size: 11px; font-weight: 600; color: #A89880; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 6px; }
+    .field-input {
+      width: 100%; background: #1A1612; border: 1.5px solid #2A2018; border-radius: 10px;
+      color: #FDF4E7; font-family: 'Instrument Sans', sans-serif; font-size: 15px;
+      padding: 12px 16px; outline: none; transition: border-color 0.2s;
+    }
+    .field-input:focus { border-color: #E8500A; }
+    .field-input::placeholder { color: #4A3C30; }
+
+    .pw-wrap { position: relative; }
+    .pw-toggle {
+      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer; color: #6B5A4A; font-size: 13px;
+      font-family: inherit; font-weight: 600;
+    }
+    .pw-toggle:hover { color: #A89880; }
+
+    .btn-submit {
+      width: 100%; background: #E8500A; color: #fff; border: none; border-radius: 10px;
+      font-family: 'Instrument Sans', sans-serif; font-size: 15px; font-weight: 600;
+      padding: 14px; cursor: pointer; margin-top: 20px;
+      transition: background 0.18s, transform 0.12s;
+    }
+    .btn-submit:hover { background: #FF6B2B; }
+    .btn-submit:active { transform: scale(0.98); }
+    .btn-submit:disabled { background: #4A3C30; cursor: not-allowed; }
+
+    .error-box {
+      display: none; background: rgba(192,57,43,0.1); border: 1px solid rgba(192,57,43,0.3);
+      border-radius: 10px; padding: 12px 14px; font-size: 13px; color: #C0392B;
+      margin-top: 14px; line-height: 1.5;
+    }
+    .error-box.show { display: block; }
+
+    .footer-links { text-align: center; font-size: 13px; color: #6B5A4A; margin-top: 24px; }
+    .footer-links a { color: #6B5A4A; text-decoration: none; }
+    .footer-links a:hover { color: #A89880; }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <div class="logo">
+    <div class="logo-dot"></div>
+    <span class="logo-text">Pitch.</span>
+  </div>
+
+  <div class="admin-badge">
+    <svg width="10" height="10" viewBox="0 0 12 12" fill="currentColor"><path d="M6 0L7.5 4.5H12L8.5 7L10 11.5L6 9L2 11.5L3.5 7L0 4.5H4.5L6 0Z"/></svg>
+    Admin access only
+  </div>
+
+  <h1>Admin sign in</h1>
+  <p class="sub">Restricted area. Authorised personnel only.</p>
+
+  <div class="field-group">
+    <label class="field-label">Username</label>
+    <input class="field-input" type="text" id="admin-username" placeholder="Username" autocomplete="username" />
+  </div>
+
+  <div class="field-group">
+    <label class="field-label">Password</label>
+    <div class="pw-wrap">
+      <input class="field-input" type="password" id="admin-password" placeholder="Password" autocomplete="current-password" style="padding-right:52px;" />
+      <button class="pw-toggle" type="button" onclick="togglePw()">Show</button>
+    </div>
+  </div>
+
+  <div class="error-box" id="admin-error"></div>
+
+  <button class="btn-submit" id="admin-btn" onclick="doAdminLogin()">Sign in</button>
+
+  <div class="footer-links" style="margin-top:20px;">
+    <a href="/">← Back to Pitch.</a>
+  </div>
+</div>
+
+<script>
+  function togglePw() {
+    const inp = document.getElementById('admin-password');
+    const btn = document.querySelector('.pw-toggle');
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+    btn.textContent = inp.type === 'password' ? 'Show' : 'Hide';
+  }
+
+  async function doAdminLogin() {
+    const btn = document.getElementById('admin-btn');
+    const errEl = document.getElementById('admin-error');
+    errEl.classList.remove('show');
+
+    const username = document.getElementById('admin-username').value.trim();
+    const password = document.getElementById('admin-password').value;
+
+    if (!username || !password) {
+      errEl.textContent = 'Please enter your username and password.';
+      errEl.classList.add('show');
+      return;
+    }
+
+    btn.textContent = 'Signing in…';
+    btn.disabled = true;
+
+    try {
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        errEl.textContent = data.error || 'Invalid credentials.';
+        errEl.classList.add('show');
+        btn.textContent = 'Sign in';
+        btn.disabled = false;
+        return;
+      }
+      window.location.href = '/admin';
+    } catch (e) {
+      errEl.textContent = 'Network error — please check your connection.';
+      errEl.classList.add('show');
+      btn.textContent = 'Sign in';
+      btn.disabled = false;
+    }
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter') doAdminLogin();
+  });
+</script>
+</body>
+</html>
