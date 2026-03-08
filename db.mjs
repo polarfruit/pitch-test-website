@@ -250,8 +250,12 @@ export const stmts = {
   `),
 
   // admin actions
-  updateUserStatus: db.prepare(`UPDATE users SET status = ? WHERE id = ?`),
-  deleteUser:       db.prepare(`DELETE FROM users WHERE id = ?`),
+  updateUserStatus:              db.prepare(`UPDATE users SET status = ? WHERE id = ?`),
+  deleteUser:                    db.prepare(`DELETE FROM users WHERE id = ?`),
+  deleteVendorByUserId:          db.prepare(`DELETE FROM vendors WHERE user_id = ?`),
+  deleteOrganiserByUserId:       db.prepare(`DELETE FROM organisers WHERE user_id = ?`),
+  deleteVerificationCodesByUserId: db.prepare(`DELETE FROM verification_codes WHERE user_id = ?`),
+  deletePaymentsByUserId:        db.prepare(`DELETE FROM payments WHERE user_id = ?`),
 
   // counts
   countVendors:    db.prepare(`SELECT COUNT(*) as n FROM users WHERE role='vendor'`),
