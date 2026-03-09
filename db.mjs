@@ -1,4 +1,3 @@
-import { createClient } from '@libsql/client';
 import bcryptjs from 'bcryptjs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -6,7 +5,12 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // ── Database client ────────────────────────────────────────────────────────
-// Uses Turso in production (TURSO_DATABASE_URL env var), local SQLite file in dev.
+// On Vercel: use @libsql/client/web (pure HTTP, no native bindings required).
+// Locally without Turso: use @libsql/client with a local file: URL.
+const { createClient } = process.env.TURSO_DATABASE_URL
+  ? await import('@libsql/client/web')
+  : await import('@libsql/client');
+
 export const client = createClient({
   url: process.env.TURSO_DATABASE_URL ?? `file:${path.join(__dirname, 'pitch.db')}`,
   authToken: process.env.TURSO_AUTH_TOKEN,
