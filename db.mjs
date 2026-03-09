@@ -112,20 +112,6 @@ db.exec(`
   }
 }
 
-// Event applications table
-db.exec(`
-  CREATE TABLE IF NOT EXISTS event_applications (
-    id             INTEGER PRIMARY KEY AUTOINCREMENT,
-    event_id       INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
-    vendor_user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    status         TEXT NOT NULL DEFAULT 'pending'
-                   CHECK(status IN ('pending','approved','rejected','withdrawn')),
-    message        TEXT,
-    created_at     DATETIME DEFAULT (datetime('now')),
-    UNIQUE(event_id, vendor_user_id)
-  );
-`);
-
 // ── Events + Payments schema ───────────────────────────────────────────────
 
 db.exec(`
@@ -153,6 +139,20 @@ db.exec(`
                         CHECK(status IN ('paid','failed','refunded','pending')),
     description TEXT,
     created_at  DATETIME DEFAULT (datetime('now'))
+  );
+`);
+
+// Event applications table — must come AFTER events and users tables
+db.exec(`
+  CREATE TABLE IF NOT EXISTS event_applications (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    event_id       INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+    vendor_user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    status         TEXT NOT NULL DEFAULT 'pending'
+                   CHECK(status IN ('pending','approved','rejected','withdrawn')),
+    message        TEXT,
+    created_at     DATETIME DEFAULT (datetime('now')),
+    UNIQUE(event_id, vendor_user_id)
   );
 `);
 
