@@ -651,6 +651,22 @@ app.get('/api/vendor/applications', requireAuth, async (req, res) => {
   res.json({ applications: apps });
 });
 
+// ── API: Vendor photos ─────────────────────────────────────────────────────
+app.post('/api/vendor/photos', requireAuth, async (req, res) => {
+  if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Vendors only' });
+  const { photos } = req.body;
+  if (!Array.isArray(photos)) return res.status(400).json({ error: 'photos must be an array' });
+  if (photos.length > 6) return res.status(400).json({ error: 'Maximum 6 photos allowed' });
+  // Validate each entry is a data URL (jpeg/png) or empty string
+  for (const p of photos) {
+    if (p && typeof p === 'string' && !p.startsWith('data:image/')) {
+      return res.status(400).json({ error: 'Invalid photo format' });
+    }
+  }
+  await stmts.updateVendorPhotos.run({ photos: JSON.stringify(photos), user_id: req.session.userId });
+  res.json({ ok: true });
+});
+
 // ── API: Organiser dashboard ───────────────────────────────────────────────
 
 app.post('/api/organiser/events', requireAuth, async (req, res) => {
