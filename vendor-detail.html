@@ -874,8 +874,20 @@ if (isNumericId) {
     .then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); })
     .then(function(data) {
       applyDbVendor(data.vendor);
-      // Clear gallery/reviews/events placeholders for real accounts
-      document.getElementById('vd-gallery').innerHTML = '<div style="color:var(--text-lo);font-size:13px;padding:16px;">No gallery photos yet.</div>';
+      // Gallery — use real uploaded photos if any
+      var photos = data.vendor.photos || [];
+      GALLERY_DATA = photos.map(function(src) { return { src: src }; });
+      var galleryEl = document.getElementById('vd-gallery');
+      if (photos.length) {
+        galleryEl.innerHTML = photos.map(function(src, i) {
+          return '<div class="gallery-item" onclick="openLightbox(' + i + ')">' +
+            '<img class="gallery-img" src="' + src + '" style="object-fit:cover;width:100%;height:100%;" />' +
+            '<div class="gallery-overlay">🔍</div>' +
+          '</div>';
+        }).join('');
+      } else {
+        galleryEl.innerHTML = '<div style="color:var(--text-lo);font-size:13px;padding:16px;">No gallery photos yet.</div>';
+      }
       document.getElementById('past-events-list').innerHTML = '<div style="color:var(--text-lo);font-size:13px;padding:4px 0;">No past events yet.</div>';
       document.getElementById('vd-rating-num').textContent = '—';
       document.getElementById('vd-review-count').textContent = 'No reviews yet';
@@ -957,8 +969,14 @@ var GALLERY_DATA = (!isNumericId && typeof vendor !== 'undefined' && vendor) ? v
 
 function openLightbox(idx) {
   var d = GALLERY_DATA[idx];
-  document.getElementById('lightbox-img').textContent = d.emoji;
-  document.getElementById('lightbox-caption').textContent = d.caption;
+  var imgEl = document.getElementById('lightbox-img');
+  if (d && d.src) {
+    // Real uploaded photo — show as <img>
+    imgEl.innerHTML = '<img src="' + d.src + '" style="max-width:90vw;max-height:80vh;object-fit:contain;border-radius:12px;" />';
+  } else if (d) {
+    imgEl.textContent = d.emoji || '';
+  }
+  document.getElementById('lightbox-caption').textContent = (d && d.caption) || '';
   document.getElementById('lightbox').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
