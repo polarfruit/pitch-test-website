@@ -18,6 +18,17 @@ export const client = createClient({
 
 // ── Async prepare wrapper ──────────────────────────────────────────────────
 // Matches the better-sqlite3 .get/.all/.run interface but returns Promises.
+
+// libsql can return BigInt for INTEGER columns, which JSON.stringify can't handle
+// (breaks cookie-session). Convert all BigInt values to Number in every row.
+const toPlain = v => typeof v === 'bigint' ? Number(v) : v;
+const convertRow = row => {
+  if (!row) return null;
+  const out = {};
+  for (const [k, v] of Object.entries(row)) out[k] = toPlain(v);
+  return out;
+};
+
 function prepare(sql) {
   const norm = (...a) => {
     if (!a.length) return [];
@@ -25,8 +36,8 @@ function prepare(sql) {
     return a;
   };
   return {
-    get:  async (...a) => { const r = await client.execute({ sql, args: norm(...a) }); return r.rows[0] ?? null; },
-    all:  async (...a) => { const r = await client.execute({ sql, args: norm(...a) }); return r.rows; },
+    get:  async (...a) => { const r = await client.execute({ sql, args: norm(...a) }); return convertRow(r.rows[0] ?? null); },
+    all:  async (...a) => { const r = await client.execute({ sql, args: norm(...a) }); return r.rows.map(convertRow); },
     run:  async (...a) => { const r = await client.execute({ sql, args: norm(...a) }); return { lastInsertRowid: Number(r.lastInsertRowid), changes: r.rowsAffected }; },
   };
 }
