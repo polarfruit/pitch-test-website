@@ -42,131 +42,139 @@ function prepare(sql) {
   };
 }
 
-// ── Pragmas ────────────────────────────────────────────────────────────────
-if (!process.env.TURSO_DATABASE_URL) {
-  await client.execute('PRAGMA journal_mode = WAL');
+// ── Schema + seed guard ────────────────────────────────────────────────────
+// Single RTT on warm starts: try SELECT COUNT(*) FROM users.
+//   - If it succeeds → schema already exists, check if seed needed (same result).
+//   - If it throws  → first boot, create all tables then seed.
+// This avoids the previous 3-RTT pattern (PRAGMA + executeMultiple + COUNT).
+let _needsSeed = false;
+try {
+  const _check = await client.execute(`SELECT COUNT(*) as n FROM users`);
+  _needsSeed = Number(_check.rows[0].n) === 0;
+} catch {
+  // First boot — schema doesn't exist yet
+  if (!process.env.TURSO_DATABASE_URL) {
+    await client.execute('PRAGMA journal_mode = WAL');
+  }
+  await client.executeMultiple(`
+    CREATE TABLE IF NOT EXISTS users (
+      id                INTEGER PRIMARY KEY AUTOINCREMENT,
+      email             TEXT    UNIQUE NOT NULL,
+      password_hash     TEXT    NOT NULL,
+      first_name        TEXT    NOT NULL,
+      last_name         TEXT    NOT NULL,
+      role              TEXT    NOT NULL CHECK(role IN ('vendor','organiser','admin')),
+      status            TEXT    NOT NULL DEFAULT 'pending'
+                                CHECK(status IN ('pending','active','suspended','banned')),
+      email_verified    INTEGER NOT NULL DEFAULT 0,
+      phone_verified    INTEGER NOT NULL DEFAULT 0,
+      created_at        DATETIME DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS verification_codes (
+      id          INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      type        TEXT    NOT NULL CHECK(type IN ('email','phone')),
+      code        TEXT    NOT NULL,
+      target      TEXT    NOT NULL,
+      expires_at  DATETIME NOT NULL,
+      used        INTEGER NOT NULL DEFAULT 0,
+      created_at  DATETIME DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS vendors (
+      id           INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id      INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      trading_name TEXT    NOT NULL,
+      abn          TEXT,
+      abn_verified INTEGER DEFAULT 0,
+      mobile       TEXT,
+      state        TEXT,
+      suburb       TEXT,
+      bio          TEXT,
+      cuisine_tags TEXT    DEFAULT '[]',
+      setup_type   TEXT,
+      stall_w      REAL,
+      stall_d      REAL,
+      power        INTEGER DEFAULT 0,
+      water        INTEGER DEFAULT 0,
+      price_range  TEXT,
+      instagram    TEXT,
+      plan         TEXT    NOT NULL DEFAULT 'free' CHECK(plan IN ('free','pro')),
+      created_at   DATETIME DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS organisers (
+      id           INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id      INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      org_name     TEXT    NOT NULL,
+      abn          TEXT,
+      abn_verified INTEGER DEFAULT 0,
+      website      TEXT,
+      state        TEXT,
+      suburb       TEXT,
+      phone        TEXT,
+      bio          TEXT,
+      event_types  TEXT    DEFAULT '[]',
+      event_scale  TEXT,
+      stall_range  TEXT,
+      referral     TEXT,
+      created_at   DATETIME DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS events (
+      id                INTEGER PRIMARY KEY AUTOINCREMENT,
+      slug              TEXT    UNIQUE NOT NULL,
+      name              TEXT    NOT NULL,
+      category          TEXT,
+      status            TEXT    NOT NULL DEFAULT 'published'
+                                CHECK(status IN ('published','archived','deleted')),
+      suburb            TEXT,
+      state             TEXT,
+      date_sort         TEXT,
+      organiser_name    TEXT,
+      organiser_user_id INTEGER REFERENCES users(id),
+      description       TEXT,
+      stalls_available  INTEGER,
+      date_text         TEXT,
+      venue_name        TEXT,
+      created_at        DATETIME DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS payments (
+      id          INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      plan        TEXT    NOT NULL DEFAULT 'free',
+      amount      REAL    NOT NULL DEFAULT 0,
+      currency    TEXT    DEFAULT 'AUD',
+      status      TEXT    NOT NULL DEFAULT 'paid'
+                          CHECK(status IN ('paid','failed','refunded','pending')),
+      description TEXT,
+      created_at  DATETIME DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS event_applications (
+      id             INTEGER PRIMARY KEY AUTOINCREMENT,
+      event_id       INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+      vendor_user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      status         TEXT NOT NULL DEFAULT 'pending'
+                     CHECK(status IN ('pending','approved','rejected','withdrawn')),
+      message        TEXT,
+      created_at     DATETIME DEFAULT (datetime('now')),
+      UNIQUE(event_id, vendor_user_id)
+    );
+
+    CREATE TABLE IF NOT EXISTS presignup_codes (
+      email    TEXT PRIMARY KEY,
+      code     TEXT NOT NULL,
+      expires  INTEGER NOT NULL,
+      verified INTEGER NOT NULL DEFAULT 0
+    );
+  `);
+  _needsSeed = true;
 }
-try { await client.execute('PRAGMA foreign_keys = ON'); } catch {}
 
-// ── Schema ─────────────────────────────────────────────────────────────────
-await client.executeMultiple(`
-  CREATE TABLE IF NOT EXISTS users (
-    id                INTEGER PRIMARY KEY AUTOINCREMENT,
-    email             TEXT    UNIQUE NOT NULL,
-    password_hash     TEXT    NOT NULL,
-    first_name        TEXT    NOT NULL,
-    last_name         TEXT    NOT NULL,
-    role              TEXT    NOT NULL CHECK(role IN ('vendor','organiser','admin')),
-    status            TEXT    NOT NULL DEFAULT 'pending'
-                              CHECK(status IN ('pending','active','suspended','banned')),
-    email_verified    INTEGER NOT NULL DEFAULT 0,
-    phone_verified    INTEGER NOT NULL DEFAULT 0,
-    created_at        DATETIME DEFAULT (datetime('now'))
-  );
-
-  CREATE TABLE IF NOT EXISTS verification_codes (
-    id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    type        TEXT    NOT NULL CHECK(type IN ('email','phone')),
-    code        TEXT    NOT NULL,
-    target      TEXT    NOT NULL,
-    expires_at  DATETIME NOT NULL,
-    used        INTEGER NOT NULL DEFAULT 0,
-    created_at  DATETIME DEFAULT (datetime('now'))
-  );
-
-  CREATE TABLE IF NOT EXISTS vendors (
-    id           INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id      INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    trading_name TEXT    NOT NULL,
-    abn          TEXT,
-    abn_verified INTEGER DEFAULT 0,
-    mobile       TEXT,
-    state        TEXT,
-    suburb       TEXT,
-    bio          TEXT,
-    cuisine_tags TEXT    DEFAULT '[]',
-    setup_type   TEXT,
-    stall_w      REAL,
-    stall_d      REAL,
-    power        INTEGER DEFAULT 0,
-    water        INTEGER DEFAULT 0,
-    price_range  TEXT,
-    instagram    TEXT,
-    plan         TEXT    NOT NULL DEFAULT 'free' CHECK(plan IN ('free','pro')),
-    created_at   DATETIME DEFAULT (datetime('now'))
-  );
-
-  CREATE TABLE IF NOT EXISTS organisers (
-    id           INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id      INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    org_name     TEXT    NOT NULL,
-    abn          TEXT,
-    abn_verified INTEGER DEFAULT 0,
-    website      TEXT,
-    state        TEXT,
-    suburb       TEXT,
-    phone        TEXT,
-    bio          TEXT,
-    event_types  TEXT    DEFAULT '[]',
-    event_scale  TEXT,
-    stall_range  TEXT,
-    referral     TEXT,
-    created_at   DATETIME DEFAULT (datetime('now'))
-  );
-
-  CREATE TABLE IF NOT EXISTS events (
-    id                INTEGER PRIMARY KEY AUTOINCREMENT,
-    slug              TEXT    UNIQUE NOT NULL,
-    name              TEXT    NOT NULL,
-    category          TEXT,
-    status            TEXT    NOT NULL DEFAULT 'published'
-                              CHECK(status IN ('published','archived','deleted')),
-    suburb            TEXT,
-    state             TEXT,
-    date_sort         TEXT,
-    organiser_name    TEXT,
-    organiser_user_id INTEGER REFERENCES users(id),
-    description       TEXT,
-    stalls_available  INTEGER,
-    date_text         TEXT,
-    venue_name        TEXT,
-    created_at        DATETIME DEFAULT (datetime('now'))
-  );
-
-  CREATE TABLE IF NOT EXISTS payments (
-    id          INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    plan        TEXT    NOT NULL DEFAULT 'free',
-    amount      REAL    NOT NULL DEFAULT 0,
-    currency    TEXT    DEFAULT 'AUD',
-    status      TEXT    NOT NULL DEFAULT 'paid'
-                        CHECK(status IN ('paid','failed','refunded','pending')),
-    description TEXT,
-    created_at  DATETIME DEFAULT (datetime('now'))
-  );
-
-  CREATE TABLE IF NOT EXISTS event_applications (
-    id             INTEGER PRIMARY KEY AUTOINCREMENT,
-    event_id       INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
-    vendor_user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    status         TEXT NOT NULL DEFAULT 'pending'
-                   CHECK(status IN ('pending','approved','rejected','withdrawn')),
-    message        TEXT,
-    created_at     DATETIME DEFAULT (datetime('now')),
-    UNIQUE(event_id, vendor_user_id)
-  );
-
-  CREATE TABLE IF NOT EXISTS presignup_codes (
-    email    TEXT PRIMARY KEY,
-    code     TEXT NOT NULL,
-    expires  INTEGER NOT NULL,
-    verified INTEGER NOT NULL DEFAULT 0
-  );
-`);
-
-// ── Seed events (INSERT OR IGNORE — safe to re-run) ───────────────────────
-{
+if (_needsSeed) {
   const _ins = prepare(`INSERT OR IGNORE INTO events (slug, name, category, suburb, state, date_sort, organiser_name) VALUES (@slug, @name, @category, @suburb, @state, @date_sort, @organiser_name)`);
   for (const ev of [
     { slug: 'rundle-mall-night-eats',     name: 'Rundle Mall Night Eats',           category: 'Night Market',    suburb: 'Adelaide CBD',  state: 'SA', date_sort: '2026-04-12', organiser_name: 'Adelaide City Council Events' },
@@ -185,7 +193,7 @@ await client.executeMultiple(`
 }
 
 // ── Seed demo vendors + organisers ─────────────────────────────────────────
-{
+if (_needsSeed) {
   const HASH = await bcryptjs.hash('pitch2026', 8);
   const _su  = prepare(`INSERT OR IGNORE INTO users (email,password_hash,first_name,last_name,role,status) VALUES (@email,@hash,@first_name,@last_name,@role,@status)`);
   const _uid = prepare(`SELECT id FROM users WHERE email=?`);

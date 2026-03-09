@@ -1,5 +1,6 @@
 import express from 'express';
-import cookieSession from 'cookie-session';
+import { createHmac } from 'crypto';
+import fs from 'fs';
 import bcrypt from 'bcryptjs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -10,25 +11,123 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = 3000;
 
+// ── Simple HMAC-signed session cookie ──────────────────────────────────────
+// Replaces cookie-session. Stores session payload directly in a signed cookie.
+// No Secure flag (Vercel enforces HTTPS at the edge), no third-party session
+// store — just crypto.createHmac which is built into Node.
+const SESS_SECRET = process.env.SESSION_SECRET || 'pitch-dev-secret-2026';
+const SESS_COOKIE = 'pitchsess';
+const SESS_MAX_AGE = 7 * 24 * 60 * 60; // seconds
+
+function sessSign(payload) {
+  const data = Buffer.from(JSON.stringify(payload)).toString('base64url');
+  const sig  = createHmac('sha256', SESS_SECRET).update(data).digest('base64url');
+  return `${data}.${sig}`;
+}
+
+function sessVerify(token) {
+  if (!token) return null;
+  const dot = token.lastIndexOf('.');
+  if (dot < 1) return null;
+  const data = token.slice(0, dot);
+  const sig  = token.slice(dot + 1);
+  const expected = createHmac('sha256', SESS_SECRET).update(data).digest('base64url');
+  if (sig !== expected) return null;
+  try { return JSON.parse(Buffer.from(data, 'base64url').toString()); }
+  catch { return null; }
+}
+
+function sessRead(req) {
+  const raw = req.headers.cookie || '';
+  const match = raw.match(new RegExp(`(?:^|;\\s*)${SESS_COOKIE}=([^;]+)`));
+  return match ? (sessVerify(decodeURIComponent(match[1])) ?? {}) : {};
+}
+
+function sessWrite(res, payload) {
+  if (!payload || Object.keys(payload).length === 0) {
+    res.setHeader('Set-Cookie', `${SESS_COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`);
+  } else {
+    const token = encodeURIComponent(sessSign(payload));
+    res.setHeader('Set-Cookie', `${SESS_COOKIE}=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${SESS_MAX_AGE}`);
+  }
+}
+
+// Session middleware — attaches req.session (read on every request)
+app.use((req, res, next) => {
+  req.session = sessRead(req);
+  next();
+});
+
 // ── Middleware ─────────────────────────────────────────────────────────────
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// cookie-session stores all session data in a signed cookie — stateless,
-// works across Vercel serverless instances.
-app.use(cookieSession({
-  name: 'pitch.sess',
-  keys: [process.env.SESSION_SECRET || 'pitch-dev-secret-change-in-prod'],
-  maxAge: 7 * 24 * 60 * 60 * 1000,
-  httpOnly: true,
-  secure: !!process.env.VERCEL,
-  sameSite: 'lax',
-}));
+// ── Page token (embedded in dashboard HTML, used for API calls via header) ──
+// Cookies sometimes don't persist for fetch() on Vercel's edge. Page tokens
+// bypass this: auth happens server-side on the page GET, a signed token is
+// injected into the HTML, and every dashboard API call sends it as a header.
+function makePageToken(userId, role) {
+  const exp = Math.floor(Date.now() / 1000) + 7 * 24 * 3600;
+  const data = `${userId}:${role}:${exp}`;
+  const sig = createHmac('sha256', SESS_SECRET).update(data).digest('base64url').slice(0, 20);
+  return Buffer.from(data).toString('base64url') + '.' + sig;
+}
+
+function verifyPageToken(token) {
+  if (!token) return null;
+  const i = token.lastIndexOf('.');
+  if (i < 1) return null;
+  const dataB64 = token.slice(0, i);
+  const sig = token.slice(i + 1);
+  const data = Buffer.from(dataB64, 'base64url').toString();
+  const expected = createHmac('sha256', SESS_SECRET).update(data).digest('base64url').slice(0, 20);
+  if (sig !== expected) return null;
+  const [uid, role, expStr] = data.split(':');
+  if (!uid || !role || Date.now() / 1000 > Number(expStr)) return null;
+  return { userId: Number(uid), role };
+}
+
+// Serve a dashboard page with auth check + injected user data and page token.
+// This eliminates the need for a /api/me call from the client entirely.
+function serveDashboard(file, expectedRole) {
+  return async (req, res) => {
+    if (!req.session.userId) return res.redirect('/login');
+    try {
+      const user = await stmts.getUserById.get(req.session.userId);
+      if (!user || user.role !== expectedRole) return res.redirect('/login');
+
+      const profile = expectedRole === 'vendor'
+        ? await stmts.getVendorByUserId.get(user.id)
+        : await stmts.getOrganiserByUserId.get(user.id);
+
+      const token = makePageToken(user.id, user.role);
+      const { password_hash, ...userSafe } = user;
+
+      let html = fs.readFileSync(path.join(__dirname, file), 'utf8');
+      html = html.replace('</head>', `<script>
+window.__PITCH_USER__    = ${JSON.stringify(userSafe)};
+window.__PITCH_PROFILE__ = ${JSON.stringify(profile || {})};
+window.__PITCH_TOKEN__   = ${JSON.stringify(token)};
+</script></head>`);
+      res.send(html);
+    } catch (e) {
+      console.error('[serveDashboard]', e);
+      res.redirect('/login');
+    }
+  };
+}
 
 // ── Auth helpers ───────────────────────────────────────────────────────────
 function requireAuth(req, res, next) {
-  if (!req.session.userId) return res.status(401).json({ error: 'Not authenticated' });
-  next();
+  // Cookie session
+  if (req.session.userId) return next();
+  // Header token (sent by dashboard pages when cookies don't persist on Vercel)
+  const tok = req.headers['x-pitch-auth'];
+  if (tok) {
+    const auth = verifyPageToken(tok);
+    if (auth) { req.session = auth; return next(); }
+  }
+  return res.status(401).json({ error: 'Not authenticated' });
 }
 
 function requireAdmin(req, res, next) {
@@ -159,10 +258,7 @@ app.post('/api/signup/vendor', async (req, res) => {
     await stmts.setEmailVerified.run(userId);
     await stmts.deletePresignupCode.run(email.toLowerCase());
 
-    req.session.userId = userId;
-    req.session.role = 'vendor';
-    req.session.name = `${first_name} ${last_name}`;
-
+    sessWrite(res, { userId, role: 'vendor', name: `${first_name} ${last_name}` });
     res.json({ ok: true, redirect: '/dashboard/vendor' });
   } catch (err) {
     console.error('Signup vendor error:', err);
@@ -214,10 +310,7 @@ app.post('/api/signup/organiser', async (req, res) => {
     await stmts.setEmailVerified.run(userId);
     await stmts.deletePresignupCode.run(email.toLowerCase());
 
-    req.session.userId = userId;
-    req.session.role = 'organiser';
-    req.session.name = `${first_name} ${last_name}`;
-
+    sessWrite(res, { userId, role: 'organiser', name: `${first_name} ${last_name}` });
     res.json({ ok: true, redirect: '/dashboard/organiser' });
   } catch (err) {
     console.error('Signup organiser error:', err);
@@ -267,7 +360,7 @@ app.post('/api/verify/phone/send', requireAuth, async (req, res) => {
   if (!phone) return res.status(400).json({ error: 'Phone number required' });
   try {
     await issuePhoneCode(req.session.userId, phone);
-    req.session.pendingPhone = phone;
+    sessWrite(res, { ...req.session, pendingPhone: phone });
     res.json({ ok: true });
   } catch (err) {
     console.error('Send SMS error:', err);
@@ -310,8 +403,7 @@ app.post('/api/login', async (req, res) => {
   if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
 
   if (email === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-    req.session.isAdmin = true;
-    req.session.adminFresh = true;
+    sessWrite(res, { isAdmin: true });
     return res.json({ ok: true, redirect: '/admin' });
   }
 
@@ -325,12 +417,14 @@ app.post('/api/login', async (req, res) => {
   if (user.status === 'banned')    return res.status(403).json({ error: 'This account has been banned.' });
   if (user.status === 'suspended') return res.status(403).json({ error: 'This account is suspended.' });
 
-  req.session.userId = Number(user.id);
-  req.session.role   = user.role;
-  req.session.name   = `${user.first_name} ${user.last_name}`;
+  sessWrite(res, {
+    userId: Number(user.id),
+    role:   user.role,
+    name:   `${user.first_name} ${user.last_name}`,
+  });
 
   let redirect = '/';
-  if (user.role === 'vendor')    redirect = '/dashboard/vendor';
+  if (user.role === 'vendor')         redirect = '/dashboard/vendor';
   else if (user.role === 'organiser') redirect = '/dashboard/organiser';
   else if (user.role === 'admin')     redirect = '/admin';
 
@@ -339,13 +433,13 @@ app.post('/api/login', async (req, res) => {
 
 // POST /api/logout
 app.post('/api/logout', (req, res) => {
-  req.session = null;
+  sessWrite(res, {});
   res.json({ ok: true });
 });
 
 // GET /logout
 app.get('/logout', (req, res) => {
-  req.session = null;
+  sessWrite(res, {});
   res.redirect('/');
 });
 
@@ -372,13 +466,12 @@ app.post('/api/admin/login', (req, res) => {
   if (username !== ADMIN_USERNAME || password !== ADMIN_PASSWORD) {
     return res.status(401).json({ error: 'Invalid username or password' });
   }
-  req.session.isAdmin = true;
-  req.session.adminFresh = true;
+  sessWrite(res, { isAdmin: true });
   res.json({ ok: true });
 });
 
 app.post('/api/admin/logout', (req, res) => {
-  req.session = null;
+  sessWrite(res, {});
   res.json({ ok: true });
 });
 
@@ -602,7 +695,7 @@ app.get('/api/organiser/events', requireAuth, async (req, res) => {
 app.get('/api/organiser/events/:id/applications', requireAuth, async (req, res) => {
   if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
   const ev = await stmts.getEventById.get(req.params.id);
-  if (!ev || ev.organiser_user_id !== req.session.userId) return res.status(403).json({ error: 'Not your event' });
+  if (!ev || Number(ev.organiser_user_id) !== Number(req.session.userId)) return res.status(403).json({ error: 'Not your event' });
   const apps = await stmts.getApplicationsByEvent.all(req.params.id);
   res.json({ applications: apps });
 });
@@ -632,20 +725,13 @@ app.get('/verify/email',        page('verify-email.html'));
 app.get('/verify/phone',        page('verify-phone.html'));
 app.get('/events/*splat',       page('event-detail.html'));
 app.get('/vendors/*splat',      page('vendor-detail.html'));
-app.get('/dashboard/vendor',    page('vendor-dashboard.html'));
-app.get('/dashboard/vendor/*splat', page('vendor-dashboard.html'));
-app.get('/dashboard/organiser', page('organiser-dashboard.html'));
-app.get('/dashboard/organiser/*splat', page('organiser-dashboard.html'));
+app.get('/dashboard/vendor',          serveDashboard('vendor-dashboard.html', 'vendor'));
+app.get('/dashboard/vendor/*splat',   serveDashboard('vendor-dashboard.html', 'vendor'));
+app.get('/dashboard/organiser',       serveDashboard('organiser-dashboard.html', 'organiser'));
+app.get('/dashboard/organiser/*splat', serveDashboard('organiser-dashboard.html', 'organiser'));
 app.get('/admin/login',         page('admin-login.html'));
-app.get('/admin', (req, res) => {
-  if (req.session.adminFresh) {
-    req.session.adminFresh = false;
-    return res.sendFile(path.join(__dirname, 'admin-dashboard.html'));
-  }
-  delete req.session.isAdmin;
-  res.redirect('/admin/login');
-});
-app.get('/admin/*splat', requireAdminPage, page('admin-dashboard.html'));
+app.get('/admin',               requireAdminPage, page('admin-dashboard.html'));
+app.get('/admin/*splat',        requireAdminPage, page('admin-dashboard.html'));
 
 app.use(express.static(__dirname, { index: false }));
 
