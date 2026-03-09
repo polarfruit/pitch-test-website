@@ -812,7 +812,7 @@ body::before {
     </button>
     <button class="nav-link" onclick="showPanel('applications', this)">
       <span class="nav-icon">📋</span> My Applications
-      <span class="nav-badge">3</span>
+      <span class="nav-badge" id="apps-nav-badge" style="display:none">0</span>
     </button>
     <button class="nav-link" onclick="showPanel('profile', this)">
       <span class="nav-icon">👤</span> My Profile
@@ -862,23 +862,23 @@ body::before {
       <div class="stat-grid">
         <div class="stat-card ember">
           <div class="stat-label">Active Applications</div>
-          <div class="stat-value">3</div>
-          <div class="stat-delta">2 under review, 1 submitted</div>
+          <div class="stat-value" id="stat-active-apps">—</div>
+          <div class="stat-delta" id="stat-active-apps-sub">Loading…</div>
         </div>
         <div class="stat-card herb">
-          <div class="stat-label">Confirmed Events</div>
-          <div class="stat-value">12</div>
-          <div class="stat-delta up">↑ 4 more than last year</div>
+          <div class="stat-label">Approved Events</div>
+          <div class="stat-value" id="stat-approved">—</div>
+          <div class="stat-delta" id="stat-approved-sub">From your applications</div>
         </div>
         <div class="stat-card gold">
           <div class="stat-label">Average Rating</div>
-          <div class="stat-value">4.9</div>
-          <div class="stat-delta">From 62 organiser reviews</div>
+          <div class="stat-value">—</div>
+          <div class="stat-delta">No reviews yet</div>
         </div>
         <div class="stat-card slate">
           <div class="stat-label">Profile Views</div>
-          <div class="stat-value">847</div>
-          <div class="stat-delta up">↑ 23% vs last month</div>
+          <div class="stat-value">—</div>
+          <div class="stat-delta">Coming soon</div>
         </div>
       </div>
 
@@ -1003,12 +1003,11 @@ body::before {
     <div class="panel" id="panel-applications">
       <!-- Status filter -->
       <div class="app-filter-row">
-        <button class="status-filter-btn active" onclick="filterApps('all', this)">All (10)</button>
-        <button class="status-filter-btn" onclick="filterApps('submitted', this)">Submitted (2)</button>
-        <button class="status-filter-btn" onclick="filterApps('review', this)">Under Review (2)</button>
-        <button class="status-filter-btn" onclick="filterApps('approved', this)">Approved (4)</button>
-        <button class="status-filter-btn" onclick="filterApps('waitlisted', this)">Waitlisted (1)</button>
-        <button class="status-filter-btn" onclick="filterApps('rejected', this)">Rejected (1)</button>
+        <button class="status-filter-btn active" id="filter-all" onclick="filterApps('all', this)">All</button>
+        <button class="status-filter-btn" id="filter-pending" onclick="filterApps('pending', this)">Pending</button>
+        <button class="status-filter-btn" id="filter-approved" onclick="filterApps('approved', this)">Approved</button>
+        <button class="status-filter-btn" id="filter-rejected" onclick="filterApps('rejected', this)">Rejected</button>
+        <button class="status-filter-btn" id="filter-withdrawn" onclick="filterApps('withdrawn', this)">Withdrawn</button>
       </div>
 
       <div class="card" style="padding:0;overflow:hidden;">
@@ -1023,112 +1022,7 @@ body::before {
             </tr>
           </thead>
           <tbody id="app-tbody">
-            <tr data-status="approved">
-              <td style="padding-left:24px;">
-                <div class="td-event-name">Rundle Mall Night Eats</div>
-                <div class="td-event-date">Sat 12 Apr 2026 · Adelaide CBD</div>
-              </td>
-              <td>Night Market</td>
-              <td><span class="status-badge badge-approved">✓ Approved</span></td>
-              <td>15 Mar 2026</td>
-              <td style="padding-right:24px;"><a class="action-link" href="/events/rundle-mall-night-eats">View event →</a></td>
-            </tr>
-            <tr data-status="review">
-              <td style="padding-left:24px;">
-                <div class="td-event-name">Adelaide Showground Harvest Fair</div>
-                <div class="td-event-date">Sun 18 Apr 2026 · Wayville, SA</div>
-              </td>
-              <td>Fair</td>
-              <td><span class="status-badge badge-review">⏳ Under Review</span></td>
-              <td>20 Mar 2026</td>
-              <td style="padding-right:24px;"><a class="action-link" href="/events/adelaide-showground-harvest-fair">View event →</a></td>
-            </tr>
-            <tr data-status="submitted">
-              <td style="padding-left:24px;">
-                <div class="td-event-name">Glenelg Twilight Market</div>
-                <div class="td-event-date">Sun 3 May 2026 · Glenelg, SA</div>
-              </td>
-              <td>Night Market</td>
-              <td><span class="status-badge badge-submitted">● Submitted</span></td>
-              <td>1 Apr 2026</td>
-              <td style="padding-right:24px;"><a class="action-link" href="/events/glenelg-twilight-market">View event →</a></td>
-            </tr>
-            <tr data-status="waitlisted">
-              <td style="padding-left:24px;">
-                <div class="td-event-name">Victor Harbor Summer Fair</div>
-                <div class="td-event-date">Sun 24 May 2026 · Victor Harbor, SA</div>
-              </td>
-              <td>Fair</td>
-              <td><span class="status-badge badge-waitlisted">⏸ Waitlisted</span></td>
-              <td>10 Feb 2026</td>
-              <td style="padding-right:24px;"><a class="action-link" href="#">View event →</a></td>
-            </tr>
-            <tr data-status="approved">
-              <td style="padding-left:24px;">
-                <div class="td-event-name">Norwood Food Bazaar</div>
-                <div class="td-event-date">Sun 17 Nov 2024 · Norwood, SA</div>
-              </td>
-              <td>Market</td>
-              <td><span class="status-badge badge-approved">✓ Approved</span></td>
-              <td>5 Oct 2024</td>
-              <td style="padding-right:24px;"><a class="action-link" href="#">View event →</a></td>
-            </tr>
-            <tr data-status="rejected">
-              <td style="padding-left:24px;">
-                <div class="td-event-name">Barossa Valley Food &amp; Wine</div>
-                <div class="td-event-date">Sun 20 Apr 2025 · Tanunda, SA</div>
-              </td>
-              <td>Food Festival</td>
-              <td>
-                <span class="status-badge badge-rejected">✕ Rejected</span>
-                <button class="rejection-toggle" onclick="toggleRejection(this)">Why?</button>
-                <div class="rejection-reason">
-                  "We already have 3 BBQ vendors confirmed for this event and don't have capacity for additional BBQ stalls. We'd welcome an application for future years."
-                </div>
-              </td>
-              <td>14 Jan 2026</td>
-              <td style="padding-right:24px;"><a class="action-link" href="#">View event →</a></td>
-            </tr>
-            <tr data-status="approved">
-              <td style="padding-left:24px;">
-                <div class="td-event-name">Port Adelaide Night Market</div>
-                <div class="td-event-date">Sat 10 May 2026 · Port Adelaide, SA</div>
-              </td>
-              <td>Night Market</td>
-              <td><span class="status-badge badge-approved">✓ Approved</span></td>
-              <td>22 Mar 2026</td>
-              <td style="padding-right:24px;"><a class="action-link" href="#">View event →</a></td>
-            </tr>
-            <tr data-status="approved">
-              <td style="padding-left:24px;">
-                <div class="td-event-name">Fringe Food Village 2026</div>
-                <div class="td-event-date">Sat 22 Mar 2026 · Various SA venues</div>
-              </td>
-              <td>Festival</td>
-              <td><span class="status-badge badge-approved">✓ Approved</span></td>
-              <td>8 Feb 2026</td>
-              <td style="padding-right:24px;"><a class="action-link" href="#">View event →</a></td>
-            </tr>
-            <tr data-status="submitted">
-              <td style="padding-left:24px;">
-                <div class="td-event-name">Prospect Farmers Market</div>
-                <div class="td-event-date">Sat 31 May 2026 · Prospect, SA</div>
-              </td>
-              <td>Farmers Market</td>
-              <td><span class="status-badge badge-submitted">● Submitted</span></td>
-              <td>2 Apr 2026</td>
-              <td style="padding-right:24px;"><a class="action-link" href="#">View event →</a></td>
-            </tr>
-            <tr data-status="review">
-              <td style="padding-left:24px;">
-                <div class="td-event-name">The Cedars Winery Harvest Lunch</div>
-                <div class="td-event-date">Sun 15 Jun 2026 · Lyndoch, SA</div>
-              </td>
-              <td>Private Event</td>
-              <td><span class="status-badge badge-review">⏳ Under Review</span></td>
-              <td>28 Mar 2026</td>
-              <td style="padding-right:24px;"><a class="action-link" href="#">View event →</a></td>
-            </tr>
+            <tr id="app-empty-row"><td colspan="5" style="padding:32px 24px;text-align:center;color:var(--text-lo);font-size:13px;">No applications yet — browse events and apply below.</td></tr>
           </tbody>
         </table>
       </div>
@@ -1391,23 +1285,23 @@ body::before {
       <div class="earnings-summary">
         <div class="earnings-stat">
           <div class="earnings-stat-label">All-time earned</div>
-          <div class="earnings-stat-value">$9,840</div>
-          <div class="earnings-stat-sub">23 events completed</div>
+          <div class="earnings-stat-value">$0</div>
+          <div class="earnings-stat-sub">0 events completed</div>
         </div>
         <div class="earnings-stat">
           <div class="earnings-stat-label">This month</div>
-          <div class="earnings-stat-value">$1,250</div>
-          <div class="earnings-stat-sub">3 events in Mar 2026</div>
+          <div class="earnings-stat-value">$0</div>
+          <div class="earnings-stat-sub">No events this month</div>
         </div>
         <div class="earnings-stat">
           <div class="earnings-stat-label">Last month</div>
-          <div class="earnings-stat-value">$980</div>
-          <div class="earnings-stat-sub">2 events in Feb 2026</div>
+          <div class="earnings-stat-value">$0</div>
+          <div class="earnings-stat-sub">No events last month</div>
         </div>
         <div class="earnings-stat">
           <div class="earnings-stat-label">Pending payout</div>
-          <div class="earnings-stat-value">$630</div>
-          <div class="earnings-stat-sub" style="color:var(--gold);">Expected 15 Mar</div>
+          <div class="earnings-stat-value">$0</div>
+          <div class="earnings-stat-sub">No pending payouts</div>
         </div>
       </div>
 
@@ -2052,32 +1946,62 @@ async function loadApplications() {
   if (!r.ok) return;
   const { applications } = await r.json();
 
-  // Update stat card
-  const activeCount = applications.filter(a => ['pending','approved'].includes(a.status)).length;
-  const statVal = document.querySelector('.stat-card.ember .stat-value');
-  if (statVal) statVal.textContent = activeCount;
+  // Counts by status
+  const counts = { pending: 0, approved: 0, rejected: 0, withdrawn: 0 };
+  applications.forEach(a => { if (counts[a.status] !== undefined) counts[a.status]++; });
+  const activeCount = counts.pending + counts.approved;
+  const approvedCount = counts.approved;
 
-  // Badge
-  const badge = document.querySelector('.nav-link[onclick*="applications"] .nav-badge');
-  if (badge) badge.textContent = activeCount;
+  // Overview stat cards
+  const statActive = document.getElementById('stat-active-apps');
+  const statActiveSub = document.getElementById('stat-active-apps-sub');
+  const statApproved = document.getElementById('stat-approved');
+  if (statActive) statActive.textContent = activeCount;
+  if (statActiveSub) statActiveSub.textContent = counts.pending + ' pending, ' + counts.approved + ' approved';
+  if (statApproved) statApproved.textContent = approvedCount;
 
-  // Populate applications panel
+  // Nav badge
+  const navBadge = document.getElementById('apps-nav-badge');
+  if (navBadge) {
+    navBadge.textContent = activeCount;
+    navBadge.style.display = activeCount > 0 ? '' : 'none';
+  }
+
+  // Filter button labels
+  const total = applications.length;
+  const fb = id => document.getElementById(id);
+  if (fb('filter-all'))       fb('filter-all').textContent      = 'All' + (total ? ' (' + total + ')' : '');
+  if (fb('filter-pending'))   fb('filter-pending').textContent  = 'Pending' + (counts.pending ? ' (' + counts.pending + ')' : '');
+  if (fb('filter-approved'))  fb('filter-approved').textContent = 'Approved' + (counts.approved ? ' (' + counts.approved + ')' : '');
+  if (fb('filter-rejected'))  fb('filter-rejected').textContent = 'Rejected' + (counts.rejected ? ' (' + counts.rejected + ')' : '');
+  if (fb('filter-withdrawn')) fb('filter-withdrawn').textContent= 'Withdrawn' + (counts.withdrawn ? ' (' + counts.withdrawn + ')' : '');
+
+  // Populate applications table
   const tbody = document.getElementById('app-tbody');
   if (!tbody) return;
   if (!applications.length) {
-    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-lo);">No applications yet. <button onclick="showPanel('overview',document.querySelector('.nav-link'))" style="background:none;border:none;color:var(--ember);cursor:pointer;font-family:inherit;font-size:inherit;">Browse events →</button></td></tr>`;
+    tbody.innerHTML = `<tr id="app-empty-row"><td colspan="5" style="padding:32px 24px;text-align:center;color:var(--text-lo);font-size:13px;">No applications yet — browse events and apply below.</td></tr>`;
     return;
   }
-  const statusColors = { pending: 'var(--gold)', approved: 'var(--herb)', rejected: 'var(--terra)', withdrawn: 'var(--text-lo)' };
-  const statusLabels = { pending: '⏳ Submitted', approved: '✓ Approved', rejected: '✕ Not accepted', withdrawn: '— Withdrawn' };
+  const statusBadge = {
+    pending:   '<span class="status-badge badge-review">⏳ Pending</span>',
+    approved:  '<span class="status-badge badge-approved">✓ Approved</span>',
+    rejected:  '<span class="status-badge badge-rejected">✕ Not accepted</span>',
+    withdrawn: '<span class="status-badge" style="color:var(--text-lo);">— Withdrawn</span>',
+  };
   tbody.innerHTML = applications.map(a => `
-    <tr>
-      <td><strong>${a.event_name}</strong></td>
-      <td>${a.suburb || ''}, ${a.state || ''}</td>
-      <td>${a.date_sort || 'TBC'}</td>
-      <td><span style="color:${statusColors[a.status] || 'var(--text-mid)'};">${statusLabels[a.status] || a.status}</span></td>
+    <tr data-status="${a.status}">
+      <td style="padding-left:24px;">
+        <div class="td-event-name">${a.event_name}</div>
+        <div class="td-event-date">${a.date_sort || 'TBC'} · ${a.suburb || ''}${a.state ? ', ' + a.state : ''}</div>
+      </td>
+      <td>${a.category || '—'}</td>
+      <td>${statusBadge[a.status] || a.status}</td>
       <td>${new Date(a.created_at).toLocaleDateString('en-AU', {day:'numeric',month:'short',year:'numeric'})}</td>
-      <td>${a.status === 'pending' ? `<button onclick="withdrawApp(${a.event_id}, this)" style="background:none;border:none;color:var(--text-lo);cursor:pointer;font-size:12px;font-family:inherit;">Withdraw</button>` : ''}</td>
+      <td style="padding-right:24px;">${a.status === 'pending'
+        ? `<button onclick="withdrawApp(${a.event_id}, this)" style="background:none;border:none;color:var(--text-lo);cursor:pointer;font-size:12px;font-family:inherit;text-decoration:underline;">Withdraw</button>`
+        : `<a class="action-link" href="/events/${a.event_id}">View event →</a>`
+      }</td>
     </tr>
   `).join('');
 }
