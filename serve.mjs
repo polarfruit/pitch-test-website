@@ -1,5 +1,5 @@
 import express from 'express';
-import session from 'express-session';
+import cookieSession from 'cookie-session';
 import bcrypt from 'bcryptjs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -18,24 +18,15 @@ const presignupCodes = new Map();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Use cookie-based sessions (stateless — works across Vercel serverless instances).
-// On Vercel, SQLite session stores live in /tmp which is per-instance, causing
-// sessions to vanish between requests. Storing session in a signed cookie avoids this.
-app.use(session({
-  secret: process.env.SESSION_SECRET || 'pitch-dev-secret-change-in-prod',
-  resave: false,
-  saveUninitialized: false,
-  // No store → express-session defaults to MemoryStore in dev.
-  // On Vercel (serverless), we rely on the cookie to carry session data.
-  // express-session serialises session into a signed cookie when no store is used
-  // only if we set cookie.secure properly — see below.
-  cookie: {
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    httpOnly: true,
-    // Allow on http for local dev; require https on Vercel
-    secure: !!process.env.VERCEL,
-    sameSite: 'lax',
-  },
+// cookie-session stores all session data in a signed cookie — no server-side store needed.
+// This works across Vercel's stateless serverless instances (MemoryStore does not).
+app.use(cookieSession({
+  name: 'pitch.sess',
+  keys: [process.env.SESSION_SECRET || 'pitch-dev-secret-change-in-prod'],
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  httpOnly: true,
+  secure: !!process.env.VERCEL,
+  sameSite: 'lax',
 }));
 
 // ── Auth helpers ───────────────────────────────────────────────────────────
@@ -365,12 +356,14 @@ app.post('/api/login', async (req, res) => {
 
 // POST /api/logout
 app.post('/api/logout', (req, res) => {
-  req.session.destroy(() => res.json({ ok: true }));
+  req.session = null;
+  res.json({ ok: true });
 });
 
 // GET /logout — for nav dropdown link (destroy session and redirect home)
 app.get('/logout', (req, res) => {
-  req.session.destroy(() => res.redirect('/'));
+  req.session = null;
+  res.redirect('/');
 });
 
 // GET /api/me
@@ -406,7 +399,8 @@ app.post('/api/admin/login', (req, res) => {
 });
 
 app.post('/api/admin/logout', (req, res) => {
-  req.session.destroy(() => res.json({ ok: true }));
+  req.session = null;
+  res.json({ ok: true });
 });
 
 // ── API: Public events ─────────────────────────────────────────────────────
