@@ -1423,6 +1423,138 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDeleteM
 /* ── Init ─────────────────────────────────────────────────────────────────── */
 updateBioCounter();
 updatePreview();
+
+/* ── Real data init ──────────────────────────────────────────────────────── */
+async function initDashboard() {
+  // Auth check
+  let me;
+  try {
+    const r = await fetch('/api/me');
+    const d = await r.json();
+    if (!d.user || d.user.role !== 'vendor') { window.location.href = '/login'; return; }
+    me = d.user;
+  } catch (e) { window.location.href = '/login'; return; }
+
+  // Populate user name
+  const tradingName = (me.vendor && me.vendor.trading_name) ? me.vendor.trading_name : (me.first_name + ' ' + me.last_name);
+  document.querySelector('.vendor-mini-name').textContent = tradingName;
+  document.querySelector('.plan-pill').textContent = (me.vendor && me.vendor.plan === 'pro') ? '⭐ Pro Vendor' : 'Free Plan';
+
+  // Populate profile form with real data
+  if (me.vendor) {
+    const v = me.vendor;
+    if (document.getElementById('prof-name')) document.getElementById('prof-name').value = v.trading_name || '';
+    if (document.getElementById('prof-bio')) { document.getElementById('prof-bio').value = v.bio || ''; updateBioCounter(); }
+    if (document.getElementById('v-mobile')) document.getElementById('v-mobile').value = v.mobile || '';
+    if (document.getElementById('v-state')) document.getElementById('v-state').value = v.state || '';
+    if (document.getElementById('v-suburb')) document.getElementById('v-suburb').value = v.suburb || '';
+    updatePreview();
+  }
+
+  // Logout button
+  document.querySelector('.sidebar-footer button').onclick = async () => {
+    await fetch('/api/logout', { method: 'POST' });
+    window.location.href = '/';
+  };
+
+  // Load real events
+  loadEvents();
+  loadApplications();
+}
+
+async function loadEvents() {
+  const r = await fetch('/api/vendor/events');
+  if (!r.ok) return;
+  const { events } = await r.json();
+
+  const list = document.querySelector('.event-mini-list');
+  if (!list || !events.length) return;
+
+  list.innerHTML = events.slice(0, 6).map(ev => {
+    const applied = ev.applied;
+    const statusLabel = applied
+      ? `<span class="event-mini-spots" style="color:${ev.appStatus==='approved'?'var(--herb)':ev.appStatus==='rejected'?'var(--terra)':'var(--gold);'}">${
+          ev.appStatus==='approved'?'✓ Approved':ev.appStatus==='rejected'?'✕ Not accepted':'● Applied'
+        }</span>`
+      : `<button class="btn-apply-mini" onclick="applyToEvent(${ev.id},this)">Apply →</button>`;
+
+    return `<div class="event-mini" data-event-id="${ev.id}">
+      <div class="event-mini-icon" style="background:linear-gradient(135deg,#1A1208,#3D2C10);">🎪</div>
+      <div class="event-mini-body">
+        <div class="event-mini-name">${ev.name}</div>
+        <div class="event-mini-meta">📍 ${ev.suburb || ''}${ev.state ? ', ' + ev.state : ''} · ${ev.date_sort || ''}</div>
+      </div>
+      <div class="event-mini-right">
+        ${ev.stalls_available ? `<div class="event-mini-spots">${ev.stalls_available} spots</div>` : ''}
+        ${statusLabel}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function applyToEvent(eventId, btn) {
+  btn.textContent = 'Applying…';
+  btn.disabled = true;
+  try {
+    const r = await fetch(`/api/events/${eventId}/apply`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+    const d = await r.json();
+    if (r.ok) {
+      btn.closest('.event-mini').querySelector('.event-mini-right').innerHTML =
+        `<span class="event-mini-spots" style="color:var(--gold);">● Applied</span>`;
+      loadApplications();
+    } else {
+      btn.textContent = 'Apply →';
+      btn.disabled = false;
+      alert(d.error || 'Could not apply');
+    }
+  } catch (e) {
+    btn.textContent = 'Apply →';
+    btn.disabled = false;
+  }
+}
+
+async function loadApplications() {
+  const r = await fetch('/api/vendor/applications');
+  if (!r.ok) return;
+  const { applications } = await r.json();
+
+  // Update stat card
+  const activeCount = applications.filter(a => ['pending','approved'].includes(a.status)).length;
+  const statVal = document.querySelector('.stat-card.ember .stat-value');
+  if (statVal) statVal.textContent = activeCount;
+
+  // Badge
+  const badge = document.querySelector('.nav-link[onclick*="applications"] .nav-badge');
+  if (badge) badge.textContent = activeCount;
+
+  // Populate applications panel
+  const tbody = document.getElementById('app-tbody');
+  if (!tbody) return;
+  if (!applications.length) {
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-lo);">No applications yet. <button onclick="showPanel('overview',document.querySelector('.nav-link'))" style="background:none;border:none;color:var(--ember);cursor:pointer;font-family:inherit;font-size:inherit;">Browse events →</button></td></tr>`;
+    return;
+  }
+  const statusColors = { pending: 'var(--gold)', approved: 'var(--herb)', rejected: 'var(--terra)', withdrawn: 'var(--text-lo)' };
+  const statusLabels = { pending: '⏳ Submitted', approved: '✓ Approved', rejected: '✕ Not accepted', withdrawn: '— Withdrawn' };
+  tbody.innerHTML = applications.map(a => `
+    <tr>
+      <td><strong>${a.event_name}</strong></td>
+      <td>${a.suburb || ''}, ${a.state || ''}</td>
+      <td>${a.date_sort || 'TBC'}</td>
+      <td><span style="color:${statusColors[a.status] || 'var(--text-mid)'};">${statusLabels[a.status] || a.status}</span></td>
+      <td>${new Date(a.created_at).toLocaleDateString('en-AU', {day:'numeric',month:'short',year:'numeric'})}</td>
+      <td>${a.status === 'pending' ? `<button onclick="withdrawApp(${a.event_id}, this)" style="background:none;border:none;color:var(--text-lo);cursor:pointer;font-size:12px;font-family:inherit;">Withdraw</button>` : ''}</td>
+    </tr>
+  `).join('');
+}
+
+async function withdrawApp(eventId, btn) {
+  if (!confirm('Withdraw your application for this event?')) return;
+  const r = await fetch(`/api/events/${eventId}/withdraw`, { method: 'POST' });
+  if (r.ok) loadApplications();
+}
+
+initDashboard();
 </script>
 </body>
 </html>
