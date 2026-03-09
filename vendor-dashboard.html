@@ -1041,7 +1041,7 @@ body::before {
 
           <div class="form-group">
             <label class="form-label">Bio <span style="color:var(--text-lo);font-weight:400;letter-spacing:0;text-transform:none;">(max 250 characters)</span></label>
-            <textarea class="form-textarea" id="prof-bio" maxlength="250" oninput="updateBioCounter();updatePreview()">Adelaide's most-loved BBQ food truck, smoking low-and-slow since 2019. Brisket, ribs, and pulled pork rolls slow-cooked over ironbark wood.</textarea>
+            <textarea class="form-textarea" id="prof-bio" maxlength="250" oninput="updateBioCounter();updatePreview()"></textarea>
             <div class="char-counter" id="bio-counter">140/250</div>
           </div>
 
@@ -1144,10 +1144,8 @@ body::before {
                 <span class="preview-tag">BBQ</span>
                 <span class="preview-tag">Food Truck</span>
               </div>
-              <div class="preview-stats">
-                <span class="preview-rating">★ 4.9</span>
-                <span class="preview-events">47 events</span>
-                <span style="margin-left:auto;font-size:10px;color:var(--text-lo);">📍 Norwood</span>
+              <div class="preview-stats" id="preview-stats">
+                <span style="font-size:10px;color:var(--text-lo);">📍 <span id="preview-location">—</span></span>
               </div>
             </div>
           </div>
@@ -1162,116 +1160,8 @@ body::before {
         Keep your documents up to date to maintain your Verified status on Pitch. Organisers can see your document status on your public profile.
       </p>
 
-      <div class="doc-grid">
-
-        <!-- Food Safety Certificate — Approved, expiry warning -->
-        <div class="doc-card warn">
-          <div class="doc-header">
-            <div>
-              <div class="doc-icon">📜</div>
-            </div>
-            <span class="status-badge badge-approved">✓ Approved</span>
-          </div>
-          <div>
-            <div class="doc-name">Food Safety Certificate</div>
-            <div class="doc-expiry warn-text">⚠️ Expires 30 Jun 2026 — 84 days</div>
-          </div>
-          <div class="doc-warning">
-            ⏰ Renew within 60 days to maintain your Verified status.
-          </div>
-          <div>
-            <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-lo);margin-bottom:10px;">Document status</div>
-            <div class="timeline-steps">
-              <div class="tl-step">
-                <div class="tl-dot done">✓</div>
-                <div class="tl-label done">Uploaded</div>
-              </div>
-              <div class="tl-line done"></div>
-              <div class="tl-step">
-                <div class="tl-dot done">✓</div>
-                <div class="tl-label done">Reviewed</div>
-              </div>
-              <div class="tl-line done"></div>
-              <div class="tl-step">
-                <div class="tl-dot done">✓</div>
-                <div class="tl-label done">Approved</div>
-              </div>
-            </div>
-          </div>
-          <button class="btn-upload">↑ Replace document</button>
-        </div>
-
-        <!-- Public Liability Insurance — Approved -->
-        <div class="doc-card">
-          <div class="doc-header">
-            <div>
-              <div class="doc-icon">🛡️</div>
-            </div>
-            <span class="status-badge badge-approved">✓ Approved</span>
-          </div>
-          <div>
-            <div class="doc-name">Public Liability Insurance</div>
-            <div class="doc-expiry">Expires 1 Jan 2027 — 299 days</div>
-          </div>
-          <div style="height:48px;"></div><!-- spacer to align with warning card -->
-          <div>
-            <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-lo);margin-bottom:10px;">Document status</div>
-            <div class="timeline-steps">
-              <div class="tl-step">
-                <div class="tl-dot done">✓</div>
-                <div class="tl-label done">Uploaded</div>
-              </div>
-              <div class="tl-line done"></div>
-              <div class="tl-step">
-                <div class="tl-dot done">✓</div>
-                <div class="tl-label done">Reviewed</div>
-              </div>
-              <div class="tl-line done"></div>
-              <div class="tl-step">
-                <div class="tl-dot done">✓</div>
-                <div class="tl-label done">Approved</div>
-              </div>
-            </div>
-          </div>
-          <button class="btn-upload">↑ Replace document</button>
-        </div>
-
-        <!-- Council Trading Permit — Missing (optional) -->
-        <div class="doc-card missing">
-          <div class="doc-header">
-            <div>
-              <div class="doc-icon">🏛️</div>
-            </div>
-            <span class="status-badge" style="background:#ffffff08;color:var(--text-lo);border-color:#ffffff12;">Missing</span>
-          </div>
-          <div>
-            <div class="doc-name">Council Trading Permit</div>
-            <div class="doc-optional">Optional — some events require this</div>
-          </div>
-          <div style="height:48px;padding:8px 12px;background:#ffffff05;border-radius:8px;display:flex;align-items:center;">
-            <span style="font-size:12px;color:var(--text-lo);line-height:1.5;">Not uploaded. Some events may require a current council trading permit.</span>
-          </div>
-          <div>
-            <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-lo);margin-bottom:10px;">Document status</div>
-            <div class="timeline-steps">
-              <div class="tl-step">
-                <div class="tl-dot pending">1</div>
-                <div class="tl-label">Upload</div>
-              </div>
-              <div class="tl-line"></div>
-              <div class="tl-step">
-                <div class="tl-dot pending">2</div>
-                <div class="tl-label">Review</div>
-              </div>
-              <div class="tl-line"></div>
-              <div class="tl-step">
-                <div class="tl-dot pending">3</div>
-                <div class="tl-label">Approved</div>
-              </div>
-            </div>
-          </div>
-          <button class="btn-upload missing-style">+ Upload document</button>
-        </div>
+      <div class="doc-grid" id="doc-grid">
+        <!-- Populated by renderDocuments() in JS -->
       </div>
     </div>
 
@@ -1315,12 +1205,7 @@ body::before {
               <th>Booth fee</th><th>Platform fee (5%)</th><th>Net</th><th>Status</th>
             </tr></thead>
             <tbody>
-              <tr><td><strong>Rundle Mall Night Eats</strong></td><td>12 Apr 2026</td><td>Adelaide City Events</td><td>$280</td><td>-$14</td><td><strong>$266</strong></td><td><span class="pay-badge pending">Pending</span></td></tr>
-              <tr><td><strong>Glenelg Beach Festival</strong></td><td>8 Mar 2026</td><td>Seaside Festivals SA</td><td>$320</td><td>-$16</td><td><strong>$304</strong></td><td><span class="pay-badge processing">Processing</span></td></tr>
-              <tr><td><strong>Adelaide Fringe Taste Trail</strong></td><td>22 Feb 2026</td><td>Fringe World</td><td>$350</td><td>-$17.50</td><td><strong>$332.50</strong></td><td><span class="pay-badge paid">✓ Paid</span></td></tr>
-              <tr><td><strong>Norwood Harvest Market</strong></td><td>15 Feb 2026</td><td>Inner East Events</td><td>$200</td><td>-$10</td><td><strong>$190</strong></td><td><span class="pay-badge paid">✓ Paid</span></td></tr>
-              <tr><td><strong>Victor Harbor Summer Fair</strong></td><td>28 Jan 2026</td><td>Fleurieu Events Co.</td><td>$420</td><td>-$21</td><td><strong>$399</strong></td><td><span class="pay-badge paid">✓ Paid</span></td></tr>
-              <tr><td><strong>Prospect Farmers Market</strong></td><td>11 Jan 2026</td><td>Prospect City Council</td><td>$150</td><td>-$7.50</td><td><strong>$142.50</strong></td><td><span class="pay-badge paid">✓ Paid</span></td></tr>
+              <tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-lo);font-size:13px;">No earnings yet — completed events will appear here.</td></tr>
             </tbody>
           </table>
         </div>
@@ -1348,7 +1233,7 @@ body::before {
         <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
           <div>
             <div style="font-size:12px; color:var(--text-lo); margin-bottom:4px;">Total earnings FY 2025–26</div>
-            <div style="font-family:var(--fd); font-size:28px; font-weight:900; color:var(--text-hi);">$4,680</div>
+            <div style="font-family:var(--fd); font-size:28px; font-weight:900; color:var(--text-hi);">$0</div>
           </div>
           <div style="position:relative; display:inline-block;">
             <button class="btn-coming-soon" disabled title="Coming soon">Download earnings summary PDF
@@ -1369,67 +1254,13 @@ body::before {
         <!-- Inbox -->
         <div class="inbox-panel">
           <div class="inbox-header">
-            <div class="inbox-title">Messages <span class="inbox-unread-badge">2</span></div>
+            <div class="inbox-title">Messages</div>
             <input class="inbox-search" type="text" placeholder="Search conversations…" />
           </div>
-          <div class="thread-list">
-
-            <!-- Thread 1: Unread, approved -->
-            <div class="thread-item active" onclick="openThread('1', this)">
-              <div class="thread-avatar" style="background:linear-gradient(135deg,#1A3A0A,#2D6B1A);">AC</div>
-              <div class="thread-body">
-                <div class="thread-name">
-                  Adelaide City Events
-                </div>
-                <div class="thread-event">Rundle Mall Night Eats</div>
-                <div class="thread-preview">Your spot is confirmed — Booth A7. Looking forward...</div>
-              </div>
-              <div class="thread-meta">
-                <div class="thread-time">2h ago</div>
-                <div class="thread-unread-dot"></div>
-              </div>
+          <div class="thread-list" id="thread-list">
+            <div style="padding:40px 20px;text-align:center;color:var(--text-lo);font-size:13px;line-height:1.7;">
+              No messages yet.<br>Organisers will reach out here when they respond to your applications.
             </div>
-
-            <!-- Thread 2: Unread, standard -->
-            <div class="thread-item" onclick="openThread('2', this)">
-              <div class="thread-avatar" style="background:linear-gradient(135deg,#0A1A3A,#1A3070);">SF</div>
-              <div class="thread-body">
-                <div class="thread-name">Seaside Festivals SA</div>
-                <div class="thread-event">Glenelg Beach Festival</div>
-                <div class="thread-preview">Hi Joe, thanks for your application! We just need...</div>
-              </div>
-              <div class="thread-meta">
-                <div class="thread-time">Yesterday</div>
-                <div class="thread-unread-dot"></div>
-              </div>
-            </div>
-
-            <!-- Thread 3: Rejected -->
-            <div class="thread-item" onclick="openThread('3', this)">
-              <div class="thread-avatar" style="background:linear-gradient(135deg,#3A0A0A,#701A1A);">FW</div>
-              <div class="thread-body">
-                <div class="thread-name">Fringe World</div>
-                <div class="thread-event">WOMADelaide Fringe</div>
-                <div class="thread-preview">Unfortunately we won't be able to accommodate your...</div>
-              </div>
-              <div class="thread-meta">
-                <div class="thread-time">5 days ago</div>
-              </div>
-            </div>
-
-            <!-- Thread 4: Standard back-and-forth -->
-            <div class="thread-item" onclick="openThread('4', this)">
-              <div class="thread-avatar" style="background:linear-gradient(135deg,#0A2A1A,#1A5C30);">IE</div>
-              <div class="thread-body">
-                <div class="thread-name">Inner East Events</div>
-                <div class="thread-event">Norwood Twilight Markets</div>
-                <div class="thread-preview">You: Sounds great, we'll bring the full setup...</div>
-              </div>
-              <div class="thread-meta">
-                <div class="thread-time">1 week ago</div>
-              </div>
-            </div>
-
           </div>
         </div>
 
@@ -1512,15 +1343,8 @@ body::before {
         <!-- Subscription -->
         <div class="settings-section">
           <div class="settings-section-title">Subscription</div>
-          <div class="plan-card">
-            <div class="plan-left">
-              <h3>Pro Vendor</h3>
-              <p>Priority placement · Verified badge · Unlimited applications</p>
-            </div>
-            <div style="text-align:right;">
-              <div class="plan-price">$79<span>/mo</span></div>
-              <button class="btn-plan-change" style="margin-top:8px;">Change plan</button>
-            </div>
+          <div class="plan-card" id="settings-plan-card">
+            <!-- Populated by initDashboard -->
           </div>
         </div>
 
@@ -1798,6 +1622,11 @@ function updatePreview() {
   const setupVal = setup ? setup.value : '';
   const tags = [...selected, setupVal].filter(Boolean);
   document.getElementById('preview-tags').innerHTML = tags.slice(0, 4).map(t => `<span class="preview-tag">${t}</span>`).join('');
+
+  const suburb = (document.getElementById('v-suburb') || {}).value || '';
+  const state  = (document.getElementById('v-state')  || {}).value || '';
+  const locEl  = document.getElementById('preview-location');
+  if (locEl) locEl.textContent = [suburb, state].filter(Boolean).join(', ') || '—';
 }
 
 function saveProfile() {
@@ -1884,6 +1713,12 @@ async function initDashboard() {
     await pitchFetch('/api/logout', { method: 'POST' });
     window.location.href = '/';
   };
+
+  // Documents panel
+  renderDocuments();
+
+  // Settings plan card
+  renderPlanCard(profile);
 
   // Load real events
   loadEvents();
@@ -2010,6 +1845,77 @@ async function withdrawApp(eventId, btn) {
   if (!confirm('Withdraw your application for this event?')) return;
   const r = await pitchFetch(`/api/events/${eventId}/withdraw`, { method: 'POST' });
   if (r.ok) loadApplications();
+}
+
+function renderDocuments() {
+  const grid = document.getElementById('doc-grid');
+  if (!grid) return;
+  const docs = [
+    { key: 'food_safety', label: 'Food Safety Certificate', icon: '🛡️', desc: 'Required for all food vendors.' },
+    { key: 'pli',         label: 'Public Liability Insurance', icon: '📋', desc: 'Min. $20M cover required.' },
+    { key: 'council',     label: 'Council Trading Permit', icon: '🏛️', desc: 'Issued by your local council.' },
+  ];
+  const profile = window.__PITCH_PROFILE__ || {};
+  grid.innerHTML = docs.map(d => {
+    const uploaded = profile[d.key + '_url'];
+    return `<div class="doc-card" style="background:var(--ash);border:1px solid #ffffff09;border-radius:16px;padding:20px;">
+      <div style="font-size:28px;margin-bottom:12px;">${d.icon}</div>
+      <div style="font-size:13px;font-weight:700;color:var(--text-hi);margin-bottom:4px;">${d.label}</div>
+      <div style="font-size:12px;color:var(--text-lo);margin-bottom:14px;line-height:1.5;">${d.desc}</div>
+      ${uploaded
+        ? `<span class="status-badge badge-approved" style="margin-bottom:12px;display:inline-flex;">✓ Uploaded</span><br>
+           <a href="${uploaded}" target="_blank" style="font-size:12px;color:var(--ember);text-decoration:none;">View file →</a>`
+        : `<span class="status-badge badge-rejected" style="margin-bottom:12px;display:inline-flex;">⚠ Not uploaded</span><br>
+           <label style="cursor:pointer;font-size:12px;color:var(--ember);text-decoration:underline;">Upload now
+             <input type="file" accept=".pdf,.jpg,.png" style="display:none;" onchange="uploadDoc('${d.key}', this)" />
+           </label>`
+      }
+    </div>`;
+  }).join('');
+}
+
+async function uploadDoc(key, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const fd = new FormData();
+  fd.append('file', file);
+  fd.append('doc_type', key);
+  const r = await pitchFetch('/api/vendor/documents', { method: 'POST', body: fd });
+  if (r.ok) {
+    const d = await r.json();
+    if (d.url) { window.__PITCH_PROFILE__[key + '_url'] = d.url; renderDocuments(); }
+  } else {
+    alert('Upload failed. Please try again.');
+  }
+}
+
+function renderPlanCard(profile) {
+  const el = document.getElementById('settings-plan-card');
+  if (!el) return;
+  const plan = (profile && profile.plan) || 'free';
+  const isPro = plan === 'pro';
+  el.innerHTML = `
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+      <div>
+        <div style="font-size:15px;font-weight:700;color:var(--text-hi);margin-bottom:4px;">
+          ${isPro ? '⭐ Pro Vendor' : '🆓 Free Plan'}
+        </div>
+        <div style="font-size:13px;color:var(--text-mid);margin-bottom:12px;">
+          ${isPro ? '$79 / month · Billed monthly' : 'No subscription · Free forever'}
+        </div>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:6px;">
+          ${isPro
+            ? ['Unlimited event applications','Priority listing in search','Verified badge on profile','Advanced analytics','Email & SMS notifications'].map(f => `<li style="font-size:12px;color:var(--text-mid);">✓ ${f}</li>`).join('')
+            : ['Up to 3 event applications','Standard listing','Basic profile','Community support'].map(f => `<li style="font-size:12px;color:var(--text-mid);">✓ ${f}</li>`).join('')
+          }
+        </ul>
+      </div>
+      ${isPro
+        ? `<button style="flex-shrink:0;background:var(--ash);border:1px solid #ffffff12;color:var(--text-mid);font-size:12px;font-family:inherit;font-weight:600;padding:8px 16px;border-radius:8px;cursor:pointer;">Manage subscription →</button>`
+        : `<button style="flex-shrink:0;background:var(--ember);border:none;color:#fff;font-size:13px;font-family:inherit;font-weight:700;padding:10px 20px;border-radius:10px;cursor:pointer;">Upgrade to Pro →</button>`
+      }
+    </div>
+  `;
 }
 
 initDashboard();
