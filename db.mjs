@@ -101,7 +101,10 @@ try {
       price_range  TEXT,
       instagram    TEXT,
       plan         TEXT    NOT NULL DEFAULT 'free' CHECK(plan IN ('free','pro')),
-      photos       TEXT    DEFAULT '[]',
+      photos            TEXT    DEFAULT '[]',
+      food_safety_url   TEXT,
+      pli_url           TEXT,
+      council_url       TEXT,
       created_at   DATETIME DEFAULT (datetime('now'))
     );
 
@@ -177,6 +180,9 @@ try {
 
 // ── Migrations (safe to run every boot) ────────────────────────────────────
 try { await client.execute(`ALTER TABLE vendors ADD COLUMN photos TEXT DEFAULT '[]'`); } catch {}
+try { await client.execute(`ALTER TABLE vendors ADD COLUMN food_safety_url TEXT`); } catch {}
+try { await client.execute(`ALTER TABLE vendors ADD COLUMN pli_url TEXT`); } catch {}
+try { await client.execute(`ALTER TABLE vendors ADD COLUMN council_url TEXT`); } catch {}
 
 if (_needsSeed) {
   const _ins = prepare(`INSERT OR IGNORE INTO events (slug, name, category, suburb, state, date_sort, organiser_name) VALUES (@slug, @name, @category, @suburb, @state, @date_sort, @organiser_name)`);
@@ -318,6 +324,7 @@ export const stmts = {
   updateUserProfile:      prepare(`UPDATE users SET first_name=@first_name, last_name=@last_name, email=@email, status=@status WHERE id=@id`),
   updateVendorProfile:    prepare(`UPDATE vendors SET trading_name=@trading_name, mobile=@mobile, suburb=@suburb, state=@state, bio=@bio, plan=@plan, instagram=@instagram, setup_type=@setup_type, stall_w=@stall_w, stall_d=@stall_d, power=@power, water=@water, price_range=@price_range, abn=@abn WHERE user_id=@user_id`),
   updateVendorPhotos:     prepare(`UPDATE vendors SET photos=@photos WHERE user_id=@user_id`),
+  updateVendorDoc:        prepare(`UPDATE vendors SET food_safety_url=@food_safety_url, pli_url=@pli_url, council_url=@council_url WHERE user_id=@user_id`),
   updateOrganiserProfile: prepare(`UPDATE organisers SET org_name=@org_name, phone=@phone, website=@website, suburb=@suburb, state=@state, bio=@bio, event_scale=@event_scale, stall_range=@stall_range, abn=@abn WHERE user_id=@user_id`),
 
   // verification codes (post-signup)

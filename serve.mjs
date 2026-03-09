@@ -668,6 +668,26 @@ app.post('/api/vendor/photos', requireAuth, async (req, res) => {
   res.json({ ok: true });
 });
 
+// ── API: Vendor documents ──────────────────────────────────────────────────
+app.post('/api/vendor/documents', requireAuth, async (req, res) => {
+  if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Vendors only' });
+  const { doc_type, data } = req.body;
+  const allowed = ['food_safety', 'pli', 'council'];
+  if (!allowed.includes(doc_type)) return res.status(400).json({ error: 'Invalid doc_type' });
+  if (!data || typeof data !== 'string' || !data.startsWith('data:')) {
+    return res.status(400).json({ error: 'Invalid file data' });
+  }
+  // Load current doc values then update the one that changed
+  const current = await stmts.getVendorByUserId.get(req.session.userId);
+  await stmts.updateVendorDoc.run({
+    food_safety_url: doc_type === 'food_safety' ? data : (current && current.food_safety_url) || null,
+    pli_url:         doc_type === 'pli'         ? data : (current && current.pli_url)         || null,
+    council_url:     doc_type === 'council'     ? data : (current && current.council_url)     || null,
+    user_id: req.session.userId,
+  });
+  res.json({ ok: true, url: data });
+});
+
 // ── API: Organiser dashboard ───────────────────────────────────────────────
 
 app.post('/api/organiser/events', requireAuth, async (req, res) => {
