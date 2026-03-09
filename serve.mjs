@@ -674,7 +674,7 @@ app.post('/api/vendor/documents', requireAuth, async (req, res) => {
   const { doc_type, data } = req.body;
   const allowed = ['food_safety', 'pli', 'council'];
   if (!allowed.includes(doc_type)) return res.status(400).json({ error: 'Invalid doc_type' });
-  if (!data || typeof data !== 'string' || !data.startsWith('data:')) {
+  if (data !== null && (typeof data !== 'string' || !data.startsWith('data:'))) {
     return res.status(400).json({ error: 'Invalid file data' });
   }
   // Load current doc values then update the one that changed

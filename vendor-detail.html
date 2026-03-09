@@ -452,7 +452,7 @@ footer {
       <div class="vendor-identity">
         <div class="vendor-name-row">
           <h1 class="vendor-name" id="vd-name">Smoky Joe's BBQ</h1>
-          <span class="verified-badge">✓ Verified</span>
+          <span class="verified-badge" id="vd-verified-badge" style="display:none;">✓ Verified</span>
           <span class="pro-badge-large" id="vd-pro-badge">★ Pro Vendor</span>
         </div>
         <div class="vendor-meta-row" id="vd-meta-row">
@@ -689,9 +689,9 @@ footer {
       </div>
 
       <!-- Document trust -->
-      <div class="sidebar-card">
-        <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-lo);margin-bottom:16px;">Verified Documents</div>
-        <div class="doc-list">
+      <div class="sidebar-card" id="vd-doc-trust">
+        <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-lo);margin-bottom:16px;">Documents</div>
+        <div class="doc-list" id="vd-doc-list">
           <div class="doc-item">
             <div class="doc-check">✓</div>
             ABN Verified
@@ -894,6 +894,33 @@ if (isNumericId) {
       document.getElementById('vd-events-count').textContent = '0';
       var lmBtn = document.getElementById('load-more-btn');
       if (lmBtn) lmBtn.style.display = 'none';
+
+      // Verified badge — only show if all 3 docs uploaded
+      var v = data.vendor;
+      var hasFood  = !!v.food_safety_url;
+      var hasPli   = !!v.pli_url;
+      var hasAbn   = !!v.abn_verified;
+      var isVerified = hasFood && hasPli;
+      var badge = document.getElementById('vd-verified-badge');
+      if (badge) badge.style.display = isVerified ? '' : 'none';
+
+      // Document trust sidebar
+      var docList = document.getElementById('vd-doc-list');
+      if (docList) {
+        var items = [
+          { label: 'ABN Verified',              ok: hasAbn },
+          { label: 'Food Safety Certificate',   ok: hasFood },
+          { label: 'Public Liability Insurance',ok: hasPli },
+          { label: 'Council Permit',            ok: !!v.council_url },
+        ].filter(function(i){ return i.ok; }); // only show docs that are actually uploaded
+        if (items.length) {
+          docList.innerHTML = items.map(function(i){
+            return '<div class="doc-item"><div class="doc-check">✓</div>' + i.label + '</div>';
+          }).join('');
+        } else {
+          docList.innerHTML = '<div style="font-size:12px;color:var(--text-lo);">No documents uploaded yet.</div>';
+        }
+      }
     })
     .catch(function() {
       document.getElementById('vd-name').textContent = 'Vendor not found';
@@ -910,6 +937,8 @@ if (isNumericId) {
     document.getElementById('vd-hero').style.background = vendor.bg;
     document.getElementById('vd-name').textContent = vendor.name;
     document.getElementById('vd-pro-badge').style.display = vendor.isPro ? '' : 'none';
+    var vb = document.getElementById('vd-verified-badge');
+    if (vb) vb.style.display = ''; // demo vendors are all verified
     document.getElementById('vd-meta-row').innerHTML =
       vendor.cuisines.map(function(c){ return '<span class="vendor-tag">' + c + '</span>'; }).join('') +
       '<span class="vendor-setup-tag">\uD83D\uDE9A ' + vendor.setup + '</span>' +

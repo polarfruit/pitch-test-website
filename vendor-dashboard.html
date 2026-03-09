@@ -1942,13 +1942,16 @@ function renderDocuments(uploadingState, uploadingKey) {
       ${isUploading
         ? `<span style="font-size:12px;color:var(--text-mid);">⏳ Uploading…</span>`
         : uploaded
-          ? `<div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px;">
+          ? `<div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:10px;">
                <span class="status-badge badge-approved" style="display:inline-flex;">✓ Uploaded</span>
                ${viewLink}
              </div>
-             <label style="cursor:pointer;font-size:11px;color:var(--text-lo);text-decoration:underline;margin-top:10px;display:inline-block;">Replace file
-               <input type="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none;" onchange="uploadDoc('${d.key}', this)" />
-             </label>`
+             <div style="display:flex;gap:12px;align-items:center;">
+               <label style="cursor:pointer;font-size:11px;color:var(--text-lo);text-decoration:underline;">Replace
+                 <input type="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none;" onchange="uploadDoc('${d.key}', this)" />
+               </label>
+               <button onclick="removeDoc('${d.key}')" style="background:none;border:none;font-size:11px;color:var(--terra);cursor:pointer;font-family:inherit;text-decoration:underline;padding:0;">Remove</button>
+             </div>`
           : `<span class="status-badge badge-rejected" style="margin-bottom:12px;display:inline-flex;">⚠ Not uploaded</span><br>
              <label style="cursor:pointer;font-size:12px;color:var(--ember);text-decoration:underline;">Upload file
                <input type="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none;" onchange="uploadDoc('${d.key}', this)" />
@@ -1989,6 +1992,19 @@ function uploadDoc(key, input) {
   };
   reader.readAsDataURL(file);
   input.value = '';
+}
+
+async function removeDoc(key) {
+  if (!confirm('Remove this document from your profile?')) return;
+  window.__PITCH_PROFILE__[key + '_url'] = null;
+  renderDocuments();
+  try {
+    await pitchFetch('/api/vendor/documents', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ doc_type: key, data: null }),
+    });
+  } catch (e) { console.warn('Doc remove failed', e); }
 }
 
 function renderPlanCard(profile) {
