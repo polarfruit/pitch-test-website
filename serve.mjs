@@ -59,8 +59,8 @@ app.use((req, res, next) => {
 });
 
 // ── Middleware ─────────────────────────────────────────────────────────────
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '15mb' }));
+app.use(express.urlencoded({ extended: true, limit: '15mb' }));
 
 // ── Page token (embedded in dashboard HTML, used for API calls via header) ──
 // Cookies sometimes don't persist for fetch() on Vercel's edge. Page tokens
