@@ -74,6 +74,10 @@ app.post('/api/presignup/send-code', async (req, res) => {
     res.json({ ok: true });
   } catch (err) {
     console.error('[presignup] Send code failed:', err);
+    // Email failed (e.g. unverified Resend domain) — return code in dev so signup still works
+    if (process.env.NODE_ENV !== 'production') {
+      return res.json({ ok: true, devCode: code });
+    }
     res.status(500).json({ error: 'Could not send verification email. Please try again.' });
   }
 });
@@ -94,7 +98,6 @@ app.post('/api/presignup/verify-code', (req, res) => {
   }
 
   presignupCodes.set(email.toLowerCase(), { ...entry, verified: true });
-  req.session.preVerifiedEmail = email.toLowerCase();
   res.json({ ok: true });
 });
 
@@ -119,7 +122,8 @@ app.post('/api/signup/vendor', async (req, res) => {
   if (existing) return res.status(409).json({ error: 'An account with that email already exists' });
 
   // Require pre-verified email before creating account
-  if (!req.session.preVerifiedEmail || req.session.preVerifiedEmail !== email.toLowerCase()) {
+  const preEntry = presignupCodes.get(email.toLowerCase());
+  if (!preEntry || !preEntry.verified) {
     return res.status(400).json({ error: 'Email not verified. Please verify your email first.' });
   }
 
@@ -150,7 +154,7 @@ app.post('/api/signup/vendor', async (req, res) => {
     // Email already verified — activate account immediately
     stmts.setUserStatus.run('active', userId);
     stmts.setEmailVerified.run(userId);
-    delete req.session.preVerifiedEmail;
+    presignupCodes.delete(email.toLowerCase());
 
     req.session.userId = userId;
     req.session.role = 'vendor';
@@ -182,7 +186,8 @@ app.post('/api/signup/organiser', async (req, res) => {
   if (existing) return res.status(409).json({ error: 'An account with that email already exists' });
 
   // Require pre-verified email before creating account
-  if (!req.session.preVerifiedEmail || req.session.preVerifiedEmail !== email.toLowerCase()) {
+  const preEntryOrg = presignupCodes.get(email.toLowerCase());
+  if (!preEntryOrg || !preEntryOrg.verified) {
     return res.status(400).json({ error: 'Email not verified. Please verify your email first.' });
   }
 
@@ -209,7 +214,7 @@ app.post('/api/signup/organiser', async (req, res) => {
     // Email already verified — activate account immediately
     stmts.setUserStatus.run('active', userId);
     stmts.setEmailVerified.run(userId);
-    delete req.session.preVerifiedEmail;
+    presignupCodes.delete(email.toLowerCase());
 
     req.session.userId = userId;
     req.session.role = 'organiser';
