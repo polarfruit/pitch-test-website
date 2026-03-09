@@ -1708,6 +1708,7 @@
             {v:'active',l:'Active'},{v:'pending',l:'Pending'},
             {v:'suspended',l:'Suspended'},{v:'banned',l:'Banned'}
           ])}
+          ${dfInput('df-newpw', 'New password', '', false, 'password')}
         </div>`) +
         detailSection('Business details', `<div class="detail-grid">
           ${dfInput('df-trading', 'Trading name', vendor.trading_name)}
@@ -1749,11 +1750,13 @@
     const msg = document.getElementById('save-msg');
     msg.style.display = 'none';
     try {
+      const newPw = document.getElementById('df-newpw').value.trim();
       const profileBody = {
         first_name: document.getElementById('df-first').value,
         last_name: document.getElementById('df-last').value,
         email: document.getElementById('df-email').value,
         status: document.getElementById('df-status').value,
+        ...(newPw ? { new_password: newPw } : {}),
       };
       const vendorBody = {
         trading_name: document.getElementById('df-trading').value,
@@ -1803,6 +1806,7 @@
             {v:'active',l:'Active'},{v:'pending',l:'Pending'},
             {v:'suspended',l:'Suspended'},{v:'banned',l:'Banned'}
           ])}
+          ${dfInput('df-newpw', 'New password', '', false, 'password')}
         </div>`) +
         detailSection('Organisation details', `<div class="detail-grid">
           ${dfInput('df-orgname', 'Organisation name', organiser.org_name)}
@@ -1837,11 +1841,13 @@
     const msg = document.getElementById('save-msg');
     msg.style.display = 'none';
     try {
+      const newPw = document.getElementById('df-newpw').value.trim();
       const profileBody = {
         first_name: document.getElementById('df-first').value,
         last_name: document.getElementById('df-last').value,
         email: document.getElementById('df-email').value,
         status: document.getElementById('df-status').value,
+        ...(newPw ? { new_password: newPw } : {}),
       };
       const organiserBody = {
         org_name: document.getElementById('df-orgname').value,
@@ -1870,7 +1876,7 @@
     const confirmed = confirm(`Permanently delete "${name}" and all their data?\n\nThis cannot be undone.`);
     if (!confirmed) return;
     try {
-      const res = await fetch(`/api/admin/users/${userId}`, { method: 'DELETE' });
+      const res = await fetch(`/api/admin/users/${userId}/delete`, { method: 'POST' });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || `Server returned ${res.status}`);
       // Close drawer and reload lists

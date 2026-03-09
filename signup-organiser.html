@@ -249,9 +249,76 @@
       border-radius: 10px; padding: 14px 16px; font-size: 13px; color: #7A9ED0;
       line-height: 1.6; margin-bottom: 20px;
     }
+
+    /* ── Email verify modal ──────────────────────── */
+    .verify-overlay {
+      display: none; position: fixed; inset: 0; z-index: 1000;
+      background: rgba(15,11,8,0.88); backdrop-filter: blur(6px);
+      align-items: center; justify-content: center; padding: 24px;
+    }
+    .verify-overlay.open { display: flex; }
+    .verify-card {
+      background: #231E19; border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 24px; padding: 44px 40px; width: 100%; max-width: 420px;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.6); text-align: center;
+      animation: slideUp 0.25s ease;
+    }
+    @keyframes slideUp { from { opacity:0; transform: translateY(16px); } to { opacity:1; transform: translateY(0); } }
+    .verify-icon { font-size: 48px; margin-bottom: 20px; }
+    .verify-title { font-family: 'Fraunces', serif; font-size: 26px; color: #FDF4E7; margin: 0 0 8px; letter-spacing: -0.02em; }
+    .verify-sub { font-size: 14px; color: #A89880; margin: 0 0 32px; line-height: 1.6; }
+    .verify-sub strong { color: #FDF4E7; }
+    .code-inputs { display: flex; gap: 10px; justify-content: center; margin-bottom: 24px; }
+    .code-input {
+      width: 48px; height: 58px; border-radius: 12px; border: 1.5px solid #3A2E26;
+      background: #1A1612; color: #FDF4E7; font-size: 24px; font-weight: 700;
+      text-align: center; outline: none; transition: border-color 0.18s;
+      font-family: 'Instrument Sans', sans-serif;
+    }
+    .code-input:focus { border-color: #E8500A; }
+    .verify-error {
+      font-size: 13px; color: #C0392B; background: rgba(192,57,43,0.1);
+      border: 1px solid rgba(192,57,43,0.25); border-radius: 8px; padding: 10px 14px;
+      margin-bottom: 16px; display: none;
+    }
+    .verify-btn {
+      width: 100%; background: #E8500A; color: #fff; border: none; border-radius: 10px;
+      font-family: 'Instrument Sans', sans-serif; font-size: 15px; font-weight: 600;
+      padding: 14px 28px; cursor: pointer; transition: background 0.18s; margin-bottom: 16px;
+    }
+    .verify-btn:hover { background: #FF6B2B; }
+    .verify-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .verify-resend { font-size: 13px; color: #6B5A4A; }
+    .verify-resend button {
+      background: none; border: none; color: #E8500A; font-size: 13px; font-weight: 600;
+      cursor: pointer; font-family: inherit; padding: 0;
+    }
+    .verify-resend button:hover { text-decoration: underline; }
+    .verify-resend button:disabled { color: #6B5A4A; cursor: default; text-decoration: none; }
   </style>
 </head>
 <body>
+
+<!-- Email Verification Modal -->
+<div class="verify-overlay" id="verifyOverlay">
+  <div class="verify-card">
+    <div class="verify-icon">📬</div>
+    <h2 class="verify-title">Check your inbox</h2>
+    <p class="verify-sub">We sent a 6-digit code to<br><strong id="verifyEmailDisplay"></strong></p>
+    <div class="code-inputs">
+      <input class="code-input" id="vc0" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+      <input class="code-input" id="vc1" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+      <input class="code-input" id="vc2" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+      <input class="code-input" id="vc3" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+      <input class="code-input" id="vc4" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+      <input class="code-input" id="vc5" maxlength="1" inputmode="numeric" pattern="[0-9]" />
+    </div>
+    <div class="verify-error" id="verifyError"></div>
+    <button class="verify-btn" id="verifyBtn" onclick="submitVerifyCode()">Verify email</button>
+    <p class="verify-resend">Didn't get it? <button id="resendBtn" onclick="resendVerifyCode()">Resend code</button></p>
+  </div>
+</div>
+
 <div class="signup-shell">
 
   <!-- ── Brand panel ── -->
@@ -714,36 +781,37 @@
     el.classList.add('selected');
   }
 
-  /* ── Submit organiser signup ── */
+  /* ── Collect organiser payload ── */
+  function collectOrgPayload() {
+    const eventTypes = Array.from(document.querySelectorAll('#eventTypeTags .tag-chip.active')).map(t => t.textContent);
+    const scaleEl = document.querySelector('.radio-card.selected .radio-card-body strong');
+    const refEl = document.querySelector('.ref-card.selected .ref-card-label');
+    return {
+      first_name:  document.getElementById('o-first-name').value.trim(),
+      last_name:   document.getElementById('o-last-name').value.trim(),
+      email:       document.getElementById('o-email').value.trim(),
+      password:    document.getElementById('pw1-org').value,
+      org_name:    document.getElementById('o-org-name').value.trim(),
+      abn:         document.getElementById('abn-org').value.replace(/\s/g, ''),
+      website:     document.getElementById('o-website').value.trim(),
+      state:       document.getElementById('o-state').value,
+      suburb:      document.getElementById('o-suburb').value.trim(),
+      phone:       document.getElementById('o-phone').value.trim(),
+      bio:         document.getElementById('o-bio').value.trim(),
+      event_types: eventTypes,
+      event_scale: scaleEl ? scaleEl.textContent : 'Medium',
+      stall_range: document.getElementById('stallDisplay').textContent,
+      referral:    refEl ? refEl.textContent : '',
+    };
+  }
+
+  /* ── Submit organiser signup — triggers email verify modal first ── */
   async function submitOrganiserSignup() {
     const btn = document.getElementById('submit-org-btn');
     const errEl = document.getElementById('signup-org-error');
     errEl.style.display = 'none';
 
-    const eventTypes = Array.from(document.querySelectorAll('#eventTypeTags .tag-chip.active')).map(t => t.textContent);
-    const scaleEl = document.querySelector('.radio-card.selected .radio-card-body strong');
-    const eventScale = scaleEl ? scaleEl.textContent : 'Medium';
-    const stallRange = document.getElementById('stallDisplay').textContent;
-    const refEl = document.querySelector('.ref-card.selected .ref-card-label');
-    const referral = refEl ? refEl.textContent : '';
-
-    const payload = {
-      first_name: document.getElementById('o-first-name').value.trim(),
-      last_name:  document.getElementById('o-last-name').value.trim(),
-      email:      document.getElementById('o-email').value.trim(),
-      password:   document.getElementById('pw1-org').value,
-      org_name:   document.getElementById('o-org-name').value.trim(),
-      abn:        document.getElementById('abn-org').value.replace(/\s/g, ''),
-      website:    document.getElementById('o-website').value.trim(),
-      state:      document.getElementById('o-state').value,
-      suburb:     document.getElementById('o-suburb').value.trim(),
-      phone:      document.getElementById('o-phone').value.trim(),
-      bio:        document.getElementById('o-bio').value.trim(),
-      event_types: eventTypes,
-      event_scale: eventScale,
-      stall_range: stallRange,
-      referral,
-    };
+    const payload = collectOrgPayload();
 
     const showErr = msg => {
       errEl.textContent = msg;
@@ -755,30 +823,139 @@
       showErr('Please fill in your name, email, password, and organisation name before submitting.');
       return;
     }
+    if (document.getElementById('pw1-org').value !== document.getElementById('pw2-org').value) {
+      showErr('Passwords do not match.');
+      return;
+    }
 
-    btn.textContent = 'Creating account…';
+    btn.textContent = 'Sending code…';
     btn.disabled = true;
 
     try {
-      const res = await fetch('/api/signup/organiser', {
+      const r = await fetch('/api/presignup/send-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ email: payload.email }),
       });
-      const data = await res.json();
-      if (!res.ok) {
-        showErr(data.error || 'Something went wrong. Please try again.');
+      const d = await r.json();
+      if (!r.ok) {
+        showErr(d.error || 'Could not send verification email.');
         btn.textContent = 'Submit →';
         btn.disabled = false;
         return;
       }
-      goStep(4);
-      setTimeout(() => { window.location.href = data.redirect; }, 2500);
+      // Show modal
+      document.getElementById('verifyEmailDisplay').textContent = payload.email;
+      document.getElementById('verifyOverlay').classList.add('open');
+      document.getElementById('vc0').focus();
+      btn.textContent = 'Submit →';
+      btn.disabled = false;
     } catch (e) {
       showErr('Network error — please check your connection and try again.');
       btn.textContent = 'Submit →';
       btn.disabled = false;
     }
+  }
+
+  /* ── Modal: wire up digit inputs ── */
+  (function () {
+    const inputs = [0,1,2,3,4,5].map(i => document.getElementById('vc' + i));
+    inputs.forEach((inp, i) => {
+      inp.addEventListener('input', () => {
+        inp.value = inp.value.replace(/\D/g, '').slice(-1);
+        if (inp.value && i < 5) inputs[i + 1].focus();
+        if (getCode().length === 6) submitVerifyCode();
+      });
+      inp.addEventListener('keydown', e => {
+        if (e.key === 'Backspace' && !inp.value && i > 0) inputs[i - 1].focus();
+      });
+      inp.addEventListener('paste', e => {
+        e.preventDefault();
+        const text = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').slice(0, 6);
+        text.split('').forEach((ch, j) => { if (inputs[j]) inputs[j].value = ch; });
+        if (inputs[Math.min(text.length, 5)]) inputs[Math.min(text.length, 5)].focus();
+        if (text.length === 6) submitVerifyCode();
+      });
+    });
+  })();
+
+  function getCode() {
+    return [0,1,2,3,4,5].map(i => document.getElementById('vc' + i).value).join('');
+  }
+
+  /* ── Modal: verify code then create account ── */
+  async function submitVerifyCode() {
+    const email = collectOrgPayload().email;
+    const code = getCode();
+    const errEl = document.getElementById('verifyError');
+    const btn = document.getElementById('verifyBtn');
+    errEl.style.display = 'none';
+
+    if (code.length < 6) { errEl.textContent = 'Please enter all 6 digits.'; errEl.style.display = 'block'; return; }
+
+    btn.textContent = 'Verifying…';
+    btn.disabled = true;
+
+    try {
+      const r = await fetch('/api/presignup/verify-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, code }),
+      });
+      const d = await r.json();
+      if (!r.ok) {
+        errEl.textContent = d.error || 'Invalid code.';
+        errEl.style.display = 'block';
+        btn.textContent = 'Verify email';
+        btn.disabled = false;
+        return;
+      }
+      // Code verified — now create account
+      btn.textContent = 'Creating account…';
+      const payload = collectOrgPayload();
+      const res2 = await fetch('/api/signup/organiser', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const data2 = await res2.json();
+      if (!res2.ok) {
+        errEl.textContent = data2.error || 'Could not create account.';
+        errEl.style.display = 'block';
+        btn.textContent = 'Verify email';
+        btn.disabled = false;
+        return;
+      }
+      document.getElementById('verifyOverlay').classList.remove('open');
+      goStep(4);
+      setTimeout(() => { window.location.href = data2.redirect; }, 2500);
+    } catch (e) {
+      errEl.textContent = 'Network error. Please try again.';
+      errEl.style.display = 'block';
+      btn.textContent = 'Verify email';
+      btn.disabled = false;
+    }
+  }
+
+  /* ── Modal: resend code ── */
+  async function resendVerifyCode() {
+    const email = collectOrgPayload().email;
+    const resendBtn = document.getElementById('resendBtn');
+    resendBtn.disabled = true;
+    resendBtn.textContent = 'Sending…';
+    try {
+      await fetch('/api/presignup/send-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+    } finally {
+      resendBtn.textContent = 'Sent!';
+      setTimeout(() => { resendBtn.textContent = 'Resend code'; resendBtn.disabled = false; }, 4000);
+    }
+    // Clear inputs
+    [0,1,2,3,4,5].forEach(i => { document.getElementById('vc' + i).value = ''; });
+    document.getElementById('vc0').focus();
   }
 </script>
 </body>

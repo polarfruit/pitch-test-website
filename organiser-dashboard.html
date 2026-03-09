@@ -606,7 +606,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
               <th style="padding-right:24px;">Actions</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody id="org-events-tbody">
             <tr>
               <td style="padding-left:24px;"><div class="td-event">Rundle Mall Night Eats</div><div class="td-sub">Night Market · Adelaide CBD</div></td>
               <td style="white-space:nowrap;">Sat 12 Apr 2026</td>
@@ -945,32 +945,33 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
       <div class="step-panel active" id="step-1">
         <div class="card">
           <div class="form-row">
-            <div class="form-group"><label class="form-label">Event name</label><input class="form-input" placeholder="e.g. Rundle Mall Night Eats" /></div>
-            <div class="form-group"><label class="form-label">Category</label><select class="form-select"><option value="">Select category…</option><option>Night Market</option><option>Fair</option><option>Festival</option><option>Farmers Market</option><option>Private Event</option><option>Other</option></select></div>
+            <div class="form-group"><label class="form-label">Event name</label><input class="form-input" id="ne-name" placeholder="e.g. Rundle Mall Night Eats" /></div>
+            <div class="form-group"><label class="form-label">Category</label><select class="form-select" id="ne-category"><option value="">Select category…</option><option>Night Market</option><option>Fair</option><option>Festival</option><option>Farmers Market</option><option>Private Event</option><option>Other</option></select></div>
           </div>
           <div class="form-row">
-            <div class="form-group"><label class="form-label">Event date</label><input class="form-input" type="date" /></div>
+            <div class="form-group"><label class="form-label">Event date</label><input class="form-input" id="ne-date" type="date" /></div>
             <div class="form-group"><label class="form-label">End date (if multi-day)</label><input class="form-input" type="date" /></div>
           </div>
           <div class="form-row">
-            <div class="form-group"><label class="form-label">Suburb</label><input class="form-input" placeholder="e.g. Adelaide CBD" /></div>
-            <div class="form-group"><label class="form-label">State</label><select class="form-select"><option>SA</option><option>VIC</option><option>NSW</option><option>QLD</option><option>WA</option><option>TAS</option><option>ACT</option><option>NT</option></select></div>
+            <div class="form-group"><label class="form-label">Suburb</label><input class="form-input" id="ne-suburb" placeholder="e.g. Adelaide CBD" /></div>
+            <div class="form-group"><label class="form-label">State</label><select class="form-select" id="ne-state"><option>SA</option><option>VIC</option><option>NSW</option><option>QLD</option><option>WA</option><option>TAS</option><option>ACT</option><option>NT</option></select></div>
           </div>
-          <div class="form-group"><label class="form-label">Full address</label><input class="form-input" placeholder="Street address for vendors" /></div>
+          <div class="form-group"><label class="form-label">Full address / Venue name</label><input class="form-input" id="ne-venue" placeholder="Street address for vendors" /></div>
           <div class="form-row">
             <div class="form-group"><label class="form-label">Expected attendance</label><input class="form-input" type="number" placeholder="e.g. 5000" /></div>
             <div class="form-group"><label class="form-label">Event website (optional)</label><input class="form-input" type="url" placeholder="https://…" /></div>
           </div>
-          <div class="form-group"><label class="form-label">Public description</label><textarea class="form-textarea" placeholder="Describe your event to potential vendors — what makes it special, your audience, the vibe…" style="min-height:120px;"></textarea></div>
+          <div class="form-group"><label class="form-label">Public description</label><textarea class="form-textarea" id="ne-description" placeholder="Describe your event to potential vendors — what makes it special, your audience, the vibe…" style="min-height:120px;"></textarea></div>
+          <div id="ne-error" style="display:none;margin-top:12px;padding:11px 14px;background:rgba(192,57,43,0.1);border:1px solid rgba(192,57,43,0.25);border-radius:8px;font-size:13px;color:#C0392B;"></div>
         </div>
-        <div class="step-nav"><div></div><button class="btn-step-next" onclick="goStep(2)">Next: Booth specs →</button></div>
+        <div class="step-nav"><div></div><button class="btn-step-next" onclick="validateStep1()">Next: Booth specs →</button></div>
       </div>
 
       <!-- Step 2: Booth specs -->
       <div class="step-panel" id="step-2">
         <div class="card">
           <div class="form-row">
-            <div class="form-group"><label class="form-label">Total vendor spots</label><input class="form-input" type="number" placeholder="e.g. 20" /></div>
+            <div class="form-group"><label class="form-label">Total vendor spots</label><input class="form-input" id="ne-spots" type="number" placeholder="e.g. 20" /></div>
             <div class="form-group"><label class="form-label">Standard booth size</label><input class="form-input" placeholder="e.g. 3m × 3m" /></div>
           </div>
           <div class="form-group">
@@ -1210,14 +1211,70 @@ function showPanel(name, clickedEl) {
   document.getElementById('topbar-subtitle').textContent = '';
 }
 
-function openEventMgmt(id, name) {
+async function openEventMgmt(id, name) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.getElementById('panel-event-mgmt').classList.add('active');
   document.getElementById('mgmt-event-name').textContent = name;
   document.getElementById('mgmt-breadcrumb').textContent = name;
   document.getElementById('topbar-title').textContent = name;
-  // reset to applications tab
   showTab('applications', document.querySelector('.tab-btn'));
+
+  // Load real applications if numeric ID
+  if (typeof id === 'number') {
+    const r = await fetch(`/api/organiser/events/${id}/applications`);
+    if (!r.ok) return;
+    const { applications } = await r.json();
+    const grid = document.getElementById('mgmt-app-cards');
+    if (!grid) return;
+    if (!applications.length) {
+      grid.innerHTML = `<div style="color:var(--text-lo);font-size:14px;padding:24px 0;">No applications yet for this event.</div>`;
+      return;
+    }
+    grid.innerHTML = applications.map(a => {
+      const tags = JSON.parse(a.cuisine_tags || '[]').map(t => `<span class="app-tag">${t}</span>`).join('');
+      return `
+        <div class="app-card" data-app-status="${a.status}" data-app-id="${a.id}">
+          <div class="app-card-header">
+            <div class="app-card-avatar">🍽</div>
+            <div class="app-card-meta">
+              <div class="app-card-name">${a.trading_name}</div>
+              <div class="app-card-sub">${a.first_name} ${a.last_name} · ${a.email}</div>
+            </div>
+            <span class="badge badge-${a.status === 'approved' ? 'approved' : a.status === 'rejected' ? 'rejected' : 'pending'}">${
+              a.status === 'approved' ? '✓ Approved' : a.status === 'rejected' ? '✕ Rejected' : '⏳ Pending'
+            }</span>
+          </div>
+          <div class="app-card-tags">${tags}</div>
+          <p class="app-card-bio">${a.bio || ''}</p>
+          <div class="app-actions">
+            ${a.status === 'pending' ? `
+              <button class="btn-approve" onclick="reviewApp(${a.id},'approved',this)">✓ Approve</button>
+              <button class="btn-reject" onclick="reviewApp(${a.id},'rejected',this)">✕ Reject</button>
+            ` : `<span style="font-size:12px;color:var(--text-lo);">Decision made</span>`}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+}
+
+async function reviewApp(appId, status, btn) {
+  btn.disabled = true;
+  const r = await fetch(`/api/organiser/applications/${appId}/status`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status }),
+  });
+  if (r.ok) {
+    const card = btn.closest('.app-card');
+    card.dataset.appStatus = status;
+    const actEl = card.querySelector('.app-actions');
+    const colors = { approved: 'var(--herb)', rejected: 'var(--terra)' };
+    const labels = { approved: '✓ Approved', rejected: '✕ Rejected' };
+    actEl.innerHTML = `<span style="font-size:13px;font-weight:600;color:${colors[status]};">${labels[status]}</span>`;
+    const badge = card.querySelector('.badge');
+    if (badge) { badge.className = `badge badge-${status}`; badge.textContent = labels[status]; }
+  }
 }
 
 function showTab(name, btn) {
@@ -1280,12 +1337,129 @@ function goStep(n) {
   }
 }
 
-function publishEvent() {
-  const btn = event.target;
-  btn.textContent = '✓ Published!';
-  btn.style.background = 'var(--herb)';
-  setTimeout(() => { showPanel('events', null); btn.textContent = '🚀 Publish event'; btn.style.background = ''; goStep(1); }, 1500);
+function validateStep1() {
+  const name = document.getElementById('ne-name').value.trim();
+  const date = document.getElementById('ne-date').value;
+  const suburb = document.getElementById('ne-suburb').value.trim();
+  const errEl = document.getElementById('ne-error');
+  if (!name || !date || !suburb) {
+    errEl.textContent = 'Please enter event name, date, and suburb before continuing.';
+    errEl.style.display = 'block';
+    return;
+  }
+  errEl.style.display = 'none';
+  goStep(2);
 }
+
+async function publishEvent() {
+  const btn = event.target;
+  btn.textContent = 'Publishing…';
+  btn.disabled = true;
+
+  const payload = {
+    name:             document.getElementById('ne-name').value.trim(),
+    category:         document.getElementById('ne-category').value,
+    date_sort:        document.getElementById('ne-date').value,
+    suburb:           document.getElementById('ne-suburb').value.trim(),
+    state:            document.getElementById('ne-state').value,
+    venue_name:       document.getElementById('ne-venue').value.trim(),
+    description:      document.getElementById('ne-description').value.trim(),
+    stalls_available: document.getElementById('ne-spots')?.value || null,
+  };
+
+  try {
+    const r = await fetch('/api/organiser/events', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const d = await r.json();
+    if (!r.ok) {
+      alert(d.error || 'Could not publish event');
+      btn.textContent = '🚀 Publish event';
+      btn.disabled = false;
+      return;
+    }
+    btn.textContent = '✓ Published!';
+    btn.style.background = 'var(--herb)';
+    setTimeout(() => {
+      showPanel('events', null);
+      btn.textContent = '🚀 Publish event';
+      btn.style.background = '';
+      btn.disabled = false;
+      goStep(1);
+      // Clear form
+      ['ne-name','ne-date','ne-suburb','ne-venue','ne-description'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+      loadOrgEvents();
+    }, 1200);
+  } catch (e) {
+    alert('Network error. Please try again.');
+    btn.textContent = '🚀 Publish event';
+    btn.disabled = false;
+  }
+}
+
+/* ── Real data init ── */
+async function initDashboard() {
+  let me;
+  try {
+    const r = await fetch('/api/me');
+    const d = await r.json();
+    if (!d.user || d.user.role !== 'organiser') { window.location.href = '/login'; return; }
+    me = d.user;
+  } catch (e) { window.location.href = '/login'; return; }
+
+  // Populate sidebar
+  const orgName = (me.organiser && me.organiser.org_name) ? me.organiser.org_name : (me.first_name + ' ' + me.last_name);
+  document.querySelector('.org-name').textContent = orgName;
+
+  // Logout
+  document.querySelector('.sidebar-footer button').onclick = async () => {
+    await fetch('/api/logout', { method: 'POST' });
+    window.location.href = '/';
+  };
+
+  loadOrgEvents();
+}
+
+async function loadOrgEvents() {
+  const r = await fetch('/api/organiser/events');
+  if (!r.ok) return;
+  const { events } = await r.json();
+
+  // Update stat card
+  const liveCount = events.filter(e => e.status === 'published').length;
+  const statEl = document.querySelector('.stat-card.ember .stat-value');
+  if (statEl) statEl.textContent = liveCount;
+
+  const tbody = document.getElementById('org-events-tbody');
+  if (!tbody) return;
+
+  if (!events.length) {
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-lo);">No events yet. <button onclick="showPanel('new-event',null)" style="background:none;border:none;color:var(--ember);cursor:pointer;font-family:inherit;font-size:inherit;">Post your first event →</button></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = events.map(ev => {
+    const date = ev.date_sort ? new Date(ev.date_sort).toLocaleDateString('en-AU', {day:'numeric',month:'short',year:'numeric'}) : 'TBC';
+    return `
+      <tr>
+        <td style="padding-left:24px;"><div class="td-event">${ev.name}</div><div class="td-sub">${ev.category || ''} · ${ev.suburb || ''}${ev.state ? ', ' + ev.state : ''}</div></td>
+        <td style="white-space:nowrap;">${date}</td>
+        <td><span class="spots-text">${ev.stalls_available ? '0/' + ev.stalls_available : '—'}</span></td>
+        <td><span style="color:var(--text-lo);">—</span></td>
+        <td><span class="badge badge-live">● Live</span></td>
+        <td>0</td>
+        <td style="padding-right:24px;"><div class="action-btns"><button class="btn-action btn-manage" onclick="openEventMgmt(${ev.id},'${ev.name.replace(/'/g,"\\'")}')">Manage</button></div></td>
+      </tr>
+    `;
+  }).join('');
+}
+
+initDashboard();
 
 // Messages
 function openThread(el, vendor, eventName) {

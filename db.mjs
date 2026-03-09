@@ -93,6 +93,39 @@ db.exec(`
   }
 }
 
+{
+  const evCols = db.prepare(`PRAGMA table_info(events)`).all().map(r => r.name);
+  if (!evCols.includes('organiser_user_id')) {
+    db.exec(`ALTER TABLE events ADD COLUMN organiser_user_id INTEGER REFERENCES users(id)`);
+  }
+  if (!evCols.includes('description')) {
+    db.exec(`ALTER TABLE events ADD COLUMN description TEXT`);
+  }
+  if (!evCols.includes('stalls_available')) {
+    db.exec(`ALTER TABLE events ADD COLUMN stalls_available INTEGER`);
+  }
+  if (!evCols.includes('date_text')) {
+    db.exec(`ALTER TABLE events ADD COLUMN date_text TEXT`);
+  }
+  if (!evCols.includes('venue_name')) {
+    db.exec(`ALTER TABLE events ADD COLUMN venue_name TEXT`);
+  }
+}
+
+// Event applications table
+db.exec(`
+  CREATE TABLE IF NOT EXISTS event_applications (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    event_id       INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+    vendor_user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    status         TEXT NOT NULL DEFAULT 'pending'
+                   CHECK(status IN ('pending','approved','rejected','withdrawn')),
+    message        TEXT,
+    created_at     DATETIME DEFAULT (datetime('now')),
+    UNIQUE(event_id, vendor_user_id)
+  );
+`);
+
 // ── Events + Payments schema ───────────────────────────────────────────────
 
 db.exec(`
@@ -251,6 +284,7 @@ export const stmts = {
 
   // admin actions
   updateUserStatus:              db.prepare(`UPDATE users SET status = ? WHERE id = ?`),
+  updateUserPassword:            db.prepare(`UPDATE users SET password_hash = ? WHERE id = ?`),
   deleteUser:                    db.prepare(`DELETE FROM users WHERE id = ?`),
   deleteVendorByUserId:          db.prepare(`DELETE FROM vendors WHERE user_id = ?`),
   deleteOrganiserByUserId:       db.prepare(`DELETE FROM organisers WHERE user_id = ?`),
@@ -289,6 +323,19 @@ export const stmts = {
   markCodeUsed:           db.prepare(`UPDATE verification_codes SET used=1 WHERE id=?`),
   setEmailVerified:       db.prepare(`UPDATE users SET email_verified=1 WHERE id=?`),
   setPhoneVerified:       db.prepare(`UPDATE users SET phone_verified=1 WHERE id=?`),
+
+  // event applications
+  createApplication:       db.prepare(`INSERT OR IGNORE INTO event_applications (event_id, vendor_user_id, message) VALUES (?, ?, ?)`),
+  getApplicationByIds:     db.prepare(`SELECT * FROM event_applications WHERE event_id=? AND vendor_user_id=?`),
+  getApplicationsByVendor: db.prepare(`SELECT ea.*, e.name as event_name, e.suburb, e.state, e.date_sort, e.date_text FROM event_applications ea JOIN events e ON ea.event_id=e.id WHERE ea.vendor_user_id=? ORDER BY ea.created_at DESC`),
+  getApplicationsByEvent:  db.prepare(`SELECT ea.*, u.first_name, u.last_name, u.email, v.trading_name, v.mobile, v.bio, v.cuisine_tags, v.plan, v.instagram FROM event_applications ea JOIN users u ON ea.vendor_user_id=u.id JOIN vendors v ON v.user_id=u.id WHERE ea.event_id=?`),
+  updateApplicationStatus: db.prepare(`UPDATE event_applications SET status=? WHERE id=?`),
+  withdrawApplication:     db.prepare(`UPDATE event_applications SET status='withdrawn' WHERE event_id=? AND vendor_user_id=?`),
+
+  // organiser events
+  createEvent:             db.prepare(`INSERT INTO events (slug, name, category, suburb, state, date_sort, date_text, description, stalls_available, organiser_name, organiser_user_id, venue_name) VALUES (@slug, @name, @category, @suburb, @state, @date_sort, @date_text, @description, @stalls_available, @organiser_name, @organiser_user_id, @venue_name)`),
+  getOrganiserEvents:      db.prepare(`SELECT * FROM events WHERE organiser_user_id=? ORDER BY date_sort ASC`),
+  getEventById:            db.prepare(`SELECT * FROM events WHERE id=?`),
 
   // public vendors listing
   publicVendors: db.prepare(`

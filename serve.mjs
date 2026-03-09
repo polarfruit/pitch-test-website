@@ -10,6 +10,10 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = 3000;
 
+// Pre-signup verification codes (in-memory, keyed by email.toLowerCase())
+// { email → { code, expires, verified } }
+const presignupCodes = new Map();
+
 // ── Middleware ─────────────────────────────────────────────────────────────
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -54,6 +58,46 @@ function requireAdminPage(req, res, next) {
 
 // ── API: Auth ──────────────────────────────────────────────────────────────
 
+// POST /api/presignup/send-code — send email verification BEFORE creating account
+app.post('/api/presignup/send-code', async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: 'Email required' });
+
+  const existing = stmts.getUserByEmail.get(email);
+  if (existing) return res.status(409).json({ error: 'An account with that email already exists' });
+
+  const code = makeCode();
+  presignupCodes.set(email.toLowerCase(), { code, expires: Date.now() + 15 * 60 * 1000, verified: false });
+
+  try {
+    await sendVerificationEmail(email, code);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('[presignup] Send code failed:', err);
+    res.status(500).json({ error: 'Could not send verification email. Please try again.' });
+  }
+});
+
+// POST /api/presignup/verify-code — verify code and mark email as pre-verified in session
+app.post('/api/presignup/verify-code', (req, res) => {
+  const { email, code } = req.body;
+  if (!email || !code) return res.status(400).json({ error: 'Email and code required' });
+
+  const entry = presignupCodes.get(email.toLowerCase());
+  if (!entry) return res.status(400).json({ error: 'No verification code found. Please request a new one.' });
+  if (Date.now() > entry.expires) {
+    presignupCodes.delete(email.toLowerCase());
+    return res.status(400).json({ error: 'Code expired. Please request a new one.' });
+  }
+  if (String(code).trim() !== entry.code) {
+    return res.status(400).json({ error: 'Incorrect code. Please try again.' });
+  }
+
+  presignupCodes.set(email.toLowerCase(), { ...entry, verified: true });
+  req.session.preVerifiedEmail = email.toLowerCase();
+  res.json({ ok: true });
+});
+
 // POST /api/signup/vendor
 app.post('/api/signup/vendor', async (req, res) => {
   const {
@@ -73,6 +117,11 @@ app.post('/api/signup/vendor', async (req, res) => {
 
   const existing = stmts.getUserByEmail.get(email);
   if (existing) return res.status(409).json({ error: 'An account with that email already exists' });
+
+  // Require pre-verified email before creating account
+  if (!req.session.preVerifiedEmail || req.session.preVerifiedEmail !== email.toLowerCase()) {
+    return res.status(400).json({ error: 'Email not verified. Please verify your email first.' });
+  }
 
   try {
     const password_hash = await bcrypt.hash(password, 10);
@@ -97,14 +146,17 @@ app.post('/api/signup/vendor', async (req, res) => {
         plan: plan || 'free',
       }
     );
+
+    // Email already verified — activate account immediately
+    stmts.setUserStatus.run('active', userId);
+    stmts.setEmailVerified.run(userId);
+    delete req.session.preVerifiedEmail;
+
     req.session.userId = userId;
     req.session.role = 'vendor';
     req.session.name = `${first_name} ${last_name}`;
 
-    // Send email verification (non-blocking — don't fail signup if email fails)
-    issueEmailCode(userId, email).catch(err => console.error('Email verification send error:', err));
-
-    res.json({ ok: true, redirect: `/verify/email?email=${encodeURIComponent(email)}` });
+    res.json({ ok: true, redirect: '/dashboard/vendor' });
   } catch (err) {
     console.error('Signup vendor error:', err);
     res.status(500).json({ error: 'Server error during signup' });
@@ -129,6 +181,11 @@ app.post('/api/signup/organiser', async (req, res) => {
   const existing = stmts.getUserByEmail.get(email);
   if (existing) return res.status(409).json({ error: 'An account with that email already exists' });
 
+  // Require pre-verified email before creating account
+  if (!req.session.preVerifiedEmail || req.session.preVerifiedEmail !== email.toLowerCase()) {
+    return res.status(400).json({ error: 'Email not verified. Please verify your email first.' });
+  }
+
   try {
     const password_hash = await bcrypt.hash(password, 10);
     const userId = txSignupOrganiser(
@@ -148,14 +205,17 @@ app.post('/api/signup/organiser', async (req, res) => {
         referral: referral || null,
       }
     );
+
+    // Email already verified — activate account immediately
+    stmts.setUserStatus.run('active', userId);
+    stmts.setEmailVerified.run(userId);
+    delete req.session.preVerifiedEmail;
+
     req.session.userId = userId;
     req.session.role = 'organiser';
     req.session.name = `${first_name} ${last_name}`;
 
-    // Send email verification (non-blocking)
-    issueEmailCode(userId, email).catch(err => console.error('Email verification send error:', err));
-
-    res.json({ ok: true, redirect: `/verify/email?email=${encodeURIComponent(email)}` });
+    res.json({ ok: true, redirect: '/dashboard/organiser' });
   } catch (err) {
     console.error('Signup organiser error:', err);
     res.status(500).json({ error: 'Server error during signup' });
@@ -410,8 +470,8 @@ app.post('/api/admin/users/:id/status', requireAdmin, (req, res) => {
   res.json({ ok: true });
 });
 
-// DELETE /api/admin/users/:id — permanently delete account + all related data
-app.delete('/api/admin/users/:id', requireAdmin, (req, res) => {
+// POST /api/admin/users/:id/delete — permanently delete account + all related data
+app.post('/api/admin/users/:id/delete', requireAdmin, (req, res) => {
   try {
     // Manually delete child rows first (in case FK cascade isn't active on this connection)
     stmts.deleteVendorByUserId.run(req.params.id);
@@ -465,9 +525,13 @@ app.get('/api/admin/payments/:userId', requireAdmin, (req, res) => {
 });
 
 // Update profiles
-app.put('/api/admin/users/:userId/profile', requireAdmin, (req, res) => {
-  const { first_name, last_name, email, status } = req.body;
+app.put('/api/admin/users/:userId/profile', requireAdmin, async (req, res) => {
+  const { first_name, last_name, email, status, new_password } = req.body;
   stmts.updateUserProfile.run({ first_name, last_name, email, status, id: req.params.userId });
+  if (new_password && new_password.trim()) {
+    const hash = await bcrypt.hash(new_password.trim(), 10);
+    stmts.updateUserPassword.run(hash, req.params.userId);
+  }
   res.json({ ok: true });
 });
 
@@ -480,6 +544,121 @@ app.put('/api/admin/vendors/:userId', requireAdmin, (req, res) => {
 app.put('/api/admin/organisers/:userId', requireAdmin, (req, res) => {
   const { org_name, phone, website, suburb, state, bio, event_scale, stall_range, abn } = req.body;
   stmts.updateOrganiserProfile.run({ org_name, phone: phone||null, website: website||null, suburb: suburb||null, state: state||null, bio: bio||null, event_scale: event_scale||null, stall_range: stall_range||null, abn: abn||null, user_id: req.params.userId });
+  res.json({ ok: true });
+});
+
+// ── API: Vendor dashboard ──────────────────────────────────────────────────
+
+// GET /api/vendor/events — list published events for vendor to browse
+app.get('/api/vendor/events', requireAuth, (req, res) => {
+  const events = stmts.publishedEvents.all();
+  const vendorId = req.session.userId;
+  // Attach whether vendor has already applied
+  const withStatus = events.map(ev => {
+    const app = stmts.getApplicationByIds.get(ev.id, vendorId);
+    return { ...ev, applied: !!app, appStatus: app ? app.status : null };
+  });
+  res.json({ events: withStatus });
+});
+
+// POST /api/events/:id/apply — vendor applies to event
+app.post('/api/events/:id/apply', requireAuth, (req, res) => {
+  const { message } = req.body;
+  if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Only vendors can apply' });
+
+  const ev = stmts.getEventById.get(req.params.id);
+  if (!ev) return res.status(404).json({ error: 'Event not found' });
+
+  try {
+    stmts.createApplication.run(ev.id, req.session.userId, message || null);
+    res.json({ ok: true });
+  } catch (err) {
+    if (err.message && err.message.includes('UNIQUE')) {
+      return res.status(409).json({ error: 'You have already applied to this event' });
+    }
+    console.error('[apply] error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// POST /api/events/:id/withdraw — vendor withdraws application
+app.post('/api/events/:id/withdraw', requireAuth, (req, res) => {
+  if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Only vendors can withdraw' });
+  stmts.withdrawApplication.run(req.params.id, req.session.userId);
+  res.json({ ok: true });
+});
+
+// GET /api/vendor/applications — vendor's own applications
+app.get('/api/vendor/applications', requireAuth, (req, res) => {
+  if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Vendors only' });
+  const apps = stmts.getApplicationsByVendor.all(req.session.userId);
+  res.json({ applications: apps });
+});
+
+// ── API: Organiser dashboard ───────────────────────────────────────────────
+
+// POST /api/organiser/events — create new event
+app.post('/api/organiser/events', requireAuth, (req, res) => {
+  if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
+
+  const { name, category, date_sort, date_text, suburb, state, venue_name, description, stalls_available } = req.body;
+  if (!name || !date_sort || !suburb) {
+    return res.status(400).json({ error: 'Name, date, and suburb are required' });
+  }
+
+  // Get organiser name
+  const organiser = stmts.getOrganiserByUserId.get(req.session.userId);
+  const organiserName = organiser ? organiser.org_name : req.session.name;
+
+  // Generate slug
+  let slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-' + Date.now();
+
+  try {
+    const result = stmts.createEvent.run({
+      slug,
+      name,
+      category: category || null,
+      suburb,
+      state: state || 'SA',
+      date_sort,
+      date_text: date_text || null,
+      description: description || null,
+      stalls_available: stalls_available ? parseInt(stalls_available) : null,
+      organiser_name: organiserName,
+      organiser_user_id: req.session.userId,
+      venue_name: venue_name || null,
+    });
+    res.json({ ok: true, eventId: result.lastInsertRowid, slug });
+  } catch (err) {
+    console.error('[create-event] error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// GET /api/organiser/events — organiser's events
+app.get('/api/organiser/events', requireAuth, (req, res) => {
+  if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
+  const events = stmts.getOrganiserEvents.all(req.session.userId);
+  res.json({ events });
+});
+
+// GET /api/organiser/events/:id/applications — applicants for organiser's event
+app.get('/api/organiser/events/:id/applications', requireAuth, (req, res) => {
+  if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
+  // Verify organiser owns this event
+  const ev = stmts.getEventById.get(req.params.id);
+  if (!ev || ev.organiser_user_id !== req.session.userId) return res.status(403).json({ error: 'Not your event' });
+  const apps = stmts.getApplicationsByEvent.all(req.params.id);
+  res.json({ applications: apps });
+});
+
+// PATCH /api/organiser/applications/:id/status — approve/reject application
+app.patch('/api/organiser/applications/:id/status', requireAuth, (req, res) => {
+  if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
+  const { status } = req.body;
+  const allowed = ['approved', 'rejected', 'pending'];
+  if (!allowed.includes(status)) return res.status(400).json({ error: 'Invalid status' });
+  stmts.updateApplicationStatus.run(status, req.params.id);
   res.json({ ok: true });
 });
 
