@@ -93,25 +93,6 @@ db.exec(`
   }
 }
 
-{
-  const evCols = db.prepare(`PRAGMA table_info(events)`).all().map(r => r.name);
-  if (!evCols.includes('organiser_user_id')) {
-    db.exec(`ALTER TABLE events ADD COLUMN organiser_user_id INTEGER REFERENCES users(id)`);
-  }
-  if (!evCols.includes('description')) {
-    db.exec(`ALTER TABLE events ADD COLUMN description TEXT`);
-  }
-  if (!evCols.includes('stalls_available')) {
-    db.exec(`ALTER TABLE events ADD COLUMN stalls_available INTEGER`);
-  }
-  if (!evCols.includes('date_text')) {
-    db.exec(`ALTER TABLE events ADD COLUMN date_text TEXT`);
-  }
-  if (!evCols.includes('venue_name')) {
-    db.exec(`ALTER TABLE events ADD COLUMN venue_name TEXT`);
-  }
-}
-
 // ── Events + Payments schema ───────────────────────────────────────────────
 
 db.exec(`
@@ -141,6 +122,16 @@ db.exec(`
     created_at  DATETIME DEFAULT (datetime('now'))
   );
 `);
+
+// ── Migrations: add new columns to events table ───────────────────────────
+{
+  const evCols = db.prepare(`PRAGMA table_info(events)`).all().map(r => r.name);
+  if (!evCols.includes('organiser_user_id')) db.exec(`ALTER TABLE events ADD COLUMN organiser_user_id INTEGER REFERENCES users(id)`);
+  if (!evCols.includes('description'))       db.exec(`ALTER TABLE events ADD COLUMN description TEXT`);
+  if (!evCols.includes('stalls_available'))  db.exec(`ALTER TABLE events ADD COLUMN stalls_available INTEGER`);
+  if (!evCols.includes('date_text'))         db.exec(`ALTER TABLE events ADD COLUMN date_text TEXT`);
+  if (!evCols.includes('venue_name'))        db.exec(`ALTER TABLE events ADD COLUMN venue_name TEXT`);
+}
 
 // Event applications table — must come AFTER events and users tables
 db.exec(`
