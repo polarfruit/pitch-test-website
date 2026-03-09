@@ -847,6 +847,19 @@
       // Show modal
       document.getElementById('verifyEmailDisplay').textContent = payload.email;
       document.getElementById('verifyOverlay').classList.add('open');
+      // Dev fallback: auto-fill code if email couldn't be sent (unverified Resend domain)
+      if (d.devCode) {
+        const digits = String(d.devCode).split('');
+        digits.forEach((ch, i) => { const el = document.getElementById('vc' + i); if (el) el.value = ch; });
+        const hint = document.getElementById('verifyOverlay').querySelector('.dev-hint');
+        if (!hint) {
+          const p = document.createElement('p');
+          p.className = 'dev-hint';
+          p.style.cssText = 'text-align:center;color:#C9840A;font-size:13px;margin-top:8px';
+          p.textContent = '⚠ Dev mode: code auto-filled (email delivery unavailable)';
+          document.getElementById('verifyOverlay').querySelector('.verify-card').appendChild(p);
+        }
+      }
       document.getElementById('vc0').focus();
       btn.textContent = 'Submit →';
       btn.disabled = false;
