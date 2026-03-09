@@ -503,6 +503,7 @@ app.get('/api/vendors/:userId', async (req, res) => {
   if (!row) return res.status(404).json({ error: 'Vendor not found' });
   const vendor = { ...row };
   vendor.cuisine_tags = (() => { try { return JSON.parse(row.cuisine_tags || '[]'); } catch { return []; } })();
+  vendor.photos       = (() => { try { return JSON.parse(row.photos       || '[]'); } catch { return []; } })();
   delete vendor.password_hash;
   res.json({ vendor });
 });
