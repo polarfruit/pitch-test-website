@@ -843,102 +843,117 @@ footer {
 <script src="/data.js"></script>
 <script>
 /* ── PAGE INIT ────────────────────────────────────────────────────────────── */
-var vslug = window.location.pathname.replace(/^\/vendors\//, '').replace(/\/$/, '');
-var vendor = (window.PITCH_VENDORS || []).find(function(v){ return v.id === vslug; });
+var vpath = window.location.pathname.replace(/^\/vendors\//, '').replace(/\/$/, '');
+var isNumericId = /^\d+$/.test(vpath);
 
-if (vendor) {
-  document.title = vendor.name + ' \u2014 Pitch.';
-  document.getElementById('vd-breadcrumb').textContent = vendor.name;
-  document.getElementById('vd-hero-emoji').textContent = vendor.emoji;
-  document.getElementById('vd-hero-emoji').style.background = vendor.bg;
-  document.getElementById('vd-hero').style.background = vendor.bg;
-  document.getElementById('vd-name').textContent = vendor.name;
-  document.getElementById('vd-pro-badge').style.display = vendor.isPro ? '' : 'none';
-  document.getElementById('vd-meta-row').innerHTML =
-    vendor.cuisines.map(function(c){ return '<span class="vendor-tag">' + c + '</span>'; }).join('') +
-    '<span class="vendor-setup-tag">\uD83D\uDE9A ' + vendor.setup + '</span>' +
-    '<span class="vendor-suburb">\uD83D\uDCCD ' + vendor.suburb + ', ' + vendor.state + '</span>';
-  document.getElementById('vd-bio').textContent = vendor.bio;
+function applyDbVendor(db) {
+  var name   = db.trading_name || '—';
+  var isPro  = db.plan === 'pro';
+  var cuisines = Array.isArray(db.cuisine_tags) ? db.cuisine_tags : [];
+  var setup  = db.setup_type || '';
+  var suburb = db.suburb || '';
+  var state  = db.state  || '';
+  var bio    = db.bio    || '';
 
-  // Gallery
-  document.getElementById('vd-gallery').innerHTML = vendor.gallery.map(function(g, i){
-    return '<div class="gallery-item" onclick="openLightbox(' + i + ')"><div class="gallery-img" style="background:' + g.bg + ';">' + g.emoji + '</div><div class="gallery-overlay">\uD83D\uDD0D</div></div>';
-  }).join('');
+  document.title = name + ' — Pitch.';
+  document.getElementById('vd-breadcrumb').textContent = name;
+  document.getElementById('vd-name').textContent = name;
+  document.getElementById('vd-pro-badge').style.display = isPro ? '' : 'none';
+  document.getElementById('vd-plan-name').textContent = isPro ? 'Pro Vendor' : 'Free Plan';
+  if (bio) document.getElementById('vd-bio').textContent = bio;
 
-  // Past events
-  document.getElementById('past-events-list').innerHTML = vendor.pastEvents.map(function(pe){
-    return '<a class="pe-item" href="/events/' + pe.id + '"><div class="pe-dot"></div><div class="pe-body"><div class="pe-name">' + pe.name + '</div><div class="pe-date">' + pe.date + '</div></div><span class="pe-arrow">\u2192</span></a>';
-  }).join('');
-  var seeBtn = document.getElementById('see-all-btn');
-  if(seeBtn) seeBtn.textContent = 'See all ' + vendor.events + ' events \u2192';
-
-  // Reviews
-  document.getElementById('review-list').innerHTML = vendor.reviewsList.map(function(r){
-    var stars = '\u2605'.repeat(r.rating) + '\u2606'.repeat(5 - r.rating);
-    return '<div class="review-card"><div class="review-header"><div class="review-org"><div class="review-org-name">' + r.org + '</div><div class="review-event-name">' + r.event + '</div></div><div class="review-meta"><span class="review-stars">' + stars + '</span></div></div><p class="review-text">' + r.text + '</p></div>';
-  }).join('');
-  var lmBtn = document.getElementById('load-more-btn');
-  if(lmBtn) lmBtn.style.display = 'none';
-
-  // Rating
-  document.getElementById('vd-rating-num').textContent = vendor.rating.toFixed(1);
-  document.getElementById('vd-review-count').textContent = vendor.reviews + ' organiser reviews';
-  document.getElementById('vd-events-count').textContent = vendor.events;
-  document.getElementById('vd-plan-name').textContent = vendor.isPro ? 'Pro Vendor' : 'Free Plan';
-
-  // Rating bars (estimate distribution)
-  window.addEventListener('load', function(){
-    setTimeout(function(){
-      var total = vendor.reviews;
-      var five = Math.round(total * 0.82);
-      var four = Math.round(total * 0.12);
-      var three = Math.round(total * 0.04);
-      var two = 0, one = total - five - four - three - two;
-      var data = {5: five, 4: four, 3: three, 2: two, 1: Math.max(0,one)};
-      [5,4,3,2,1].forEach(function(s){
-        var pct = Math.round((data[s] / total) * 100);
-        var el = document.getElementById('rb' + s);
-        if(el) el.style.width = pct + '%';
-      });
-    }, 300);
-  });
+  var metaParts = cuisines.map(function(c){ return '<span class="vendor-tag">' + c + '</span>'; });
+  if (setup)  metaParts.push('<span class="vendor-setup-tag">🚚 ' + setup + '</span>');
+  if (suburb) metaParts.push('<span class="vendor-suburb">📍 ' + suburb + (state ? ', ' + state : '') + '</span>');
+  document.getElementById('vd-meta-row').innerHTML = metaParts.join('');
 }
 
-// ── Overlay DB data (admin edits sync) ─────────────────────────────────────
-// Fetches live vendor data from the API and updates mutable fields on-page.
-if (vendor) {
-  fetch('/api/vendors').then(function(r){ return r.json(); }).then(function(data) {
-    var db = (data.vendors || []).find(function(d) {
-      return d.trading_name && d.trading_name.toLowerCase() === vendor.name.toLowerCase();
+if (isNumericId) {
+  // ── API-sourced vendor (real user accounts) ──────────────────────────────
+  fetch('/api/vendors/' + vpath)
+    .then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); })
+    .then(function(data) {
+      applyDbVendor(data.vendor);
+      // Clear gallery/reviews/events placeholders for real accounts
+      document.getElementById('vd-gallery').innerHTML = '<div style="color:var(--text-lo);font-size:13px;padding:16px;">No gallery photos yet.</div>';
+      document.getElementById('past-events-list').innerHTML = '<div style="color:var(--text-lo);font-size:13px;padding:4px 0;">No past events yet.</div>';
+      document.getElementById('vd-rating-num').textContent = '—';
+      document.getElementById('vd-review-count').textContent = 'No reviews yet';
+      document.getElementById('vd-events-count').textContent = '0';
+      var lmBtn = document.getElementById('load-more-btn');
+      if (lmBtn) lmBtn.style.display = 'none';
+    })
+    .catch(function() {
+      document.getElementById('vd-name').textContent = 'Vendor not found';
     });
-    if (!db) return;
+} else {
+  // ── Static demo vendors (slug-based, from data.js) ───────────────────────
+  var vendor = (window.PITCH_VENDORS || []).find(function(v){ return v.id === vpath; });
 
-    // Update page with any changed fields
-    var newName = db.trading_name || vendor.name;
-    document.title = newName + ' \u2014 Pitch.';
-    document.getElementById('vd-breadcrumb').textContent = newName;
-    document.getElementById('vd-name').textContent = newName;
-
-    if (db.bio) document.getElementById('vd-bio').textContent = db.bio;
-
-    var cuisines = (db.cuisine_tags && db.cuisine_tags.length) ? db.cuisine_tags : vendor.cuisines;
-    var setup    = db.setup_type || vendor.setup;
-    var suburb   = db.suburb    || vendor.suburb;
-    var state    = db.state     || vendor.state;
-    var isPro    = db.plan === 'pro';
-
+  if (vendor) {
+    document.title = vendor.name + ' \u2014 Pitch.';
+    document.getElementById('vd-breadcrumb').textContent = vendor.name;
+    document.getElementById('vd-hero-emoji').textContent = vendor.emoji;
+    document.getElementById('vd-hero-emoji').style.background = vendor.bg;
+    document.getElementById('vd-hero').style.background = vendor.bg;
+    document.getElementById('vd-name').textContent = vendor.name;
+    document.getElementById('vd-pro-badge').style.display = vendor.isPro ? '' : 'none';
     document.getElementById('vd-meta-row').innerHTML =
-      cuisines.map(function(c){ return '<span class="vendor-tag">' + c + '</span>'; }).join('') +
-      '<span class="vendor-setup-tag">\uD83D\uDE9A ' + setup + '</span>' +
-      '<span class="vendor-suburb">\uD83D\uDCCD ' + suburb + ', ' + state + '</span>';
+      vendor.cuisines.map(function(c){ return '<span class="vendor-tag">' + c + '</span>'; }).join('') +
+      '<span class="vendor-setup-tag">\uD83D\uDE9A ' + vendor.setup + '</span>' +
+      '<span class="vendor-suburb">\uD83D\uDCCD ' + vendor.suburb + ', ' + vendor.state + '</span>';
+    document.getElementById('vd-bio').textContent = vendor.bio;
 
-    document.getElementById('vd-pro-badge').style.display = isPro ? '' : 'none';
-    document.getElementById('vd-plan-name').textContent = isPro ? 'Pro Vendor' : 'Free Plan';
-  }).catch(function(){});
+    document.getElementById('vd-gallery').innerHTML = vendor.gallery.map(function(g, i){
+      return '<div class="gallery-item" onclick="openLightbox(' + i + ')"><div class="gallery-img" style="background:' + g.bg + ';">' + g.emoji + '</div><div class="gallery-overlay">\uD83D\uDD0D</div></div>';
+    }).join('');
+
+    document.getElementById('past-events-list').innerHTML = vendor.pastEvents.map(function(pe){
+      return '<a class="pe-item" href="/events/' + pe.id + '"><div class="pe-dot"></div><div class="pe-body"><div class="pe-name">' + pe.name + '</div><div class="pe-date">' + pe.date + '</div></div><span class="pe-arrow">\u2192</span></a>';
+    }).join('');
+    var seeBtn = document.getElementById('see-all-btn');
+    if(seeBtn) seeBtn.textContent = 'See all ' + vendor.events + ' events \u2192';
+
+    document.getElementById('review-list').innerHTML = vendor.reviewsList.map(function(r){
+      var stars = '\u2605'.repeat(r.rating) + '\u2606'.repeat(5 - r.rating);
+      return '<div class="review-card"><div class="review-header"><div class="review-org"><div class="review-org-name">' + r.org + '</div><div class="review-event-name">' + r.event + '</div></div><div class="review-meta"><span class="review-stars">' + stars + '</span></div></div><p class="review-text">' + r.text + '</p></div>';
+    }).join('');
+    var lmBtn = document.getElementById('load-more-btn');
+    if(lmBtn) lmBtn.style.display = 'none';
+
+    document.getElementById('vd-rating-num').textContent = vendor.rating.toFixed(1);
+    document.getElementById('vd-review-count').textContent = vendor.reviews + ' organiser reviews';
+    document.getElementById('vd-events-count').textContent = vendor.events;
+    document.getElementById('vd-plan-name').textContent = vendor.isPro ? 'Pro Vendor' : 'Free Plan';
+
+    window.addEventListener('load', function(){
+      setTimeout(function(){
+        var total = vendor.reviews;
+        var five = Math.round(total * 0.82);
+        var four = Math.round(total * 0.12);
+        var three = Math.round(total * 0.04);
+        var two = 0, one = total - five - four - three - two;
+        var data = {5: five, 4: four, 3: three, 2: two, 1: Math.max(0,one)};
+        [5,4,3,2,1].forEach(function(s){
+          var pct = Math.round((data[s] / total) * 100);
+          var el = document.getElementById('rb' + s);
+          if(el) el.style.width = pct + '%';
+        });
+      }, 300);
+    });
+
+    // Overlay live DB data on top of static data
+    fetch('/api/vendors').then(function(r){ return r.json(); }).then(function(data) {
+      var db = (data.vendors || []).find(function(d) {
+        return d.trading_name && d.trading_name.toLowerCase() === vendor.name.toLowerCase();
+      });
+      if (db) applyDbVendor(Object.assign({}, vendor, { trading_name: db.trading_name || vendor.name, bio: db.bio || vendor.bio, cuisine_tags: db.cuisine_tags || vendor.cuisines, setup_type: db.setup_type || vendor.setup, suburb: db.suburb || vendor.suburb, state: db.state || vendor.state, plan: db.plan }));
+    }).catch(function(){});
+  }
 }
 
 /* ── Gallery lightbox ─────────────────────────────────────────────────────── */
-var GALLERY_DATA = vendor ? vendor.gallery : [];
+var GALLERY_DATA = (!isNumericId && typeof vendor !== 'undefined' && vendor) ? vendor.gallery : [];
 
 function openLightbox(idx) {
   var d = GALLERY_DATA[idx];
