@@ -325,7 +325,7 @@ app.post('/api/login', async (req, res) => {
   if (user.status === 'banned')    return res.status(403).json({ error: 'This account has been banned.' });
   if (user.status === 'suspended') return res.status(403).json({ error: 'This account is suspended.' });
 
-  req.session.userId = user.id;
+  req.session.userId = Number(user.id);
   req.session.role   = user.role;
   req.session.name   = `${user.first_name} ${user.last_name}`;
 
