@@ -393,7 +393,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
     <div class="org-card">
       <div class="org-avatar">🏛️</div>
       <div class="org-info">
-        <div class="org-name">Adelaide City Council</div>
+        <div class="org-name">Loading…</div>
         <div class="org-role">Event Organiser</div>
       </div>
     </div>
@@ -408,7 +408,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
   </nav>
   <div class="sidebar-footer">
     <a href="/events" class="sidebar-footer-link">↗ View public events</a>
-    <button class="sidebar-footer-link">🚪 Log out</button>
+    <button class="sidebar-footer-link" id="logout-btn">🚪 Log out</button>
   </div>
 </aside>
 
@@ -1162,7 +1162,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
           </div>
           <div class="settings-row">
             <div><div class="settings-row-label">Email address</div><div class="settings-row-desc">To change your email, contact support.</div></div>
-            <div class="email-display">events@adelaidecitycouncil.com.au</div>
+            <div class="email-display" id="settings-email">—</div>
           </div>
         </div>
         <div class="settings-card">
@@ -1202,14 +1202,45 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 <script>
 const PANEL_TITLES = { overview:'Overview', events:'My Events', 'event-mgmt':'Event Management', 'new-event':'Post an Event', messages:'Messages', settings:'Settings' };
 
-function showPanel(name, clickedEl) {
+const PANEL_PATHS_ORG = {
+  overview:    '/dashboard/organiser',
+  events:      '/dashboard/organiser/events',
+  'new-event': '/dashboard/organiser/events/new',
+  messages:    '/dashboard/organiser/messages',
+  settings:    '/dashboard/organiser/settings',
+};
+
+function showPanel(name, clickedEl, pushHistory = true) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('panel-' + name).classList.add('active');
+  const panel = document.getElementById('panel-' + name);
+  if (!panel) return;
+  panel.classList.add('active');
   document.querySelectorAll('.sidebar .nav-link').forEach(l => l.classList.remove('active'));
-  if (clickedEl) clickedEl.classList.add('active');
+  if (clickedEl) {
+    clickedEl.classList.add('active');
+  } else {
+    document.querySelectorAll('.sidebar .nav-link').forEach(l => {
+      if (l.getAttribute('onclick') && l.getAttribute('onclick').includes(`'${name}'`)) l.classList.add('active');
+    });
+  }
   document.getElementById('topbar-title').textContent = PANEL_TITLES[name] || name;
   document.getElementById('topbar-subtitle').textContent = '';
+  if (pushHistory && PANEL_PATHS_ORG[name]) {
+    history.pushState({ panel: name }, '', PANEL_PATHS_ORG[name]);
+  }
 }
+
+(function routeOnLoadOrg() {
+  const path = window.location.pathname.replace(/\/$/, '');
+  const match = Object.entries(PANEL_PATHS_ORG).find(([, p]) => p === path);
+  const panelName = match ? match[0] : 'overview';
+  showPanel(panelName, null, false);
+})();
+
+window.addEventListener('popstate', e => {
+  const name = (e.state && e.state.panel) || 'overview';
+  showPanel(name, null, false);
+});
 
 async function openEventMgmt(id, name) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
@@ -1221,7 +1252,7 @@ async function openEventMgmt(id, name) {
 
   // Load real applications if numeric ID
   if (typeof id === 'number') {
-    const r = await fetch(`/api/organiser/events/${id}/applications`);
+    const r = await pitchFetch(`/api/organiser/events/${id}/applications`);
     if (!r.ok) return;
     const { applications } = await r.json();
     const grid = document.getElementById('mgmt-app-cards');
@@ -1260,7 +1291,7 @@ async function openEventMgmt(id, name) {
 
 async function reviewApp(appId, status, btn) {
   btn.disabled = true;
-  const r = await fetch(`/api/organiser/applications/${appId}/status`, {
+  const r = await pitchFetch(`/api/organiser/applications/${appId}/status`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ status }),
@@ -1368,7 +1399,7 @@ async function publishEvent() {
   };
 
   try {
-    const r = await fetch('/api/organiser/events', {
+    const r = await pitchFetch('/api/organiser/events', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
@@ -1402,23 +1433,33 @@ async function publishEvent() {
   }
 }
 
+/* ── Auth-aware fetch (sends X-Pitch-Auth header when cookie may not work) ── */
+function pitchFetch(url, opts = {}) {
+  const token = window.__PITCH_TOKEN__;
+  if (token) {
+    opts.headers = Object.assign({}, opts.headers, { 'X-Pitch-Auth': token });
+  }
+  return fetch(url, opts);
+}
+
 /* ── Real data init ── */
 async function initDashboard() {
-  let me;
-  try {
-    const r = await fetch('/api/me');
-    const d = await r.json();
-    if (!d.user || d.user.role !== 'organiser') { window.location.href = '/login'; return; }
-    me = d.user;
-  } catch (e) { window.location.href = '/login'; return; }
+  // Auth data injected server-side — no fetch('/api/me') needed
+  const user = window.__PITCH_USER__;
+  const profile = window.__PITCH_PROFILE__;
+  if (!user || user.role !== 'organiser') { window.location.href = '/login'; return; }
 
   // Populate sidebar
-  const orgName = (me.organiser && me.organiser.org_name) ? me.organiser.org_name : (me.first_name + ' ' + me.last_name);
+  const orgName = (profile && profile.org_name) ? profile.org_name : (user.first_name + ' ' + user.last_name);
   document.querySelector('.org-name').textContent = orgName;
 
+  // Email in settings
+  const emailEl = document.getElementById('settings-email');
+  if (emailEl) emailEl.textContent = user.email || '—';
+
   // Logout
-  document.querySelector('.sidebar-footer button').onclick = async () => {
-    await fetch('/api/logout', { method: 'POST' });
+  document.getElementById('logout-btn').onclick = async () => {
+    await pitchFetch('/api/logout', { method: 'POST' });
     window.location.href = '/';
   };
 
@@ -1426,7 +1467,7 @@ async function initDashboard() {
 }
 
 async function loadOrgEvents() {
-  const r = await fetch('/api/organiser/events');
+  const r = await pitchFetch('/api/organiser/events');
   if (!r.ok) return;
   const { events } = await r.json();
 

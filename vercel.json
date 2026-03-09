@@ -5,6 +5,7 @@
       "src": "api/index.mjs",
       "use": "@vercel/node",
       "config": {
+        "memory": 1024,
         "bundle": false,
         "includeFiles": [
           "*.html",

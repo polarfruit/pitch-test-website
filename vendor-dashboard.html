@@ -591,6 +591,176 @@ body::before {
 .btn-modal-delete.enabled { opacity: 1; pointer-events: all; }
 .btn-modal-delete.enabled:hover { background: #D94040; transform: translateY(-1px); }
 
+/* ── EARNINGS ────────────────────────────────────────────────────────────── */
+.preview-banner {
+  background: linear-gradient(135deg, #C9840A18, #E89B1A0C);
+  border: 1px solid #C9840A30; border-radius: 12px;
+  padding: 12px 18px; display: flex; align-items: center; gap: 12px;
+  font-size: 13px; color: var(--gold); margin-bottom: 24px; font-weight: 600;
+}
+.earnings-summary {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px;
+}
+.earnings-stat {
+  background: var(--char); border: 1px solid #ffffff08; border-radius: 14px;
+  padding: 20px; display: flex; flex-direction: column; gap: 4px;
+}
+.earnings-stat-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-lo); }
+.earnings-stat-value { font-family: var(--fd); font-size: 28px; font-weight: 900; letter-spacing: -0.03em; color: var(--text-hi); }
+.earnings-stat-sub { font-size: 12px; color: var(--text-lo); }
+.earnings-table-wrap { overflow-x: auto; }
+.earnings-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.earnings-table th {
+  text-align: left; padding: 12px 16px; color: var(--text-lo);
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+  border-bottom: 1px solid #ffffff08;
+}
+.earnings-table td { padding: 14px 16px; border-bottom: 1px solid #ffffff06; color: var(--text-hi); }
+.earnings-table tr:last-child td { border-bottom: none; }
+.earnings-table tr:hover td { background: #ffffff04; }
+.pay-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 700;
+}
+.pay-badge.paid { background: #2D8B5518; color: var(--herb); }
+.pay-badge.pending { background: #C9840A18; color: var(--gold); }
+.pay-badge.processing { background: #2B5BA818; color: var(--slate); }
+.payout-locked {
+  background: var(--char); border: 1px solid #ffffff08; border-radius: 14px;
+  padding: 24px; display: flex; align-items: center; justify-content: space-between;
+  gap: 16px; margin-top: 24px;
+}
+.payout-locked-left h4 { font-size: 14px; font-weight: 700; color: var(--text-hi); margin-bottom: 4px; }
+.payout-locked-left p { font-size: 12px; color: var(--text-lo); }
+.btn-coming-soon {
+  background: #ffffff08; border: 1px solid #ffffff10; color: var(--text-lo);
+  padding: 10px 20px; border-radius: 10px; font-family: var(--fb); font-size: 13px;
+  font-weight: 600; cursor: not-allowed; position: relative;
+}
+.coming-soon-tag {
+  position: absolute; top: -8px; right: -8px;
+  background: var(--ember); color: #fff; font-size: 9px; font-weight: 700;
+  padding: 2px 6px; border-radius: 100px; letter-spacing: 0.06em;
+}
+
+/* ── MESSAGES ─────────────────────────────────────────────────────────────── */
+.messages-layout {
+  display: grid; grid-template-columns: 340px 1fr; gap: 0;
+  height: calc(100vh - 64px); margin: -24px; overflow: hidden;
+  border: 1px solid #ffffff08; border-radius: 16px;
+}
+.inbox-panel {
+  border-right: 1px solid #ffffff08; display: flex; flex-direction: column;
+  background: var(--char); overflow: hidden;
+}
+.inbox-header {
+  padding: 20px; border-bottom: 1px solid #ffffff08; flex-shrink: 0;
+}
+.inbox-title {
+  font-family: var(--fd); font-size: 18px; font-weight: 900;
+  letter-spacing: -0.02em; color: var(--text-hi); margin-bottom: 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+.inbox-unread-badge {
+  background: var(--ember); color: #fff;
+  font-family: var(--fb); font-size: 11px; font-weight: 700;
+  padding: 2px 7px; border-radius: 100px;
+}
+.inbox-search {
+  width: 100%; background: #ffffff08; border: 1px solid #ffffff0d;
+  border-radius: 9px; color: var(--text-hi); font-family: var(--fb);
+  font-size: 13px; padding: 9px 14px; outline: none;
+}
+.inbox-search::placeholder { color: var(--text-lo); }
+.inbox-search:focus { border-color: var(--ember); }
+.thread-list { flex: 1; overflow-y: auto; }
+.thread-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 16px 20px; border-bottom: 1px solid #ffffff06;
+  cursor: pointer; transition: background 0.12s;
+}
+.thread-item:hover { background: #ffffff06; }
+.thread-item.active { background: #E8500A0d; border-left: 3px solid var(--ember); padding-left: 17px; }
+.thread-avatar {
+  width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 700; color: #fff;
+}
+.thread-body { flex: 1; min-width: 0; }
+.thread-name { font-size: 13px; font-weight: 700; color: var(--text-hi); margin-bottom: 2px; display: flex; align-items: center; gap: 6px; }
+.thread-event { font-size: 11px; color: var(--text-lo); margin-bottom: 4px; }
+.thread-preview { font-size: 12px; color: var(--text-mid); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.thread-meta { flex-shrink: 0; text-align: right; }
+.thread-time { font-size: 11px; color: var(--text-lo); margin-bottom: 4px; }
+.thread-unread-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ember); margin-left: auto; }
+.convo-panel {
+  display: flex; flex-direction: column; background: var(--coal); overflow: hidden;
+}
+.convo-header {
+  padding: 20px 24px; border-bottom: 1px solid #ffffff08;
+  flex-shrink: 0; background: var(--char);
+}
+.convo-header-name { font-size: 14px; font-weight: 700; color: var(--text-hi); margin-bottom: 2px; }
+.convo-header-event { font-size: 12px; color: var(--text-lo); }
+.convo-header-event a { color: var(--ember); text-decoration: none; }
+.convo-header-event a:hover { text-decoration: underline; }
+.convo-messages { flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 12px; }
+.msg-bubble-wrap { display: flex; align-items: flex-end; gap: 8px; }
+.msg-bubble-wrap.mine { flex-direction: row-reverse; }
+.msg-avatar {
+  width: 28px; height: 28px; border-radius: 8px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700;
+}
+.msg-bubble {
+  max-width: 68%; padding: 12px 16px; border-radius: 14px;
+  font-size: 13px; line-height: 1.6;
+}
+.msg-bubble.theirs { background: var(--char); color: var(--text-hi); border-radius: 14px 14px 14px 4px; }
+.msg-bubble.mine { background: var(--ember); color: #fff; border-radius: 14px 14px 4px 14px; }
+.msg-time { font-size: 11px; color: var(--text-lo); margin-top: 3px; }
+.msg-time.mine { text-align: right; }
+.system-msg {
+  text-align: center; font-size: 11px; color: var(--text-lo);
+  display: flex; align-items: center; gap: 12px; margin: 8px 0;
+}
+.system-msg::before, .system-msg::after { content: ''; flex: 1; height: 1px; background: #ffffff08; }
+.system-msg.approved { color: var(--herb); }
+.system-msg.rejected { color: var(--terra); }
+.convo-input-area {
+  border-top: 1px solid #ffffff08; padding: 16px 24px; background: var(--char);
+  display: flex; gap: 10px; align-items: flex-end; flex-shrink: 0;
+}
+.convo-textarea {
+  flex: 1; background: #ffffff08; border: 1px solid #ffffff10;
+  border-radius: 12px; color: var(--text-hi); font-family: var(--fb);
+  font-size: 13px; padding: 11px 14px; outline: none; resize: none;
+  min-height: 42px; max-height: 108px; overflow-y: auto; line-height: 1.5;
+  transition: border-color 0.14s;
+}
+.convo-textarea:focus { border-color: var(--ember); }
+.convo-textarea::placeholder { color: var(--text-lo); }
+.btn-send {
+  background: var(--ember); color: #fff; border: none; border-radius: 11px;
+  padding: 11px 18px; font-family: var(--fb); font-size: 13px; font-weight: 700;
+  cursor: pointer; transition: background 0.14s, transform 0.12s; flex-shrink: 0;
+}
+.btn-send:hover { background: var(--ember-glow); }
+.btn-send:active { transform: scale(0.96); }
+.convo-empty {
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 10px; color: var(--text-lo);
+}
+.convo-empty-icon { font-size: 36px; }
+.convo-empty-text { font-size: 14px; }
+@media (max-width: 900px) {
+  .messages-layout { grid-template-columns: 1fr; }
+  .convo-panel { display: none; }
+  .messages-layout.convo-open .inbox-panel { display: none; }
+  .messages-layout.convo-open .convo-panel { display: flex; }
+  .earnings-summary { grid-template-columns: repeat(2, 1fr); }
+}
+
 /* ── MOBILE BOTTOM TAB BAR ───────────────────────────────────────────────── */
 .mobile-tabs {
   display: none; position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
@@ -629,8 +799,8 @@ body::before {
     <div class="vendor-card-mini">
       <div class="vendor-avatar">🔥</div>
       <div class="vendor-info">
-        <div class="vendor-mini-name">Smoky Joe's BBQ</div>
-        <div class="plan-pill">⭐ Pro Vendor</div>
+        <div class="vendor-mini-name">Loading…</div>
+        <div class="plan-pill">Free Plan</div>
       </div>
     </div>
   </div>
@@ -651,14 +821,21 @@ body::before {
       <span class="nav-icon">📄</span> Documents
       <span class="nav-badge" style="background:var(--gold);">!</span>
     </button>
+    <button class="nav-link" onclick="showPanel('earnings', this)">
+      <span class="nav-icon">💰</span> Earnings
+    </button>
+    <button class="nav-link" onclick="showPanel('messages', this)">
+      <span class="nav-icon">💬</span> Messages
+      <span class="nav-badge" id="msg-badge">2</span>
+    </button>
     <button class="nav-link" onclick="showPanel('settings', this)">
       <span class="nav-icon">⚙️</span> Settings
     </button>
   </nav>
 
   <div class="sidebar-footer">
-    <a href="/vendors/smoky-joes-bbq" class="sidebar-footer-link">↗ View public profile</a>
-    <button class="sidebar-footer-link" onclick="">🚪 Log out</button>
+    <a href="#" id="sidebar-profile-link" class="sidebar-footer-link">↗ View public profile</a>
+    <button class="sidebar-footer-link" id="logout-btn">🚪 Log out</button>
   </div>
 </aside>
 
@@ -672,7 +849,7 @@ body::before {
       <div class="topbar-notif" title="Notifications">
         🔔 <div class="notif-dot"></div>
       </div>
-      <a href="/vendors/smoky-joes-bbq" class="topbar-view-profile">↗ View profile</a>
+      <a href="#" id="topbar-profile-link" class="topbar-view-profile">↗ View profile</a>
     </div>
   </div>
 
@@ -965,7 +1142,7 @@ body::before {
         <div class="card">
           <div class="form-group">
             <label class="form-label">Business name</label>
-            <input class="form-input" id="prof-name" type="text" value="Smoky Joe's BBQ" oninput="updatePreview()" />
+            <input class="form-input" id="prof-name" type="text" value="" oninput="updatePreview()" />
           </div>
 
           <div class="form-group">
@@ -1040,7 +1217,7 @@ body::before {
 
           <div class="form-group">
             <label class="form-label">Instagram handle</label>
-            <input class="form-input" type="text" value="@smokyjoes_bbq" placeholder="@yourhandle" />
+            <input class="form-input" id="v-instagram" type="text" value="" placeholder="@yourhandle" />
           </div>
 
           <div class="form-group">
@@ -1068,7 +1245,7 @@ body::before {
           <div class="preview-card">
             <div class="preview-top" style="background:linear-gradient(135deg,#2D1A0A 0%,#5C2A08 100%);">🔥</div>
             <div class="preview-body">
-              <div class="preview-name" id="preview-name">Smoky Joe's BBQ</div>
+              <div class="preview-name" id="preview-name"></div>
               <div class="preview-tags" id="preview-tags">
                 <span class="preview-tag">BBQ</span>
                 <span class="preview-tag">Food Truck</span>
@@ -1204,6 +1381,182 @@ body::before {
       </div>
     </div>
 
+    <!-- ── PANEL: EARNINGS ──────────────────────────────────────────────── -->
+    <div class="panel" id="panel-earnings">
+      <div class="preview-banner">
+        🔒 Preview mode — Payment processing coming soon. Figures below are illustrative.
+      </div>
+
+      <!-- Summary row -->
+      <div class="earnings-summary">
+        <div class="earnings-stat">
+          <div class="earnings-stat-label">All-time earned</div>
+          <div class="earnings-stat-value">$9,840</div>
+          <div class="earnings-stat-sub">23 events completed</div>
+        </div>
+        <div class="earnings-stat">
+          <div class="earnings-stat-label">This month</div>
+          <div class="earnings-stat-value">$1,250</div>
+          <div class="earnings-stat-sub">3 events in Mar 2026</div>
+        </div>
+        <div class="earnings-stat">
+          <div class="earnings-stat-label">Last month</div>
+          <div class="earnings-stat-value">$980</div>
+          <div class="earnings-stat-sub">2 events in Feb 2026</div>
+        </div>
+        <div class="earnings-stat">
+          <div class="earnings-stat-label">Pending payout</div>
+          <div class="earnings-stat-value">$630</div>
+          <div class="earnings-stat-sub" style="color:var(--gold);">Expected 15 Mar</div>
+        </div>
+      </div>
+
+      <!-- History table -->
+      <div class="card" style="padding:0; overflow:hidden; margin-bottom:24px;">
+        <div style="padding:20px 20px 0; font-size:14px; font-weight:700; color:var(--text-hi); margin-bottom:12px;">Earnings history</div>
+        <div class="earnings-table-wrap">
+          <table class="earnings-table">
+            <thead><tr>
+              <th>Event</th><th>Date</th><th>Organiser</th>
+              <th>Booth fee</th><th>Platform fee (5%)</th><th>Net</th><th>Status</th>
+            </tr></thead>
+            <tbody>
+              <tr><td><strong>Rundle Mall Night Eats</strong></td><td>12 Apr 2026</td><td>Adelaide City Events</td><td>$280</td><td>-$14</td><td><strong>$266</strong></td><td><span class="pay-badge pending">Pending</span></td></tr>
+              <tr><td><strong>Glenelg Beach Festival</strong></td><td>8 Mar 2026</td><td>Seaside Festivals SA</td><td>$320</td><td>-$16</td><td><strong>$304</strong></td><td><span class="pay-badge processing">Processing</span></td></tr>
+              <tr><td><strong>Adelaide Fringe Taste Trail</strong></td><td>22 Feb 2026</td><td>Fringe World</td><td>$350</td><td>-$17.50</td><td><strong>$332.50</strong></td><td><span class="pay-badge paid">✓ Paid</span></td></tr>
+              <tr><td><strong>Norwood Harvest Market</strong></td><td>15 Feb 2026</td><td>Inner East Events</td><td>$200</td><td>-$10</td><td><strong>$190</strong></td><td><span class="pay-badge paid">✓ Paid</span></td></tr>
+              <tr><td><strong>Victor Harbor Summer Fair</strong></td><td>28 Jan 2026</td><td>Fleurieu Events Co.</td><td>$420</td><td>-$21</td><td><strong>$399</strong></td><td><span class="pay-badge paid">✓ Paid</span></td></tr>
+              <tr><td><strong>Prospect Farmers Market</strong></td><td>11 Jan 2026</td><td>Prospect City Council</td><td>$150</td><td>-$7.50</td><td><strong>$142.50</strong></td><td><span class="pay-badge paid">✓ Paid</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Payout settings (locked) -->
+      <div class="card" style="margin-bottom:24px;">
+        <div style="font-size:14px; font-weight:700; color:var(--text-hi); margin-bottom:16px;">Payout settings</div>
+        <div class="payout-locked" style="border:1px solid #ffffff08; border-radius:12px; padding:18px; display:flex; align-items:center; justify-content:space-between; gap:16px;">
+          <div>
+            <div style="font-size:13px; font-weight:700; color:var(--text-hi); margin-bottom:4px;">Bank account</div>
+            <div style="font-size:12px; color:var(--text-lo);">BSB ••• — Acc ••••••••</div>
+          </div>
+          <div style="position:relative; display:inline-block;">
+            <button class="btn-coming-soon" disabled title="Coming soon">Connect bank account
+              <span class="coming-soon-tag">SOON</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tax summary -->
+      <div class="card">
+        <div style="font-size:14px; font-weight:700; color:var(--text-hi); margin-bottom:16px;">Tax summary</div>
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
+          <div>
+            <div style="font-size:12px; color:var(--text-lo); margin-bottom:4px;">Total earnings FY 2025–26</div>
+            <div style="font-family:var(--fd); font-size:28px; font-weight:900; color:var(--text-hi);">$4,680</div>
+          </div>
+          <div style="position:relative; display:inline-block;">
+            <button class="btn-coming-soon" disabled title="Coming soon">Download earnings summary PDF
+              <span class="coming-soon-tag">SOON</span>
+            </button>
+          </div>
+        </div>
+        <div style="margin-top:16px; font-size:12px; color:var(--text-lo); line-height:1.7; border-top:1px solid #ffffff07; padding-top:14px;">
+          Pitch. provides an earnings summary for your own records. This is not a tax invoice. Please consult your accountant or BAS agent for tax advice.
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PANEL: MESSAGES ───────────────────────────────────────────────── -->
+    <div class="panel" id="panel-messages">
+      <div class="messages-layout" id="messages-layout">
+
+        <!-- Inbox -->
+        <div class="inbox-panel">
+          <div class="inbox-header">
+            <div class="inbox-title">Messages <span class="inbox-unread-badge">2</span></div>
+            <input class="inbox-search" type="text" placeholder="Search conversations…" />
+          </div>
+          <div class="thread-list">
+
+            <!-- Thread 1: Unread, approved -->
+            <div class="thread-item active" onclick="openThread('1', this)">
+              <div class="thread-avatar" style="background:linear-gradient(135deg,#1A3A0A,#2D6B1A);">AC</div>
+              <div class="thread-body">
+                <div class="thread-name">
+                  Adelaide City Events
+                </div>
+                <div class="thread-event">Rundle Mall Night Eats</div>
+                <div class="thread-preview">Your spot is confirmed — Booth A7. Looking forward...</div>
+              </div>
+              <div class="thread-meta">
+                <div class="thread-time">2h ago</div>
+                <div class="thread-unread-dot"></div>
+              </div>
+            </div>
+
+            <!-- Thread 2: Unread, standard -->
+            <div class="thread-item" onclick="openThread('2', this)">
+              <div class="thread-avatar" style="background:linear-gradient(135deg,#0A1A3A,#1A3070);">SF</div>
+              <div class="thread-body">
+                <div class="thread-name">Seaside Festivals SA</div>
+                <div class="thread-event">Glenelg Beach Festival</div>
+                <div class="thread-preview">Hi Joe, thanks for your application! We just need...</div>
+              </div>
+              <div class="thread-meta">
+                <div class="thread-time">Yesterday</div>
+                <div class="thread-unread-dot"></div>
+              </div>
+            </div>
+
+            <!-- Thread 3: Rejected -->
+            <div class="thread-item" onclick="openThread('3', this)">
+              <div class="thread-avatar" style="background:linear-gradient(135deg,#3A0A0A,#701A1A);">FW</div>
+              <div class="thread-body">
+                <div class="thread-name">Fringe World</div>
+                <div class="thread-event">WOMADelaide Fringe</div>
+                <div class="thread-preview">Unfortunately we won't be able to accommodate your...</div>
+              </div>
+              <div class="thread-meta">
+                <div class="thread-time">5 days ago</div>
+              </div>
+            </div>
+
+            <!-- Thread 4: Standard back-and-forth -->
+            <div class="thread-item" onclick="openThread('4', this)">
+              <div class="thread-avatar" style="background:linear-gradient(135deg,#0A2A1A,#1A5C30);">IE</div>
+              <div class="thread-body">
+                <div class="thread-name">Inner East Events</div>
+                <div class="thread-event">Norwood Twilight Markets</div>
+                <div class="thread-preview">You: Sounds great, we'll bring the full setup...</div>
+              </div>
+              <div class="thread-meta">
+                <div class="thread-time">1 week ago</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Conversation panel -->
+        <div class="convo-panel" id="convo-panel">
+          <div class="convo-header" id="convo-header">
+            <div class="convo-header-name" id="convo-org-name">Adelaide City Events</div>
+            <div class="convo-header-event" id="convo-event-line">
+              Re: <a href="/events/rundle-mall-night-eats">Rundle Mall Night Eats</a>
+            </div>
+          </div>
+          <div class="convo-messages" id="convo-messages"></div>
+          <div class="convo-input-area">
+            <textarea class="convo-textarea" id="convo-input" placeholder="Write a message… (Enter to send, Shift+Enter for new line)" rows="1" onkeydown="handleMsgKey(event)"></textarea>
+            <button class="btn-send" onclick="sendMessage()">Send →</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
     <!-- ── PANEL: SETTINGS ──────────────────────────────────────────────── -->
     <div class="panel" id="panel-settings">
       <div style="max-width:600px;">
@@ -1217,7 +1570,7 @@ body::before {
                 <div class="settings-row-label">Email address</div>
                 <div class="settings-row-desc">To change your email, contact support.</div>
               </div>
-              <div class="email-display">joe@smokyjoes.com.au</div>
+              <div class="email-display" id="settings-email">—</div>
             </div>
           </div>
         </div>
@@ -1297,10 +1650,10 @@ body::before {
 <div class="mobile-tabs">
   <div class="mobile-tabs-inner">
     <button class="mobile-tab active" onclick="showPanel('overview', this)"><span class="mobile-tab-icon">⬡</span>Overview</button>
-    <button class="mobile-tab" onclick="showPanel('applications', this)"><span class="mobile-tab-icon">📋</span>Applications</button>
+    <button class="mobile-tab" onclick="showPanel('applications', this)"><span class="mobile-tab-icon">📋</span>Apply</button>
     <button class="mobile-tab" onclick="showPanel('profile', this)"><span class="mobile-tab-icon">👤</span>Profile</button>
-    <button class="mobile-tab" onclick="showPanel('documents', this)"><span class="mobile-tab-icon">📄</span>Docs</button>
-    <button class="mobile-tab" onclick="showPanel('settings', this)"><span class="mobile-tab-icon">⚙️</span>Settings</button>
+    <button class="mobile-tab" onclick="showPanel('messages', this)"><span class="mobile-tab-icon">💬</span>Messages</button>
+    <button class="mobile-tab" onclick="showPanel('settings', this)"><span class="mobile-tab-icon">⚙️</span>More</button>
   </div>
 </div>
 
@@ -1310,7 +1663,7 @@ body::before {
     <div class="modal-icon">🗑️</div>
     <div class="modal-title">Delete account?</div>
     <div class="modal-desc">
-      This will permanently delete <strong>Smoky Joe's BBQ</strong> and all associated data. Active confirmed events will be cancelled.<br/><br/>
+      This will permanently delete <strong id="delete-modal-name">your account</strong> and all associated data. Active confirmed events will be cancelled.<br/><br/>
       Type <strong>DELETE</strong> to confirm.
     </div>
     <input class="modal-confirm-input" type="text" placeholder='Type "DELETE" to confirm' oninput="checkDeleteConfirm(this)" />
@@ -1324,27 +1677,188 @@ body::before {
 <script>
 /* ── Panel switching ──────────────────────────────────────────────────────── */
 const PANEL_TITLES = {
-  overview: 'Overview',
+  overview:     'Overview',
   applications: 'My Applications',
-  profile: 'My Profile',
-  documents: 'Documents',
-  settings: 'Settings',
+  profile:      'My Profile',
+  documents:    'Documents',
+  earnings:     'Earnings',
+  messages:     'Messages',
+  settings:     'Settings',
 };
 
-function showPanel(name, clickedEl) {
-  // Hide all panels
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('panel-' + name).classList.add('active');
+const PANEL_PATHS = {
+  overview:     '/dashboard/vendor',
+  applications: '/dashboard/vendor/applications',
+  profile:      '/dashboard/vendor/profile',
+  documents:    '/dashboard/vendor/documents',
+  earnings:     '/dashboard/vendor/earnings',
+  messages:     '/dashboard/vendor/messages',
+  settings:     '/dashboard/vendor/settings',
+};
 
-  // Update sidebar
+function showPanel(name, clickedEl, pushHistory = true) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  const panel = document.getElementById('panel-' + name);
+  if (!panel) return;
+  panel.classList.add('active');
+
   document.querySelectorAll('.sidebar .nav-link').forEach(l => l.classList.remove('active'));
-  // Update mobile tabs
   document.querySelectorAll('.mobile-tab').forEach(t => t.classList.remove('active'));
 
-  if (clickedEl) clickedEl.classList.add('active');
+  if (clickedEl) {
+    clickedEl.classList.add('active');
+  } else {
+    // Auto-highlight the matching nav link
+    document.querySelectorAll('.sidebar .nav-link').forEach(l => {
+      if (l.getAttribute('onclick') && l.getAttribute('onclick').includes(`'${name}'`)) {
+        l.classList.add('active');
+      }
+    });
+    document.querySelectorAll('.mobile-tab').forEach(t => {
+      if (t.getAttribute('onclick') && t.getAttribute('onclick').includes(`'${name}'`)) {
+        t.classList.add('active');
+      }
+    });
+  }
 
-  document.getElementById('topbar-title').textContent = PANEL_TITLES[name];
+  document.getElementById('topbar-title').textContent = PANEL_TITLES[name] || name;
+
+  if (pushHistory && PANEL_PATHS[name]) {
+    history.pushState({ panel: name }, '', PANEL_PATHS[name]);
+  }
 }
+
+// Route on load
+(function routeOnLoad() {
+  const path = window.location.pathname.replace(/\/$/, '');
+  const match = Object.entries(PANEL_PATHS).find(([, p]) => p === path);
+  const panelName = match ? match[0] : 'overview';
+  showPanel(panelName, null, false);
+})();
+
+// Handle browser back/forward
+window.addEventListener('popstate', e => {
+  const name = (e.state && e.state.panel) || 'overview';
+  showPanel(name, null, false);
+});
+
+/* ── Messages mock data ───────────────────────────────────────────────────── */
+const THREADS = {
+  '1': {
+    org: 'Adelaide City Events',
+    event: 'Rundle Mall Night Eats',
+    eventSlug: 'rundle-mall-night-eats',
+    messages: [
+      { from: 'them', text: 'Hi Joe! Thanks for applying to Rundle Mall Night Eats. Your profile looks great — we especially love the BBQ setup.', time: '3 days ago' },
+      { from: 'me',   text: 'Thanks so much! Really keen to be part of it. Happy to answer any questions about our setup.', time: '3 days ago' },
+      { from: 'them', text: 'Perfect. Can you confirm your stall dimensions? We\'re tight on space in the eastern section.', time: '2 days ago' },
+      { from: 'me',   text: 'We\'re 4m wide × 3m deep with a 2.4m clearance. Power draw is around 15A. Does that work?', time: '2 days ago' },
+      { from: 'them', text: 'That works perfectly. We\'re placing you in Section A.', time: '1 day ago' },
+      { type: 'system', text: 'Application approved ✓', style: 'approved' },
+      { from: 'them', text: 'Your spot is confirmed — Booth A7. Looking forward to having Smoky Joe\'s with us!', time: '2 hours ago' },
+    ],
+  },
+  '2': {
+    org: 'Seaside Festivals SA',
+    event: 'Glenelg Beach Festival',
+    eventSlug: 'glenelg-beach-festival',
+    messages: [
+      { from: 'them', text: 'Hi Joe, thanks for your application! We just need a couple of things before we can proceed.', time: 'Yesterday' },
+      { from: 'them', text: 'Could you share your Public Liability Insurance certificate? We need to verify the coverage amount.', time: 'Yesterday' },
+    ],
+  },
+  '3': {
+    org: 'Fringe World',
+    event: 'WOMADelaide Fringe',
+    eventSlug: 'womadelaide-fringe',
+    messages: [
+      { from: 'me',   text: 'Hi! Really excited to apply for WOMADelaide. Smoky Joe\'s has done similar large-scale events before and we\'d love to be part of it.', time: '2 weeks ago' },
+      { from: 'them', text: 'Thanks for applying. We reviewed your profile and it looks great.', time: '10 days ago' },
+      { type: 'system', text: 'Application not accepted', style: 'rejected' },
+      { from: 'them', text: 'Unfortunately we won\'t be able to accommodate your application this year — the BBQ category reached capacity earlier than expected. We\'d love to have you apply again next year.', time: '5 days ago' },
+    ],
+  },
+  '4': {
+    org: 'Inner East Events',
+    event: 'Norwood Twilight Markets',
+    eventSlug: 'norwood-twilight-markets',
+    messages: [
+      { from: 'them', text: 'Hey Joe! We saw your profile and would love to have you at the Norwood Twilight Markets in May.', time: '1 week ago' },
+      { from: 'me',   text: 'Love Norwood! We\'d be very keen. What\'s the booth fee range?', time: '1 week ago' },
+      { from: 'them', text: '$180–$240 depending on placement. You\'d likely get a prime corner spot.', time: '1 week ago' },
+      { from: 'me',   text: 'Sounds great, we\'ll bring the full setup. Should I apply through the platform?', time: '1 week ago' },
+      { from: 'them', text: 'Yes please — apply via Pitch. and mention we chatted. It helps us fast-track the review.', time: '6 days ago' },
+    ],
+  },
+};
+
+let activeThread = '1';
+
+function openThread(id, el) {
+  activeThread = id;
+  document.querySelectorAll('.thread-item').forEach(t => t.classList.remove('active'));
+  if (el) el.classList.add('active');
+
+  const t = THREADS[id];
+  if (!t) return;
+
+  document.getElementById('convo-org-name').textContent = t.org;
+  document.getElementById('convo-event-line').innerHTML =
+    `Re: <a href="/events/${t.eventSlug}">${t.event}</a>`;
+
+  renderMessages(t.messages);
+
+  // Mark unread dot removed
+  if (el) { const dot = el.querySelector('.thread-unread-dot'); if (dot) dot.remove(); }
+
+  // Mobile: open convo
+  document.getElementById('messages-layout').classList.add('convo-open');
+}
+
+function renderMessages(msgs) {
+  const c = document.getElementById('convo-messages');
+  c.innerHTML = msgs.map(m => {
+    if (m.type === 'system') {
+      return `<div class="system-msg ${m.style || ''}">${m.text}</div>`;
+    }
+    const mine = m.from === 'me';
+    return `<div>
+      <div class="msg-bubble-wrap ${mine ? 'mine' : ''}">
+        ${!mine ? `<div class="msg-avatar" style="background:linear-gradient(135deg,#2A1E14,#5C3A1A);">OG</div>` : ''}
+        <div class="msg-bubble ${mine ? 'mine' : 'theirs'}">${m.text}</div>
+        ${mine ? `<div class="msg-avatar" style="background:linear-gradient(135deg,#3D1A06,#6B2E08);">SJ</div>` : ''}
+      </div>
+      <div class="msg-time ${mine ? 'mine' : ''}">${m.time}</div>
+    </div>`;
+  }).join('');
+  c.scrollTop = c.scrollHeight;
+}
+
+function sendMessage() {
+  const inp = document.getElementById('convo-input');
+  const text = inp.value.trim();
+  if (!text) return;
+
+  const t = THREADS[activeThread];
+  if (t) {
+    t.messages.push({ from: 'me', text, time: 'Just now' });
+    renderMessages(t.messages);
+    // Update thread preview
+    const threadEl = document.querySelector(`.thread-item[onclick*="'${activeThread}'"]`);
+    if (threadEl) threadEl.querySelector('.thread-preview').textContent = 'You: ' + text;
+  }
+  inp.value = '';
+  inp.style.height = '';
+}
+
+function handleMsgKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+}
+
+// Auto-open first thread
+document.addEventListener('DOMContentLoaded', () => {
+  openThread('1', document.querySelector('.thread-item'));
+});
 
 /* ── Applications filter ─────────────────────────────────────────────────── */
 function filterApps(status, btn) {
@@ -1424,36 +1938,56 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDeleteM
 updateBioCounter();
 updatePreview();
 
+/* ── Auth-aware fetch (sends X-Pitch-Auth header when cookie may not work) ── */
+function pitchFetch(url, opts = {}) {
+  const token = window.__PITCH_TOKEN__;
+  if (token) {
+    opts.headers = Object.assign({}, opts.headers, { 'X-Pitch-Auth': token });
+  }
+  return fetch(url, opts);
+}
+
 /* ── Real data init ──────────────────────────────────────────────────────── */
 async function initDashboard() {
-  // Auth check
-  let me;
-  try {
-    const r = await fetch('/api/me');
-    const d = await r.json();
-    if (!d.user || d.user.role !== 'vendor') { window.location.href = '/login'; return; }
-    me = d.user;
-  } catch (e) { window.location.href = '/login'; return; }
+  // Auth data injected server-side — no fetch('/api/me') needed
+  const user = window.__PITCH_USER__;
+  const profile = window.__PITCH_PROFILE__;
+  if (!user || user.role !== 'vendor') { window.location.href = '/login'; return; }
 
-  // Populate user name
-  const tradingName = (me.vendor && me.vendor.trading_name) ? me.vendor.trading_name : (me.first_name + ' ' + me.last_name);
+  // Populate user name + plan
+  const tradingName = (profile && profile.trading_name) ? profile.trading_name : (user.first_name + ' ' + user.last_name);
   document.querySelector('.vendor-mini-name').textContent = tradingName;
-  document.querySelector('.plan-pill').textContent = (me.vendor && me.vendor.plan === 'pro') ? '⭐ Pro Vendor' : 'Free Plan';
+  document.querySelector('.plan-pill').textContent = (profile && profile.plan === 'pro') ? '⭐ Pro Vendor' : 'Free Plan';
+
+  // Profile links — build slug from trading name
+  const slug = tradingName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const profileUrl = `/vendors/${user.id}`;
+  document.getElementById('sidebar-profile-link').href = profileUrl;
+  document.getElementById('topbar-profile-link').href = profileUrl;
+
+  // Settings email
+  const emailEl = document.getElementById('settings-email');
+  if (emailEl) emailEl.textContent = user.email || '—';
+
+  // Delete modal name
+  const deleteNameEl = document.getElementById('delete-modal-name');
+  if (deleteNameEl) deleteNameEl.textContent = tradingName;
 
   // Populate profile form with real data
-  if (me.vendor) {
-    const v = me.vendor;
+  if (profile) {
+    const v = profile;
     if (document.getElementById('prof-name')) document.getElementById('prof-name').value = v.trading_name || '';
     if (document.getElementById('prof-bio')) { document.getElementById('prof-bio').value = v.bio || ''; updateBioCounter(); }
     if (document.getElementById('v-mobile')) document.getElementById('v-mobile').value = v.mobile || '';
     if (document.getElementById('v-state')) document.getElementById('v-state').value = v.state || '';
     if (document.getElementById('v-suburb')) document.getElementById('v-suburb').value = v.suburb || '';
+    if (document.getElementById('v-instagram')) document.getElementById('v-instagram').value = v.instagram || '';
     updatePreview();
   }
 
   // Logout button
-  document.querySelector('.sidebar-footer button').onclick = async () => {
-    await fetch('/api/logout', { method: 'POST' });
+  document.getElementById('logout-btn').onclick = async () => {
+    await pitchFetch('/api/logout', { method: 'POST' });
     window.location.href = '/';
   };
 
@@ -1463,7 +1997,7 @@ async function initDashboard() {
 }
 
 async function loadEvents() {
-  const r = await fetch('/api/vendor/events');
+  const r = await pitchFetch('/api/vendor/events');
   if (!r.ok) return;
   const { events } = await r.json();
 
@@ -1496,7 +2030,7 @@ async function applyToEvent(eventId, btn) {
   btn.textContent = 'Applying…';
   btn.disabled = true;
   try {
-    const r = await fetch(`/api/events/${eventId}/apply`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+    const r = await pitchFetch(`/api/events/${eventId}/apply`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
     const d = await r.json();
     if (r.ok) {
       btn.closest('.event-mini').querySelector('.event-mini-right').innerHTML =
@@ -1514,7 +2048,7 @@ async function applyToEvent(eventId, btn) {
 }
 
 async function loadApplications() {
-  const r = await fetch('/api/vendor/applications');
+  const r = await pitchFetch('/api/vendor/applications');
   if (!r.ok) return;
   const { applications } = await r.json();
 
@@ -1550,7 +2084,7 @@ async function loadApplications() {
 
 async function withdrawApp(eventId, btn) {
   if (!confirm('Withdraw your application for this event?')) return;
-  const r = await fetch(`/api/events/${eventId}/withdraw`, { method: 'POST' });
+  const r = await pitchFetch(`/api/events/${eventId}/withdraw`, { method: 'POST' });
   if (r.ok) loadApplications();
 }
 
