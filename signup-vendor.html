@@ -686,19 +686,55 @@ function togglePw(id, btn) {
   btn.textContent = inp.type === 'password' ? '👁' : '🙈';
 }
 
-function verifyABN() {
-  const abn = document.getElementById('abn-input').value.replace(/\s/g,'');
+async function verifyABN() {
+  const inp = document.getElementById('abn-input');
+  const abn = inp.value.replace(/\s/g, '');
   const btn = document.getElementById('abn-btn');
-  const res = document.getElementById('abn-result');
-  if (abn.length < 11) { res.className='abn-result fail'; res.querySelector('.abn-result-icon').textContent='✕'; res.querySelector('.abn-result-text').textContent='Please enter an 11-digit ABN.'; return; }
-  btn.textContent='Verifying…'; btn.classList.add('loading');
-  res.className='abn-result'; res.style.display='none';
-  setTimeout(() => {
-    btn.textContent='Verify ABN →'; btn.classList.remove('loading');
-    res.className='abn-result success';
-    res.querySelector('.abn-result-icon').textContent='✓';
-    res.querySelector('.abn-result-text').textContent='ABN verified — Smoky Joe\'s BBQ Pty Ltd · Active';
-  }, 1400);
+  const resEl = document.getElementById('abn-result');
+
+  resEl.className = 'abn-result';
+  if (abn.length < 11) {
+    resEl.className = 'abn-result fail';
+    resEl.querySelector('.abn-result-icon').textContent = '✕';
+    resEl.querySelector('.abn-result-text').textContent = 'Please enter an 11-digit ABN.';
+    return;
+  }
+
+  btn.textContent = 'Verifying…';
+  btn.classList.add('loading');
+  inp.dataset.verified = '';
+
+  try {
+    const r = await fetch('/api/verify-abn', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ abn }),
+    });
+    const data = await r.json();
+    btn.textContent = 'Verify ABN →';
+    btn.classList.remove('loading');
+
+    if (data.valid) {
+      resEl.className = 'abn-result success';
+      resEl.querySelector('.abn-result-icon').textContent = '✓';
+      resEl.querySelector('.abn-result-text').textContent = data.entityName
+        ? `ABN verified — ${data.entityName} · ${data.status || 'Active'}`
+        : data.message || 'ABN format is valid';
+      inp.dataset.verified = 'true';
+      inp.dataset.entityName = data.entityName || '';
+    } else {
+      resEl.className = 'abn-result fail';
+      resEl.querySelector('.abn-result-icon').textContent = '✕';
+      resEl.querySelector('.abn-result-text').textContent = data.error || 'ABN could not be verified.';
+      inp.dataset.verified = 'false';
+    }
+  } catch (e) {
+    btn.textContent = 'Verify ABN →';
+    btn.classList.remove('loading');
+    resEl.className = 'abn-result fail';
+    resEl.querySelector('.abn-result-icon').textContent = '✕';
+    resEl.querySelector('.abn-result-text').textContent = 'Verification failed — please check your connection.';
+  }
 }
 
 function setPriceBtn(btn) {
