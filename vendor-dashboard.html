@@ -1682,11 +1682,16 @@ async function initDashboard() {
   document.querySelector('.vendor-mini-name').textContent = tradingName;
   document.querySelector('.plan-pill').textContent = (profile && profile.plan === 'pro') ? '⭐ Pro Vendor' : 'Free Plan';
 
-  // Profile links — build slug from trading name
-  const slug = tradingName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  // Profile links
   const profileUrl = `/vendors/${user.id}`;
   document.getElementById('sidebar-profile-link').href = profileUrl;
   document.getElementById('topbar-profile-link').href = profileUrl;
+
+  // Cache vendor data so the public profile page can render instantly without a fetch
+  try {
+    const cacheData = Object.assign({}, profile, { cuisine_tags: (() => { try { return JSON.parse(profile.cuisine_tags || '[]'); } catch { return []; } })(), photos: (() => { try { return JSON.parse(profile.photos || '[]'); } catch { return []; } })() });
+    sessionStorage.setItem('pitch_vendor_' + user.id, JSON.stringify(cacheData));
+  } catch (e) {}
 
   // Settings email
   const emailEl = document.getElementById('settings-email');
