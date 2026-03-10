@@ -796,8 +796,35 @@ function goPage(n) {
 fetch('/api/events')
   .then(function(r) { return r.json(); })
   .then(function(data) {
-    var published = new Set((data.events || []).map(function(e) { return e.slug; }));
-    EVENTS = (window.PITCH_EVENTS || []).filter(function(e) { return published.has(e.id); });
+    var dbEvents = data.events || [];
+    var staticSlugs = new Set((window.PITCH_EVENTS || []).map(function(e) { return e.id; }));
+    // Keep all static events
+    EVENTS = (window.PITCH_EVENTS || []).slice();
+    // Add DB events that aren't in static data
+    dbEvents.forEach(function(e) {
+      if (!staticSlugs.has(e.slug)) {
+        EVENTS.push({
+          id:        e.slug,
+          name:      e.name,
+          category:  e.category || 'Market',
+          suburb:    e.suburb || 'Adelaide',
+          state:     e.state  || 'SA',
+          date:      e.date_sort || '',
+          dateLabel: e.date_sort ? new Date(e.date_sort).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'}) : 'TBC',
+          time:      'TBC',
+          filled:    0,
+          total:     e.stalls_available || 20,
+          feeMin:    0,
+          feeMax:    0,
+          deadline:  e.date_sort || '',
+          emoji:     '🎪',
+          bg:        'dark',
+          text:      '#FDF4E7',
+          organiser: e.organiser_name || '',
+          _dbEvent:  true,
+        });
+      }
+    });
     filtered = [...EVENTS];
     applyFilters();
   })

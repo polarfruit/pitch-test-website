@@ -743,7 +743,48 @@ app.post('/api/vendor/documents', requireAuth, async (req, res) => {
   res.json({ ok: true, url: data });
 });
 
+// ── Public stats ───────────────────────────────────────────────────────────
+app.get('/api/stats', async (req, res) => {
+  const vendors = (await stmts.countVendors.get()).n;
+  const events  = (await stmts.countEvents.get()).n;
+  res.json({ vendors, events });
+});
+
 // ── API: Organiser dashboard ───────────────────────────────────────────────
+
+app.get('/api/organiser/overview', requireAuth, async (req, res) => {
+  if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
+  const events = await stmts.getOrganiserEvents.all(req.session.userId);
+
+  let totalApps = 0, totalApproved = 0, totalSpots = 0, totalFilled = 0;
+  const recentApps = [];
+
+  for (const ev of events) {
+    const apps = await stmts.getApplicationsByEvent.all(ev.id);
+    totalApps += apps.length;
+    const approved = apps.filter(a => a.status === 'approved');
+    totalApproved += approved.length;
+    if (ev.stalls_available) {
+      totalSpots  += ev.stalls_available;
+      totalFilled += Math.min(approved.length, ev.stalls_available);
+    }
+    for (const a of apps) {
+      recentApps.push({ ...a, event_name: ev.name, event_id: ev.id });
+    }
+  }
+
+  recentApps.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  const fillRate = totalSpots > 0 ? Math.round((totalFilled / totalSpots) * 100) : 0;
+  const upcoming = events.filter(e => e.status === 'published').slice(0, 5);
+
+  res.json({
+    total_apps: totalApps,
+    vendors_approved: totalApproved,
+    fill_rate: fillRate,
+    upcoming,
+    recent_apps: recentApps.slice(0, 5),
+  });
+});
 
 app.post('/api/organiser/events', requireAuth, async (req, res) => {
   if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
