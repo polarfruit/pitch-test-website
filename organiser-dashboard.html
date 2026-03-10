@@ -664,14 +664,14 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
             <label class="form-label">Event date</label>
             <div class="ne-date-wrap" id="ne-event-date-wrap">
               <div class="date-field">
-                <div class="date-field-label">Start</div>
-                <input class="date-text-input" id="ne-date-display" placeholder="DD Mon YYYY" readonly onclick="neCalOpen('event','ne-event-date-wrap')" />
+                <div class="date-field-label">From</div>
+                <input class="date-text-input" id="ne-date-display" placeholder="DD/MM/YYYY" readonly onclick="neCalOpen('event','ne-event-date-wrap')" />
                 <input type="hidden" id="ne-date" />
               </div>
               <div class="date-sep" style="padding-bottom:9px;">→</div>
               <div class="date-field">
-                <div class="date-field-label">End (multi-day)</div>
-                <input class="date-text-input" id="ne-enddate-display" placeholder="optional" readonly onclick="neCalOpen('event','ne-event-date-wrap')" />
+                <div class="date-field-label">To</div>
+                <input class="date-text-input" id="ne-enddate-display" placeholder="DD/MM/YYYY" readonly onclick="neCalOpen('event','ne-event-date-wrap')" />
                 <input type="hidden" id="ne-enddate" />
               </div>
               <button class="ne-cal-toggle" id="ne-cal-toggle-event" onclick="neCalOpen('event','ne-event-date-wrap')" title="Open calendar">
@@ -779,7 +779,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
             <label class="form-label">Application deadline</label>
             <div class="ne-date-wrap" id="ne-deadline-date-wrap">
               <div class="date-field">
-                <input class="date-text-input" id="ne-deadline-display" placeholder="DD Mon YYYY" readonly onclick="neCalOpen('deadline','ne-deadline-date-wrap')" />
+                <input class="date-text-input" id="ne-deadline-display" placeholder="DD/MM/YYYY" readonly onclick="neCalOpen('deadline','ne-deadline-date-wrap')" />
                 <input type="hidden" id="ne-deadline" />
               </div>
               <button class="ne-cal-toggle" id="ne-cal-toggle-deadline" onclick="neCalOpen('deadline','ne-deadline-date-wrap')" title="Open calendar">
