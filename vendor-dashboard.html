@@ -888,112 +888,13 @@ body::before {
         <!-- Recommended events -->
         <div>
           <div class="section-title">Recommended events for you</div>
-          <div class="event-mini-list">
-            <a class="event-mini" href="/events/port-adelaide-night-market">
-              <div class="event-mini-icon" style="background:linear-gradient(135deg,#0A1A2D,#0A3060);">🌊</div>
-              <div class="event-mini-body">
-                <div class="event-mini-name">Port Adelaide Night Market</div>
-                <div class="event-mini-meta">📍 Port Adelaide · Sat 10 May 2026 · 5pm–10pm</div>
-              </div>
-              <div class="event-mini-right">
-                <div class="event-mini-fee">$200–$300</div>
-                <div class="event-mini-spots" style="color:var(--herb);">8 spots left</div>
-                <button class="btn-apply-mini">Apply →</button>
-              </div>
-            </a>
-            <a class="event-mini" href="/events/norwood-food-bazaar">
-              <div class="event-mini-icon" style="background:linear-gradient(135deg,#1E1408,#4A2C0C);">⚡</div>
-              <div class="event-mini-body">
-                <div class="event-mini-name">Norwood Food Bazaar</div>
-                <div class="event-mini-meta">📍 Norwood · Sun 17 May 2026 · 10am–3pm</div>
-              </div>
-              <div class="event-mini-right">
-                <div class="event-mini-fee">$150–$250</div>
-                <div class="event-mini-spots" style="color:var(--gold);">3 spots left</div>
-                <button class="btn-apply-mini">Apply →</button>
-              </div>
-            </a>
-            <a class="event-mini" href="/events/prospect-farmers-market">
-              <div class="event-mini-icon" style="background:linear-gradient(135deg,#0A2010,#144A22);">🌿</div>
-              <div class="event-mini-body">
-                <div class="event-mini-name">Prospect Farmers Market</div>
-                <div class="event-mini-meta">📍 Prospect · Sat 31 May 2026 · 8am–1pm</div>
-              </div>
-              <div class="event-mini-right">
-                <div class="event-mini-fee">$100–$200</div>
-                <div class="event-mini-spots" style="color:var(--herb);">10 spots left</div>
-                <button class="btn-apply-mini">Apply →</button>
-              </div>
-            </a>
-            <a class="event-mini" href="/events/victor-harbor-summer-fair">
-              <div class="event-mini-icon" style="background:linear-gradient(135deg,#0A1020,#1A2848);">🎠</div>
-              <div class="event-mini-body">
-                <div class="event-mini-name">Victor Harbor Summer Fair</div>
-                <div class="event-mini-meta">📍 Victor Harbor · Sun 24 May 2026 · 10am–4pm</div>
-              </div>
-              <div class="event-mini-right">
-                <div class="event-mini-fee">$250–$450</div>
-                <div class="event-mini-spots" style="color:var(--terra);">2 spots left</div>
-                <button class="btn-apply-mini">Apply →</button>
-              </div>
-            </a>
-          </div>
+          <div class="event-mini-list"><!-- Populated by loadEvents() --></div>
         </div>
 
         <!-- Activity feed -->
         <div class="card">
           <div class="section-title" style="margin-bottom:12px;">Recent activity</div>
-          <div class="feed-list">
-            <div class="feed-item">
-              <div class="feed-dot submitted"></div>
-              <div class="feed-body">
-                <div class="feed-text">Application submitted to <a href="/events/prospect-farmers-market">Prospect Farmers Market</a></div>
-                <div class="feed-time">Just now</div>
-              </div>
-            </div>
-            <div class="feed-item">
-              <div class="feed-dot review"></div>
-              <div class="feed-body">
-                <div class="feed-text"><a href="/events/glenelg-twilight-market">Glenelg Twilight Market</a> — application moved to <strong>Under Review</strong></div>
-                <div class="feed-time">2 hours ago</div>
-              </div>
-            </div>
-            <div class="feed-item">
-              <div class="feed-dot approved"></div>
-              <div class="feed-body">
-                <div class="feed-text">Application <strong style="color:var(--herb);">approved</strong> for <a href="/events/port-adelaide-night-market">Port Adelaide Night Market</a></div>
-                <div class="feed-time">Yesterday, 3:14pm</div>
-              </div>
-            </div>
-            <div class="feed-item">
-              <div class="feed-dot submitted"></div>
-              <div class="feed-body">
-                <div class="feed-text">Application submitted to <a href="/events/glenelg-twilight-market">Glenelg Twilight Market</a></div>
-                <div class="feed-time">2 days ago</div>
-              </div>
-            </div>
-            <div class="feed-item">
-              <div class="feed-dot approved"></div>
-              <div class="feed-body">
-                <div class="feed-text">Application <strong style="color:var(--herb);">approved</strong> for <a href="/events/rundle-mall-night-eats">Rundle Mall Night Eats</a></div>
-                <div class="feed-time">3 days ago</div>
-              </div>
-            </div>
-            <div class="feed-item">
-              <div class="feed-dot review-star"></div>
-              <div class="feed-body">
-                <div class="feed-text">New ★★★★★ review from <strong>Glenelg Foreshore Markets</strong></div>
-                <div class="feed-time">1 week ago</div>
-              </div>
-            </div>
-            <div class="feed-item">
-              <div class="feed-dot rejected"></div>
-              <div class="feed-body">
-                <div class="feed-text">Application <strong style="color:var(--terra);">not accepted</strong> for <a href="#">Barossa Valley Food &amp; Wine</a></div>
-                <div class="feed-time">2 weeks ago</div>
-              </div>
-            </div>
-          </div>
+          <div class="feed-list" id="activity-feed"><!-- Populated by loadActivity() --></div>
         </div>
 
       </div>
@@ -1267,10 +1168,8 @@ body::before {
         <!-- Conversation panel -->
         <div class="convo-panel" id="convo-panel">
           <div class="convo-header" id="convo-header">
-            <div class="convo-header-name" id="convo-org-name">Adelaide City Events</div>
-            <div class="convo-header-event" id="convo-event-line">
-              Re: <a href="/events/rundle-mall-night-eats">Rundle Mall Night Eats</a>
-            </div>
+            <div class="convo-header-name" id="convo-org-name">Select a conversation</div>
+            <div class="convo-header-event" id="convo-event-line"></div>
           </div>
           <div class="convo-messages" id="convo-messages"></div>
           <div class="convo-input-area">
@@ -1460,55 +1359,8 @@ window.addEventListener('popstate', e => {
   showPanel(name, null, false);
 });
 
-/* ── Messages mock data ───────────────────────────────────────────────────── */
-const THREADS = {
-  '1': {
-    org: 'Adelaide City Events',
-    event: 'Rundle Mall Night Eats',
-    eventSlug: 'rundle-mall-night-eats',
-    messages: [
-      { from: 'them', text: 'Hi Joe! Thanks for applying to Rundle Mall Night Eats. Your profile looks great — we especially love the BBQ setup.', time: '3 days ago' },
-      { from: 'me',   text: 'Thanks so much! Really keen to be part of it. Happy to answer any questions about our setup.', time: '3 days ago' },
-      { from: 'them', text: 'Perfect. Can you confirm your stall dimensions? We\'re tight on space in the eastern section.', time: '2 days ago' },
-      { from: 'me',   text: 'We\'re 4m wide × 3m deep with a 2.4m clearance. Power draw is around 15A. Does that work?', time: '2 days ago' },
-      { from: 'them', text: 'That works perfectly. We\'re placing you in Section A.', time: '1 day ago' },
-      { type: 'system', text: 'Application approved ✓', style: 'approved' },
-      { from: 'them', text: 'Your spot is confirmed — Booth A7. Looking forward to having Smoky Joe\'s with us!', time: '2 hours ago' },
-    ],
-  },
-  '2': {
-    org: 'Seaside Festivals SA',
-    event: 'Glenelg Beach Festival',
-    eventSlug: 'glenelg-beach-festival',
-    messages: [
-      { from: 'them', text: 'Hi Joe, thanks for your application! We just need a couple of things before we can proceed.', time: 'Yesterday' },
-      { from: 'them', text: 'Could you share your Public Liability Insurance certificate? We need to verify the coverage amount.', time: 'Yesterday' },
-    ],
-  },
-  '3': {
-    org: 'Fringe World',
-    event: 'WOMADelaide Fringe',
-    eventSlug: 'womadelaide-fringe',
-    messages: [
-      { from: 'me',   text: 'Hi! Really excited to apply for WOMADelaide. Smoky Joe\'s has done similar large-scale events before and we\'d love to be part of it.', time: '2 weeks ago' },
-      { from: 'them', text: 'Thanks for applying. We reviewed your profile and it looks great.', time: '10 days ago' },
-      { type: 'system', text: 'Application not accepted', style: 'rejected' },
-      { from: 'them', text: 'Unfortunately we won\'t be able to accommodate your application this year — the BBQ category reached capacity earlier than expected. We\'d love to have you apply again next year.', time: '5 days ago' },
-    ],
-  },
-  '4': {
-    org: 'Inner East Events',
-    event: 'Norwood Twilight Markets',
-    eventSlug: 'norwood-twilight-markets',
-    messages: [
-      { from: 'them', text: 'Hey Joe! We saw your profile and would love to have you at the Norwood Twilight Markets in May.', time: '1 week ago' },
-      { from: 'me',   text: 'Love Norwood! We\'d be very keen. What\'s the booth fee range?', time: '1 week ago' },
-      { from: 'them', text: '$180–$240 depending on placement. You\'d likely get a prime corner spot.', time: '1 week ago' },
-      { from: 'me',   text: 'Sounds great, we\'ll bring the full setup. Should I apply through the platform?', time: '1 week ago' },
-      { from: 'them', text: 'Yes please — apply via Pitch. and mention we chatted. It helps us fast-track the review.', time: '6 days ago' },
-    ],
-  },
-};
+/* ── Messages data (populated from real API when messaging is live) ─────── */
+const THREADS = {};
 
 let activeThread = '1';
 
@@ -1731,6 +1583,7 @@ async function initDashboard() {
   // Load real events
   loadEvents();
   loadApplications();
+  loadActivity();
 }
 
 async function loadEvents() {
@@ -1847,6 +1700,40 @@ async function loadApplications() {
       }</td>
     </tr>
   `).join('');
+}
+
+async function loadActivity() {
+  const feed = document.getElementById('activity-feed');
+  if (!feed) return;
+  try {
+    const r = await pitchFetch('/api/vendor/applications');
+    if (!r.ok) throw new Error();
+    const { applications } = await r.json();
+    if (!applications.length) {
+      feed.innerHTML = '<div style="padding:16px 0;font-size:13px;color:var(--text-lo);">No activity yet — apply to an event to get started.</div>';
+      return;
+    }
+    const dotClass = { pending: 'submitted', approved: 'approved', rejected: 'rejected', withdrawn: 'review' };
+    const label = {
+      pending:   name => `Application submitted to <strong>${name}</strong>`,
+      approved:  name => `Application <strong style="color:var(--herb);">approved</strong> for <strong>${name}</strong>`,
+      rejected:  name => `Application <strong style="color:var(--terra);">not accepted</strong> for <strong>${name}</strong>`,
+      withdrawn: name => `Withdrew application from <strong>${name}</strong>`,
+    };
+    feed.innerHTML = applications.slice(0, 8).map(a => {
+      const date = new Date(a.created_at);
+      const dateStr = date.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
+      return `<div class="feed-item">
+        <div class="feed-dot ${dotClass[a.status] || 'submitted'}"></div>
+        <div class="feed-body">
+          <div class="feed-text">${(label[a.status] || label.pending)(a.event_name)}</div>
+          <div class="feed-time">${dateStr}</div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch (e) {
+    feed.innerHTML = '<div style="padding:16px 0;font-size:13px;color:var(--text-lo);">No activity yet.</div>';
+  }
 }
 
 async function withdrawApp(eventId, btn) {
