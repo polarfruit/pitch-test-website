@@ -761,7 +761,25 @@ app.get('/signup/organiser',    page('signup-organiser.html'));
 app.get('/verify/email',        page('verify-email.html'));
 app.get('/verify/phone',        page('verify-phone.html'));
 app.get('/events/*splat',       page('event-detail.html'));
-app.get('/vendors/*splat',      page('vendor-detail.html'));
+app.get('/vendors/:id', async (req, res) => {
+  const id = req.params.id;
+  // Only inject data for numeric IDs (real accounts); slug-based demo vendors use client-side data.js
+  if (/^\d+$/.test(id)) {
+    try {
+      const row = await stmts.publicVendorById.get(id);
+      if (row) {
+        const vendor = { ...row };
+        vendor.cuisine_tags = (() => { try { return JSON.parse(row.cuisine_tags || '[]'); } catch { return []; } })();
+        vendor.photos       = (() => { try { return JSON.parse(row.photos       || '[]'); } catch { return []; } })();
+        delete vendor.password_hash;
+        let html = fs.readFileSync(path.join(__dirname, 'vendor-detail.html'), 'utf8');
+        html = html.replace('</head>', `<script>window.__PITCH_VENDOR__=${JSON.stringify(vendor)};</script></head>`);
+        return res.send(html);
+      }
+    } catch (e) { console.error('[vendor page]', e); }
+  }
+  res.sendFile(path.join(__dirname, 'vendor-detail.html'));
+});
 app.get('/dashboard/vendor',          serveDashboard('vendor-dashboard.html', 'vendor'));
 app.get('/dashboard/vendor/*splat',   serveDashboard('vendor-dashboard.html', 'vendor'));
 app.get('/dashboard/organiser',       serveDashboard('organiser-dashboard.html', 'organiser'));
