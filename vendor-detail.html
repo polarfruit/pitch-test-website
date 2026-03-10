@@ -600,7 +600,7 @@ if (/^\d+$/.test(window.location.pathname.replace(/^\/vendors\//, '').replace(/\
     <aside class="sidebar">
 
       <!-- Rating Summary -->
-      <div class="sidebar-card">
+      <div class="sidebar-card" id="vd-rating-card">
         <div class="rating-big">
           <div class="rating-number" id="vd-rating-num">4.9</div>
           <div class="rating-sub">
@@ -638,7 +638,7 @@ if (/^\d+$/.test(window.location.pathname.replace(/^\/vendors\//, '').replace(/\
       </div>
 
       <!-- Stats -->
-      <div class="sidebar-card">
+      <div class="sidebar-card" id="vd-stats-card">
         <div class="stats-grid">
           <div class="stat-item">
             <div class="stat-label">Events done</div>
@@ -727,7 +727,7 @@ if (/^\d+$/.test(window.location.pathname.replace(/^\/vendors\//, '').replace(/\
       </div>
 
       <!-- Upcoming appearances -->
-      <div class="sidebar-card">
+      <div class="sidebar-card" id="vd-appearances-card">
         <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-lo);margin-bottom:16px;">Upcoming Appearances</div>
         <div class="appearances-list">
           <a class="appearance-chip" href="/events/rundle-mall-night-eats">
@@ -877,9 +877,11 @@ function applyAndReveal(v) {
   if (seeAllBtn) seeAllBtn.style.display = 'none';
   var hiddenEv = document.getElementById('hidden-events');
   if (hiddenEv) hiddenEv.remove();
-  document.getElementById('vd-rating-num').textContent = '—';
-  document.getElementById('vd-review-count').textContent = 'No reviews yet';
-  document.getElementById('vd-events-count').textContent = '0';
+  // Hide all fake stat/rating/appearances cards for real accounts
+  ['vd-rating-card', 'vd-stats-card', 'vd-appearances-card'].forEach(function(id) {
+    var el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
   var lmBtn = document.getElementById('load-more-btn');
   if (lmBtn) lmBtn.style.display = 'none';
   var reviewList = document.getElementById('review-list');
