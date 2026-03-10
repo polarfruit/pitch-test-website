@@ -62,9 +62,9 @@ body::before {
 
 /* ── HERO BANNER ─────────────────────────────────────────────────────────── */
 /* Hide page content until data is loaded for real (numeric-id) accounts */
-body.vd-loading .vendor-hero,
-body.vd-loading .page-wrap,
-body.vd-loading footer { visibility: hidden; }
+html.vd-loading .vendor-hero,
+html.vd-loading .page-wrap,
+html.vd-loading footer { visibility: hidden; }
 
 .vendor-hero {
   position: relative; width: 100%; height: 320px;
@@ -416,6 +416,12 @@ footer {
 }
 </style>
 </head>
+<script>
+// Runs before any paint — hide page for numeric-id (real account) routes
+if (/^\d+$/.test(window.location.pathname.replace(/^\/vendors\//, '').replace(/\/$/, ''))) {
+  document.documentElement.classList.add('vd-loading');
+}
+</script>
 <body>
 
 <!-- NAV -->
@@ -824,8 +830,6 @@ footer {
 var vpath = window.location.pathname.replace(/^\/vendors\//, '').replace(/\/$/, '');
 var isNumericId = /^\d+$/.test(vpath);
 
-// For real accounts, hide the page immediately so no Smoky Joe flash occurs
-if (isNumericId) document.body.classList.add('vd-loading');
 
 function applyDbVendor(db) {
   var name   = db.trading_name || '—';
@@ -910,11 +914,11 @@ if (isNumericId) {
       }
 
       // All data applied — reveal the page
-      document.body.classList.remove('vd-loading');
+      document.documentElement.classList.remove('vd-loading');
     })
     .catch(function() {
       document.getElementById('vd-name').textContent = 'Vendor not found';
-      document.body.classList.remove('vd-loading');
+      document.documentElement.classList.remove('vd-loading');
     });
 } else {
   // ── Static demo vendors (slug-based, from data.js) ───────────────────────
