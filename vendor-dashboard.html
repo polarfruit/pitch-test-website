@@ -826,7 +826,7 @@ body::before {
     </button>
     <button class="nav-link" onclick="showPanel('messages', this)">
       <span class="nav-icon">💬</span> Messages
-      <span class="nav-badge" id="msg-badge">2</span>
+      <span class="nav-badge" id="msg-badge" style="display:none;">0</span>
     </button>
     <button class="nav-link" onclick="showPanel('settings', this)">
       <span class="nav-icon">⚙️</span> Settings
@@ -1380,6 +1380,7 @@ function openThread(id, el) {
 
   // Mark unread dot removed
   if (el) { const dot = el.querySelector('.thread-unread-dot'); if (dot) dot.remove(); }
+  syncMsgBadge();
 
   // Mobile: open convo
   document.getElementById('messages-layout').classList.add('convo-open');
@@ -1425,9 +1426,22 @@ function handleMsgKey(e) {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
 }
 
-// Auto-open first thread
+// Sync message badge from real thread data
+function syncMsgBadge() {
+  const threadItems = document.querySelectorAll('.thread-item');
+  const unread = document.querySelectorAll('.thread-item .thread-unread-dot').length;
+  const badge = document.getElementById('msg-badge');
+  if (badge) {
+    badge.textContent = unread;
+    badge.style.display = unread > 0 ? '' : 'none';
+  }
+}
+
+// Auto-open first thread if any exist
 document.addEventListener('DOMContentLoaded', () => {
-  openThread('1', document.querySelector('.thread-item'));
+  const first = document.querySelector('.thread-item');
+  if (first) openThread(first.dataset.threadId || '1', first);
+  syncMsgBadge();
 });
 
 /* ── Applications filter ─────────────────────────────────────────────────── */
