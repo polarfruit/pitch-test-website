@@ -908,26 +908,25 @@ function applyAndReveal(v) {
 }
 
 if (isNumericId) {
-  // ── API-sourced vendor (real user accounts) ──────────────────────────────
-  // Try sessionStorage cache first for instant render (populated by dashboard)
-  var _cached = null;
-  try { _cached = JSON.parse(sessionStorage.getItem('pitch_vendor_' + vpath) || 'null'); } catch (e) {}
-
-  if (_cached) {
-    applyAndReveal(_cached);
-    // Refresh in background in case anything changed
-    fetch('/api/vendors/' + vpath)
-      .then(function(r) { return r.ok ? r.json() : null; })
-      .then(function(data) { if (data) applyAndReveal(data.vendor); })
-      .catch(function() {});
+  // ── Real account — data injected server-side into window.__PITCH_VENDOR__ ──
+  if (window.__PITCH_VENDOR__) {
+    // Instant: data arrived with the HTML, no extra round-trip needed
+    applyAndReveal(window.__PITCH_VENDOR__);
   } else {
-    fetch('/api/vendors/' + vpath)
-      .then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); })
-      .then(function(data) { applyAndReveal(data.vendor); })
-      .catch(function() {
-        document.getElementById('vd-name').textContent = 'Vendor not found';
-        document.documentElement.classList.remove('vd-loading');
-      });
+    // Fallback for old cached pages or direct fetch
+    var _cached = null;
+    try { _cached = JSON.parse(sessionStorage.getItem('pitch_vendor_' + vpath) || 'null'); } catch (e) {}
+    if (_cached) {
+      applyAndReveal(_cached);
+    } else {
+      fetch('/api/vendors/' + vpath)
+        .then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); })
+        .then(function(data) { applyAndReveal(data.vendor); })
+        .catch(function() {
+          document.getElementById('vd-name').textContent = 'Vendor not found';
+          document.documentElement.classList.remove('vd-loading');
+        });
+    }
   }
 } else {
   // ── Static demo vendors (slug-based, from data.js) ───────────────────────
