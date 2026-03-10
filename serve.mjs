@@ -432,6 +432,61 @@ app.post('/api/login', async (req, res) => {
 });
 
 // POST /api/logout
+// ── API: ABN verification ──────────────────────────────────────────────────
+function abnChecksum(abn) {
+  const weights = [10, 1, 3, 5, 7, 9, 11, 13, 15, 17, 19];
+  const d = abn.replace(/\s/g, '').split('').map(Number);
+  if (d.length !== 11) return false;
+  d[0] -= 1;
+  return d.reduce((s, n, i) => s + n * weights[i], 0) % 89 === 0;
+}
+
+app.post('/api/verify-abn', async (req, res) => {
+  const clean = (req.body.abn || '').replace(/\s/g, '');
+  if (!/^\d{11}$/.test(clean))
+    return res.json({ valid: false, error: 'ABN must be exactly 11 digits.' });
+  if (!abnChecksum(clean))
+    return res.json({ valid: false, error: 'ABN is invalid — please check the number and try again.' });
+
+  const guid = process.env.ABR_GUID;
+  if (!guid) {
+    // No API key configured — checksum passed, can't confirm entity name
+    return res.json({ valid: true, checksum_only: true, message: 'ABN format is valid. To confirm entity details, configure ABR_GUID.' });
+  }
+
+  try {
+    const url = `https://abn.business.gov.au/abrxmlsearch/abrxmlsearch.asmx/SearchByABNv202001?searchString=${clean}&includeHistoricalDetails=N&authenticationGuid=${guid}`;
+    const r = await fetch(url, { headers: { Accept: 'text/xml' } });
+    const xml = await r.text();
+
+    // ABR returned an error (e.g. no match)
+    const excMatch = xml.match(/<exceptionCode>([\s\S]*?)<\/exceptionCode>/);
+    if (excMatch) return res.json({ valid: false, error: 'ABN not found in the Australian Business Register.' });
+
+    const status = (xml.match(/<entityStatusCode>([\s\S]*?)<\/entityStatusCode>/) || [])[1] || 'Unknown';
+
+    // Organisation name (companies, trusts, etc.)
+    let entityName = '';
+    const orgMatch = xml.match(/<mainName>[\s\S]*?<organisationName>([\s\S]*?)<\/organisationName>/);
+    if (orgMatch) {
+      entityName = orgMatch[1].trim();
+    } else {
+      // Individual — use given + family name
+      const given  = (xml.match(/<legalName>[\s\S]*?<givenName>([\s\S]*?)<\/givenName>/)  || [])[1] || '';
+      const family = (xml.match(/<legalName>[\s\S]*?<familyName>([\s\S]*?)<\/familyName>/) || [])[1] || '';
+      entityName = [given, family].map(s => s.trim()).filter(Boolean).join(' ');
+    }
+
+    if (status !== 'Active')
+      return res.json({ valid: false, error: `ABN is ${status} — only active ABNs are accepted.`, entityName, status });
+
+    return res.json({ valid: true, entityName, status, abn: clean });
+  } catch (e) {
+    console.error('[ABR]', e);
+    return res.json({ valid: false, error: 'Could not reach the Australian Business Register. Please try again.' });
+  }
+});
+
 app.post('/api/logout', (req, res) => {
   sessWrite(res, {});
   res.json({ ok: true });
