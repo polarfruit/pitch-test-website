@@ -382,6 +382,78 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
   .analytics-grid { grid-template-columns:1fr; }
   .messages-layout { grid-template-columns:1fr; }
 }
+
+/* ── Date picker (matches events.html calendar) ───────────────────── */
+.ne-date-wrap { position:relative; display:inline-flex; align-items:flex-end; gap:6px; }
+.date-field { display:flex; flex-direction:column; gap:2px; }
+.date-field-label { font-size:10px; font-weight:700; color:var(--text-lo); letter-spacing:0.06em; text-transform:uppercase; padding-left:2px; }
+.date-text-input {
+  width:128px; height:40px;
+  background:#ffffff08; border:1px solid #ffffff0A;
+  border-radius:9px; padding:0 10px;
+  font-family:var(--fb); font-size:13px; color:var(--text-hi); outline:none; cursor:pointer;
+  transition:border-color 0.14s, box-shadow 0.14s;
+}
+.date-text-input:focus, .date-text-input:hover { border-color:#E8500A40; }
+.date-text-input::placeholder { color:var(--text-lo); }
+.date-text-input.has-value { border-color:#E8500A40; }
+.date-sep { font-size:13px; color:var(--text-lo); padding-bottom:9px; }
+.ne-cal-toggle {
+  display:inline-flex; align-items:center; justify-content:center;
+  width:40px; height:40px; flex-shrink:0;
+  background:#ffffff08; border:1px solid #ffffff0A;
+  border-radius:9px; cursor:pointer; color:var(--text-lo);
+  transition:border-color 0.14s, color 0.14s, background 0.14s;
+}
+.ne-cal-toggle:hover, .ne-cal-toggle.active { border-color:#E8500A40; color:var(--ember); background:#E8500A08; }
+.ne-cal-popup {
+  display:none; position:absolute;
+  top:calc(100% + 8px); left:0; z-index:600;
+  background:var(--char); border:1px solid #ffffff12;
+  border-radius:18px; padding:20px;
+  box-shadow:0 24px 64px rgba(0,0,0,0.6), 0 4px 16px rgba(0,0,0,0.4);
+  min-width:580px;
+}
+.ne-cal-popup.open { display:block; }
+.ne-cal-inner { display:flex; gap:24px; }
+.ne-cal-month { flex:1; min-width:240px; }
+.ne-cal-month-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.ne-cal-month-name { font-family:var(--fd); font-size:14px; font-weight:800; color:var(--text-hi); letter-spacing:-0.01em; }
+.ne-cal-nav { background:none; border:none; cursor:pointer; color:var(--text-lo); padding:4px 8px; border-radius:6px; font-size:16px; line-height:1; transition:color 0.12s, background 0.12s; }
+.ne-cal-nav:hover { color:var(--text-hi); background:#ffffff0A; }
+.ne-cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; }
+.ne-cal-dow { text-align:center; font-size:10px; font-weight:700; color:var(--text-lo); letter-spacing:0.05em; padding-bottom:6px; }
+.ne-cal-day {
+  aspect-ratio:1; display:flex; align-items:center; justify-content:center;
+  font-size:12px; font-weight:500; color:var(--text-mid);
+  border-radius:8px; cursor:pointer;
+  transition:background 0.1s, color 0.1s;
+  border:none; background:none; font-family:var(--fb);
+}
+.ne-cal-day:hover:not(.empty) { background:#ffffff12; color:var(--text-hi); }
+.ne-cal-day.empty { cursor:default; color:var(--text-lo); opacity:0.35; pointer-events:none; }
+.ne-cal-day.past { color:var(--text-lo); opacity:0.5; }
+.ne-cal-day.today { color:var(--ember); font-weight:700; }
+.ne-cal-day.start, .ne-cal-day.end, .ne-cal-day.hover-end { background:var(--ember); color:#fff; font-weight:700; }
+.ne-cal-day.hover-end { opacity:0.7; }
+.ne-cal-day.in-range { background:#E8500A18; color:var(--text-hi); border-radius:0; }
+.ne-cal-day.start { border-radius:8px 0 0 8px; }
+.ne-cal-day.end   { border-radius:0 8px 8px 0; }
+.ne-cal-day.start.end { border-radius:8px; }
+.ne-cal-divider { width:1px; background:#ffffff0A; flex-shrink:0; }
+.ne-cal-footer { display:flex; align-items:center; justify-content:space-between; margin-top:16px; padding-top:14px; border-top:1px solid #ffffff0A; }
+.ne-cal-label { font-size:12px; color:var(--text-lo); }
+.ne-cal-label strong { color:var(--text-mid); }
+.ne-cal-footer-actions { display:flex; gap:8px; }
+.ne-cal-btn-clear { font-family:var(--fb); font-size:12px; font-weight:600; background:none; border:1px solid #ffffff12; border-radius:8px; color:var(--text-lo); padding:7px 14px; cursor:pointer; transition:color 0.12s, border-color 0.12s; }
+.ne-cal-btn-clear:hover { color:var(--text-hi); border-color:#ffffff25; }
+.ne-cal-btn-apply { font-family:var(--fb); font-size:12px; font-weight:700; background:var(--ember); border:none; border-radius:8px; color:#fff; padding:7px 18px; cursor:pointer; transition:background 0.12s; }
+.ne-cal-btn-apply:hover { background:var(--ember-glow); }
+@media (max-width:700px) {
+  .ne-cal-popup { min-width:calc(100vw - 48px); right:0; left:auto; }
+  .ne-cal-inner { flex-direction:column; }
+  .ne-cal-divider { height:1px; width:100%; }
+}
 </style>
 </head>
 <body>
@@ -588,9 +660,52 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
             <div class="form-group"><label class="form-label">Event name</label><input class="form-input" id="ne-name" placeholder="e.g. Rundle Mall Night Eats" /></div>
             <div class="form-group"><label class="form-label">Category</label><select class="form-select" id="ne-category"><option value="">Select category…</option><option>Night Market</option><option>Fair</option><option>Festival</option><option>Farmers Market</option><option>Private Event</option><option>Other</option></select></div>
           </div>
-          <div class="form-row">
-            <div class="form-group"><label class="form-label">Event date</label><input class="form-input" id="ne-date" type="date" /></div>
-            <div class="form-group"><label class="form-label">End date (if multi-day)</label><input class="form-input" type="date" /></div>
+          <div class="form-group">
+            <label class="form-label">Event date</label>
+            <div class="ne-date-wrap" id="ne-event-date-wrap">
+              <div class="date-field">
+                <div class="date-field-label">Start</div>
+                <input class="date-text-input" id="ne-date-display" placeholder="DD Mon YYYY" readonly onclick="neCalOpen('event','ne-event-date-wrap')" />
+                <input type="hidden" id="ne-date" />
+              </div>
+              <div class="date-sep" style="padding-bottom:9px;">→</div>
+              <div class="date-field">
+                <div class="date-field-label">End (multi-day)</div>
+                <input class="date-text-input" id="ne-enddate-display" placeholder="optional" readonly onclick="neCalOpen('event','ne-event-date-wrap')" />
+                <input type="hidden" id="ne-enddate" />
+              </div>
+              <button class="ne-cal-toggle" id="ne-cal-toggle-event" onclick="neCalOpen('event','ne-event-date-wrap')" title="Open calendar">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="2.5" width="11" height="10" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M1.5 6h11" stroke="currentColor" stroke-width="1.4"/><path d="M4.5 1.5v2M9.5 1.5v2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+              </button>
+              <div class="ne-cal-popup" id="ne-cal-event">
+                <div class="ne-cal-inner">
+                  <div class="ne-cal-month">
+                    <div class="ne-cal-month-header">
+                      <button class="ne-cal-nav" onclick="neCalPrev('event')">‹</button>
+                      <span class="ne-cal-month-name" id="ne-cal-month-event-a"></span>
+                      <span></span>
+                    </div>
+                    <div class="ne-cal-grid" id="ne-cal-grid-event-a"></div>
+                  </div>
+                  <div class="ne-cal-divider"></div>
+                  <div class="ne-cal-month">
+                    <div class="ne-cal-month-header">
+                      <span></span>
+                      <span class="ne-cal-month-name" id="ne-cal-month-event-b"></span>
+                      <button class="ne-cal-nav" onclick="neCalNext('event')">›</button>
+                    </div>
+                    <div class="ne-cal-grid" id="ne-cal-grid-event-b"></div>
+                  </div>
+                </div>
+                <div class="ne-cal-footer">
+                  <span class="ne-cal-label" id="ne-cal-label-event">Click a date to select</span>
+                  <div class="ne-cal-footer-actions">
+                    <button class="ne-cal-btn-clear" onclick="neCalClear('event')">Clear</button>
+                    <button class="ne-cal-btn-apply" onclick="neCalApply('event')">Apply</button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
           <div class="form-row">
             <div class="form-group"><label class="form-label">Suburb</label><input class="form-input" id="ne-suburb" placeholder="e.g. Adelaide CBD" /></div>
@@ -660,7 +775,46 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
               <button class="tag-opt" onclick="this.classList.toggle('sel')">Other</button>
             </div>
           </div>
-          <div class="form-group"><label class="form-label">Application deadline</label><input class="form-input" type="date" style="width:200px;" /></div>
+          <div class="form-group">
+            <label class="form-label">Application deadline</label>
+            <div class="ne-date-wrap" id="ne-deadline-date-wrap">
+              <div class="date-field">
+                <input class="date-text-input" id="ne-deadline-display" placeholder="DD Mon YYYY" readonly onclick="neCalOpen('deadline','ne-deadline-date-wrap')" />
+                <input type="hidden" id="ne-deadline" />
+              </div>
+              <button class="ne-cal-toggle" id="ne-cal-toggle-deadline" onclick="neCalOpen('deadline','ne-deadline-date-wrap')" title="Open calendar">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="2.5" width="11" height="10" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M1.5 6h11" stroke="currentColor" stroke-width="1.4"/><path d="M4.5 1.5v2M9.5 1.5v2" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+              </button>
+              <div class="ne-cal-popup" id="ne-cal-deadline">
+                <div class="ne-cal-inner">
+                  <div class="ne-cal-month">
+                    <div class="ne-cal-month-header">
+                      <button class="ne-cal-nav" onclick="neCalPrev('deadline')">‹</button>
+                      <span class="ne-cal-month-name" id="ne-cal-month-deadline-a"></span>
+                      <span></span>
+                    </div>
+                    <div class="ne-cal-grid" id="ne-cal-grid-deadline-a"></div>
+                  </div>
+                  <div class="ne-cal-divider"></div>
+                  <div class="ne-cal-month">
+                    <div class="ne-cal-month-header">
+                      <span></span>
+                      <span class="ne-cal-month-name" id="ne-cal-month-deadline-b"></span>
+                      <button class="ne-cal-nav" onclick="neCalNext('deadline')">›</button>
+                    </div>
+                    <div class="ne-cal-grid" id="ne-cal-grid-deadline-b"></div>
+                  </div>
+                </div>
+                <div class="ne-cal-footer">
+                  <span class="ne-cal-label" id="ne-cal-label-deadline">Click a date to select</span>
+                  <div class="ne-cal-footer-actions">
+                    <button class="ne-cal-btn-clear" onclick="neCalClear('deadline')">Clear</button>
+                    <button class="ne-cal-btn-apply" onclick="neCalApply('deadline')">Done</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
           <div class="form-group">
             <label class="form-label">Exclusivity rules</label>
             <div class="toggle-row"><span class="toggle-label">Only one vendor per cuisine category</span><label class="toggle-switch"><input type="checkbox" checked /><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
@@ -1102,6 +1256,12 @@ async function publishEvent() {
         const el = document.getElementById(id);
         if (el) el.value = '';
       });
+      // Clear calendar pickers
+      neCalClear('event'); neCalClear('deadline');
+      ['ne-date-display','ne-enddate-display','ne-deadline-display'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) { el.value = ''; el.classList.remove('has-value'); }
+      });
       loadOrgEvents();
     }, 1200);
   } catch (e) {
@@ -1299,6 +1459,213 @@ function sendMsg() {
 // Broadcast modal
 function openBroadcast() { document.getElementById('broadcast-modal').classList.add('open'); }
 function closeBroadcast() { document.getElementById('broadcast-modal').classList.remove('open'); }
+
+// ── Date picker (matches events.html calendar UI) ──────────────────────────
+var neCal = {
+  event:    { year:0, month:0, start:null, end:null, hover:null, mode:'range' },
+  deadline: { year:0, month:0, start:null, end:null, hover:null, mode:'single' },
+};
+
+function neIso(y, m, d) {
+  return y + '-' + String(m+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+}
+
+function neDisplayDate(iso) {
+  if (!iso) return '';
+  var d = new Date(iso + 'T00:00:00');
+  return d.toLocaleDateString('en-AU', { day:'numeric', month:'short', year:'numeric' });
+}
+
+function neCalOpen(key, wrapId) {
+  // Close any other open popup first
+  document.querySelectorAll('.ne-cal-popup.open').forEach(function(p) { p.classList.remove('open'); });
+  document.querySelectorAll('.ne-cal-toggle.active').forEach(function(b) { b.classList.remove('active'); });
+
+  var state = neCal[key];
+  var base = state.start ? new Date(state.start + 'T00:00:00') : new Date();
+  state.year  = base.getFullYear();
+  state.month = base.getMonth();
+  neCalRender(key);
+
+  var popup = document.getElementById('ne-cal-' + key);
+  var toggle = document.getElementById('ne-cal-toggle-' + key);
+  if (popup)  popup.classList.add('open');
+  if (toggle) toggle.classList.add('active');
+
+  // Delegated events (set up once per popup)
+  if (!popup._neSetup) {
+    popup._neSetup = true;
+    popup.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var day = e.target.closest('.ne-cal-day');
+      if (!day || day.classList.contains('empty') || !day.dataset.iso) return;
+      neCalPickDay(key, day.dataset.iso);
+    });
+    popup.addEventListener('mouseover', function(e) {
+      if (state.mode !== 'range' || !state.start || state.end) return;
+      var day = e.target.closest('.ne-cal-day');
+      if (!day || !day.dataset.iso) return;
+      if (day.dataset.iso === state.hover) return;
+      state.hover = day.dataset.iso;
+      neCalUpdateHover(key);
+    });
+    popup.addEventListener('mouseleave', function() {
+      if (!state.hover) return;
+      state.hover = null;
+      neCalUpdateHover(key);
+    });
+  }
+}
+
+function neCalClose(key) {
+  var popup = document.getElementById('ne-cal-' + key);
+  var toggle = document.getElementById('ne-cal-toggle-' + key);
+  if (popup)  popup.classList.remove('open');
+  if (toggle) toggle.classList.remove('active');
+}
+
+function neCalPickDay(key, iso) {
+  var state = neCal[key];
+  if (state.mode === 'single') {
+    state.start = iso; state.end = null;
+    neCalUpdateInputs(key);
+    neCalRender(key);
+    setTimeout(function() { neCalClose(key); }, 180);
+    return;
+  }
+  // Range mode
+  if (!state.start || (state.start && state.end)) {
+    state.start = iso; state.end = null; state.hover = null;
+  } else {
+    if (iso === state.start) { state.start = null; state.end = null; }
+    else if (iso < state.start) { state.end = state.start; state.start = iso; }
+    else { state.end = iso; }
+    state.hover = null;
+  }
+  neCalUpdateInputs(key);
+  neCalRender(key);
+}
+
+function neCalUpdateInputs(key) {
+  var state = neCal[key];
+  if (key === 'event') {
+    var startEl   = document.getElementById('ne-date-display');
+    var endEl     = document.getElementById('ne-enddate-display');
+    var startHid  = document.getElementById('ne-date');
+    var endHid    = document.getElementById('ne-enddate');
+    if (startEl) { startEl.value = neDisplayDate(state.start) || ''; startEl.classList.toggle('has-value', !!state.start); }
+    if (endEl)   { endEl.value   = neDisplayDate(state.end)   || ''; endEl.classList.toggle('has-value',   !!state.end);   }
+    if (startHid) startHid.value = state.start || '';
+    if (endHid)   endHid.value   = state.end   || '';
+  } else if (key === 'deadline') {
+    var dispEl = document.getElementById('ne-deadline-display');
+    var hidEl  = document.getElementById('ne-deadline');
+    if (dispEl) { dispEl.value = neDisplayDate(state.start) || ''; dispEl.classList.toggle('has-value', !!state.start); }
+    if (hidEl)  hidEl.value = state.start || '';
+  }
+  neCalUpdateLabel(key);
+}
+
+function neCalRender(key) {
+  var state = neCal[key];
+  neCalRenderMonth(key, 'a', state.year, state.month);
+  var nb = state.month === 11 ? 0  : state.month + 1;
+  var ny = state.month === 11 ? state.year + 1 : state.year;
+  neCalRenderMonth(key, 'b', ny, nb);
+  neCalUpdateLabel(key);
+}
+
+function neCalRenderMonth(key, slot, year, month) {
+  var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var DAYS   = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+  var nameEl = document.getElementById('ne-cal-month-' + key + '-' + slot);
+  if (nameEl) nameEl.textContent = MONTHS[month] + ' ' + year;
+
+  var grid = document.getElementById('ne-cal-grid-' + key + '-' + slot);
+  if (!grid) return;
+
+  var state = neCal[key];
+  var today = neIso(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+  var firstDay = new Date(year, month, 1).getDay();
+  var daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  var html = DAYS.map(function(d) { return '<div class="ne-cal-dow">' + d + '</div>'; }).join('');
+  for (var i = 0; i < firstDay; i++) html += '<div class="ne-cal-day empty"></div>';
+  for (var d = 1; d <= daysInMonth; d++) {
+    var iso = neIso(year, month, d);
+    var cls = ['ne-cal-day'];
+    if (iso < today)  cls.push('past');
+    if (iso === today) cls.push('today');
+    if (state.start && iso === state.start) cls.push('start');
+    if (state.end   && iso === state.end)   cls.push('end');
+    if (state.start && state.end && iso > state.start && iso < state.end) cls.push('in-range');
+    html += '<button class="' + cls.join(' ') + '" data-iso="' + iso + '">' + d + '</button>';
+  }
+  grid.innerHTML = html;
+}
+
+function neCalUpdateHover(key) {
+  var state = neCal[key];
+  document.querySelectorAll('#ne-cal-' + key + ' .ne-cal-day[data-iso]').forEach(function(el) {
+    el.classList.remove('hover-end', 'in-range');
+    var iso = el.dataset.iso;
+    if (state.start && state.end && iso > state.start && iso < state.end) el.classList.add('in-range');
+    if (state.start && !state.end && state.hover && state.hover !== state.start) {
+      var hMin = state.hover < state.start ? state.hover : state.start;
+      var hMax = state.hover < state.start ? state.start : state.hover;
+      if (iso > hMin && iso < hMax) el.classList.add('in-range');
+      if (iso === state.hover)      el.classList.add('hover-end');
+    }
+  });
+}
+
+function neCalUpdateLabel(key) {
+  var state = neCal[key];
+  var lbl = document.getElementById('ne-cal-label-' + key);
+  if (!lbl) return;
+  if (!state.start) {
+    lbl.innerHTML = 'Click a date to select';
+  } else if (state.mode === 'single' || !state.end) {
+    lbl.innerHTML = '<strong>' + neDisplayDate(state.start) + '</strong>' + (state.mode === 'range' ? ' → pick end date (optional)' : '');
+  } else {
+    lbl.innerHTML = '<strong>' + neDisplayDate(state.start) + '</strong> → <strong>' + neDisplayDate(state.end) + '</strong>';
+  }
+}
+
+function neCalPrev(key) {
+  var s = neCal[key];
+  if (s.month === 0) { s.month = 11; s.year--; } else s.month--;
+  neCalRender(key);
+}
+
+function neCalNext(key) {
+  var s = neCal[key];
+  if (s.month === 11) { s.month = 0; s.year++; } else s.month++;
+  neCalRender(key);
+}
+
+function neCalClear(key) {
+  var state = neCal[key];
+  state.start = null; state.end = null; state.hover = null;
+  neCalUpdateInputs(key);
+  neCalRender(key);
+}
+
+function neCalApply(key) {
+  neCalUpdateInputs(key);
+  neCalClose(key);
+}
+
+// Close on outside click
+document.addEventListener('click', function(e) {
+  ['event', 'deadline'].forEach(function(key) {
+    var popup = document.getElementById('ne-cal-' + key);
+    if (popup && popup.classList.contains('open') && !popup.contains(e.target)) {
+      var toggle = document.getElementById('ne-cal-toggle-' + key);
+      if (!toggle || !toggle.contains(e.target)) neCalClose(key);
+    }
+  });
+});
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeBroadcast(); });
 </script>
 </body>
