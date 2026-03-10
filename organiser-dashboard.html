@@ -1472,8 +1472,8 @@ function neIso(y, m, d) {
 
 function neDisplayDate(iso) {
   if (!iso) return '';
-  var d = new Date(iso + 'T00:00:00');
-  return d.toLocaleDateString('en-AU', { day:'numeric', month:'short', year:'numeric' });
+  var p = iso.split('-');
+  return p[2] + '/' + p[1] + '/' + p[0];
 }
 
 function neCalOpen(key, wrapId) {
