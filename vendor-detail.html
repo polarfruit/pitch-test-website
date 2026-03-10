@@ -853,73 +853,82 @@ function applyDbVendor(db) {
   document.getElementById('vd-meta-row').innerHTML = metaParts.join('');
 }
 
+function applyAndReveal(v) {
+  applyDbVendor(v);
+
+  // Gallery
+  var photos = v.photos || [];
+  GALLERY_DATA = photos.map(function(src) { return { src: src }; });
+  var galleryEl = document.getElementById('vd-gallery');
+  if (photos.length) {
+    galleryEl.innerHTML = photos.map(function(src, i) {
+      return '<div class="gallery-item" onclick="openLightbox(' + i + ')">' +
+        '<img class="gallery-img" src="' + src + '" style="object-fit:cover;width:100%;height:100%;" />' +
+        '<div class="gallery-overlay">🔍</div>' +
+      '</div>';
+    }).join('');
+  } else {
+    galleryEl.innerHTML = '<div style="color:var(--text-lo);font-size:13px;padding:16px;">No gallery photos yet.</div>';
+  }
+
+  // Past events / reviews
+  document.getElementById('past-events-list').innerHTML = '<div style="color:var(--text-lo);font-size:13px;padding:4px 0;">No past events yet.</div>';
+  var seeAllBtn = document.getElementById('see-all-btn');
+  if (seeAllBtn) seeAllBtn.style.display = 'none';
+  var hiddenEv = document.getElementById('hidden-events');
+  if (hiddenEv) hiddenEv.remove();
+  document.getElementById('vd-rating-num').textContent = '—';
+  document.getElementById('vd-review-count').textContent = 'No reviews yet';
+  document.getElementById('vd-events-count').textContent = '0';
+  var lmBtn = document.getElementById('load-more-btn');
+  if (lmBtn) lmBtn.style.display = 'none';
+  var reviewList = document.getElementById('review-list');
+  if (reviewList) reviewList.innerHTML = '<div style="color:var(--text-lo);font-size:13px;padding:16px 0;">No reviews yet.</div>';
+
+  // Verified badge
+  var hasFood = !!v.food_safety_url, hasPli = !!v.pli_url, hasAbn = !!v.abn_verified;
+  var badge = document.getElementById('vd-verified-badge');
+  if (badge) badge.style.display = (hasFood && hasPli) ? '' : 'none';
+
+  // Document trust sidebar
+  var docList = document.getElementById('vd-doc-list');
+  if (docList) {
+    var items = [
+      { label: 'ABN Verified',               ok: hasAbn },
+      { label: 'Food Safety Certificate',    ok: hasFood },
+      { label: 'Public Liability Insurance', ok: hasPli },
+      { label: 'Council Permit',             ok: !!v.council_url },
+    ].filter(function(i) { return i.ok; });
+    docList.innerHTML = items.length
+      ? items.map(function(i) { return '<div class="doc-item"><div class="doc-check">✓</div>' + i.label + '</div>'; }).join('')
+      : '<div style="font-size:12px;color:var(--text-lo);">No documents uploaded yet.</div>';
+  }
+
+  document.documentElement.classList.remove('vd-loading');
+}
+
 if (isNumericId) {
   // ── API-sourced vendor (real user accounts) ──────────────────────────────
-  fetch('/api/vendors/' + vpath)
-    .then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); })
-    .then(function(data) {
-      applyDbVendor(data.vendor);
-      // Gallery — use real uploaded photos if any
-      var photos = data.vendor.photos || [];
-      GALLERY_DATA = photos.map(function(src) { return { src: src }; });
-      var galleryEl = document.getElementById('vd-gallery');
-      if (photos.length) {
-        galleryEl.innerHTML = photos.map(function(src, i) {
-          return '<div class="gallery-item" onclick="openLightbox(' + i + ')">' +
-            '<img class="gallery-img" src="' + src + '" style="object-fit:cover;width:100%;height:100%;" />' +
-            '<div class="gallery-overlay">🔍</div>' +
-          '</div>';
-        }).join('');
-      } else {
-        galleryEl.innerHTML = '<div style="color:var(--text-lo);font-size:13px;padding:16px;">No gallery photos yet.</div>';
-      }
-      document.getElementById('past-events-list').innerHTML = '<div style="color:var(--text-lo);font-size:13px;padding:4px 0;">No past events yet.</div>';
-      var seeAllBtn = document.getElementById('see-all-btn');
-      if (seeAllBtn) seeAllBtn.style.display = 'none';
-      var hiddenEv = document.getElementById('hidden-events');
-      if (hiddenEv) hiddenEv.remove();
-      document.getElementById('vd-rating-num').textContent = '—';
-      document.getElementById('vd-review-count').textContent = 'No reviews yet';
-      document.getElementById('vd-events-count').textContent = '0';
-      var lmBtn = document.getElementById('load-more-btn');
-      if (lmBtn) lmBtn.style.display = 'none';
-      var reviewList = document.getElementById('review-list');
-      if (reviewList) reviewList.innerHTML = '<div style="color:var(--text-lo);font-size:13px;padding:16px 0;">No reviews yet.</div>';
+  // Try sessionStorage cache first for instant render (populated by dashboard)
+  var _cached = null;
+  try { _cached = JSON.parse(sessionStorage.getItem('pitch_vendor_' + vpath) || 'null'); } catch (e) {}
 
-      // Verified badge — only show if all 3 docs uploaded
-      var v = data.vendor;
-      var hasFood  = !!v.food_safety_url;
-      var hasPli   = !!v.pli_url;
-      var hasAbn   = !!v.abn_verified;
-      var isVerified = hasFood && hasPli;
-      var badge = document.getElementById('vd-verified-badge');
-      if (badge) badge.style.display = isVerified ? '' : 'none';
-
-      // Document trust sidebar
-      var docList = document.getElementById('vd-doc-list');
-      if (docList) {
-        var items = [
-          { label: 'ABN Verified',              ok: hasAbn },
-          { label: 'Food Safety Certificate',   ok: hasFood },
-          { label: 'Public Liability Insurance',ok: hasPli },
-          { label: 'Council Permit',            ok: !!v.council_url },
-        ].filter(function(i){ return i.ok; }); // only show docs that are actually uploaded
-        if (items.length) {
-          docList.innerHTML = items.map(function(i){
-            return '<div class="doc-item"><div class="doc-check">✓</div>' + i.label + '</div>';
-          }).join('');
-        } else {
-          docList.innerHTML = '<div style="font-size:12px;color:var(--text-lo);">No documents uploaded yet.</div>';
-        }
-      }
-
-      // All data applied — reveal the page
-      document.documentElement.classList.remove('vd-loading');
-    })
-    .catch(function() {
-      document.getElementById('vd-name').textContent = 'Vendor not found';
-      document.documentElement.classList.remove('vd-loading');
-    });
+  if (_cached) {
+    applyAndReveal(_cached);
+    // Refresh in background in case anything changed
+    fetch('/api/vendors/' + vpath)
+      .then(function(r) { return r.ok ? r.json() : null; })
+      .then(function(data) { if (data) applyAndReveal(data.vendor); })
+      .catch(function() {});
+  } else {
+    fetch('/api/vendors/' + vpath)
+      .then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); })
+      .then(function(data) { applyAndReveal(data.vendor); })
+      .catch(function() {
+        document.getElementById('vd-name').textContent = 'Vendor not found';
+        document.documentElement.classList.remove('vd-loading');
+      });
+  }
 } else {
   // ── Static demo vendors (slug-based, from data.js) ───────────────────────
   var vendor = (window.PITCH_VENDORS || []).find(function(v){ return v.id === vpath; });
