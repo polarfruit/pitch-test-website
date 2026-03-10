@@ -61,6 +61,11 @@ body::before {
 .nav-hamburger span { display: block; width: 22px; height: 2px; background: var(--text-mid); border-radius: 2px; }
 
 /* ── HERO BANNER ─────────────────────────────────────────────────────────── */
+/* Hide page content until data is loaded for real (numeric-id) accounts */
+body.vd-loading .vendor-hero,
+body.vd-loading .page-wrap,
+body.vd-loading footer { visibility: hidden; }
+
 .vendor-hero {
   position: relative; width: 100%; height: 320px;
   background: linear-gradient(135deg, #2D1A0A 0%, #5C2A08 40%, #3D1A06 70%, #1A0E04 100%);
@@ -431,14 +436,14 @@ footer {
 
 <!-- HERO BANNER -->
 <div class="vendor-hero" id="vd-hero">
-  <div class="vendor-hero-emoji" id="vd-hero-emoji">🔥</div>
+  <div class="vendor-hero-emoji" id="vd-hero-emoji"></div>
   <div class="vendor-hero-overlay"></div>
   <div class="hero-breadcrumb">
     <a href="/">Home</a>
     <span class="sep">/</span>
     <a href="/vendors">Vendors</a>
     <span class="sep">/</span>
-    <span id="vd-breadcrumb">Smoky's Joe's BBQ</span>
+    <span id="vd-breadcrumb"></span>
   </div>
 </div>
 
@@ -451,45 +456,18 @@ footer {
       <!-- Identity -->
       <div class="vendor-identity">
         <div class="vendor-name-row">
-          <h1 class="vendor-name" id="vd-name">Smoky Joe's BBQ</h1>
+          <h1 class="vendor-name" id="vd-name"></h1>
           <span class="verified-badge" id="vd-verified-badge" style="display:none;">✓ Verified</span>
-          <span class="pro-badge-large" id="vd-pro-badge">★ Pro Vendor</span>
+          <span class="pro-badge-large" id="vd-pro-badge" style="display:none;">★ Pro Vendor</span>
         </div>
-        <div class="vendor-meta-row" id="vd-meta-row">
-          <span class="vendor-tag">BBQ</span>
-          <span class="vendor-setup-tag">🚚 Food Truck</span>
-          <span class="vendor-suburb">📍 Norwood, SA</span>
-        </div>
-        <p class="vendor-bio" id="vd-bio">
-          Adelaide's most-loved BBQ food truck, smoking low-and-slow since 2019. We specialise in American-style pit BBQ — brisket, baby back ribs, and pulled pork rolls — all slow-cooked over ironbark wood for 12–16 hours. We've been a fixture at Rundle Mall Night Eats for three consecutive years and have served over 28,000 people at events across South Australia. Our compact 3×3m setup requires single-phase power and we're known for our punctual pack-down.
-        </p>
+        <div class="vendor-meta-row" id="vd-meta-row"></div>
+        <p class="vendor-bio" id="vd-bio"></p>
       </div>
 
       <!-- Photo Gallery -->
       <div class="section-block">
         <h2 class="section-heading">Photos</h2>
-        <div class="gallery-grid" id="vd-gallery">
-          <div class="gallery-item" onclick="openLightbox(0)">
-            <div class="gallery-img" style="background:linear-gradient(135deg,#3D1A06,#6B2E08);">🔥</div>
-            <div class="gallery-overlay">🔍</div>
-          </div>
-          <div class="gallery-item" onclick="openLightbox(1)">
-            <div class="gallery-img" style="background:linear-gradient(135deg,#2D1A0A,#4A2808);">🥩</div>
-            <div class="gallery-overlay">🔍</div>
-          </div>
-          <div class="gallery-item" onclick="openLightbox(2)">
-            <div class="gallery-img" style="background:linear-gradient(135deg,#1A1208,#382208);">🍖</div>
-            <div class="gallery-overlay">🔍</div>
-          </div>
-          <div class="gallery-item" onclick="openLightbox(3)">
-            <div class="gallery-img" style="background:linear-gradient(135deg,#2A1006,#521E08);">🥪</div>
-            <div class="gallery-overlay">🔍</div>
-          </div>
-          <div class="gallery-item" onclick="openLightbox(4)">
-            <div class="gallery-img" style="background:linear-gradient(135deg,#1E1208,#3C2208);">🌽</div>
-            <div class="gallery-overlay">🔍</div>
-          </div>
-        </div>
+        <div class="gallery-grid" id="vd-gallery"></div>
       </div>
 
       <!-- Past Events -->
@@ -846,6 +824,9 @@ footer {
 var vpath = window.location.pathname.replace(/^\/vendors\//, '').replace(/\/$/, '');
 var isNumericId = /^\d+$/.test(vpath);
 
+// For real accounts, hide the page immediately so no Smoky Joe flash occurs
+if (isNumericId) document.body.classList.add('vd-loading');
+
 function applyDbVendor(db) {
   var name   = db.trading_name || '—';
   var isPro  = db.plan === 'pro';
@@ -889,11 +870,17 @@ if (isNumericId) {
         galleryEl.innerHTML = '<div style="color:var(--text-lo);font-size:13px;padding:16px;">No gallery photos yet.</div>';
       }
       document.getElementById('past-events-list').innerHTML = '<div style="color:var(--text-lo);font-size:13px;padding:4px 0;">No past events yet.</div>';
+      var seeAllBtn = document.getElementById('see-all-btn');
+      if (seeAllBtn) seeAllBtn.style.display = 'none';
+      var hiddenEv = document.getElementById('hidden-events');
+      if (hiddenEv) hiddenEv.remove();
       document.getElementById('vd-rating-num').textContent = '—';
       document.getElementById('vd-review-count').textContent = 'No reviews yet';
       document.getElementById('vd-events-count').textContent = '0';
       var lmBtn = document.getElementById('load-more-btn');
       if (lmBtn) lmBtn.style.display = 'none';
+      var reviewList = document.getElementById('review-list');
+      if (reviewList) reviewList.innerHTML = '<div style="color:var(--text-lo);font-size:13px;padding:16px 0;">No reviews yet.</div>';
 
       // Verified badge — only show if all 3 docs uploaded
       var v = data.vendor;
@@ -921,9 +908,13 @@ if (isNumericId) {
           docList.innerHTML = '<div style="font-size:12px;color:var(--text-lo);">No documents uploaded yet.</div>';
         }
       }
+
+      // All data applied — reveal the page
+      document.body.classList.remove('vd-loading');
     })
     .catch(function() {
       document.getElementById('vd-name').textContent = 'Vendor not found';
+      document.body.classList.remove('vd-loading');
     });
 } else {
   // ── Static demo vendors (slug-based, from data.js) ───────────────────────
