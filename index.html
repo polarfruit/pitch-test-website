@@ -890,11 +890,11 @@ footer {
 <div class="stats-bar">
   <div class="stats-inner">
     <div class="stat-divider">
-      <div class="stat-n">2,400+</div>
+      <div class="stat-n" id="stat-vendors-count">—</div>
       <div class="stat-l">Vendors</div>
     </div>
     <div class="stat-divider">
-      <div class="stat-n">840+</div>
+      <div class="stat-n" id="stat-events-count">—</div>
       <div class="stat-l">Events</div>
     </div>
     <div class="stat-divider">
@@ -1379,6 +1379,14 @@ document.addEventListener('click', (e) => {
 
 // Demo: toggle auth state (remove in production)
 // To simulate logged-in: document.getElementById('nav-loggedout').style.display='none'; document.getElementById('nav-loggedin').style.display='flex';
+
+// Real stats
+fetch('/api/stats').then(r => r.json()).then(d => {
+  const vc = document.getElementById('stat-vendors-count');
+  const ec = document.getElementById('stat-events-count');
+  if (vc) vc.textContent = d.vendors > 0 ? d.vendors : '—';
+  if (ec) ec.textContent = d.events  > 0 ? d.events  : '—';
+}).catch(() => {});
 </script>
 
 </body>

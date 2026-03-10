@@ -432,23 +432,23 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
       <div class="stat-grid">
         <div class="stat-card ember">
           <div class="stat-label">Live Events</div>
-          <div class="stat-value">4</div>
-          <div class="stat-delta">2 accepting applications</div>
+          <div class="stat-value" id="stat-live-events">—</div>
+          <div class="stat-delta" id="stat-live-delta">Loading…</div>
         </div>
         <div class="stat-card herb">
           <div class="stat-label">Total Applications</div>
-          <div class="stat-value">106</div>
-          <div class="stat-delta up">↑ 18 this week</div>
+          <div class="stat-value" id="stat-total-apps">—</div>
+          <div class="stat-delta">Across all your events</div>
         </div>
         <div class="stat-card gold">
           <div class="stat-label">Avg Fill Rate</div>
-          <div class="stat-value">73%</div>
-          <div class="stat-delta">Across all live events</div>
+          <div class="stat-value" id="stat-fill-rate">—</div>
+          <div class="stat-delta">Across events with spots set</div>
         </div>
         <div class="stat-card slate">
           <div class="stat-label">Vendors Approved</div>
-          <div class="stat-value">57</div>
-          <div class="stat-delta up">↑ 8 this month</div>
+          <div class="stat-value" id="stat-vendors-approved">—</div>
+          <div class="stat-delta">Across all your events</div>
         </div>
       </div>
 
@@ -456,132 +456,16 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
         <!-- Upcoming events -->
         <div class="card">
           <div class="section-title">Your upcoming events</div>
-          <div class="upcoming-list">
-            <div class="upcoming-row" onclick="openEventMgmt('rundle-mall-night-eats','Rundle Mall Night Eats')">
-              <div class="upcoming-emoji" style="background:linear-gradient(135deg,#1A1612,#321A0A);">🌃</div>
-              <div class="upcoming-info">
-                <div class="upcoming-name">Rundle Mall Night Eats</div>
-                <div class="upcoming-meta">Sat 12 Apr · Adelaide CBD · Night Market</div>
-              </div>
-              <div class="upcoming-fill">
-                <div class="fill-bar-wrap">
-                  <div class="fill-bar-track"><div class="fill-bar-fill" style="width:70%;background:#C9840A;"></div></div>
-                  <div class="fill-bar-label" style="color:#C9840A;">70%</div>
-                </div>
-              </div>
-              <div class="upcoming-apps">22 apps</div>
-              <button class="upcoming-manage">Manage →</button>
-            </div>
-            <div class="upcoming-divider"></div>
-            <div class="upcoming-row" onclick="openEventMgmt('showground-harvest','Adelaide Showground Harvest Fair')">
-              <div class="upcoming-emoji" style="background:linear-gradient(135deg,#0A1A0A,#1A3A0A);">🌾</div>
-              <div class="upcoming-info">
-                <div class="upcoming-name">Adelaide Showground Harvest Fair</div>
-                <div class="upcoming-meta">Sun 18 Apr · Wayville · Fair</div>
-              </div>
-              <div class="upcoming-fill">
-                <div class="fill-bar-wrap">
-                  <div class="fill-bar-track"><div class="fill-bar-fill" style="width:44%;background:#C9840A;"></div></div>
-                  <div class="fill-bar-label" style="color:#C9840A;">44%</div>
-                </div>
-              </div>
-              <div class="upcoming-apps">15 apps</div>
-              <button class="upcoming-manage">Manage →</button>
-            </div>
-            <div class="upcoming-divider"></div>
-            <div class="upcoming-row" onclick="openEventMgmt('glenelg-twilight','Glenelg Twilight Market')">
-              <div class="upcoming-emoji" style="background:linear-gradient(135deg,#0A1020,#1A2848);">🌅</div>
-              <div class="upcoming-info">
-                <div class="upcoming-name">Glenelg Twilight Market</div>
-                <div class="upcoming-meta">Sun 3 May · Glenelg · Night Market</div>
-              </div>
-              <div class="upcoming-fill">
-                <div class="fill-bar-wrap">
-                  <div class="fill-bar-track"><div class="fill-bar-fill" style="width:33%;background:#2D8B55;"></div></div>
-                  <div class="fill-bar-label" style="color:#2D8B55;">33%</div>
-                </div>
-              </div>
-              <div class="upcoming-apps">18 apps</div>
-              <button class="upcoming-manage">Manage →</button>
-            </div>
-            <div class="upcoming-divider"></div>
-            <div class="upcoming-row">
-              <div class="upcoming-emoji" style="background:linear-gradient(135deg,#1A0A1A,#3A1A3A);">❄️</div>
-              <div class="upcoming-info">
-                <div class="upcoming-name">Winter Lantern Market</div>
-                <div class="upcoming-meta">Sat 20 Jun · City Gardens · Market</div>
-              </div>
-              <div class="upcoming-fill">
-                <div class="fill-bar-wrap">
-                  <div class="fill-bar-track"><div class="fill-bar-fill" style="width:10%;background:#2D8B55;"></div></div>
-                  <div class="fill-bar-label" style="color:#2D8B55;">10%</div>
-                </div>
-              </div>
-              <div class="upcoming-apps">4 apps</div>
-              <button class="upcoming-manage">Manage →</button>
-            </div>
+          <div class="upcoming-list" id="overview-upcoming-list">
+            <div style="color:var(--text-lo);font-size:13px;padding:16px 0;">Loading…</div>
           </div>
         </div>
 
         <!-- Recent applications -->
         <div class="card">
           <div class="section-title">Recent applications</div>
-          <div class="recent-apps-list">
-            <div class="recent-app-row">
-              <div class="app-vendor-avatar" style="background:linear-gradient(135deg,#3D1A06,#6B2E08);">🔥</div>
-              <div class="app-vendor-info">
-                <div class="app-vendor-name">Smoky Joe's BBQ</div>
-                <div class="app-event-name">Glenelg Twilight Market · BBQ</div>
-              </div>
-              <div class="app-quick-actions">
-                <button class="btn-approve" onclick="quickAction(this,'approved')">✓</button>
-                <button class="btn-waitlist" onclick="quickAction(this,'waitlisted')">⏸</button>
-              </div>
-            </div>
-            <div class="recent-app-row">
-              <div class="app-vendor-avatar" style="background:linear-gradient(135deg,#1A2D0A,#2D5C10);">🌮</div>
-              <div class="app-vendor-info">
-                <div class="app-vendor-name">Taco Loco</div>
-                <div class="app-event-name">Rundle Mall Night Eats · Mexican</div>
-              </div>
-              <div class="app-quick-actions">
-                <button class="btn-approve" onclick="quickAction(this,'approved')">✓</button>
-                <button class="btn-waitlist" onclick="quickAction(this,'waitlisted')">⏸</button>
-              </div>
-            </div>
-            <div class="recent-app-row">
-              <div class="app-vendor-avatar" style="background:linear-gradient(135deg,#0A1A2D,#0A3060);">🥢</div>
-              <div class="app-vendor-info">
-                <div class="app-vendor-name">Wok &amp; Roll</div>
-                <div class="app-event-name">Adelaide Showground · Asian Fusion</div>
-              </div>
-              <div class="app-quick-actions">
-                <button class="btn-approve" onclick="quickAction(this,'approved')">✓</button>
-                <button class="btn-waitlist" onclick="quickAction(this,'waitlisted')">⏸</button>
-              </div>
-            </div>
-            <div class="recent-app-row">
-              <div class="app-vendor-avatar" style="background:linear-gradient(135deg,#2D1A2A,#5C2A52);">🍰</div>
-              <div class="app-vendor-info">
-                <div class="app-vendor-name">The Dessert Lab</div>
-                <div class="app-event-name">Glenelg Twilight Market · Desserts</div>
-              </div>
-              <div class="app-quick-actions">
-                <button class="btn-approve" onclick="quickAction(this,'approved')">✓</button>
-                <button class="btn-waitlist" onclick="quickAction(this,'waitlisted')">⏸</button>
-              </div>
-            </div>
-            <div class="recent-app-row">
-              <div class="app-vendor-avatar" style="background:linear-gradient(135deg,#1A140A,#3D2A10);">☕</div>
-              <div class="app-vendor-info">
-                <div class="app-vendor-name">Beanery Coffee Co.</div>
-                <div class="app-event-name">Rundle Mall Night Eats · Coffee</div>
-              </div>
-              <div class="app-quick-actions">
-                <button class="btn-approve" onclick="quickAction(this,'approved')">✓</button>
-                <button class="btn-waitlist" onclick="quickAction(this,'waitlisted')">⏸</button>
-              </div>
-            </div>
+          <div class="recent-apps-list" id="overview-recent-apps">
+            <div style="color:var(--text-lo);font-size:13px;padding:16px 0;">Loading…</div>
           </div>
         </div>
       </div>
@@ -607,60 +491,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
             </tr>
           </thead>
           <tbody id="org-events-tbody">
-            <tr>
-              <td style="padding-left:24px;"><div class="td-event">Rundle Mall Night Eats</div><div class="td-sub">Night Market · Adelaide CBD</div></td>
-              <td style="white-space:nowrap;">Sat 12 Apr 2026</td>
-              <td><span class="spots-text">14/20</span></td>
-              <td><div class="fill-bar-wrap" style="min-width:100px;"><div class="fill-bar-track"><div class="fill-bar-fill" style="width:70%;background:#C9840A;"></div></div><span class="fill-bar-label" style="color:#C9840A;">70%</span></div></td>
-              <td><span class="badge badge-live">● Live</span></td>
-              <td>22</td>
-              <td style="padding-right:24px;"><div class="action-btns"><button class="btn-action btn-manage" onclick="openEventMgmt('rundle-mall-night-eats','Rundle Mall Night Eats')">Manage</button><button class="btn-action btn-edit">Edit</button><button class="btn-action btn-hide">Hide</button></div></td>
-            </tr>
-            <tr>
-              <td style="padding-left:24px;"><div class="td-event">Adelaide Showground Harvest Fair</div><div class="td-sub">Fair · Wayville, SA</div></td>
-              <td style="white-space:nowrap;">Sun 18 Apr 2026</td>
-              <td><span class="spots-text">8/18</span></td>
-              <td><div class="fill-bar-wrap" style="min-width:100px;"><div class="fill-bar-track"><div class="fill-bar-fill" style="width:44%;background:#C9840A;"></div></div><span class="fill-bar-label" style="color:#C9840A;">44%</span></div></td>
-              <td><span class="badge badge-live">● Live</span></td>
-              <td>15</td>
-              <td style="padding-right:24px;"><div class="action-btns"><button class="btn-action btn-manage" onclick="openEventMgmt('showground','Adelaide Showground Harvest Fair')">Manage</button><button class="btn-action btn-edit">Edit</button><button class="btn-action btn-hide">Hide</button></div></td>
-            </tr>
-            <tr>
-              <td style="padding-left:24px;"><div class="td-event">Glenelg Twilight Market</div><div class="td-sub">Night Market · Glenelg, SA</div></td>
-              <td style="white-space:nowrap;">Sun 3 May 2026</td>
-              <td><span class="spots-text">5/15</span></td>
-              <td><div class="fill-bar-wrap" style="min-width:100px;"><div class="fill-bar-track"><div class="fill-bar-fill" style="width:33%;background:#2D8B55;"></div></div><span class="fill-bar-label" style="color:#2D8B55;">33%</span></div></td>
-              <td><span class="badge badge-live">● Live</span></td>
-              <td>18</td>
-              <td style="padding-right:24px;"><div class="action-btns"><button class="btn-action btn-manage" onclick="openEventMgmt('glenelg','Glenelg Twilight Market')">Manage</button><button class="btn-action btn-edit">Edit</button><button class="btn-action btn-hide">Hide</button></div></td>
-            </tr>
-            <tr>
-              <td style="padding-left:24px;"><div class="td-event">Port Adelaide Night Market</div><div class="td-sub">Night Market · Port Adelaide</div></td>
-              <td style="white-space:nowrap;">Sat 10 May 2026</td>
-              <td><span class="spots-text">0/12</span></td>
-              <td><div class="fill-bar-wrap" style="min-width:100px;"><div class="fill-bar-track"><div class="fill-bar-fill" style="width:0%;background:#2D8B55;"></div></div><span class="fill-bar-label" style="color:var(--text-lo);">0%</span></div></td>
-              <td><span class="badge badge-draft">○ Draft</span></td>
-              <td>0</td>
-              <td style="padding-right:24px;"><div class="action-btns"><button class="btn-action btn-manage">Manage</button><button class="btn-action btn-edit">Edit</button><button class="btn-action btn-hide">Hide</button></div></td>
-            </tr>
-            <tr>
-              <td style="padding-left:24px;"><div class="td-event">Winter Lantern Market</div><div class="td-sub">Market · City Gardens</div></td>
-              <td style="white-space:nowrap;">Sat 20 Jun 2026</td>
-              <td><span class="spots-text">2/20</span></td>
-              <td><div class="fill-bar-wrap" style="min-width:100px;"><div class="fill-bar-track"><div class="fill-bar-fill" style="width:10%;background:#2D8B55;"></div></div><span class="fill-bar-label" style="color:#2D8B55;">10%</span></div></td>
-              <td><span class="badge badge-live">● Live</span></td>
-              <td>4</td>
-              <td style="padding-right:24px;"><div class="action-btns"><button class="btn-action btn-manage">Manage</button><button class="btn-action btn-edit">Edit</button><button class="btn-action btn-hide">Hide</button></div></td>
-            </tr>
-            <tr>
-              <td style="padding-left:24px;"><div class="td-event">Fringe Food Village 2026</div><div class="td-sub">Festival · Various SA venues</div></td>
-              <td style="white-space:nowrap;">Sat 22 Mar 2026</td>
-              <td><span class="spots-text">30/30</span></td>
-              <td><div class="fill-bar-wrap" style="min-width:100px;"><div class="fill-bar-track"><div class="fill-bar-fill" style="width:100%;background:#C0392B;"></div></div><span class="fill-bar-label" style="color:#C0392B;">100%</span></div></td>
-              <td><span class="badge badge-past">● Past</span></td>
-              <td>47</td>
-              <td style="padding-right:24px;"><div class="action-btns"><button class="btn-action btn-manage">View</button><button class="btn-action btn-hide">Archive</button></div></td>
-            </tr>
+            <tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-lo);">Loading events…</td></tr>
           </tbody>
         </table>
       </div>
@@ -672,161 +503,36 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
           <button onclick="showPanel('events',null)" style="background:transparent;border:none;color:var(--text-lo);cursor:pointer;font-size:12px;font-family:var(--fb);">← My Events</button>
           <span style="color:var(--text-lo);font-size:12px;">/</span>
-          <span style="font-size:12px;color:var(--text-mid);" id="mgmt-breadcrumb">Rundle Mall Night Eats</span>
+          <span style="font-size:12px;color:var(--text-mid);" id="mgmt-breadcrumb"></span>
         </div>
-        <div class="mgmt-event-name" id="mgmt-event-name">Rundle Mall Night Eats</div>
-        <div class="mgmt-meta">
-          <span class="mgmt-meta-item">📅 Sat 12 Apr 2026</span>
-          <span class="mgmt-meta-item">📍 Adelaide CBD</span>
-          <span class="mgmt-meta-item"><span class="badge badge-live">● Live</span></span>
-          <span class="mgmt-meta-item">14/20 spots filled</span>
-        </div>
+        <div class="mgmt-event-name" id="mgmt-event-name"></div>
+        <div class="mgmt-meta" id="mgmt-meta"></div>
       </div>
 
       <div class="tab-bar">
-        <button class="tab-btn active" onclick="showTab('applications',this)">Applications<span class="tab-count">22</span></button>
-        <button class="tab-btn" onclick="showTab('lineup',this)">Lineup<span class="tab-count">14</span></button>
+        <button class="tab-btn active" onclick="showTab('applications',this)">Applications<span class="tab-count" id="tab-count-apps"></span></button>
+        <button class="tab-btn" onclick="showTab('lineup',this)">Lineup<span class="tab-count" id="tab-count-lineup"></span></button>
         <button class="tab-btn" onclick="showTab('details',this)">Details</button>
         <button class="tab-btn" onclick="showTab('analytics',this)">Analytics</button>
       </div>
 
       <!-- Applications tab -->
       <div class="tab-content active" id="tab-applications">
-        <div class="app-filter-row">
-          <button class="app-filter-btn active" onclick="filterMgmtApps('all',this)">All <span style="opacity:0.6;">(22)</span></button>
-          <button class="app-filter-btn" onclick="filterMgmtApps('pending',this)">Pending <span style="opacity:0.6;">(8)</span></button>
-          <button class="app-filter-btn" onclick="filterMgmtApps('approved',this)">Approved <span style="opacity:0.6;">(10)</span></button>
-          <button class="app-filter-btn" onclick="filterMgmtApps('waitlisted',this)">Waitlisted <span style="opacity:0.6;">(2)</span></button>
-          <button class="app-filter-btn" onclick="filterMgmtApps('rejected',this)">Rejected <span style="opacity:0.6;">(2)</span></button>
+        <div class="app-filter-row" id="mgmt-filter-row" style="display:none;">
+          <button class="app-filter-btn active" onclick="filterMgmtApps('all',this)">All <span class="mgmt-filter-count" id="fc-all" style="opacity:0.6;"></span></button>
+          <button class="app-filter-btn" onclick="filterMgmtApps('pending',this)">Pending <span class="mgmt-filter-count" id="fc-pending" style="opacity:0.6;"></span></button>
+          <button class="app-filter-btn" onclick="filterMgmtApps('approved',this)">Approved <span class="mgmt-filter-count" id="fc-approved" style="opacity:0.6;"></span></button>
+          <button class="app-filter-btn" onclick="filterMgmtApps('rejected',this)">Rejected <span class="mgmt-filter-count" id="fc-rejected" style="opacity:0.6;"></span></button>
         </div>
         <div class="app-cards-grid" id="mgmt-app-cards">
-          <!-- pending -->
-          <div class="app-card" data-app-status="pending">
-            <div class="app-card-top">
-              <div class="app-card-avatar" style="background:linear-gradient(135deg,#3D1A06,#6B2E08);">🔥</div>
-              <div class="app-card-info">
-                <div class="app-card-name">
-                  <a class="app-card-vendor" href="/vendors/smoky-joes-bbq">Smoky Joe's BBQ</a>
-                  <span class="badge badge-pending">Pending</span>
-                  <span class="badge" style="background:linear-gradient(135deg,#C9840A20,#E89B1A14);border:1px solid #C9840A30;color:var(--gold);font-size:9px;">⭐ PRO</span>
-                </div>
-                <div class="app-card-tags">
-                  <span class="app-tag">BBQ</span>
-                  <span class="app-tag app-tag-gray">🚚 Food Truck</span>
-                  <span class="app-tag app-tag-gray">3×3m</span>
-                  <span class="app-tag app-tag-gray">★ 4.9 (62)</span>
-                </div>
-              </div>
-            </div>
-            <div class="app-card-note">"We've done Rundle Mall three years running and know the space well. Our setup takes 45 min and we always finish pack-down on time. Happy to be placed anywhere along the western corridor."</div>
-            <div class="app-card-footer">
-              <div class="app-card-meta">Applied 2 Apr 2026 · Power required · No water</div>
-              <div class="app-actions">
-                <button class="btn-act-approve" onclick="actOn(this,'approved')">✓ Approve</button>
-                <button class="btn-act-waitlist" onclick="actOn(this,'waitlisted')">⏸ Waitlist</button>
-                <div style="position:relative;">
-                  <button class="btn-act-reject" onclick="toggleRejectDD(this)">✕ Reject ▾</button>
-                  <div class="reject-dropdown">
-                    <div class="reject-dropdown-header">Reason</div>
-                    <button class="reject-option" onclick="actOn(this.closest('.app-card').querySelector('.btn-act-reject'),'rejected','Too many BBQ vendors')">Too many vendors in this cuisine</button>
-                    <button class="reject-option" onclick="actOn(this.closest('.app-card').querySelector('.btn-act-reject'),'rejected','Requirements not met')">Doesn't meet event requirements</button>
-                    <button class="reject-option" onclick="actOn(this.closest('.app-card').querySelector('.btn-act-reject'),'rejected','No availability')">No availability for this setup size</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <!-- approved -->
-          <div class="app-card status-approved" data-app-status="approved">
-            <div class="app-card-top">
-              <div class="app-card-avatar" style="background:linear-gradient(135deg,#1A2D0A,#2D5C10);">🌮</div>
-              <div class="app-card-info">
-                <div class="app-card-name">
-                  <a class="app-card-vendor" href="/vendors/taco-loco">Taco Loco</a>
-                  <span class="badge badge-approved">✓ Approved</span>
-                  <span class="badge" style="background:linear-gradient(135deg,#C9840A20,#E89B1A14);border:1px solid #C9840A30;color:var(--gold);font-size:9px;">⭐ PRO</span>
-                </div>
-                <div class="app-card-tags">
-                  <span class="app-tag">Mexican</span>
-                  <span class="app-tag app-tag-gray">🏪 Pop-up Stall</span>
-                  <span class="app-tag app-tag-gray">3×3m</span>
-                  <span class="app-tag app-tag-gray">★ 4.7 (38)</span>
-                </div>
-              </div>
-            </div>
-            <div class="app-card-note">"Taco Loco at your service! We bring authentic Mexican street food — tacos, burritos, elote. We've done 23 events and pride ourselves on fast service and a clean site."</div>
-            <div class="app-card-footer">
-              <div class="app-card-meta">Applied 28 Mar 2026 · Power required · No water</div>
-              <div class="app-actions"><span style="font-size:12px;color:var(--herb);font-weight:600;">✓ Approved — Spot B4</span></div>
-            </div>
-          </div>
-          <!-- pending 2 -->
-          <div class="app-card" data-app-status="pending">
-            <div class="app-card-top">
-              <div class="app-card-avatar" style="background:linear-gradient(135deg,#0A1A2D,#0A3060);">🥢</div>
-              <div class="app-card-info">
-                <div class="app-card-name">
-                  <a class="app-card-vendor" href="/vendors/wok-and-roll">Wok &amp; Roll</a>
-                  <span class="badge badge-pending">Pending</span>
-                  <span class="badge" style="background:linear-gradient(135deg,#C9840A20,#E89B1A14);border:1px solid #C9840A30;color:var(--gold);font-size:9px;">⭐ PRO</span>
-                </div>
-                <div class="app-card-tags">
-                  <span class="app-tag">Asian Fusion</span>
-                  <span class="app-tag app-tag-gray">🚚 Food Truck</span>
-                  <span class="app-tag app-tag-gray">3×6m</span>
-                  <span class="app-tag app-tag-gray">★ 4.8 (51)</span>
-                </div>
-              </div>
-            </div>
-            <div class="app-card-note">"We offer a fast, high-quality pan-Asian menu with wide appeal. Our truck is self-contained and has operated at Rundle Mall before — familiar with the logistics."</div>
-            <div class="app-card-footer">
-              <div class="app-card-meta">Applied 3 Apr 2026 · Power required · Water preferred</div>
-              <div class="app-actions">
-                <button class="btn-act-approve" onclick="actOn(this,'approved')">✓ Approve</button>
-                <button class="btn-act-waitlist" onclick="actOn(this,'waitlisted')">⏸ Waitlist</button>
-                <div style="position:relative;">
-                  <button class="btn-act-reject" onclick="toggleRejectDD(this)">✕ Reject ▾</button>
-                  <div class="reject-dropdown">
-                    <div class="reject-dropdown-header">Reason</div>
-                    <button class="reject-option" onclick="actOn(this.closest('.app-card').querySelector('.btn-act-reject'),'rejected','Too many similar vendors')">Too many vendors in this cuisine</button>
-                    <button class="reject-option" onclick="actOn(this.closest('.app-card').querySelector('.btn-act-reject'),'rejected','Setup too large')">Setup size exceeds available space</button>
-                    <button class="reject-option" onclick="actOn(this.closest('.app-card').querySelector('.btn-act-reject'),'rejected','No water available')">Water connection not available</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <!-- waitlisted -->
-          <div class="app-card" data-app-status="waitlisted">
-            <div class="app-card-top">
-              <div class="app-card-avatar" style="background:linear-gradient(135deg,#2D1A2A,#5C2A52);">🍰</div>
-              <div class="app-card-info">
-                <div class="app-card-name">
-                  <a class="app-card-vendor" href="/vendors/the-dessert-lab">The Dessert Lab</a>
-                  <span class="badge badge-waitlist">⏸ Waitlisted</span>
-                  <span class="badge" style="background:linear-gradient(135deg,#C9840A20,#E89B1A14);border:1px solid #C9840A30;color:var(--gold);font-size:9px;">⭐ PRO</span>
-                </div>
-                <div class="app-card-tags">
-                  <span class="app-tag">Desserts</span>
-                  <span class="app-tag app-tag-gray">🛒 Cart</span>
-                  <span class="app-tag app-tag-gray">2×2m</span>
-                  <span class="app-tag app-tag-gray">★ 4.9 (44)</span>
-                </div>
-              </div>
-            </div>
-            <div class="app-card-note">"We specialise in elevated desserts — crème brûlée tarts, miso caramel cheesecake, and rotating seasonal specials. Compact cart setup, great for high-foot-traffic spots."</div>
-            <div class="app-card-footer">
-              <div class="app-card-meta">Applied 30 Mar 2026 · No power needed · No water</div>
-              <div class="app-actions"><span style="font-size:12px;color:var(--gold);font-weight:600;">⏸ Waitlisted</span></div>
-            </div>
-          </div>
+          <div style="color:var(--text-lo);font-size:13px;padding:24px 0;">Select an event from My Events to view its applications.</div>
         </div>
       </div>
 
       <!-- Lineup tab -->
       <div class="tab-content" id="tab-lineup">
         <div class="lineup-header">
-          <div style="font-size:13px;color:var(--text-lo);">14 vendors confirmed · 6 spots remaining</div>
+          <div style="font-size:13px;color:var(--text-lo);" id="lineup-summary">—</div>
           <button class="btn-broadcast" onclick="openBroadcast()">📢 Broadcast message</button>
         </div>
         <div class="card" style="padding:0;overflow:hidden;">
@@ -842,13 +548,8 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
                 <th>Spot #</th>
               </tr>
             </thead>
-            <tbody>
-              <tr><td style="padding-left:20px;"><a href="/vendors/taco-loco" style="color:var(--text-hi);font-weight:600;text-decoration:none;font-size:13px;">Taco Loco</a></td><td>Mexican</td><td>Pop-up Stall</td><td>3×3m</td><td><span class="check-icon">✓</span></td><td><span class="cross-icon">—</span></td><td><input class="spot-input" value="B4" /></td></tr>
-              <tr><td style="padding-left:20px;"><a href="/vendors/beanery-coffee" style="color:var(--text-hi);font-weight:600;text-decoration:none;font-size:13px;">Beanery Coffee Co.</a></td><td>Coffee</td><td>Cart</td><td>2×2m</td><td><span class="check-icon">✓</span></td><td><span class="cross-icon">—</span></td><td><input class="spot-input" value="A1" /></td></tr>
-              <tr><td style="padding-left:20px;"><a href="/vendors/napoli-express" style="color:var(--text-hi);font-weight:600;text-decoration:none;font-size:13px;">Napoli Express</a></td><td>Italian</td><td>Pop-up Stall</td><td>3×3m</td><td><span class="check-icon">✓</span></td><td><span class="cross-icon">—</span></td><td><input class="spot-input" value="C2" /></td></tr>
-              <tr><td style="padding-left:20px;"><a href="/vendors/ocean-and-fire" style="color:var(--text-hi);font-weight:600;text-decoration:none;font-size:13px;">Ocean &amp; Fire</a></td><td>Seafood</td><td>Pop-up Stall</td><td>3×3m</td><td><span class="check-icon">✓</span></td><td><span class="check-icon">✓</span></td><td><input class="spot-input" value="B2" /></td></tr>
-              <tr><td style="padding-left:20px;"><a href="/vendors/green-bowl" style="color:var(--text-hi);font-weight:600;text-decoration:none;font-size:13px;">Green Bowl</a></td><td>Vegan</td><td>Pop-up Stall</td><td>3×3m</td><td><span class="check-icon">✓</span></td><td><span class="cross-icon">—</span></td><td><input class="spot-input" value="C5" /></td></tr>
-              <tr><td style="padding-left:20px;"><a href="/vendors/brewski-burgers" style="color:var(--text-hi);font-weight:600;text-decoration:none;font-size:13px;">Brewski Burgers</a></td><td>Burgers</td><td>Food Truck</td><td>3×6m</td><td><span class="check-icon">✓</span></td><td><span class="cross-icon">—</span></td><td><input class="spot-input" value="A6" /></td></tr>
+            <tbody id="lineup-tbody">
+              <tr><td colspan="7" style="padding:24px;color:var(--text-lo);font-size:13px;">No confirmed vendors yet.</td></tr>
             </tbody>
           </table>
         </div>
@@ -856,73 +557,12 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 
       <!-- Details tab -->
       <div class="tab-content" id="tab-details">
-        <div class="card">
-          <div class="form-row">
-            <div class="form-group"><label class="form-label">Event name</label><input class="form-input" value="Rundle Mall Night Eats" /></div>
-            <div class="form-group"><label class="form-label">Category</label><select class="form-select"><option selected>Night Market</option><option>Fair</option><option>Festival</option></select></div>
-          </div>
-          <div class="form-row">
-            <div class="form-group"><label class="form-label">Date</label><input class="form-input" type="date" value="2026-04-12" /></div>
-            <div class="form-group"><label class="form-label">Suburb</label><input class="form-input" value="Adelaide CBD" /></div>
-          </div>
-          <div class="form-group"><label class="form-label">Address</label><input class="form-input" value="Rundle Mall, Adelaide SA 5000" /></div>
-          <div class="form-group"><label class="form-label">Public description</label><textarea class="form-textarea">Adelaide's premier weekly night market, drawing 5,000+ visitors each Saturday evening to the heart of the CBD. Now in its 4th year, the event has become a fixture for foodies, families, and Adelaide's vibrant street food culture.</textarea></div>
-          <div class="form-row">
-            <div class="form-group"><label class="form-label">Total spots</label><input class="form-input" type="number" value="20" /></div>
-            <div class="form-group"><label class="form-label">Application deadline</label><input class="form-input" type="date" value="2026-04-05" /></div>
-          </div>
-          <button class="btn-step-next" style="margin-top:8px;">Save changes</button>
-        </div>
+        <div style="color:var(--text-lo);font-size:13px;padding:24px 0;">Select an event from My Events to edit its details.</div>
       </div>
 
       <!-- Analytics tab -->
       <div class="tab-content" id="tab-analytics">
-        <div class="analytics-grid">
-          <div class="chart-card">
-            <div class="chart-title">Applications this week</div>
-            <div class="bar-chart" id="apps-chart">
-              <div class="bar-col"><div class="bar-val">2</div><div class="bar-fill" style="height:20px;"></div><div class="bar-label">Mon</div></div>
-              <div class="bar-col"><div class="bar-val">5</div><div class="bar-fill" style="height:50px;"></div><div class="bar-label">Tue</div></div>
-              <div class="bar-col"><div class="bar-val">3</div><div class="bar-fill" style="height:30px;"></div><div class="bar-label">Wed</div></div>
-              <div class="bar-col"><div class="bar-val">8</div><div class="bar-fill" style="height:80px;"></div><div class="bar-label">Thu</div></div>
-              <div class="bar-col"><div class="bar-val">6</div><div class="bar-fill" style="height:60px;"></div><div class="bar-label">Fri</div></div>
-              <div class="bar-col"><div class="bar-val">4</div><div class="bar-fill" style="height:40px;"></div><div class="bar-label">Sat</div></div>
-              <div class="bar-col"><div class="bar-val">1</div><div class="bar-fill" style="height:10px;"></div><div class="bar-label">Sun</div></div>
-            </div>
-          </div>
-          <div class="chart-card">
-            <div class="chart-title">Cuisine breakdown (applicants)</div>
-            <div>
-              <div class="h-bar-row"><span class="h-bar-label">BBQ</span><div class="h-bar-track"><div class="h-bar-fill" style="width:36%;"></div></div><span class="h-bar-val">8</span></div>
-              <div class="h-bar-row"><span class="h-bar-label">Asian Fusion</span><div class="h-bar-track"><div class="h-bar-fill" style="width:23%;background:#2B5BA8;"></div></div><span class="h-bar-val">5</span></div>
-              <div class="h-bar-row"><span class="h-bar-label">Mexican</span><div class="h-bar-track"><div class="h-bar-fill" style="width:18%;background:#2D8B55;"></div></div><span class="h-bar-val">4</span></div>
-              <div class="h-bar-row"><span class="h-bar-label">Desserts</span><div class="h-bar-track"><div class="h-bar-fill" style="width:14%;background:#C9840A;"></div></div><span class="h-bar-val">3</span></div>
-              <div class="h-bar-row"><span class="h-bar-label">Coffee</span><div class="h-bar-track"><div class="h-bar-fill" style="width:9%;background:#4A3F36;"></div></div><span class="h-bar-val">2</span></div>
-            </div>
-          </div>
-          <div class="chart-card">
-            <div class="chart-title">Key metrics</div>
-            <div class="kpi-grid">
-              <div class="kpi-item"><div class="kpi-label">Acceptance rate</div><div class="kpi-val">64%</div></div>
-              <div class="kpi-item"><div class="kpi-label">Avg response time</div><div class="kpi-val">1.4d</div></div>
-              <div class="kpi-item"><div class="kpi-label">Fill rate</div><div class="kpi-val" style="color:var(--gold);">70%</div></div>
-              <div class="kpi-item"><div class="kpi-label">Spots remaining</div><div class="kpi-val">6</div></div>
-            </div>
-          </div>
-          <div class="chart-card">
-            <div class="chart-title">Applications vs approvals (last 4 events)</div>
-            <div class="bar-chart">
-              <div class="bar-col"><div class="bar-val" style="font-size:8px;line-height:1.2;">22/14</div><div style="display:flex;gap:3px;align-items:flex-end;"><div class="bar-fill" style="height:88px;width:18px;"></div><div class="bar-fill alt" style="height:56px;width:18px;"></div></div><div class="bar-label">Rundle</div></div>
-              <div class="bar-col"><div class="bar-val" style="font-size:8px;line-height:1.2;">15/8</div><div style="display:flex;gap:3px;align-items:flex-end;"><div class="bar-fill" style="height:60px;width:18px;"></div><div class="bar-fill alt" style="height:32px;width:18px;"></div></div><div class="bar-label">Showgrd</div></div>
-              <div class="bar-col"><div class="bar-val" style="font-size:8px;line-height:1.2;">47/30</div><div style="display:flex;gap:3px;align-items:flex-end;"><div class="bar-fill" style="height:94px;width:18px;"></div><div class="bar-fill alt" style="height:60px;width:18px;"></div></div><div class="bar-label">Fringe</div></div>
-              <div class="bar-col"><div class="bar-val" style="font-size:8px;line-height:1.2;">18/5</div><div style="display:flex;gap:3px;align-items:flex-end;"><div class="bar-fill" style="height:72px;width:18px;"></div><div class="bar-fill alt" style="height:20px;width:18px;"></div></div><div class="bar-label">Glenelg</div></div>
-            </div>
-            <div style="display:flex;gap:16px;margin-top:12px;">
-              <div style="display:flex;align-items:center;gap:6px;"><div style="width:10px;height:10px;border-radius:2px;background:var(--ember);opacity:0.8;"></div><span style="font-size:11px;color:var(--text-lo);">Applications</span></div>
-              <div style="display:flex;align-items:center;gap:6px;"><div style="width:10px;height:10px;border-radius:2px;background:#2B5BA8;"></div><span style="font-size:11px;color:var(--text-lo);">Approved</span></div>
-            </div>
-          </div>
-        </div>
+        <div id="tab-analytics-content" style="color:var(--text-lo);font-size:13px;padding:24px 0;">Select an event from My Events to view analytics.</div>
       </div>
     </div>
 
@@ -1075,73 +715,19 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
             <span class="msg-sidebar-title">Messages</span>
             <button class="btn-broadcast" style="font-size:11px;padding:5px 10px;" onclick="openBroadcast()">📢 Broadcast</button>
           </div>
-          <div class="msg-thread-list">
-            <div class="msg-event-label">Rundle Mall Night Eats</div>
-            <div class="msg-thread active unread" onclick="openThread(this,'Smoky Joe\'s BBQ','Rundle Mall Night Eats')">
-              <div class="msg-thread-avatar" style="background:linear-gradient(135deg,#3D1A06,#6B2E08);">🔥</div>
-              <div class="msg-thread-body">
-                <div class="msg-thread-name">Smoky Joe's BBQ</div>
-                <div class="msg-thread-preview">Quick question about power access…</div>
-              </div>
-              <div class="msg-thread-right"><span class="msg-thread-time">2m</span><div class="unread-dot"></div></div>
-            </div>
-            <div class="msg-thread" onclick="openThread(this,'Beanery Coffee Co.','Rundle Mall Night Eats')">
-              <div class="msg-thread-avatar" style="background:linear-gradient(135deg,#1A140A,#3D2A10);">☕</div>
-              <div class="msg-thread-body">
-                <div class="msg-thread-name">Beanery Coffee Co.</div>
-                <div class="msg-thread-preview">Thanks for the approval! See you there 🙌</div>
-              </div>
-              <div class="msg-thread-right"><span class="msg-thread-time">1h</span></div>
-            </div>
-            <div class="msg-event-label">Adelaide Showground Harvest Fair</div>
-            <div class="msg-thread unread" onclick="openThread(this,'Wok & Roll','Adelaide Showground Harvest Fair')">
-              <div class="msg-thread-avatar" style="background:linear-gradient(135deg,#0A1A2D,#0A3060);">🥢</div>
-              <div class="msg-thread-body">
-                <div class="msg-thread-name">Wok &amp; Roll</div>
-                <div class="msg-thread-preview">Will there be a water connection near…</div>
-              </div>
-              <div class="msg-thread-right"><span class="msg-thread-time">3h</span><div class="unread-dot"></div></div>
-            </div>
-            <div class="msg-event-label">Glenelg Twilight Market</div>
-            <div class="msg-thread" onclick="openThread(this,'Green Bowl','Glenelg Twilight Market')">
-              <div class="msg-thread-avatar" style="background:linear-gradient(135deg,#0A2010,#144A22);">🥗</div>
-              <div class="msg-thread-body">
-                <div class="msg-thread-name">Green Bowl</div>
-                <div class="msg-thread-preview">Hi — we're excited to apply for your…</div>
-              </div>
-              <div class="msg-thread-right"><span class="msg-thread-time">1d</span></div>
-            </div>
-            <div class="msg-thread" onclick="openThread(this,'Taco Loco','Glenelg Twilight Market')">
-              <div class="msg-thread-avatar" style="background:linear-gradient(135deg,#1A2D0A,#2D5C10);">🌮</div>
-              <div class="msg-thread-body">
-                <div class="msg-thread-name">Taco Loco</div>
-                <div class="msg-thread-preview">All confirmed, thanks for your quick reply</div>
-              </div>
-              <div class="msg-thread-right"><span class="msg-thread-time">2d</span></div>
-            </div>
+          <div class="msg-thread-list" id="org-msg-thread-list">
+            <div style="color:var(--text-lo);font-size:13px;padding:20px 16px;line-height:1.6;">No messages yet.<br>Once vendors apply to your events, you can message them here.</div>
           </div>
         </div>
         <div class="msg-main" id="msg-main">
           <div class="msg-main-header">
             <div>
-              <div class="msg-main-vendor" id="msg-vendor-name">Smoky Joe's BBQ</div>
-              <div class="msg-main-event" id="msg-event-name-thread">Rundle Mall Night Eats</div>
+              <div class="msg-main-vendor" id="msg-vendor-name">Select a conversation</div>
+              <div class="msg-main-event" id="msg-event-name-thread"></div>
             </div>
-            <a href="/vendors/smoky-joes-bbq" style="font-size:12px;color:var(--ember);text-decoration:none;">View profile →</a>
           </div>
           <div class="msg-body" id="msg-body">
-            <div class="msg-bubble-wrap them">
-              <div class="msg-bubble them">Hi! Quick question about the power setup at Rundle Mall — will there be 15A single phase available near the western end? We're at a new spot this year and want to confirm before we finalise our equipment.</div>
-              <div class="msg-timestamp">Smoky Joe's BBQ · 2 min ago</div>
-            </div>
-            <div class="msg-bubble-wrap us">
-              <div class="msg-bubble us">Hey Joe! Yes, there are 15A outlets every 10m along the western corridor. Your spot will be near B4 so you should be well covered. Let me know if you need anything else before the event.</div>
-              <div class="msg-timestamp">You · Sent</div>
-            </div>
-            <div class="msg-bubble-wrap them">
-              <div class="msg-bubble them">Perfect, that's exactly what I needed to know. Thanks for the quick reply — see you on the 12th! 🔥</div>
-              <div class="msg-timestamp">Smoky Joe's BBQ · Just now</div>
-            </div>
+            <div style="color:var(--text-lo);font-size:13px;text-align:center;margin-top:40px;">Select a message thread to view the conversation.</div>
           </div>
           <div class="msg-compose">
             <input class="msg-input" id="msg-input" placeholder="Type a message…" onkeydown="if(event.key==='Enter')sendMsg()" />
@@ -1158,7 +744,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
           <div class="settings-section-title">Account</div>
           <div class="settings-row">
             <div><div class="settings-row-label">Organisation name</div><div class="settings-row-desc">Displayed on all your event listings.</div></div>
-            <input class="form-input" value="Adelaide City Council Events" style="width:240px;" />
+            <input class="form-input" id="settings-org-name" value="" style="width:240px;" />
           </div>
           <div class="settings-row">
             <div><div class="settings-row-label">Email address</div><div class="settings-row-desc">To change your email, contact support.</div></div>
@@ -1190,7 +776,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
   <div class="modal-box">
     <div class="modal-title">📢 Broadcast message</div>
     <div class="modal-desc">Send a message to all confirmed vendors at this event.</div>
-    <div class="form-group"><label class="form-label">Event</label><select class="form-select"><option>Rundle Mall Night Eats (14 vendors)</option><option>Glenelg Twilight Market (5 vendors)</option><option>Adelaide Showground Harvest Fair (8 vendors)</option></select></div>
+    <div class="form-group"><label class="form-label">Event</label><select class="form-select" id="broadcast-event-select"><option value="">— Select an event —</option></select></div>
     <div class="form-group" style="margin-bottom:20px;"><label class="form-label">Message</label><textarea class="form-textarea" placeholder="Write your message to all confirmed vendors…" style="min-height:100px;"></textarea></div>
     <div style="display:flex;gap:10px;justify-content:flex-end;">
       <button class="btn-modal-cancel" onclick="closeBroadcast()">Cancel</button>
@@ -1250,43 +836,135 @@ async function openEventMgmt(id, name) {
   document.getElementById('topbar-title').textContent = name;
   showTab('applications', document.querySelector('.tab-btn'));
 
-  // Load real applications if numeric ID
-  if (typeof id === 'number') {
-    const r = await pitchFetch(`/api/organiser/events/${id}/applications`);
-    if (!r.ok) return;
-    const { applications } = await r.json();
-    const grid = document.getElementById('mgmt-app-cards');
-    if (!grid) return;
-    if (!applications.length) {
-      grid.innerHTML = `<div style="color:var(--text-lo);font-size:14px;padding:24px 0;">No applications yet for this event.</div>`;
-      return;
-    }
-    grid.innerHTML = applications.map(a => {
-      const tags = JSON.parse(a.cuisine_tags || '[]').map(t => `<span class="app-tag">${t}</span>`).join('');
-      return `
-        <div class="app-card" data-app-status="${a.status}" data-app-id="${a.id}">
-          <div class="app-card-header">
-            <div class="app-card-avatar">🍽</div>
-            <div class="app-card-meta">
-              <div class="app-card-name">${a.trading_name}</div>
-              <div class="app-card-sub">${a.first_name} ${a.last_name} · ${a.email}</div>
+  // Clear stale data
+  const grid = document.getElementById('mgmt-app-cards');
+  if (grid) grid.innerHTML = `<div style="color:var(--text-lo);font-size:13px;padding:24px 0;">Loading…</div>`;
+  document.getElementById('mgmt-meta').innerHTML = '';
+  document.getElementById('mgmt-filter-row').style.display = 'none';
+
+  if (typeof id !== 'number') return;
+
+  const r = await pitchFetch(`/api/organiser/events/${id}/applications`);
+  if (!r.ok) return;
+  const { applications } = await r.json();
+
+  // Header meta — pull event data from overview cache or re-fetch
+  const evR = await pitchFetch('/api/organiser/events');
+  if (evR.ok) {
+    const { events } = await evR.json();
+    const ev = events.find(e => e.id === id);
+    if (ev) {
+      const date = ev.date_sort ? new Date(ev.date_sort).toLocaleDateString('en-AU',{weekday:'short',day:'numeric',month:'short',year:'numeric'}) : 'TBC';
+      const approved = applications.filter(a => a.status === 'approved').length;
+      const spots = ev.stalls_available || '?';
+      document.getElementById('mgmt-meta').innerHTML = `
+        <span class="mgmt-meta-item">📅 ${date}</span>
+        ${ev.suburb ? `<span class="mgmt-meta-item">📍 ${ev.suburb}</span>` : ''}
+        <span class="mgmt-meta-item"><span class="badge badge-live">● Live</span></span>
+        ${ev.stalls_available ? `<span class="mgmt-meta-item">${approved}/${spots} spots filled</span>` : ''}
+      `;
+      // Lineup tab
+      const lineupTbody = document.getElementById('lineup-tbody');
+      const lineupSummary = document.getElementById('lineup-summary');
+      const approvedApps = applications.filter(a => a.status === 'approved');
+      if (lineupSummary) lineupSummary.textContent = `${approvedApps.length} vendor${approvedApps.length !== 1 ? 's' : ''} confirmed${ev.stalls_available ? ' · ' + (ev.stalls_available - approvedApps.length) + ' spots remaining' : ''}`;
+      if (lineupTbody) {
+        if (!approvedApps.length) {
+          lineupTbody.innerHTML = `<tr><td colspan="7" style="padding:24px;color:var(--text-lo);font-size:13px;">No confirmed vendors yet.</td></tr>`;
+        } else {
+          lineupTbody.innerHTML = approvedApps.map(a => {
+            const tags = (a.cuisine_tags ? JSON.parse(a.cuisine_tags) : []).slice(0,1).join('');
+            return `<tr>
+              <td style="padding-left:20px;"><a href="/vendors/${a.vendor_user_id}" style="color:var(--text-hi);font-weight:600;text-decoration:none;font-size:13px;">${a.trading_name}</a></td>
+              <td>${tags || '—'}</td>
+              <td>${a.setup_type || '—'}</td>
+              <td>${a.stall_w && a.stall_d ? a.stall_w+'×'+a.stall_d+'m' : '—'}</td>
+              <td>${a.power ? '<span class="check-icon">✓</span>' : '<span class="cross-icon">—</span>'}</td>
+              <td>${a.water ? '<span class="check-icon">✓</span>' : '<span class="cross-icon">—</span>'}</td>
+              <td><input class="spot-input" placeholder="—" /></td>
+            </tr>`;
+          }).join('');
+        }
+      }
+      // Tab counts
+      const countEl = document.getElementById('tab-count-apps');
+      if (countEl) countEl.textContent = applications.length || '';
+      const lineupCountEl = document.getElementById('tab-count-lineup');
+      if (lineupCountEl) lineupCountEl.textContent = approvedApps.length || '';
+      // Analytics
+      const analyticsEl = document.getElementById('tab-analytics-content');
+      if (analyticsEl) {
+        const pending  = applications.filter(a => a.status === 'pending').length;
+        const rejected = applications.filter(a => a.status === 'rejected').length;
+        const total    = applications.length;
+        const fillRate = ev.stalls_available ? Math.round((approvedApps.length / ev.stalls_available) * 100) : 0;
+        const acceptRate = total > 0 ? Math.round(((approvedApps.length) / total) * 100) : 0;
+        analyticsEl.innerHTML = `
+          <div class="analytics-grid">
+            <div class="chart-card">
+              <div class="chart-title">Key metrics</div>
+              <div class="kpi-grid">
+                <div class="kpi-item"><div class="kpi-label">Total applications</div><div class="kpi-val">${total}</div></div>
+                <div class="kpi-item"><div class="kpi-label">Approved</div><div class="kpi-val" style="color:var(--herb);">${approvedApps.length}</div></div>
+                <div class="kpi-item"><div class="kpi-label">Pending</div><div class="kpi-val" style="color:var(--gold);">${pending}</div></div>
+                <div class="kpi-item"><div class="kpi-label">Rejected</div><div class="kpi-val" style="color:var(--terra);">${rejected}</div></div>
+                <div class="kpi-item"><div class="kpi-label">Acceptance rate</div><div class="kpi-val">${acceptRate}%</div></div>
+                <div class="kpi-item"><div class="kpi-label">Fill rate</div><div class="kpi-val" style="color:var(--gold);">${fillRate > 0 ? fillRate + '%' : '—'}</div></div>
+              </div>
             </div>
-            <span class="badge badge-${a.status === 'approved' ? 'approved' : a.status === 'rejected' ? 'rejected' : 'pending'}">${
-              a.status === 'approved' ? '✓ Approved' : a.status === 'rejected' ? '✕ Rejected' : '⏳ Pending'
-            }</span>
-          </div>
-          <div class="app-card-tags">${tags}</div>
-          <p class="app-card-bio">${a.bio || ''}</p>
-          <div class="app-actions">
-            ${a.status === 'pending' ? `
-              <button class="btn-approve" onclick="reviewApp(${a.id},'approved',this)">✓ Approve</button>
-              <button class="btn-reject" onclick="reviewApp(${a.id},'rejected',this)">✕ Reject</button>
-            ` : `<span style="font-size:12px;color:var(--text-lo);">Decision made</span>`}
+          </div>`;
+      }
+    }
+  }
+
+  // Application cards
+  if (!applications.length) {
+    grid.innerHTML = `<div style="color:var(--text-lo);font-size:13px;padding:24px 0;">No applications yet for this event.</div>`;
+    return;
+  }
+
+  // Show filter bar with real counts
+  const filterRow = document.getElementById('mgmt-filter-row');
+  if (filterRow) {
+    filterRow.style.display = '';
+    const counts = { all: applications.length, pending: 0, approved: 0, rejected: 0 };
+    applications.forEach(a => { if (counts[a.status] !== undefined) counts[a.status]++; });
+    Object.entries(counts).forEach(([k, v]) => {
+      const el = document.getElementById('fc-' + k);
+      if (el) el.textContent = v ? `(${v})` : '';
+    });
+  }
+
+  grid.innerHTML = applications.map(a => {
+    const tags = (a.cuisine_tags ? JSON.parse(a.cuisine_tags) : []).map(t => `<span class="app-tag">${t}</span>`).join('');
+    const statusBadge = a.status === 'approved' ? `<span class="badge badge-approved">✓ Approved</span>`
+      : a.status === 'rejected' ? `<span class="badge badge-rejected">✕ Rejected</span>`
+      : `<span class="badge badge-pending">⏳ Pending</span>`;
+    const actions = a.status === 'pending' ? `
+      <button class="btn-approve" onclick="reviewApp(${a.id},'approved',this)">✓ Approve</button>
+      <button class="btn-reject" onclick="reviewApp(${a.id},'rejected',this)">✕ Reject</button>
+    ` : `<span style="font-size:12px;color:var(--text-lo);">Decision recorded</span>`;
+    const appliedDate = a.created_at ? new Date(a.created_at).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'}) : '';
+    return `
+      <div class="app-card" data-app-status="${a.status}" data-app-id="${a.id}">
+        <div class="app-card-top">
+          <div class="app-card-avatar">🍽</div>
+          <div class="app-card-info">
+            <div class="app-card-name">
+              <a class="app-card-vendor" href="/vendors/${a.vendor_user_id}">${a.trading_name}</a>
+              ${statusBadge}
+            </div>
+            <div class="app-card-tags">${tags}</div>
           </div>
         </div>
-      `;
-    }).join('');
-  }
+        ${a.bio ? `<div class="app-card-note">"${a.bio}"</div>` : ''}
+        <div class="app-card-footer">
+          <div class="app-card-meta">${a.first_name} ${a.last_name} · ${a.email}${appliedDate ? ' · Applied ' + appliedDate : ''}</div>
+          <div class="app-actions">${actions}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
 }
 
 async function reviewApp(appId, status, btn) {
@@ -1444,26 +1122,119 @@ function pitchFetch(url, opts = {}) {
 
 /* ── Real data init ── */
 async function initDashboard() {
-  // Auth data injected server-side — no fetch('/api/me') needed
   const user = window.__PITCH_USER__;
   const profile = window.__PITCH_PROFILE__;
   if (!user || user.role !== 'organiser') { window.location.href = '/login'; return; }
 
-  // Populate sidebar
   const orgName = (profile && profile.org_name) ? profile.org_name : (user.first_name + ' ' + user.last_name);
   document.querySelector('.org-name').textContent = orgName;
 
-  // Email in settings
   const emailEl = document.getElementById('settings-email');
   if (emailEl) emailEl.textContent = user.email || '—';
 
-  // Logout
+  const orgNameInput = document.getElementById('settings-org-name');
+  if (orgNameInput) orgNameInput.value = orgName;
+
   document.getElementById('logout-btn').onclick = async () => {
     await pitchFetch('/api/logout', { method: 'POST' });
     window.location.href = '/';
   };
 
   loadOrgEvents();
+  loadOrgOverview();
+}
+
+const EMOJI_POOL = ['🍽','🎪','🌟','🎉','🍴','🥘','🎊','🌮','🎶','🍻'];
+function eventEmoji(name) {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) & 0xffffffff;
+  return EMOJI_POOL[Math.abs(h) % EMOJI_POOL.length];
+}
+
+async function loadOrgOverview() {
+  const r = await pitchFetch('/api/organiser/overview');
+  if (!r.ok) return;
+  const d = await r.json();
+
+  // Stat cards
+  const appsEl = document.getElementById('stat-total-apps');
+  if (appsEl) appsEl.textContent = d.total_apps;
+  const fillEl = document.getElementById('stat-fill-rate');
+  if (fillEl) fillEl.textContent = d.fill_rate > 0 ? d.fill_rate + '%' : '—';
+  const approvedEl = document.getElementById('stat-vendors-approved');
+  if (approvedEl) approvedEl.textContent = d.vendors_approved;
+
+  // Upcoming events
+  const upcomingEl = document.getElementById('overview-upcoming-list');
+  if (upcomingEl) {
+    if (!d.upcoming.length) {
+      upcomingEl.innerHTML = `<div style="color:var(--text-lo);font-size:13px;padding:16px 0;">No upcoming events. <button onclick="showPanel('new-event',null)" style="background:none;border:none;color:var(--ember);cursor:pointer;font-family:inherit;font-size:13px;">Post your first event →</button></div>`;
+    } else {
+      upcomingEl.innerHTML = d.upcoming.map((ev, i) => {
+        const date = ev.date_sort ? new Date(ev.date_sort).toLocaleDateString('en-AU', {weekday:'short',day:'numeric',month:'short'}) : 'TBC';
+        return `${i > 0 ? '<div class="upcoming-divider"></div>' : ''}
+        <div class="upcoming-row" onclick="openEventMgmt(${ev.id},'${ev.name.replace(/'/g,"\\'")}')">
+          <div class="upcoming-emoji" style="background:linear-gradient(135deg,#1A1612,#2A1A0A);">${eventEmoji(ev.name)}</div>
+          <div class="upcoming-info">
+            <div class="upcoming-name">${ev.name}</div>
+            <div class="upcoming-meta">${date}${ev.suburb ? ' · ' + ev.suburb : ''}${ev.category ? ' · ' + ev.category : ''}</div>
+          </div>
+          <div class="upcoming-apps" style="font-size:12px;color:var(--text-lo);">—</div>
+          <button class="upcoming-manage">Manage →</button>
+        </div>`;
+      }).join('');
+    }
+  }
+
+  // Recent applications
+  const recentEl = document.getElementById('overview-recent-apps');
+  if (recentEl) {
+    if (!d.recent_apps.length) {
+      recentEl.innerHTML = `<div style="color:var(--text-lo);font-size:13px;padding:16px 0;">No applications yet. Once vendors apply to your events they'll appear here.</div>`;
+    } else {
+      recentEl.innerHTML = d.recent_apps.map(a => `
+        <div class="recent-app-row">
+          <div class="app-vendor-avatar" style="background:linear-gradient(135deg,#1A1612,#2A1A0A);">🍽</div>
+          <div class="app-vendor-info">
+            <div class="app-vendor-name">${a.trading_name || 'Vendor'}</div>
+            <div class="app-event-name">${a.event_name || ''}</div>
+          </div>
+          <div class="app-quick-actions">
+            ${a.status === 'pending' ? `
+              <button class="btn-approve" onclick="quickApproveApp(${a.id},this,'approved')">✓</button>
+              <button class="btn-waitlist" onclick="quickApproveApp(${a.id},this,'rejected')">✕</button>
+            ` : `<span style="font-size:11px;font-weight:700;color:${a.status==='approved'?'var(--herb)':'var(--terra)'};">${a.status==='approved'?'✓ Approved':'✕ Rejected'}</span>`}
+          </div>
+        </div>`).join('');
+    }
+  }
+
+  // Broadcast modal event dropdown
+  const sel = document.getElementById('broadcast-event-select');
+  if (sel && d.upcoming.length) {
+    d.upcoming.forEach(ev => {
+      const opt = document.createElement('option');
+      opt.value = ev.id;
+      opt.textContent = ev.name;
+      sel.appendChild(opt);
+    });
+  }
+}
+
+async function quickApproveApp(appId, btn, status) {
+  btn.disabled = true;
+  const r = await pitchFetch(`/api/organiser/applications/${appId}/status`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status }),
+  });
+  if (r.ok) {
+    const row = btn.closest('.recent-app-row');
+    const actEl = row.querySelector('.app-quick-actions');
+    const colors = { approved: 'var(--herb)', rejected: 'var(--terra)' };
+    const labels = { approved: '✓ Approved', rejected: '✕ Rejected' };
+    actEl.innerHTML = `<span style="font-size:11px;font-weight:700;color:${colors[status]};">${labels[status]}</span>`;
+  }
 }
 
 async function loadOrgEvents() {
@@ -1473,8 +1244,10 @@ async function loadOrgEvents() {
 
   // Update stat card
   const liveCount = events.filter(e => e.status === 'published').length;
-  const statEl = document.querySelector('.stat-card.ember .stat-value');
+  const statEl = document.getElementById('stat-live-events');
   if (statEl) statEl.textContent = liveCount;
+  const deltaEl = document.getElementById('stat-live-delta');
+  if (deltaEl) deltaEl.textContent = liveCount === 1 ? '1 event live' : liveCount > 0 ? liveCount + ' events live' : 'No live events yet';
 
   const tbody = document.getElementById('org-events-tbody');
   if (!tbody) return;

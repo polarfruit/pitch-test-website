@@ -407,25 +407,53 @@ let VENDORS = (window.PITCH_VENDORS || []).map(function(v){ return Object.assign
 let currentPage = 1;
 const PER_PAGE = 12;
 
-// Fetch DB vendors and overlay matching records
+// Fetch DB vendors and overlay/add real registered vendors
 fetch('/api/vendors').then(function(r){ return r.json(); }).then(function(data) {
   var dbVendors = data.vendors || [];
+  var staticNames = new Set(VENDORS.map(function(v){ return v.name.toLowerCase(); }));
+
+  // Overlay matching static entries
   VENDORS = VENDORS.map(function(v) {
     var db = dbVendors.find(function(d) {
       return d.trading_name && d.trading_name.toLowerCase() === v.name.toLowerCase();
     });
     if (!db) return v;
     return Object.assign({}, v, {
-      name:     db.trading_name || v.name,
-      suburb:   db.suburb      || v.suburb,
-      state:    db.state       || v.state,
-      bio:      db.bio         || v.bio,
-      cuisines: (db.cuisine_tags && db.cuisine_tags.length) ? db.cuisine_tags : v.cuisines,
-      setup:    db.setup_type  || v.setup,
-      isPro:    db.plan === 'pro',
+      name:      db.trading_name || v.name,
+      suburb:    db.suburb       || v.suburb,
+      state:     db.state        || v.state,
+      bio:       db.bio          || v.bio,
+      cuisines:  (db.cuisine_tags && db.cuisine_tags.length) ? db.cuisine_tags : v.cuisines,
+      setup:     db.setup_type   || v.setup,
+      isPro:     db.plan === 'pro',
       _dbUserId: db.user_id,
     });
   });
+
+  // Add DB vendors not in static list
+  dbVendors.forEach(function(db) {
+    if (!db.trading_name) return;
+    if (staticNames.has(db.trading_name.toLowerCase())) return;
+    var tags = db.cuisine_tags || [];
+    VENDORS.push({
+      id:        String(db.user_id),
+      name:      db.trading_name,
+      suburb:    db.suburb    || 'Adelaide',
+      state:     db.state     || 'SA',
+      bio:       db.bio       || '',
+      cuisines:  tags.length ? tags : ['Food'],
+      setup:     db.setup_type || 'Market Stall',
+      rating:    0,
+      reviews:   0,
+      events:    0,
+      isPro:     db.plan === 'pro',
+      emoji:     '🍽',
+      bg:        'linear-gradient(135deg,#1A1612,#2A1A0A)',
+      _dbUserId: db.user_id,
+      _real:     true,
+    });
+  });
+
   renderGrid();
 }).catch(function() { /* use static data as fallback */ });
 
@@ -437,7 +465,17 @@ function stars(r) {
 }
 
 function renderCard(v) {
-  return `<a class="vendor-card" href="/vendors/${v.id}">
+  const statsHtml = v._real
+    ? `<div class="vc-suburb">📍 ${v.suburb}</div>`
+    : `<div class="vc-rating">
+          <span class="vc-stars">★★★★${v.rating >= 4.8 ? '★' : '☆'}</span>
+          <span class="vc-rating-num">${v.rating.toFixed(1)}</span>
+          <span class="vc-review-count">(${v.reviews})</span>
+        </div>
+        <div class="vc-sep"></div>
+        <div class="vc-events"><strong>${v.events}</strong> events</div>
+        <div class="vc-suburb">📍 ${v.suburb}</div>`;
+  return `<a class="vendor-card" href="/vendors/${v._dbUserId || v.id}">
     <div class="vc-top" style="background:${v.bg};">
       ${v.emoji}
       ${v.isPro ? '<span class="vc-pro-badge">PRO</span>' : ''}
@@ -447,14 +485,7 @@ function renderCard(v) {
       <div class="vc-name">${v.name}</div>
       <div class="vc-tags">${v.cuisines.map(c => `<span class="vc-tag">${c}</span>`).join('')}</div>
       <div class="vc-stats">
-        <div class="vc-rating">
-          <span class="vc-stars">★★★★${v.rating >= 4.8 ? '★' : '☆'}</span>
-          <span class="vc-rating-num">${v.rating.toFixed(1)}</span>
-          <span class="vc-review-count">(${v.reviews})</span>
-        </div>
-        <div class="vc-sep"></div>
-        <div class="vc-events"><strong>${v.events}</strong> events</div>
-        <div class="vc-suburb">📍 ${v.suburb}</div>
+        ${statsHtml}
       </div>
     </div>
   </a>`;
