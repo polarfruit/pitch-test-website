@@ -727,7 +727,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
         <div class="card">
           <div class="form-row">
             <div class="form-group"><label class="form-label">Total vendor spots</label><input class="form-input" id="ne-spots" type="number" placeholder="e.g. 20" /></div>
-            <div class="form-group"><label class="form-label">Standard booth size</label><input class="form-input" placeholder="e.g. 3m × 3m" /></div>
+            <div class="form-group"><label class="form-label">Standard booth size</label><input class="form-input" id="ne-booth-size" placeholder="e.g. 3m × 3m" /></div>
           </div>
           <div class="form-group">
             <label class="form-label">Power available</label>
@@ -743,15 +743,15 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
           <div class="form-group">
             <label class="form-label">Booth fee range</label>
             <div class="fee-range-row">
-              <div style="position:relative;"><span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-lo);font-size:14px;">$</span><input class="fee-input" type="number" placeholder="Min" style="padding-left:26px;" /></div>
+              <div style="position:relative;"><span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-lo);font-size:14px;">$</span><input class="fee-input" id="ne-fee-min" type="number" placeholder="Min" style="padding-left:26px;" /></div>
               <span class="fee-sep">—</span>
-              <div style="position:relative;"><span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-lo);font-size:14px;">$</span><input class="fee-input" type="number" placeholder="Max" style="padding-left:26px;" /></div>
+              <div style="position:relative;"><span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-lo);font-size:14px;">$</span><input class="fee-input" id="ne-fee-max" type="number" placeholder="Max" style="padding-left:26px;" /></div>
               <span style="font-size:12px;color:var(--text-lo);">GST inclusive</span>
             </div>
           </div>
           <div class="form-row">
-            <div class="form-group"><label class="form-label">Setup time</label><input class="form-input" placeholder="e.g. 2:00pm – 4:30pm" /></div>
-            <div class="form-group"><label class="form-label">Pack-down time</label><input class="form-input" placeholder="e.g. 10:00pm – 11:30pm" /></div>
+            <div class="form-group"><label class="form-label">Setup time</label><input class="form-input" id="ne-setup-time" placeholder="e.g. 2:00pm – 4:30pm" /></div>
+            <div class="form-group"><label class="form-label">Pack-down time</label><input class="form-input" id="ne-packdown-time" placeholder="e.g. 10:00pm – 11:30pm" /></div>
           </div>
         </div>
         <div class="step-nav"><button class="btn-step-back" onclick="goStep(1)">← Back</button><button class="btn-step-next" onclick="goStep(3)">Next: Requirements →</button></div>
@@ -817,7 +817,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
           </div>
           <div class="form-group">
             <label class="form-label">Exclusivity rules</label>
-            <div class="toggle-row"><span class="toggle-label">Only one vendor per cuisine category</span><label class="toggle-switch"><input type="checkbox" checked /><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+            <div class="toggle-row"><span class="toggle-label">Only one vendor per cuisine category</span><label class="toggle-switch"><input type="checkbox" checked id="ne-exclusivity" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
           </div>
           <div class="form-group"><label class="form-label">Custom requirements</label><textarea class="form-textarea" placeholder="Any specific requirements for vendors at this event — e.g. health certificates, setup rules, equipment restrictions…"></textarea></div>
         </div>
@@ -833,7 +833,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
           </div>
           <div class="form-group">
             <label class="form-label">Payment terms</label>
-            <select class="form-select" style="max-width:320px;">
+            <select class="form-select" id="ne-payment-terms" style="max-width:320px;">
               <option>Full payment due on approval</option>
               <option>50% on approval, 50% one week before event</option>
               <option>Full payment due 7 days before event</option>
@@ -847,15 +847,22 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
       <!-- Step 5: Review -->
       <div class="step-panel" id="step-5">
         <div class="card">
-          <div style="font-size:13px;color:var(--text-mid);margin-bottom:20px;">Review your event listing before publishing. You can edit any details after posting.</div>
-          <div class="review-field"><div class="review-field-label">Event name</div><div class="review-field-value">My New Event</div></div>
-          <div class="review-field"><div class="review-field-label">Category</div><div class="review-field-value">Night Market</div></div>
-          <div class="review-field"><div class="review-field-label">Date</div><div class="review-field-value">TBC</div></div>
-          <div class="review-field"><div class="review-field-label">Location</div><div class="review-field-value">TBC</div></div>
-          <div class="review-field"><div class="review-field-label">Total spots</div><div class="review-field-value">TBC</div></div>
-          <div class="review-field"><div class="review-field-label">Booth fee</div><div class="review-field-value">TBC</div></div>
-          <div class="review-field"><div class="review-field-label">Cuisines wanted</div><div class="review-field-value"><span class="app-tag">BBQ</span> <span class="app-tag">Mexican</span> <span class="app-tag">Asian Fusion</span> <span class="app-tag">Desserts</span> <span class="app-tag">Coffee &amp; Drinks</span></div></div>
-          <div class="review-field"><div class="review-field-label">Exclusivity</div><div class="review-field-value">One vendor per cuisine</div></div>
+          <div style="font-size:13px;color:var(--text-mid);margin-bottom:20px;">Review your event listing before publishing. You can go back and edit any step.</div>
+          <div class="review-field"><div class="review-field-label">Event name</div><div class="review-field-value" id="rv-name">—</div></div>
+          <div class="review-field"><div class="review-field-label">Category</div><div class="review-field-value" id="rv-category">—</div></div>
+          <div class="review-field"><div class="review-field-label">Date</div><div class="review-field-value" id="rv-date">—</div></div>
+          <div class="review-field"><div class="review-field-label">Location</div><div class="review-field-value" id="rv-location">—</div></div>
+          <div class="review-field"><div class="review-field-label">Venue / address</div><div class="review-field-value" id="rv-venue">—</div></div>
+          <div class="review-field"><div class="review-field-label">Description</div><div class="review-field-value" id="rv-description" style="white-space:pre-wrap;">—</div></div>
+          <div class="review-field"><div class="review-field-label">Total spots</div><div class="review-field-value" id="rv-spots">—</div></div>
+          <div class="review-field"><div class="review-field-label">Booth size</div><div class="review-field-value" id="rv-booth-size">—</div></div>
+          <div class="review-field"><div class="review-field-label">Booth fee</div><div class="review-field-value" id="rv-fee">—</div></div>
+          <div class="review-field"><div class="review-field-label">Setup time</div><div class="review-field-value" id="rv-setup">—</div></div>
+          <div class="review-field"><div class="review-field-label">Pack-down</div><div class="review-field-value" id="rv-packdown">—</div></div>
+          <div class="review-field"><div class="review-field-label">App. deadline</div><div class="review-field-value" id="rv-deadline">—</div></div>
+          <div class="review-field"><div class="review-field-label">Cuisines wanted</div><div class="review-field-value" id="rv-cuisines">—</div></div>
+          <div class="review-field"><div class="review-field-label">Exclusivity</div><div class="review-field-value" id="rv-exclusivity">—</div></div>
+          <div class="review-field"><div class="review-field-label">Payment terms</div><div class="review-field-value" id="rv-payment">—</div></div>
         </div>
         <div class="step-nav"><button class="btn-step-back" onclick="goStep(4)">← Back</button><button class="btn-step-next btn-publish" onclick="publishEvent()">🚀 Publish event</button></div>
       </div>
@@ -1186,10 +1193,59 @@ function quickAction(btn, status) {
 
 // Multi-step form
 let currentStep = 1;
+function populateReview() {
+  var v = function(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; };
+
+  // Step 1 — Basics
+  document.getElementById('rv-name').textContent     = v('ne-name')        || '—';
+  document.getElementById('rv-category').textContent = v('ne-category')    || '—';
+
+  // Date: from display inputs (already formatted DD/MM/YYYY)
+  var fromDisp = v('ne-date-display');
+  var toDisp   = v('ne-enddate-display');
+  document.getElementById('rv-date').textContent = fromDisp ? (toDisp ? fromDisp + ' → ' + toDisp : fromDisp + ' (one day)') : '—';
+
+  // Location
+  var suburb = v('ne-suburb'), state = v('ne-state');
+  document.getElementById('rv-location').textContent = suburb ? suburb + ', ' + state : '—';
+  document.getElementById('rv-venue').textContent     = v('ne-venue')       || '—';
+  document.getElementById('rv-description').textContent = v('ne-description') || '—';
+
+  // Step 2 — Booth specs
+  document.getElementById('rv-spots').textContent     = v('ne-spots')       || '—';
+  document.getElementById('rv-booth-size').textContent = v('ne-booth-size') || '—';
+
+  var feeMin = v('ne-fee-min'), feeMax = v('ne-fee-max');
+  var fee = feeMin && feeMax ? '$' + feeMin + ' – $' + feeMax + ' (GST inc.)' : feeMin ? '$' + feeMin : feeMax ? 'Up to $' + feeMax : '—';
+  document.getElementById('rv-fee').textContent       = fee;
+  document.getElementById('rv-setup').textContent     = v('ne-setup-time')   || '—';
+  document.getElementById('rv-packdown').textContent  = v('ne-packdown-time')|| '—';
+
+  // Step 3 — Requirements
+  var deadlineDisp = v('ne-deadline-display');
+  document.getElementById('rv-deadline').textContent = deadlineDisp || '—';
+
+  var cuisineBtns = document.querySelectorAll('.tag-selector .tag-opt.sel');
+  var cuisines = Array.from(cuisineBtns).map(function(b) { return b.textContent; });
+  var cuisineEl = document.getElementById('rv-cuisines');
+  if (cuisines.length > 0) {
+    cuisineEl.innerHTML = cuisines.map(function(c) { return '<span class="app-tag">' + c + '</span>'; }).join(' ');
+  } else {
+    cuisineEl.textContent = 'None selected';
+  }
+
+  var excl = document.getElementById('ne-exclusivity');
+  document.getElementById('rv-exclusivity').textContent = (excl && excl.checked) ? 'One vendor per cuisine' : 'No exclusivity rules';
+
+  // Step 4 — Terms
+  document.getElementById('rv-payment').textContent = v('ne-payment-terms') || '—';
+}
+
 function goStep(n) {
   document.getElementById('step-' + currentStep).classList.remove('active');
   currentStep = n;
   document.getElementById('step-' + n).classList.add('active');
+  if (n === 5) populateReview();
   for (let i = 1; i <= 5; i++) {
     const c = document.getElementById('sc' + i);
     const l = document.getElementById('sl' + i);
