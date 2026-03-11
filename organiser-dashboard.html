@@ -629,7 +629,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 
       <!-- Details tab -->
       <div class="tab-content" id="tab-details">
-        <div style="color:var(--text-lo);font-size:13px;padding:24px 0;">Select an event from My Events to edit its details.</div>
+        <div id="tab-details-content" style="color:var(--text-lo);font-size:13px;padding:24px 0;">Select an event from My Events to edit its details.</div>
       </div>
 
       <!-- Analytics tab -->
@@ -1052,6 +1052,39 @@ async function openEventMgmt(id, name) {
       if (countEl) countEl.textContent = applications.length || '';
       const lineupCountEl = document.getElementById('tab-count-lineup');
       if (lineupCountEl) lineupCountEl.textContent = approvedApps.length || '';
+
+      // Details tab — editable form
+      const detailsEl = document.getElementById('tab-details-content');
+      if (detailsEl) {
+        const fmtIso = iso => { if (!iso) return ''; const p = iso.split('-'); return p[2]+'/'+p[1]+'/'+p[0]; };
+        const isArchived = ev.status === 'archived';
+        detailsEl.innerHTML = `
+          <div class="card" style="max-width:640px;">
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Event name</label><input class="form-input" id="ed-name" value="${ev.name||''}" /></div>
+              <div class="form-group"><label class="form-label">Category</label><select class="form-select" id="ed-category">
+                ${['Night Market','Fair','Festival','Farmers Market','Private Event','Other'].map(c=>`<option ${ev.category===c?'selected':''}>${c}</option>`).join('')}
+              </select></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Date (from)</label><input class="form-input" id="ed-date" placeholder="DD/MM/YYYY" value="${fmtIso(ev.date_sort)}" /></div>
+              <div class="form-group"><label class="form-label">Date (to) <span style="font-weight:400;opacity:0.5;font-size:11px;">optional</span></label><input class="form-input" id="ed-enddate" placeholder="DD/MM/YYYY" value="${fmtIso(ev.date_end)}" /></div>
+            </div>
+            <div class="form-row">
+              <div class="form-group"><label class="form-label">Suburb</label><input class="form-input" id="ed-suburb" value="${ev.suburb||''}" /></div>
+              <div class="form-group"><label class="form-label">State</label><select class="form-select" id="ed-state">${['SA','VIC','NSW','QLD','WA','TAS','ACT','NT'].map(s=>`<option ${ev.state===s?'selected':''}>${s}</option>`).join('')}</select></div>
+            </div>
+            <div class="form-group"><label class="form-label">Venue / address</label><input class="form-input" id="ed-venue" value="${ev.venue_name||''}" /></div>
+            <div class="form-group"><label class="form-label">Total vendor spots</label><input class="form-input" id="ed-spots" type="number" value="${ev.stalls_available||''}" /></div>
+            <div class="form-group"><label class="form-label">Public description</label><textarea class="form-textarea" id="ed-description" style="min-height:100px;">${ev.description||''}</textarea></div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;">
+              <button class="btn-step-next" onclick="saveEventDetails(${ev.id})" style="flex:1;min-width:140px;">Save changes</button>
+              <button onclick="toggleArchiveEvent(${ev.id},'${isArchived?'published':'archived'}')" style="flex:1;min-width:140px;padding:10px 18px;border-radius:8px;border:1px solid ${isArchived?'var(--herb)':'var(--gold)'};background:transparent;color:${isArchived?'var(--herb)':'var(--gold)'};font-size:13px;font-family:var(--fb);cursor:pointer;">${isArchived?'↑ Restore event':'Archive event'}</button>
+              <button onclick="deleteEventConfirm(${ev.id},'${(ev.name||'').replace(/'/g,"\\'")}') " style="flex:0;padding:10px 18px;border-radius:8px;border:1px solid var(--terra);background:transparent;color:var(--terra);font-size:13px;font-family:var(--fb);cursor:pointer;">Delete</button>
+            </div>
+            <div id="ed-msg" style="display:none;margin-top:12px;font-size:13px;"></div>
+          </div>`;
+      }
       // Analytics
       const analyticsEl = document.getElementById('tab-analytics-content');
       if (analyticsEl) {
@@ -1193,6 +1226,51 @@ function quickAction(btn, status) {
 
 // Multi-step form
 let currentStep = 1;
+function parseDisplayDate(ddmmyyyy) {
+  if (!ddmmyyyy) return null;
+  var p = ddmmyyyy.trim().split('/');
+  if (p.length !== 3) return null;
+  var dd = p[0].padStart(2,'0'), mm = p[1].padStart(2,'0'), yyyy = p[2].length === 2 ? '20'+p[2] : p[2];
+  if (!dd||!mm||!yyyy) return null;
+  return yyyy+'-'+mm+'-'+dd;
+}
+
+async function saveEventDetails(evId) {
+  const msg = document.getElementById('ed-msg');
+  const payload = {
+    name:             document.getElementById('ed-name').value.trim(),
+    category:         document.getElementById('ed-category').value,
+    suburb:           document.getElementById('ed-suburb').value.trim(),
+    state:            document.getElementById('ed-state').value,
+    venue_name:       document.getElementById('ed-venue').value.trim(),
+    date_sort:        parseDisplayDate(document.getElementById('ed-date').value),
+    date_end:         parseDisplayDate(document.getElementById('ed-enddate').value) || null,
+    description:      document.getElementById('ed-description').value.trim(),
+    stalls_available: document.getElementById('ed-spots').value || null,
+  };
+  const r = await pitchFetch(`/api/organiser/events/${evId}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+  msg.style.display = 'block';
+  if (r.ok) {
+    msg.style.color = 'var(--herb)'; msg.textContent = '✓ Changes saved.';
+    loadOrgEvents(); loadOrgOverview();
+  } else {
+    const d = await r.json(); msg.style.color = 'var(--terra)'; msg.textContent = d.error || 'Could not save.';
+  }
+}
+
+async function toggleArchiveEvent(evId, newStatus) {
+  const r = await pitchFetch(`/api/organiser/events/${evId}/status`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ status: newStatus }) });
+  if (r.ok) { loadOrgEvents(); showPanel('events', null); }
+  else { const d = await r.json(); alert(d.error || 'Could not update status.'); }
+}
+
+async function deleteEventConfirm(evId, evName) {
+  if (!confirm(`Permanently delete "${evName}"? This cannot be undone.`)) return;
+  const r = await pitchFetch(`/api/organiser/events/${evId}`, { method:'DELETE' });
+  if (r.ok) { loadOrgEvents(); loadOrgOverview(); showPanel('events', null); }
+  else { const d = await r.json(); alert(d.error || 'Could not delete event.'); }
+}
+
 function populateReview() {
   var v = function(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; };
 
