@@ -1033,16 +1033,18 @@ async function openEventMgmt(id, name) {
         if (!approvedApps.length) {
           lineupTbody.innerHTML = `<tr><td colspan="7" style="padding:24px;color:var(--text-lo);font-size:13px;">No confirmed vendors yet.</td></tr>`;
         } else {
+          // Sort by spot_number so lineup is in approval order
+          approvedApps.sort((a, b) => (a.spot_number || 999) - (b.spot_number || 999));
           lineupTbody.innerHTML = approvedApps.map(a => {
             const tags = (a.cuisine_tags ? JSON.parse(a.cuisine_tags) : []).slice(0,1).join('');
             return `<tr>
-              <td style="padding-left:20px;"><a href="/vendors/${a.vendor_user_id}" style="color:var(--text-hi);font-weight:600;text-decoration:none;font-size:13px;">${a.trading_name}</a></td>
+              <td style="padding-left:20px;"><a href="/vendors/${a.vendor_user_id}" target="_blank" style="color:var(--text-hi);font-weight:600;text-decoration:none;font-size:13px;">${a.trading_name}</a></td>
               <td>${tags || '—'}</td>
               <td>${a.setup_type || '—'}</td>
               <td>${a.stall_w && a.stall_d ? a.stall_w+'×'+a.stall_d+'m' : '—'}</td>
               <td>${a.power ? '<span class="check-icon">✓</span>' : '<span class="cross-icon">—</span>'}</td>
               <td>${a.water ? '<span class="check-icon">✓</span>' : '<span class="cross-icon">—</span>'}</td>
-              <td><input class="spot-input" placeholder="—" /></td>
+              <td style="font-weight:700;color:var(--herb);">${a.spot_number ? '#' + a.spot_number : '—'}</td>
             </tr>`;
           }).join('');
         }
@@ -1137,10 +1139,19 @@ async function openEventMgmt(id, name) {
     const actions = a.status === 'pending' ? `
       <button class="btn-approve" onclick="reviewApp(${a.id},'approved',this)">✓ Approve</button>
       <button class="btn-reject" onclick="reviewApp(${a.id},'rejected',this)">✕ Reject</button>
-    ` : `<span style="font-size:12px;color:var(--text-lo);">Decision recorded</span>`;
+    ` : a.status === 'approved'
+      ? `<span style="font-size:12px;font-weight:700;color:var(--herb);">Spot #${a.spot_number || '—'}</span>`
+      : `<span style="font-size:12px;color:var(--text-lo);">Decision recorded</span>`;
     const appliedDate = a.created_at ? new Date(a.created_at).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'}) : '';
+    const setupParts = [];
+    if (a.setup_type) setupParts.push(a.setup_type);
+    if (a.stall_w && a.stall_d) setupParts.push(`${a.stall_w}m × ${a.stall_d}m`);
+    if (a.power) setupParts.push('⚡ Power');
+    if (a.water) setupParts.push('💧 Water');
+    if (a.price_range) setupParts.push(a.price_range);
+    const location = [a.v_suburb, a.v_state].filter(Boolean).join(', ');
     return `
-      <div class="app-card" data-app-status="${a.status}" data-app-id="${a.id}" data-vendor-id="${a.vendor_user_id}" data-vendor-name="${a.trading_name||''}">
+      <div class="app-card" data-app-status="${a.status}" data-app-id="${a.id}" data-vendor-id="${a.vendor_user_id}" data-vendor-name="${(a.trading_name||'').replace(/"/g,'&quot;')}" data-event-id="${a.event_id}">
         <div class="app-card-top">
           <div class="app-card-avatar">🍽</div>
           <div class="app-card-info">
@@ -1149,10 +1160,13 @@ async function openEventMgmt(id, name) {
               ${statusBadge}
             </div>
             <div class="app-card-tags">${tags}</div>
+            ${location ? `<div style="font-size:11px;color:var(--text-lo);margin-top:3px;">📍 ${location}</div>` : ''}
           </div>
           <a href="/vendors/${a.vendor_user_id}" target="_blank" rel="noopener" style="flex-shrink:0;font-family:var(--fb);font-size:11px;font-weight:700;color:var(--text-lo);background:#ffffff08;border:1px solid #ffffff10;padding:5px 11px;border-radius:7px;text-decoration:none;white-space:nowrap;transition:color 0.1s;" onmouseover="this.style.color='var(--text-hi)'" onmouseout="this.style.color='var(--text-lo)'">View profile ↗</a>
         </div>
         ${a.bio ? `<div class="app-card-note">"${a.bio}"</div>` : ''}
+        ${a.message ? `<div style="margin:10px 0 0;padding:10px 12px;background:#ffffff05;border:1px solid #ffffff08;border-radius:8px;"><div style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-lo);margin-bottom:4px;">Application note</div><div style="font-size:12px;color:var(--text-mid);line-height:1.6;">${a.message}</div></div>` : ''}
+        ${setupParts.length ? `<div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:6px;">${setupParts.map(p=>`<span style="font-size:11px;padding:3px 9px;border-radius:6px;background:#ffffff06;border:1px solid #ffffff0a;color:var(--text-lo);">${p}</span>`).join('')}</div>` : ''}
         <div class="app-card-footer">
           <div class="app-card-meta">${a.first_name} ${a.last_name} · ${a.email}${appliedDate ? ' · Applied ' + appliedDate : ''}</div>
           <div class="app-actions">${actions}</div>
@@ -1175,7 +1189,11 @@ async function reviewApp(appId, status, btn) {
     const actEl = card.querySelector('.app-actions');
     const colors = { approved: 'var(--herb)', rejected: 'var(--terra)' };
     const labels = { approved: '✓ Approved', rejected: '✕ Rejected' };
-    actEl.innerHTML = `<span style="font-size:13px;font-weight:600;color:${colors[status]};">${labels[status]}</span>`;
+    const d = await r.json();
+    const spotNumber = d.spot_number || null;
+    actEl.innerHTML = status === 'approved'
+      ? `<span style="font-size:12px;font-weight:700;color:var(--herb);">Spot #${spotNumber || '—'}</span>`
+      : `<span style="font-size:13px;font-weight:600;color:${colors[status]};">${labels[status]}</span>`;
     const badge = card.querySelector('.badge');
     if (badge) { badge.className = `badge badge-${status}`; badge.textContent = labels[status]; }
 
@@ -1185,26 +1203,30 @@ async function reviewApp(appId, status, btn) {
       const vendorName = card.dataset.vendorName;
       const tbody = document.getElementById('lineup-tbody');
       if (tbody) {
-        // Remove empty-state row if present
         const empty = tbody.querySelector('td[colspan]');
         if (empty) empty.parentElement.remove();
         const tags = Array.from(card.querySelectorAll('.app-tag')).map(t => t.textContent).slice(0,1).join('');
+        // Read setup details from the pill spans on the card
+        const pills = Array.from(card.querySelectorAll('[style*="border-radius:6px"]')).map(s => s.textContent);
+        const setupType = pills.find(p => ['Food Truck','Pop-up Stall','Cart'].includes(p)) || '—';
+        const size = pills.find(p => p.includes('×')) || '—';
+        const hasPower = pills.some(p => p.includes('Power'));
+        const hasWater = pills.some(p => p.includes('Water'));
         const row = document.createElement('tr');
         row.innerHTML = `
           <td style="padding-left:20px;"><a href="/vendors/${vendorId}" target="_blank" style="color:var(--text-hi);font-weight:600;text-decoration:none;font-size:13px;">${vendorName}</a></td>
           <td>${tags || '—'}</td>
-          <td>—</td><td>—</td>
-          <td><span class="check-icon">✓</span></td>
-          <td><span class="cross-icon">—</span></td>
-          <td><input class="spot-input" placeholder="—" /></td>`;
+          <td>${setupType}</td>
+          <td>${size}</td>
+          <td>${hasPower ? '<span class="check-icon">✓</span>' : '<span class="cross-icon">—</span>'}</td>
+          <td>${hasWater ? '<span class="check-icon">✓</span>' : '<span class="cross-icon">—</span>'}</td>
+          <td style="font-weight:700;color:var(--herb);">${spotNumber ? '#' + spotNumber : '—'}</td>`;
         tbody.appendChild(row);
-        // Update lineup summary count
         const summaryEl = document.getElementById('lineup-summary');
         if (summaryEl) {
           const count = tbody.querySelectorAll('tr').length;
           summaryEl.textContent = summaryEl.textContent.replace(/^\d+/, count);
         }
-        // Update tab count badge
         const lineupCountEl = document.getElementById('tab-count-lineup');
         if (lineupCountEl) {
           const prev = parseInt(lineupCountEl.textContent) || 0;

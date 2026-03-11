@@ -868,7 +868,17 @@ app.patch('/api/organiser/applications/:id/status', requireAuth, async (req, res
   const allowed = ['approved', 'rejected', 'pending'];
   if (!allowed.includes(status)) return res.status(400).json({ error: 'Invalid status' });
   await stmts.updateApplicationStatus.run(status, req.params.id);
-  res.json({ ok: true });
+  let spotNumber = null;
+  if (status === 'approved') {
+    // Fetch the application to get event_id
+    const app = await stmts.getApplicationById.get(req.params.id);
+    if (app) {
+      const { n } = await stmts.countApprovedByEvent.get(app.event_id);
+      spotNumber = n; // n already includes this approval
+      await stmts.setApplicationSpot.run(spotNumber, req.params.id);
+    }
+  }
+  res.json({ ok: true, spot_number: spotNumber });
 });
 
 // ── Static page routes ─────────────────────────────────────────────────────

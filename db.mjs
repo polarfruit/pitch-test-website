@@ -184,6 +184,8 @@ try { await client.execute(`ALTER TABLE vendors ADD COLUMN food_safety_url TEXT`
 try { await client.execute(`ALTER TABLE vendors ADD COLUMN pli_url TEXT`); } catch {}
 try { await client.execute(`ALTER TABLE vendors ADD COLUMN council_url TEXT`); } catch {}
 try { await client.execute(`ALTER TABLE events ADD COLUMN date_end TEXT`); } catch {}
+try { await client.execute(`ALTER TABLE event_applications ADD COLUMN spot_number INTEGER`); } catch {}
+try { await client.execute(`ALTER TABLE event_applications ADD COLUMN approved_at DATETIME`); } catch {}
 
 if (_needsSeed) {
   const _ins = prepare(`INSERT OR IGNORE INTO events (slug, name, category, suburb, state, date_sort, organiser_name) VALUES (@slug, @name, @category, @suburb, @state, @date_sort, @organiser_name)`);
@@ -344,10 +346,13 @@ export const stmts = {
 
   // event applications
   createApplication:       prepare(`INSERT OR IGNORE INTO event_applications (event_id, vendor_user_id, message) VALUES (?, ?, ?)`),
+  getApplicationById:      prepare(`SELECT * FROM event_applications WHERE id=?`),
   getApplicationByIds:     prepare(`SELECT * FROM event_applications WHERE event_id=? AND vendor_user_id=?`),
   getApplicationsByVendor: prepare(`SELECT ea.*, e.name as event_name, e.suburb, e.state, e.date_sort, e.date_text FROM event_applications ea JOIN events e ON ea.event_id=e.id WHERE ea.vendor_user_id=? ORDER BY ea.created_at DESC`),
-  getApplicationsByEvent:  prepare(`SELECT ea.*, u.first_name, u.last_name, u.email, v.trading_name, v.mobile, v.bio, v.cuisine_tags, v.plan, v.instagram FROM event_applications ea JOIN users u ON ea.vendor_user_id=u.id JOIN vendors v ON v.user_id=u.id WHERE ea.event_id=?`),
+  getApplicationsByEvent:  prepare(`SELECT ea.*, u.first_name, u.last_name, u.email, v.trading_name, v.mobile, v.suburb as v_suburb, v.state as v_state, v.bio, v.cuisine_tags, v.plan, v.instagram, v.setup_type, v.stall_w, v.stall_d, v.power, v.water, v.price_range FROM event_applications ea JOIN users u ON ea.vendor_user_id=u.id JOIN vendors v ON v.user_id=u.id WHERE ea.event_id=?`),
   updateApplicationStatus: prepare(`UPDATE event_applications SET status=? WHERE id=?`),
+  setApplicationSpot:      prepare(`UPDATE event_applications SET spot_number=?, approved_at=datetime('now') WHERE id=?`),
+  countApprovedByEvent:    prepare(`SELECT COUNT(*) as n FROM event_applications WHERE event_id=? AND status='approved'`),
   withdrawApplication:     prepare(`UPDATE event_applications SET status='withdrawn' WHERE event_id=? AND vendor_user_id=?`),
 
   // organiser events
