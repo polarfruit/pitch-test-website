@@ -665,13 +665,13 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
             <div class="ne-date-wrap" id="ne-event-date-wrap">
               <div class="date-field">
                 <div class="date-field-label">From</div>
-                <input class="date-text-input" id="ne-date-display" placeholder="DD/MM/YYYY" oninput="neCalTypeDate('event','start',this)" onfocus="neCalAutoFormat(this)" />
+                <input class="date-text-input" id="ne-date-display" placeholder="DD/MM/YYYY" oninput="neCalTypeDate('event','start',this)" onblur="neCalBlurDate('event','start',this)" />
                 <input type="hidden" id="ne-date" />
               </div>
               <div class="date-sep" style="padding-bottom:9px;">→</div>
               <div class="date-field">
                 <div class="date-field-label">To <span style="font-weight:400;opacity:0.5;text-transform:none;letter-spacing:0;">— leave blank for one day</span></div>
-                <input class="date-text-input" id="ne-enddate-display" placeholder="DD/MM/YYYY" oninput="neCalTypeDate('event','end',this)" onfocus="neCalAutoFormat(this)" />
+                <input class="date-text-input" id="ne-enddate-display" placeholder="DD/MM/YYYY" oninput="neCalTypeDate('event','end',this)" onblur="neCalBlurDate('event','end',this)" />
                 <input type="hidden" id="ne-enddate" />
               </div>
               <button class="ne-cal-toggle" id="ne-cal-toggle-event" onclick="neCalOpen('event','ne-event-date-wrap')" title="Open calendar">
@@ -779,7 +779,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
             <label class="form-label">Application deadline</label>
             <div class="ne-date-wrap" id="ne-deadline-date-wrap">
               <div class="date-field">
-                <input class="date-text-input" id="ne-deadline-display" placeholder="DD/MM/YYYY" oninput="neCalTypeDate('deadline','start',this)" onfocus="neCalAutoFormat(this)" />
+                <input class="date-text-input" id="ne-deadline-display" placeholder="DD/MM/YYYY" oninput="neCalTypeDate('deadline','start',this)" onblur="neCalBlurDate('deadline','start',this)" />
                 <input type="hidden" id="ne-deadline" />
               </div>
               <button class="ne-cal-toggle" id="ne-cal-toggle-deadline" onclick="neCalOpen('deadline','ne-deadline-date-wrap')" title="Open calendar">
@@ -1666,22 +1666,26 @@ function neCalAutoFormat(input) {
 }
 
 function neCalTypeDate(key, which, input) {
-  // Auto-insert slashes
-  var raw = input.value.replace(/[^\d]/g, '');
-  var fmt = raw;
-  if (raw.length > 2) fmt = raw.slice(0,2) + '/' + raw.slice(2);
-  if (raw.length > 4) fmt = raw.slice(0,2) + '/' + raw.slice(2,4) + '/' + raw.slice(4,8);
-  if (fmt !== input.value) {
-    var pos = input.selectionStart + (fmt.length - input.value.length);
-    input.value = fmt;
-    try { input.setSelectionRange(pos, pos); } catch(e) {}
+  var val = input.value;
+  var hasSlash = val.indexOf('/') !== -1;
+  var raw = val.replace(/[^\d]/g, '');
+
+  // Auto-insert slashes only when user isn't typing them manually
+  if (!hasSlash && raw.length > 0) {
+    var fmt = raw;
+    if (raw.length > 2) fmt = raw.slice(0,2) + '/' + raw.slice(2);
+    if (raw.length > 4) fmt = raw.slice(0,2) + '/' + raw.slice(2,4) + '/' + raw.slice(4,8);
+    if (fmt !== val) {
+      var pos = input.selectionStart + (fmt.length - val.length);
+      input.value = fmt;
+      try { input.setSelectionRange(pos, pos); } catch(e) {}
+    }
   }
 
-  input.classList.toggle('has-value', fmt.length > 0);
+  input.classList.toggle('has-value', val.length > 0);
 
-  // Only commit when full DD/MM/YYYY is entered
+  // Only commit when 8 digits present
   if (raw.length < 8) {
-    // Clear the hidden field so partial entry doesn't submit
     if (which === 'start') {
       var hid = document.getElementById(key === 'event' ? 'ne-date' : 'ne-deadline');
       if (hid) hid.value = '';
@@ -1695,13 +1699,27 @@ function neCalTypeDate(key, which, input) {
     return;
   }
 
-  // Parse DD/MM/YYYY → YYYY-MM-DD
-  var parts = fmt.split('/');
-  var dd = parseInt(parts[0]), mm = parseInt(parts[1]), yyyy = parseInt(parts[2]);
-  if (!dd || !mm || !yyyy || mm > 12 || dd > 31 || yyyy < 2000 || yyyy > 2099) return;
-  var iso = yyyy + '-' + String(mm).padStart(2,'0') + '-' + String(dd).padStart(2,'0');
+  var iso = neCalParseTyped(input.value);
+  if (!iso) return;
+  neCalCommitIso(key, which, iso);
+}
 
-  // Update state + hidden input
+// Parse typed date — handles "1/3/26", "01/03/2026", "1/3/2026" etc.
+function neCalParseTyped(val) {
+  val = val.trim();
+  var parts = val.split('/');
+  if (parts.length !== 3) return null;
+  var dd = parseInt(parts[0]), mm = parseInt(parts[1]), yyyy = parseInt(parts[2]);
+  if (!dd || !mm || !yyyy) return null;
+  if (yyyy >= 0 && yyyy <= 99) yyyy += 2000; // expand 2-digit year
+  if (mm > 12 || dd > 31 || yyyy < 2000 || yyyy > 2099) return null;
+  return yyyy + '-' + String(mm).padStart(2,'0') + '-' + String(dd).padStart(2,'0');
+}
+
+// Commit an ISO date to state + hidden input + refresh calendar
+function neCalCommitIso(key, which, iso) {
+  var p = iso.split('-');
+  var yyyy = parseInt(p[0]), mm = parseInt(p[1]);
   var state = neCal[key];
   if (which === 'start') {
     state.start = iso;
@@ -1712,13 +1730,24 @@ function neCalTypeDate(key, which, input) {
     var hidEnd = document.getElementById('ne-enddate');
     if (hidEnd) hidEnd.value = iso;
   }
-  // Refresh calendar if open
   var popup = document.getElementById('ne-cal-' + key);
   if (popup && popup.classList.contains('open')) {
     state.year  = yyyy;
     state.month = mm - 1;
     neCalRender(key);
   }
+}
+
+// On blur: normalize whatever the user typed to DD/MM/YYYY and commit
+function neCalBlurDate(key, which, input) {
+  var val = input.value.trim();
+  if (!val) return;
+  var iso = neCalParseTyped(val);
+  if (!iso) return;
+  var p = iso.split('-');
+  input.value = p[2] + '/' + p[1] + '/' + p[0]; // normalize to DD/MM/YYYY
+  input.classList.add('has-value');
+  neCalCommitIso(key, which, iso);
 }
 
 // Close on outside click
