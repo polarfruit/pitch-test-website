@@ -183,6 +183,7 @@ try { await client.execute(`ALTER TABLE vendors ADD COLUMN photos TEXT DEFAULT '
 try { await client.execute(`ALTER TABLE vendors ADD COLUMN food_safety_url TEXT`); } catch {}
 try { await client.execute(`ALTER TABLE vendors ADD COLUMN pli_url TEXT`); } catch {}
 try { await client.execute(`ALTER TABLE vendors ADD COLUMN council_url TEXT`); } catch {}
+try { await client.execute(`ALTER TABLE events ADD COLUMN date_end TEXT`); } catch {}
 
 if (_needsSeed) {
   const _ins = prepare(`INSERT OR IGNORE INTO events (slug, name, category, suburb, state, date_sort, organiser_name) VALUES (@slug, @name, @category, @suburb, @state, @date_sort, @organiser_name)`);
@@ -349,7 +350,7 @@ export const stmts = {
   withdrawApplication:     prepare(`UPDATE event_applications SET status='withdrawn' WHERE event_id=? AND vendor_user_id=?`),
 
   // organiser events
-  createEvent:        prepare(`INSERT INTO events (slug, name, category, suburb, state, date_sort, date_text, description, stalls_available, organiser_name, organiser_user_id, venue_name) VALUES (@slug, @name, @category, @suburb, @state, @date_sort, @date_text, @description, @stalls_available, @organiser_name, @organiser_user_id, @venue_name)`),
+  createEvent:        prepare(`INSERT INTO events (slug, name, category, suburb, state, date_sort, date_end, date_text, description, stalls_available, organiser_name, organiser_user_id, venue_name) VALUES (@slug, @name, @category, @suburb, @state, @date_sort, @date_end, @date_text, @description, @stalls_available, @organiser_name, @organiser_user_id, @venue_name)`),
   getOrganiserEvents: prepare(`SELECT * FROM events WHERE organiser_user_id=? ORDER BY date_sort ASC`),
 
   // public vendors
