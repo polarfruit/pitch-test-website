@@ -1462,6 +1462,17 @@ function showPanel(name, clickedEl, pushHistory = true) {
   }
 
   if (name === 'browse') loadBrowseEvents();
+
+  // Discard empty pending thread when navigating away from messages
+  if (name !== 'messages' && pendingVendorThread) {
+    const t = THREADS[pendingVendorThread];
+    if (!t || !t.messages.length) {
+      delete THREADS[pendingVendorThread];
+      pendingVendorThread = null;
+      activeThread = null;
+    }
+  }
+  if (name === 'messages') renderVendorThreadList();
 }
 
 // Route on load
@@ -1478,45 +1489,92 @@ window.addEventListener('popstate', e => {
   showPanel(name, null, false);
 });
 
-/* ── Messages data (populated from real API when messaging is live) ─────── */
+/* ── Messages data ───────────────────────────────────────────────────────── */
 const THREADS = {};
+let activeThread = null;
+let pendingVendorThread = null; // thread key of a not-yet-sent-to chat
 
-let activeThread = '1';
+// Start a conversation with an organiser from an event context
+function startChatWithOrganiser(threadKey, orgName, eventName) {
+  // Discard any previous empty pending thread
+  if (pendingVendorThread && pendingVendorThread !== threadKey) {
+    if (!THREADS[pendingVendorThread] || !THREADS[pendingVendorThread].messages.length) {
+      delete THREADS[pendingVendorThread];
+    }
+  }
+
+  if (!THREADS[threadKey]) {
+    THREADS[threadKey] = { org: orgName, event: eventName, eventSlug: '', messages: [] };
+  }
+  pendingVendorThread = threadKey;
+  activeThread = threadKey;
+
+  renderVendorThreadList();
+  openThread(threadKey, null);
+  showPanel('messages', null);
+}
+
+function renderVendorThreadList() {
+  const list = document.getElementById('thread-list');
+  if (!list) return;
+  const keys = Object.keys(THREADS);
+  if (!keys.length) {
+    list.innerHTML = `<div style="padding:40px 20px;text-align:center;color:var(--text-lo);font-size:13px;line-height:1.7;">No messages yet.<br>Use the Message button on any event or application to start a conversation.</div>`;
+    return;
+  }
+  list.innerHTML = keys.map(key => {
+    const t = THREADS[key];
+    const last = t.messages[t.messages.length - 1];
+    const preview = last ? (last.from === 'me' ? 'You: ' : '') + last.text : 'No messages yet — start the conversation';
+    const isActive = activeThread === key;
+    return `<div class="thread-item${isActive ? ' active' : ''}" onclick="openThread('${key}', this)">
+      <div class="thread-avatar" style="background:linear-gradient(135deg,#2A1E14,#5C3A1A);">${t.org.charAt(0).toUpperCase()}</div>
+      <div class="thread-body">
+        <div class="thread-name">${t.org}</div>
+        <div class="thread-preview">${preview}</div>
+        ${t.event ? `<div style="font-size:10px;color:var(--text-lo);margin-top:2px;">Re: ${t.event}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
 
 function openThread(id, el) {
   activeThread = id;
   document.querySelectorAll('.thread-item').forEach(t => t.classList.remove('active'));
   if (el) el.classList.add('active');
+  else {
+    const match = document.querySelector(`.thread-item[onclick*="'${id}'"]`);
+    if (match) match.classList.add('active');
+  }
 
   const t = THREADS[id];
   if (!t) return;
 
   document.getElementById('convo-org-name').textContent = t.org;
-  document.getElementById('convo-event-line').innerHTML =
-    `Re: <a href="/events/${t.eventSlug}">${t.event}</a>`;
+  document.getElementById('convo-event-line').textContent = t.event ? 'Re: ' + t.event : '';
 
-  renderMessages(t.messages);
-
-  // Mark unread dot removed
-  if (el) { const dot = el.querySelector('.thread-unread-dot'); if (dot) dot.remove(); }
+  renderMessages(t.messages, t.org);
   syncMsgBadge();
-
-  // Mobile: open convo
   document.getElementById('messages-layout').classList.add('convo-open');
+  document.getElementById('convo-input').focus();
 }
 
-function renderMessages(msgs) {
+function renderMessages(msgs, orgName) {
   const c = document.getElementById('convo-messages');
+  if (!msgs.length) {
+    const org = orgName || (THREADS[activeThread] && THREADS[activeThread].org) || 'the organiser';
+    c.innerHTML = `<div style="color:var(--text-lo);font-size:13px;text-align:center;padding:40px 20px;">Start your conversation with ${org}.</div>`;
+    return;
+  }
+  const orgInit = (orgName || (THREADS[activeThread] && THREADS[activeThread].org) || 'O').charAt(0).toUpperCase();
   c.innerHTML = msgs.map(m => {
-    if (m.type === 'system') {
-      return `<div class="system-msg ${m.style || ''}">${m.text}</div>`;
-    }
+    if (m.type === 'system') return `<div class="system-msg ${m.style || ''}">${m.text}</div>`;
     const mine = m.from === 'me';
     return `<div>
       <div class="msg-bubble-wrap ${mine ? 'mine' : ''}">
-        ${!mine ? `<div class="msg-avatar" style="background:linear-gradient(135deg,#2A1E14,#5C3A1A);">OG</div>` : ''}
+        ${!mine ? `<div class="msg-avatar" style="background:linear-gradient(135deg,#2A1E14,#5C3A1A);">${orgInit}</div>` : ''}
         <div class="msg-bubble ${mine ? 'mine' : 'theirs'}">${m.text}</div>
-        ${mine ? `<div class="msg-avatar" style="background:linear-gradient(135deg,#3D1A06,#6B2E08);">SJ</div>` : ''}
+        ${mine ? `<div class="msg-avatar" style="background:linear-gradient(135deg,#3D1A06,#6B2E08);">Me</div>` : ''}
       </div>
       <div class="msg-time ${mine ? 'mine' : ''}">${m.time}</div>
     </div>`;
@@ -1527,18 +1585,25 @@ function renderMessages(msgs) {
 function sendMessage() {
   const inp = document.getElementById('convo-input');
   const text = inp.value.trim();
-  if (!text) return;
+  if (!text || !activeThread) return;
 
   const t = THREADS[activeThread];
-  if (t) {
-    t.messages.push({ from: 'me', text, time: 'Just now' });
-    renderMessages(t.messages);
-    // Update thread preview
-    const threadEl = document.querySelector(`.thread-item[onclick*="'${activeThread}'"]`);
-    if (threadEl) threadEl.querySelector('.thread-preview').textContent = 'You: ' + text;
-  }
+  if (!t) return;
+
+  const now = new Date().toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
+  t.messages.push({ from: 'me', text, time: now });
+  pendingVendorThread = null; // committed — persists on navigate-away
+
+  renderMessages(t.messages, t.org);
+  renderVendorThreadList();
+  // Re-highlight active
+  document.querySelectorAll('.thread-item').forEach(ti => ti.classList.remove('active'));
+  const threadEl = document.querySelector(`.thread-item[onclick*="'${activeThread}'"]`);
+  if (threadEl) threadEl.classList.add('active');
+
   inp.value = '';
   inp.style.height = '';
+  syncMsgBadge();
 }
 
 function handleMsgKey(e) {
@@ -1813,7 +1878,12 @@ function renderEventDetail(ev) {
   if (ev.applied) {
     const statusColor = ev.appStatus==='approved'?'var(--herb)':ev.appStatus==='rejected'?'var(--terra)':'var(--gold)';
     const statusText  = ev.appStatus==='approved'?'✓ Application approved':ev.appStatus==='rejected'?'✕ Not accepted this time':'● Application submitted';
-    applyBar = `<div style="font-size:15px;font-weight:700;color:${statusColor};">${statusText}</div>`;
+    const orgName = (ev.organiser_name||'Organiser').replace(/'/g,"\\'");
+    const evName  = (ev.name||'').replace(/'/g,"\\'");
+    applyBar = `<div style="display:flex;flex-direction:column;gap:10px;align-items:flex-end;">
+      <div style="font-size:15px;font-weight:700;color:${statusColor};">${statusText}</div>
+      <button onclick="startChatWithOrganiser('event_${ev.id}','${orgName}','${evName}')" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--ember);background:var(--ember-bg);border:1px solid #E8500A33;padding:8px 18px;border-radius:8px;cursor:pointer;white-space:nowrap;">💬 Message organiser</button>
+    </div>`;
   } else {
     applyBar = `<button class="btn-apply-full" id="detail-apply-btn" onclick="applyFromDetail(${ev.id})">Apply to this event →</button>`;
   }
@@ -1964,10 +2034,15 @@ async function loadApplications() {
       <td>${a.category || '—'}</td>
       <td>${statusBadge[a.status] || a.status}</td>
       <td>${new Date(a.created_at).toLocaleDateString('en-AU', {day:'numeric',month:'short',year:'numeric'})}</td>
-      <td style="padding-right:24px;">${a.status === 'pending'
-        ? `<button onclick="withdrawApp(${a.event_id}, this)" style="background:none;border:none;color:var(--text-lo);cursor:pointer;font-size:12px;font-family:inherit;text-decoration:underline;">Withdraw</button>`
-        : `<a class="action-link" href="/events/${a.event_id}">View event →</a>`
-      }</td>
+      <td style="padding-right:24px;">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          ${a.status === 'pending'
+            ? `<button onclick="withdrawApp(${a.event_id}, this)" style="background:none;border:none;color:var(--text-lo);cursor:pointer;font-size:12px;font-family:inherit;text-decoration:underline;">Withdraw</button>`
+            : `<a class="action-link" href="/events/${a.event_id}">View →</a>`
+          }
+          <button onclick="startChatWithOrganiser('event_${a.event_id}','${(a.organiser_name||'Organiser').replace(/'/g,"\\'")}','${(a.event_name||'').replace(/'/g,"\\'")}')" style="font-family:var(--fb);font-size:11px;font-weight:700;color:var(--ember);background:var(--ember-bg);border:1px solid #E8500A22;padding:4px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;">💬 Message</button>
+        </div>
+      </td>
     </tr>
   `).join('');
 }
