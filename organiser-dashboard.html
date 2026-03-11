@@ -1140,16 +1140,17 @@ async function openEventMgmt(id, name) {
     ` : `<span style="font-size:12px;color:var(--text-lo);">Decision recorded</span>`;
     const appliedDate = a.created_at ? new Date(a.created_at).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'}) : '';
     return `
-      <div class="app-card" data-app-status="${a.status}" data-app-id="${a.id}">
+      <div class="app-card" data-app-status="${a.status}" data-app-id="${a.id}" data-vendor-id="${a.vendor_user_id}" data-vendor-name="${a.trading_name||''}">
         <div class="app-card-top">
           <div class="app-card-avatar">🍽</div>
           <div class="app-card-info">
             <div class="app-card-name">
-              <a class="app-card-vendor" href="/vendors/${a.vendor_user_id}">${a.trading_name}</a>
+              <span class="app-card-vendor">${a.trading_name}</span>
               ${statusBadge}
             </div>
             <div class="app-card-tags">${tags}</div>
           </div>
+          <a href="/vendors/${a.vendor_user_id}" target="_blank" rel="noopener" style="flex-shrink:0;font-family:var(--fb);font-size:11px;font-weight:700;color:var(--text-lo);background:#ffffff08;border:1px solid #ffffff10;padding:5px 11px;border-radius:7px;text-decoration:none;white-space:nowrap;transition:color 0.1s;" onmouseover="this.style.color='var(--text-hi)'" onmouseout="this.style.color='var(--text-lo)'">View profile ↗</a>
         </div>
         ${a.bio ? `<div class="app-card-note">"${a.bio}"</div>` : ''}
         <div class="app-card-footer">
@@ -1177,6 +1178,40 @@ async function reviewApp(appId, status, btn) {
     actEl.innerHTML = `<span style="font-size:13px;font-weight:600;color:${colors[status]};">${labels[status]}</span>`;
     const badge = card.querySelector('.badge');
     if (badge) { badge.className = `badge badge-${status}`; badge.textContent = labels[status]; }
+
+    // If approved, add vendor to lineup tab in real time
+    if (status === 'approved') {
+      const vendorId   = card.dataset.vendorId;
+      const vendorName = card.dataset.vendorName;
+      const tbody = document.getElementById('lineup-tbody');
+      if (tbody) {
+        // Remove empty-state row if present
+        const empty = tbody.querySelector('td[colspan]');
+        if (empty) empty.parentElement.remove();
+        const tags = Array.from(card.querySelectorAll('.app-tag')).map(t => t.textContent).slice(0,1).join('');
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td style="padding-left:20px;"><a href="/vendors/${vendorId}" target="_blank" style="color:var(--text-hi);font-weight:600;text-decoration:none;font-size:13px;">${vendorName}</a></td>
+          <td>${tags || '—'}</td>
+          <td>—</td><td>—</td>
+          <td><span class="check-icon">✓</span></td>
+          <td><span class="cross-icon">—</span></td>
+          <td><input class="spot-input" placeholder="—" /></td>`;
+        tbody.appendChild(row);
+        // Update lineup summary count
+        const summaryEl = document.getElementById('lineup-summary');
+        if (summaryEl) {
+          const count = tbody.querySelectorAll('tr').length;
+          summaryEl.textContent = summaryEl.textContent.replace(/^\d+/, count);
+        }
+        // Update tab count badge
+        const lineupCountEl = document.getElementById('tab-count-lineup');
+        if (lineupCountEl) {
+          const prev = parseInt(lineupCountEl.textContent) || 0;
+          lineupCountEl.textContent = prev + 1;
+        }
+      }
+    }
   }
 }
 
