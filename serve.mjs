@@ -834,6 +834,34 @@ app.get('/api/organiser/events/:id/applications', requireAuth, async (req, res) 
   res.json({ applications: apps });
 });
 
+app.patch('/api/organiser/events/:id', requireAuth, async (req, res) => {
+  if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
+  const ev = await stmts.getEventById.get(req.params.id);
+  if (!ev || Number(ev.organiser_user_id) !== Number(req.session.userId)) return res.status(403).json({ error: 'Not your event' });
+  const { name, category, suburb, state, venue_name, date_sort, date_end, description, stalls_available } = req.body;
+  const dateText = date_sort ? new Date(date_sort).toLocaleDateString('en-AU', { day:'numeric', month:'short', year:'numeric' }) : null;
+  await stmts.updateEvent.run({ id: Number(req.params.id), name: name || ev.name, category: category || ev.category, suburb: suburb || ev.suburb, state: state || ev.state, venue_name: venue_name ?? ev.venue_name, date_sort: date_sort || ev.date_sort, date_end: date_end ?? ev.date_end, date_text: dateText || ev.date_text, description: description ?? ev.description, stalls_available: stalls_available != null ? Number(stalls_available) : ev.stalls_available });
+  res.json({ ok: true });
+});
+
+app.patch('/api/organiser/events/:id/status', requireAuth, async (req, res) => {
+  if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
+  const ev = await stmts.getEventById.get(req.params.id);
+  if (!ev || Number(ev.organiser_user_id) !== Number(req.session.userId)) return res.status(403).json({ error: 'Not your event' });
+  const { status } = req.body;
+  if (!['published','archived'].includes(status)) return res.status(400).json({ error: 'Invalid status' });
+  await stmts.updateEventStatus.run(status, Number(req.params.id));
+  res.json({ ok: true });
+});
+
+app.delete('/api/organiser/events/:id', requireAuth, async (req, res) => {
+  if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
+  const ev = await stmts.getEventById.get(req.params.id);
+  if (!ev || Number(ev.organiser_user_id) !== Number(req.session.userId)) return res.status(403).json({ error: 'Not your event' });
+  await stmts.deleteEvent.run(Number(req.params.id));
+  res.json({ ok: true });
+});
+
 app.patch('/api/organiser/applications/:id/status', requireAuth, async (req, res) => {
   if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
   const { status } = req.body;

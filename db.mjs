@@ -310,6 +310,7 @@ export const stmts = {
   getEventBySlug:    prepare(`SELECT * FROM events WHERE slug = ? AND status = 'published'`),
   getEventById:      prepare(`SELECT * FROM events WHERE id = ?`),
   updateEventStatus: prepare(`UPDATE events SET status = ? WHERE id = ?`),
+  updateEvent:       prepare(`UPDATE events SET name=@name, category=@category, suburb=@suburb, state=@state, venue_name=@venue_name, date_sort=@date_sort, date_end=@date_end, date_text=@date_text, description=@description, stalls_available=@stalls_available WHERE id=@id`),
   deleteEvent:       prepare(`DELETE FROM events WHERE id = ?`),
   countEvents:       prepare(`SELECT COUNT(*) as n FROM events WHERE status = 'published'`),
 
