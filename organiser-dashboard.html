@@ -618,6 +618,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
                 <th>Power</th>
                 <th>Water</th>
                 <th>Spot #</th>
+                <th style="padding-right:20px;"></th>
               </tr>
             </thead>
             <tbody id="lineup-tbody">
@@ -975,6 +976,15 @@ function showPanel(name, clickedEl, pushHistory = true) {
   if (pushHistory && PANEL_PATHS_ORG[name]) {
     history.pushState({ panel: name }, '', PANEL_PATHS_ORG[name]);
   }
+  // Discard empty pending thread when navigating away from messages
+  if (name !== 'messages' && pendingChatId) {
+    if (!MSG_THREADS[pendingChatId] || !MSG_THREADS[pendingChatId].messages.length) {
+      delete MSG_THREADS[pendingChatId];
+      pendingChatId = null;
+      currentChatId = null;
+    }
+  }
+  if (name === 'messages') renderThreadSidebar();
 }
 
 (function routeOnLoadOrg() {
@@ -1037,6 +1047,7 @@ async function openEventMgmt(id, name) {
           approvedApps.sort((a, b) => (a.spot_number || 999) - (b.spot_number || 999));
           lineupTbody.innerHTML = approvedApps.map(a => {
             const tags = (a.cuisine_tags ? JSON.parse(a.cuisine_tags) : []).slice(0,1).join('');
+            const vName = (a.trading_name||'').replace(/'/g,"\\'");
             return `<tr>
               <td style="padding-left:20px;"><a href="/vendors/${a.vendor_user_id}" target="_blank" style="color:var(--text-hi);font-weight:600;text-decoration:none;font-size:13px;">${a.trading_name}</a></td>
               <td>${tags || '—'}</td>
@@ -1045,6 +1056,7 @@ async function openEventMgmt(id, name) {
               <td>${a.power ? '<span class="check-icon">✓</span>' : '<span class="cross-icon">—</span>'}</td>
               <td>${a.water ? '<span class="check-icon">✓</span>' : '<span class="cross-icon">—</span>'}</td>
               <td style="font-weight:700;color:var(--herb);">${a.spot_number ? '#' + a.spot_number : '—'}</td>
+              <td style="padding-right:20px;"><button onclick="startChat(${a.vendor_user_id},'${vName}')" style="font-family:var(--fb);font-size:11px;font-weight:700;color:var(--text-lo);background:#ffffff08;border:1px solid #ffffff10;padding:4px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;" onmouseover="this.style.color='var(--text-hi)'" onmouseout="this.style.color='var(--text-lo)'">💬 Message</button></td>
             </tr>`;
           }).join('');
         }
@@ -1162,7 +1174,10 @@ async function openEventMgmt(id, name) {
             <div class="app-card-tags">${tags}</div>
             ${location ? `<div style="font-size:11px;color:var(--text-lo);margin-top:3px;">📍 ${location}</div>` : ''}
           </div>
-          <a href="/vendors/${a.vendor_user_id}" target="_blank" rel="noopener" style="flex-shrink:0;font-family:var(--fb);font-size:11px;font-weight:700;color:var(--text-lo);background:#ffffff08;border:1px solid #ffffff10;padding:5px 11px;border-radius:7px;text-decoration:none;white-space:nowrap;transition:color 0.1s;" onmouseover="this.style.color='var(--text-hi)'" onmouseout="this.style.color='var(--text-lo)'">View profile ↗</a>
+          <div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0;">
+            <a href="/vendors/${a.vendor_user_id}" target="_blank" rel="noopener" style="font-family:var(--fb);font-size:11px;font-weight:700;color:var(--text-lo);background:#ffffff08;border:1px solid #ffffff10;padding:5px 11px;border-radius:7px;text-decoration:none;white-space:nowrap;text-align:center;" onmouseover="this.style.color='var(--text-hi)'" onmouseout="this.style.color='var(--text-lo)'">View profile ↗</a>
+            <button onclick="startChat(${a.vendor_user_id},'${(a.trading_name||'').replace(/'/g,"\\'")}')" style="font-family:var(--fb);font-size:11px;font-weight:700;color:var(--ember);background:var(--ember-bg);border:1px solid #E8500A22;padding:5px 11px;border-radius:7px;cursor:pointer;white-space:nowrap;">💬 Message</button>
+          </div>
         </div>
         ${a.bio ? `<div class="app-card-note">"${a.bio}"</div>` : ''}
         ${a.message ? `<div style="margin:10px 0 0;padding:10px 12px;background:#ffffff05;border:1px solid #ffffff08;border-radius:8px;"><div style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-lo);margin-bottom:4px;">Application note</div><div style="font-size:12px;color:var(--text-mid);line-height:1.6;">${a.message}</div></div>` : ''}
@@ -1212,6 +1227,7 @@ async function reviewApp(appId, status, btn) {
         const size = pills.find(p => p.includes('×')) || '—';
         const hasPower = pills.some(p => p.includes('Power'));
         const hasWater = pills.some(p => p.includes('Water'));
+        const vNameEsc = (vendorName||'').replace(/'/g,"\\'");
         const row = document.createElement('tr');
         row.innerHTML = `
           <td style="padding-left:20px;"><a href="/vendors/${vendorId}" target="_blank" style="color:var(--text-hi);font-weight:600;text-decoration:none;font-size:13px;">${vendorName}</a></td>
@@ -1220,7 +1236,8 @@ async function reviewApp(appId, status, btn) {
           <td>${size}</td>
           <td>${hasPower ? '<span class="check-icon">✓</span>' : '<span class="cross-icon">—</span>'}</td>
           <td>${hasWater ? '<span class="check-icon">✓</span>' : '<span class="cross-icon">—</span>'}</td>
-          <td style="font-weight:700;color:var(--herb);">${spotNumber ? '#' + spotNumber : '—'}</td>`;
+          <td style="font-weight:700;color:var(--herb);">${spotNumber ? '#' + spotNumber : '—'}</td>
+          <td style="padding-right:20px;"><button onclick="startChat(${vendorId},'${vNameEsc}')" style="font-family:var(--fb);font-size:11px;font-weight:700;color:var(--text-lo);background:#ffffff08;border:1px solid #ffffff10;padding:4px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;" onmouseover="this.style.color='var(--text-hi)'" onmouseout="this.style.color='var(--text-lo)'">💬 Message</button></td>`;
         tbody.appendChild(row);
         const summaryEl = document.getElementById('lineup-summary');
         if (summaryEl) {
@@ -1630,24 +1647,121 @@ async function loadOrgEvents() {
 initDashboard();
 
 // Messages
-function openThread(el, vendor, eventName) {
-  document.querySelectorAll('.msg-thread').forEach(t => { t.classList.remove('active'); t.classList.remove('unread'); });
-  el.classList.add('active');
-  document.getElementById('msg-vendor-name').textContent = vendor;
-  document.getElementById('msg-event-name-thread').textContent = eventName;
+// ── Messaging system ──────────────────────────────────────────────────────
+// In-memory thread store: { [vendorId]: { name, messages: [{from,text,time}] } }
+const MSG_THREADS = {};
+let currentChatId = null;  // vendorId of open chat
+let pendingChatId = null;  // vendorId of chat opened but not yet sent to
+
+function startChat(vendorId, vendorName) {
+  // If we had a pending (empty) thread, discard it from the sidebar
+  if (pendingChatId && pendingChatId !== vendorId) {
+    if (!MSG_THREADS[pendingChatId] || !MSG_THREADS[pendingChatId].messages.length) {
+      delete MSG_THREADS[pendingChatId];
+    }
+  }
+
+  if (!MSG_THREADS[vendorId]) {
+    MSG_THREADS[vendorId] = { name: vendorName, messages: [] };
+  }
+  currentChatId = vendorId;
+  pendingChatId = vendorId;
+
+  renderThreadSidebar();
+  openChatWindow(vendorId);
+
+  // Navigate to messages panel
+  showPanel('messages', null);
+}
+
+function openChatWindow(vendorId) {
+  const thread = MSG_THREADS[vendorId];
+  if (!thread) return;
+  currentChatId = vendorId;
+
+  // Highlight in sidebar
+  document.querySelectorAll('.msg-thread').forEach(t => t.classList.remove('active'));
+  const threadEl = document.getElementById('msg-thread-' + vendorId);
+  if (threadEl) threadEl.classList.add('active');
+
+  document.getElementById('msg-vendor-name').textContent = thread.name;
+  document.getElementById('msg-event-name-thread').textContent = '';
+
+  const body = document.getElementById('msg-body');
+  if (!thread.messages.length) {
+    body.innerHTML = `<div style="color:var(--text-lo);font-size:13px;text-align:center;margin-top:40px;">Start the conversation with ${thread.name}.</div>`;
+  } else {
+    body.innerHTML = thread.messages.map(m => `
+      <div class="msg-bubble-wrap ${m.from === 'us' ? 'us' : ''}">
+        <div class="msg-bubble ${m.from === 'us' ? 'us' : ''}">${m.text}</div>
+        <div class="msg-timestamp">${m.from === 'us' ? 'You' : thread.name} · ${m.time}</div>
+      </div>`).join('');
+    body.scrollTop = body.scrollHeight;
+  }
+
+  document.getElementById('msg-input').focus();
+}
+
+function renderThreadSidebar() {
+  const list = document.getElementById('org-msg-thread-list');
+  const threadIds = Object.keys(MSG_THREADS);
+  if (!threadIds.length) {
+    list.innerHTML = `<div style="color:var(--text-lo);font-size:13px;padding:20px 16px;line-height:1.6;">No messages yet.<br>Once vendors apply to your events, you can message them here.</div>`;
+    return;
+  }
+  list.innerHTML = threadIds.map(vid => {
+    const t = MSG_THREADS[vid];
+    const last = t.messages[t.messages.length - 1];
+    const preview = last ? last.text : 'No messages yet — click to start';
+    const isActive = currentChatId == vid;
+    return `<div class="msg-thread${isActive ? ' active' : ''}" id="msg-thread-${vid}" onclick="openChatWindow(${vid})" style="cursor:pointer;">
+      <div class="msg-thread-avatar">${t.name.charAt(0).toUpperCase()}</div>
+      <div class="msg-thread-info">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;">
+          <span class="msg-thread-name">${t.name}</span>
+          ${last ? `<span class="msg-thread-time">${last.time}</span>` : ''}
+        </div>
+        <div class="msg-thread-preview">${preview}</div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function sendMsg() {
   const input = document.getElementById('msg-input');
   const text = input.value.trim();
-  if (!text) return;
+  if (!text || !currentChatId) return;
+
+  const thread = MSG_THREADS[currentChatId];
+  if (!thread) return;
+
+  const now = new Date().toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
+  thread.messages.push({ from: 'us', text, time: now });
+  pendingChatId = null; // committed — thread persists even if we navigate away
+
   const body = document.getElementById('msg-body');
+  // Remove the placeholder if present
+  const placeholder = body.querySelector('div[style*="Start the conversation"]');
+  if (placeholder) placeholder.remove();
+
   const div = document.createElement('div');
   div.className = 'msg-bubble-wrap us';
-  div.innerHTML = `<div class="msg-bubble us">${text}</div><div class="msg-timestamp">You · Just now</div>`;
+  div.innerHTML = `<div class="msg-bubble us">${text}</div><div class="msg-timestamp">You · ${now}</div>`;
   body.appendChild(div);
   input.value = '';
   body.scrollTop = body.scrollHeight;
+
+  renderThreadSidebar();
+  // Re-highlight active thread
+  document.querySelectorAll('.msg-thread').forEach(t => t.classList.remove('active'));
+  const threadEl = document.getElementById('msg-thread-' + currentChatId);
+  if (threadEl) threadEl.classList.add('active');
+}
+
+function openThread(el, vendor, eventName) {
+  // Legacy — kept for compatibility
+  document.getElementById('msg-vendor-name').textContent = vendor;
+  document.getElementById('msg-event-name-thread').textContent = eventName;
 }
 
 // Broadcast modal
