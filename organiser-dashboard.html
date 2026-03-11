@@ -665,13 +665,13 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
             <div class="ne-date-wrap" id="ne-event-date-wrap">
               <div class="date-field">
                 <div class="date-field-label">From</div>
-                <input class="date-text-input" id="ne-date-display" placeholder="DD/MM/YYYY" readonly onclick="neCalOpen('event','ne-event-date-wrap')" />
+                <input class="date-text-input" id="ne-date-display" placeholder="DD/MM/YYYY" oninput="neCalTypeDate('event','start',this)" onfocus="neCalAutoFormat(this)" />
                 <input type="hidden" id="ne-date" />
               </div>
               <div class="date-sep" style="padding-bottom:9px;">→</div>
               <div class="date-field">
                 <div class="date-field-label">To <span style="font-weight:400;opacity:0.5;text-transform:none;letter-spacing:0;">— leave blank for one day</span></div>
-                <input class="date-text-input" id="ne-enddate-display" placeholder="DD/MM/YYYY" readonly onclick="neCalOpen('event','ne-event-date-wrap')" />
+                <input class="date-text-input" id="ne-enddate-display" placeholder="DD/MM/YYYY" oninput="neCalTypeDate('event','end',this)" onfocus="neCalAutoFormat(this)" />
                 <input type="hidden" id="ne-enddate" />
               </div>
               <button class="ne-cal-toggle" id="ne-cal-toggle-event" onclick="neCalOpen('event','ne-event-date-wrap')" title="Open calendar">
@@ -779,7 +779,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
             <label class="form-label">Application deadline</label>
             <div class="ne-date-wrap" id="ne-deadline-date-wrap">
               <div class="date-field">
-                <input class="date-text-input" id="ne-deadline-display" placeholder="DD/MM/YYYY" readonly onclick="neCalOpen('deadline','ne-deadline-date-wrap')" />
+                <input class="date-text-input" id="ne-deadline-display" placeholder="DD/MM/YYYY" oninput="neCalTypeDate('deadline','start',this)" onfocus="neCalAutoFormat(this)" />
                 <input type="hidden" id="ne-deadline" />
               </div>
               <button class="ne-cal-toggle" id="ne-cal-toggle-deadline" onclick="neCalOpen('deadline','ne-deadline-date-wrap')" title="Open calendar">
@@ -1657,6 +1657,68 @@ function neCalClear(key) {
 function neCalApply(key) {
   neCalUpdateInputs(key);
   neCalClose(key);
+}
+
+// ── Typed date input ───────────────────────────────────────────────────────
+// Auto-insert slashes as user types (DD/MM/YYYY)
+function neCalAutoFormat(input) {
+  // On focus, don't open calendar — let them type
+}
+
+function neCalTypeDate(key, which, input) {
+  // Auto-insert slashes
+  var raw = input.value.replace(/[^\d]/g, '');
+  var fmt = raw;
+  if (raw.length > 2) fmt = raw.slice(0,2) + '/' + raw.slice(2);
+  if (raw.length > 4) fmt = raw.slice(0,2) + '/' + raw.slice(2,4) + '/' + raw.slice(4,8);
+  if (fmt !== input.value) {
+    var pos = input.selectionStart + (fmt.length - input.value.length);
+    input.value = fmt;
+    try { input.setSelectionRange(pos, pos); } catch(e) {}
+  }
+
+  input.classList.toggle('has-value', fmt.length > 0);
+
+  // Only commit when full DD/MM/YYYY is entered
+  if (raw.length < 8) {
+    // Clear the hidden field so partial entry doesn't submit
+    if (which === 'start') {
+      var hid = document.getElementById(key === 'event' ? 'ne-date' : 'ne-deadline');
+      if (hid) hid.value = '';
+      if (key === 'event') neCal.event.start = null;
+      else neCal.deadline.start = null;
+    } else {
+      var hidE = document.getElementById('ne-enddate');
+      if (hidE) hidE.value = '';
+      neCal.event.end = null;
+    }
+    return;
+  }
+
+  // Parse DD/MM/YYYY → YYYY-MM-DD
+  var parts = fmt.split('/');
+  var dd = parseInt(parts[0]), mm = parseInt(parts[1]), yyyy = parseInt(parts[2]);
+  if (!dd || !mm || !yyyy || mm > 12 || dd > 31 || yyyy < 2000 || yyyy > 2099) return;
+  var iso = yyyy + '-' + String(mm).padStart(2,'0') + '-' + String(dd).padStart(2,'0');
+
+  // Update state + hidden input
+  var state = neCal[key];
+  if (which === 'start') {
+    state.start = iso;
+    var hidS = document.getElementById(key === 'event' ? 'ne-date' : 'ne-deadline');
+    if (hidS) hidS.value = iso;
+  } else {
+    state.end = iso;
+    var hidEnd = document.getElementById('ne-enddate');
+    if (hidEnd) hidEnd.value = iso;
+  }
+  // Refresh calendar if open
+  var popup = document.getElementById('ne-cal-' + key);
+  if (popup && popup.classList.contains('open')) {
+    state.year  = yyyy;
+    state.month = mm - 1;
+    neCalRender(key);
+  }
 }
 
 // Close on outside click
