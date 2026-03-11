@@ -789,7 +789,7 @@ app.get('/api/organiser/overview', requireAuth, async (req, res) => {
 app.post('/api/organiser/events', requireAuth, async (req, res) => {
   if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
 
-  const { name, category, date_sort, date_text, suburb, state, venue_name, description, stalls_available } = req.body;
+  const { name, category, date_sort, date_end, date_text, suburb, state, venue_name, description, stalls_available } = req.body;
   if (!name || !date_sort || !suburb) {
     return res.status(400).json({ error: 'Name, date, and suburb are required' });
   }
@@ -805,6 +805,7 @@ app.post('/api/organiser/events', requireAuth, async (req, res) => {
       suburb,
       state: state || 'SA',
       date_sort,
+      date_end: date_end || null,
       date_text: date_text || null,
       description: description || null,
       stalls_available: stalls_available ? parseInt(stalls_available) : null,

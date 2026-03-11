@@ -670,7 +670,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
               </div>
               <div class="date-sep" style="padding-bottom:9px;">→</div>
               <div class="date-field">
-                <div class="date-field-label">To</div>
+                <div class="date-field-label">To <span style="font-weight:400;opacity:0.5;text-transform:none;letter-spacing:0;">— leave blank for one day</span></div>
                 <input class="date-text-input" id="ne-enddate-display" placeholder="DD/MM/YYYY" readonly onclick="neCalOpen('event','ne-event-date-wrap')" />
                 <input type="hidden" id="ne-enddate" />
               </div>
@@ -1219,10 +1219,13 @@ async function publishEvent() {
   btn.textContent = 'Publishing…';
   btn.disabled = true;
 
+  const dateStart = document.getElementById('ne-date').value;
+  const dateEnd   = document.getElementById('ne-enddate').value;
   const payload = {
     name:             document.getElementById('ne-name').value.trim(),
     category:         document.getElementById('ne-category').value,
-    date_sort:        document.getElementById('ne-date').value,
+    date_sort:        dateStart,
+    date_end:         dateEnd || null,
     suburb:           document.getElementById('ne-suburb').value.trim(),
     state:            document.getElementById('ne-state').value,
     venue_name:       document.getElementById('ne-venue').value.trim(),
@@ -1626,7 +1629,7 @@ function neCalUpdateLabel(key) {
   if (!state.start) {
     lbl.innerHTML = 'Click a date to select';
   } else if (state.mode === 'single' || !state.end) {
-    lbl.innerHTML = '<strong>' + neDisplayDate(state.start) + '</strong>' + (state.mode === 'range' ? ' → pick end date (optional)' : '');
+    lbl.innerHTML = '<strong>' + neDisplayDate(state.start) + '</strong>' + (state.mode === 'range' ? ' — one day event. Pick a second date for multi-day.' : '');
   } else {
     lbl.innerHTML = '<strong>' + neDisplayDate(state.start) + '</strong> → <strong>' + neDisplayDate(state.end) + '</strong>';
   }
