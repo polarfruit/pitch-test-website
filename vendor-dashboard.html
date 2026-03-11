@@ -233,6 +233,100 @@ body::before {
 }
 .btn-apply-mini:hover { background: #E8500A22; }
 
+/* ── BROWSE EVENTS ──────────────────────────────────────────────────────── */
+.browse-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px;
+}
+.browse-card {
+  background: var(--char); border: 1px solid #ffffff08; border-radius: 16px;
+  overflow: hidden; display: flex; flex-direction: column;
+  transition: border-color 0.15s, transform 0.15s;
+  cursor: pointer;
+}
+.browse-card:hover { border-color: #E8500A40; transform: translateY(-2px); }
+.browse-card-header {
+  height: 90px; display: flex; align-items: center; justify-content: center;
+  font-size: 44px; position: relative;
+  background: linear-gradient(135deg, #1A1208, #3D2C10);
+}
+.browse-card-cat {
+  position: absolute; top: 10px; right: 10px;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  background: #E8500A22; border: 1px solid #E8500A33; color: var(--ember);
+  padding: 3px 8px; border-radius: 6px;
+}
+.browse-card-body { padding: 16px; flex: 1; display: flex; flex-direction: column; gap: 6px; }
+.browse-card-name { font-family: var(--fd); font-size: 17px; font-weight: 900; letter-spacing: -0.02em; color: var(--text-hi); line-height: 1.2; }
+.browse-card-meta { font-size: 12px; color: var(--text-lo); display: flex; flex-wrap: wrap; gap: 8px; margin-top: 2px; }
+.browse-card-meta span { display: flex; align-items: center; gap: 4px; }
+.browse-card-desc { font-size: 12px; color: var(--text-mid); line-height: 1.6; margin-top: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.browse-card-footer { padding: 12px 16px; border-top: 1px solid #ffffff07; display: flex; align-items: center; justify-content: space-between; }
+.browse-card-spots { font-size: 12px; font-weight: 700; color: var(--text-mid); }
+.btn-view-event {
+  font-family: var(--fb); font-size: 12px; font-weight: 700;
+  color: var(--ember); background: var(--ember-bg); border: 1px solid #E8500A33;
+  padding: 7px 16px; border-radius: 8px; cursor: pointer; transition: all 0.14s;
+}
+.btn-view-event:hover { background: #E8500A22; }
+
+/* ── EVENT DETAIL PANEL ─────────────────────────────────────────────────── */
+.event-detail-back {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 20px;
+}
+.event-detail-back button {
+  background: transparent; border: none; color: var(--text-lo); cursor: pointer;
+  font-size: 12px; font-family: var(--fb); padding: 0;
+}
+.event-detail-back button:hover { color: var(--text-hi); }
+.event-detail-hero {
+  background: linear-gradient(135deg, #1A1208, #3D2C10);
+  border-radius: 16px 16px 0 0; height: 120px;
+  display: flex; align-items: center; justify-content: center; font-size: 56px;
+}
+.event-detail-body {
+  background: var(--char); border: 1px solid #ffffff08; border-top: none;
+  border-radius: 0 0 16px 16px; padding: 24px; margin-bottom: 20px;
+}
+.event-detail-title {
+  font-family: var(--fd); font-size: 28px; font-weight: 900; letter-spacing: -0.03em;
+  color: var(--text-hi); margin-bottom: 8px; line-height: 1.15;
+}
+.event-detail-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.event-detail-tag {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 4px 10px; border-radius: 6px; border: 1px solid;
+}
+.event-detail-tag.cat { color: var(--ember); background: #E8500A12; border-color: #E8500A30; }
+.event-detail-tag.spots { color: var(--herb); background: #2D8B5512; border-color: #2D8B5530; }
+.event-detail-tag.archived { color: var(--gold); background: #C9840A12; border-color: #C9840A30; }
+.event-detail-info {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px;
+  padding: 16px 0; border-top: 1px solid #ffffff08; border-bottom: 1px solid #ffffff08;
+  margin: 16px 0;
+}
+.event-detail-info-item { }
+.event-detail-info-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-lo); margin-bottom: 4px; }
+.event-detail-info-value { font-size: 14px; color: var(--text-hi); font-weight: 600; line-height: 1.4; }
+.event-detail-desc { font-size: 14px; color: var(--text-mid); line-height: 1.75; white-space: pre-wrap; }
+.event-detail-apply-bar {
+  background: var(--char); border: 1px solid #ffffff08; border-radius: 16px;
+  padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  flex-wrap: wrap;
+}
+.event-detail-apply-label { font-size: 15px; font-weight: 700; color: var(--text-hi); }
+.event-detail-apply-sub { font-size: 12px; color: var(--text-lo); margin-top: 2px; }
+.btn-apply-full {
+  font-family: var(--fd); font-size: 15px; font-weight: 900; letter-spacing: -0.01em;
+  background: var(--ember); color: white; border: none;
+  padding: 12px 28px; border-radius: 10px; cursor: pointer;
+  transition: background 0.14s, transform 0.1s;
+  white-space: nowrap;
+}
+.btn-apply-full:hover { background: var(--ember-glow); transform: scale(1.02); }
+.btn-apply-full:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+.btn-apply-full.applied { background: var(--gold); }
+.btn-apply-full.approved { background: var(--herb); }
+
 /* Activity feed */
 .feed-list { display: flex; flex-direction: column; }
 .feed-item {
@@ -810,6 +904,9 @@ body::before {
     <button class="nav-link active" onclick="showPanel('overview', this)">
       <span class="nav-icon">⬡</span> Overview
     </button>
+    <button class="nav-link" onclick="showPanel('browse', this)">
+      <span class="nav-icon">🔍</span> Browse Events
+    </button>
     <button class="nav-link" onclick="showPanel('applications', this)">
       <span class="nav-icon">📋</span> My Applications
       <span class="nav-badge" id="apps-nav-badge" style="display:none">0</span>
@@ -926,6 +1023,23 @@ body::before {
             <tr id="app-empty-row"><td colspan="5" style="padding:32px 24px;text-align:center;color:var(--text-lo);font-size:13px;">No applications yet — browse events and apply below.</td></tr>
           </tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- ── PANEL: BROWSE EVENTS ─────────────────────────────────────────── -->
+    <div class="panel" id="panel-browse">
+      <div class="browse-grid" id="browse-grid">
+        <div style="color:var(--text-lo);font-size:13px;padding:24px 0;grid-column:1/-1;">Loading events…</div>
+      </div>
+    </div>
+
+    <!-- ── PANEL: EVENT DETAIL ────────────────────────────────────────────── -->
+    <div class="panel" id="panel-event-detail">
+      <div class="event-detail-back">
+        <button onclick="showPanel('browse', null)">← Back to events</button>
+      </div>
+      <div id="event-detail-content">
+        <div style="color:var(--text-lo);font-size:13px;">Loading…</div>
       </div>
     </div>
 
@@ -1294,17 +1408,20 @@ body::before {
 <script>
 /* ── Panel switching ──────────────────────────────────────────────────────── */
 const PANEL_TITLES = {
-  overview:     'Overview',
-  applications: 'My Applications',
-  profile:      'My Profile',
-  documents:    'Documents',
-  earnings:     'Earnings',
-  messages:     'Messages',
-  settings:     'Settings',
+  overview:       'Overview',
+  browse:         'Browse Events',
+  'event-detail': 'Event Details',
+  applications:   'My Applications',
+  profile:        'My Profile',
+  documents:      'Documents',
+  earnings:       'Earnings',
+  messages:       'Messages',
+  settings:       'Settings',
 };
 
 const PANEL_PATHS = {
   overview:     '/dashboard/vendor',
+  browse:       '/dashboard/vendor/events',
   applications: '/dashboard/vendor/applications',
   profile:      '/dashboard/vendor/profile',
   documents:    '/dashboard/vendor/documents',
@@ -1343,6 +1460,8 @@ function showPanel(name, clickedEl, pushHistory = true) {
   if (pushHistory && PANEL_PATHS[name]) {
     history.pushState({ panel: name }, '', PANEL_PATHS[name]);
   }
+
+  if (name === 'browse') loadBrowseEvents();
 }
 
 // Route on load
@@ -1614,9 +1733,9 @@ async function loadEvents() {
       ? `<span class="event-mini-spots" style="color:${ev.appStatus==='approved'?'var(--herb)':ev.appStatus==='rejected'?'var(--terra)':'var(--gold);'}">${
           ev.appStatus==='approved'?'✓ Approved':ev.appStatus==='rejected'?'✕ Not accepted':'● Applied'
         }</span>`
-      : `<button class="btn-apply-mini" onclick="applyToEvent(${ev.id},this)">Apply →</button>`;
+      : `<button class="btn-apply-mini" onclick="openEventDetail(${ev.id})">View →</button>`;
 
-    return `<div class="event-mini" data-event-id="${ev.id}">
+    return `<div class="event-mini" data-event-id="${ev.id}" onclick="openEventDetail(${ev.id})" style="cursor:pointer;">
       <div class="event-mini-icon" style="background:linear-gradient(135deg,#1A1208,#3D2C10);">🎪</div>
       <div class="event-mini-body">
         <div class="event-mini-name">${ev.name}</div>
@@ -1628,6 +1747,143 @@ async function loadEvents() {
       </div>
     </div>`;
   }).join('');
+}
+
+// Cache for events across browse + detail
+let _eventsCache = [];
+
+async function loadBrowseEvents() {
+  const grid = document.getElementById('browse-grid');
+  if (!grid) return;
+  const r = await pitchFetch('/api/vendor/events');
+  if (!r.ok) { grid.innerHTML = '<div style="color:var(--text-lo);font-size:13px;">Could not load events.</div>'; return; }
+  const { events } = await r.json();
+  _eventsCache = events;
+  if (!events.length) {
+    grid.innerHTML = '<div style="color:var(--text-lo);font-size:13px;grid-column:1/-1;">No events available right now.</div>';
+    return;
+  }
+  grid.innerHTML = events.map(ev => {
+    const fmtDate = iso => { if (!iso) return ''; const p = iso.split('-'); return p[2]+'/'+p[1]+'/'+p[0]; };
+    const dateStr = ev.date_sort ? fmtDate(ev.date_sort) + (ev.date_end ? ' → ' + fmtDate(ev.date_end) : '') : 'TBC';
+    const statusBadge = ev.applied
+      ? `<span style="font-size:11px;font-weight:700;color:${ev.appStatus==='approved'?'var(--herb)':ev.appStatus==='rejected'?'var(--terra)':'var(--gold)'};">${ev.appStatus==='approved'?'✓ Approved':ev.appStatus==='rejected'?'✕ Not accepted':'● Applied'}</span>`
+      : `<button class="btn-view-event" onclick="event.stopPropagation();openEventDetail(${ev.id})">View & Apply →</button>`;
+    return `<div class="browse-card" onclick="openEventDetail(${ev.id})">
+      <div class="browse-card-header">
+        🎪
+        ${ev.category ? `<span class="browse-card-cat">${ev.category}</span>` : ''}
+      </div>
+      <div class="browse-card-body">
+        <div class="browse-card-name">${ev.name}</div>
+        <div class="browse-card-meta">
+          ${ev.suburb ? `<span>📍 ${ev.suburb}${ev.state?', '+ev.state:''}</span>` : ''}
+          ${ev.date_sort ? `<span>📅 ${dateStr}</span>` : ''}
+        </div>
+        ${ev.description ? `<div class="browse-card-desc">${ev.description}</div>` : ''}
+      </div>
+      <div class="browse-card-footer">
+        <span class="browse-card-spots">${ev.stalls_available ? ev.stalls_available + ' spots available' : ''}</span>
+        ${statusBadge}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openEventDetail(eventId) {
+  // Use cache if available, otherwise re-fetch
+  const ev = _eventsCache.find(e => e.id === eventId);
+  if (ev) {
+    renderEventDetail(ev);
+  } else {
+    pitchFetch('/api/vendor/events').then(r => r.json()).then(d => {
+      _eventsCache = d.events || [];
+      const found = _eventsCache.find(e => e.id === eventId);
+      if (found) renderEventDetail(found);
+    });
+  }
+  showPanel('event-detail', null);
+}
+
+function renderEventDetail(ev) {
+  const fmtDate = iso => { if (!iso) return ''; const p = iso.split('-'); return p[2]+'/'+p[1]+'/'+p[0]; };
+  const dateStr = ev.date_sort ? fmtDate(ev.date_sort) + (ev.date_end ? ' → ' + fmtDate(ev.date_end) : ' (one day)') : 'TBC';
+
+  let applyBar;
+  if (ev.applied) {
+    const statusColor = ev.appStatus==='approved'?'var(--herb)':ev.appStatus==='rejected'?'var(--terra)':'var(--gold)';
+    const statusText  = ev.appStatus==='approved'?'✓ Application approved':ev.appStatus==='rejected'?'✕ Not accepted this time':'● Application submitted';
+    applyBar = `<div style="font-size:15px;font-weight:700;color:${statusColor};">${statusText}</div>`;
+  } else {
+    applyBar = `<button class="btn-apply-full" id="detail-apply-btn" onclick="applyFromDetail(${ev.id})">Apply to this event →</button>`;
+  }
+
+  document.getElementById('event-detail-content').innerHTML = `
+    <div class="event-detail-hero">🎪</div>
+    <div class="event-detail-body">
+      <div class="event-detail-title">${ev.name}</div>
+      <div class="event-detail-tags">
+        ${ev.category ? `<span class="event-detail-tag cat">${ev.category}</span>` : ''}
+        ${ev.stalls_available ? `<span class="event-detail-tag spots">${ev.stalls_available} spots available</span>` : ''}
+      </div>
+      <div class="event-detail-info">
+        <div class="event-detail-info-item">
+          <div class="event-detail-info-label">Date</div>
+          <div class="event-detail-info-value">${dateStr}</div>
+        </div>
+        <div class="event-detail-info-item">
+          <div class="event-detail-info-label">Location</div>
+          <div class="event-detail-info-value">${ev.suburb ? ev.suburb + (ev.state?', '+ev.state:'') : '—'}</div>
+        </div>
+        ${ev.venue_name ? `<div class="event-detail-info-item">
+          <div class="event-detail-info-label">Venue / address</div>
+          <div class="event-detail-info-value">${ev.venue_name}</div>
+        </div>` : ''}
+        ${ev.organiser_name ? `<div class="event-detail-info-item">
+          <div class="event-detail-info-label">Organiser</div>
+          <div class="event-detail-info-value">${ev.organiser_name}</div>
+        </div>` : ''}
+        ${ev.stalls_available ? `<div class="event-detail-info-item">
+          <div class="event-detail-info-label">Vendor spots</div>
+          <div class="event-detail-info-value">${ev.stalls_available} spots</div>
+        </div>` : ''}
+      </div>
+      ${ev.description ? `<div class="event-detail-desc">${ev.description}</div>` : ''}
+    </div>
+    <div class="event-detail-apply-bar">
+      <div>
+        <div class="event-detail-apply-label">${ev.applied ? 'Your application' : 'Ready to apply?'}</div>
+        <div class="event-detail-apply-sub">${ev.applied ? 'Submitted — the organiser will review your profile.' : 'Submit your application and the organiser will review your profile.'}</div>
+      </div>
+      ${applyBar}
+    </div>`;
+}
+
+async function applyFromDetail(eventId) {
+  const btn = document.getElementById('detail-apply-btn');
+  if (btn) { btn.textContent = 'Applying…'; btn.disabled = true; }
+  try {
+    const r = await pitchFetch(`/api/events/${eventId}/apply`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+    const d = await r.json();
+    if (r.ok) {
+      // Update cache
+      const ev = _eventsCache.find(e => e.id === eventId);
+      if (ev) { ev.applied = true; ev.appStatus = 'pending'; }
+      // Re-render the apply bar
+      const applyBar = document.querySelector('.event-detail-apply-bar');
+      if (applyBar) {
+        applyBar.querySelector('.event-detail-apply-label').textContent = 'Your application';
+        applyBar.querySelector('.event-detail-apply-sub').textContent = 'Submitted — the organiser will review your profile.';
+        if (btn) btn.outerHTML = `<div style="font-size:15px;font-weight:700;color:var(--gold);">● Application submitted</div>`;
+      }
+      loadApplications(); loadEvents();
+    } else {
+      if (btn) { btn.textContent = 'Apply to this event →'; btn.disabled = false; }
+      alert(d.error || 'Could not apply');
+    }
+  } catch (e) {
+    if (btn) { btn.textContent = 'Apply to this event →'; btn.disabled = false; }
+  }
 }
 
 async function applyToEvent(eventId, btn) {
