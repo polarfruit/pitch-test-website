@@ -468,18 +468,19 @@ export const stmts = {
     JOIN organisers o ON o.user_id = mt.organiser_user_id
     WHERE mt.thread_key = ?
   `),
+  // LEFT JOINs so threads show even if vendor/organiser profile row is missing
   getThreadsForUser: prepare(`
     SELECT mt.thread_key, mt.vendor_user_id, mt.organiser_user_id,
       v.trading_name as vendor_name, o.org_name as organiser_name,
       (SELECT body FROM messages m2 WHERE m2.thread_key = mt.thread_key ORDER BY m2.id DESC LIMIT 1) as last_body,
-      (SELECT m2.created_at FROM messages m2 WHERE m2.thread_key = mt.thread_key ORDER BY m2.id DESC LIMIT 1) as last_at,
-      (SELECT COUNT(*) FROM messages m2 WHERE m2.thread_key = mt.thread_key AND m2.sender_user_id != ? AND m2.is_read = 0) as unread_count
+      (SELECT m2.created_at FROM messages m2 WHERE m2.thread_key = mt.thread_key ORDER BY m2.id DESC LIMIT 1) as last_at
     FROM message_threads mt
-    JOIN vendors v ON v.user_id = mt.vendor_user_id
-    JOIN organisers o ON o.user_id = mt.organiser_user_id
+    LEFT JOIN vendors v ON v.user_id = mt.vendor_user_id
+    LEFT JOIN organisers o ON o.user_id = mt.organiser_user_id
     WHERE mt.vendor_user_id = ? OR mt.organiser_user_id = ?
     ORDER BY last_at DESC
   `),
+  getUnreadByThread: prepare(`SELECT COUNT(*) as count FROM messages WHERE thread_key = ? AND sender_user_id != ? AND is_read = 0`),
   getMessagesInThread: prepare(`SELECT * FROM messages WHERE thread_key = ? ORDER BY id ASC`),
   sendMessage:         prepare(`INSERT INTO messages (thread_key, sender_user_id, body) VALUES (?, ?, ?)`),
   markThreadRead:      prepare(`UPDATE messages SET is_read = 1 WHERE thread_key = ? AND sender_user_id != ? AND is_read = 0`),
