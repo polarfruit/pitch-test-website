@@ -167,8 +167,11 @@ async function orgInitData(user) {
   recentApps.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
   const fillRate = totalSpots > 0 ? Math.round((totalFilled / totalSpots) * 100) : 0;
   const upcoming = eventsWithCounts.filter(e => e.status === 'published').slice(0, 5);
-  const unreadRow = await stmts.getUnreadMsgCount.get(user.id, user.id, user.id);
-  const unreadMessages = unreadRow ? Number(unreadRow.count) : 0;
+  let unreadMessages = 0;
+  try {
+    const unreadRow = await stmts.getUnreadMsgCount.get(user.id, user.id, user.id);
+    unreadMessages = unreadRow ? Number(unreadRow.count) : 0;
+  } catch (e) { console.error('[orgInitData] unread', e); }
   return {
     overview: { total_apps: totalApps, vendors_approved: totalApproved, fill_rate: fillRate, upcoming, recent_apps: recentApps.slice(0, 5) },
     events: eventsWithCounts,
@@ -177,11 +180,14 @@ async function orgInitData(user) {
 }
 
 async function vendorInitData(user) {
-  // Single JOIN replaces N+1 per-event lookups — much faster on Vercel
-  const events = await stmts.publishedEventsForVendor.all(user.id);
-  const applications = await stmts.getApplicationsByVendor.all(user.id);
-  const unreadRow = await stmts.getUnreadMsgCount.get(user.id, user.id, user.id);
-  const unreadMessages = unreadRow ? Number(unreadRow.count) : 0;
+  // Each query is isolated so one failure doesn't blank the whole dashboard
+  const events = await stmts.publishedEventsForVendor.all(user.id).catch(e => { console.error('[vendorInitData] events', e); return []; });
+  const applications = await stmts.getApplicationsByVendor.all(user.id).catch(e => { console.error('[vendorInitData] applications', e); return []; });
+  let unreadMessages = 0;
+  try {
+    const unreadRow = await stmts.getUnreadMsgCount.get(user.id, user.id, user.id);
+    unreadMessages = unreadRow ? Number(unreadRow.count) : 0;
+  } catch (e) { console.error('[vendorInitData] unread', e); }
   return { events, applications, unreadMessages };
 }
 
@@ -735,13 +741,8 @@ app.put('/api/admin/organisers/:userId', requireAdmin, async (req, res) => {
 // ── API: Vendor dashboard ──────────────────────────────────────────────────
 
 app.get('/api/vendor/events', requireAuth, async (req, res) => {
-  const events = await stmts.publishedEvents.all();
-  const vendorId = req.session.userId;
-  const withStatus = await Promise.all(events.map(async ev => {
-    const app = await stmts.getApplicationByIds.get(ev.id, vendorId);
-    return { ...ev, applied: !!app, appStatus: app ? app.status : null };
-  }));
-  res.json({ events: withStatus });
+  const events = await stmts.publishedEventsForVendor.all(req.session.userId);
+  res.json({ events });
 });
 
 app.post('/api/events/:id/apply', requireAuth, async (req, res) => {
