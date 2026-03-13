@@ -954,6 +954,11 @@ const PANEL_PATHS_ORG = {
   settings:    '/dashboard/organiser/settings',
 };
 
+// Messaging state — must be declared before showPanel (which reads pendingChatId)
+const MSG_THREADS = {};
+let currentChatId = null;
+let pendingChatId = null;
+
 function showPanel(name, clickedEl, pushHistory = true) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   const panel = document.getElementById('panel-' + name);
@@ -1666,13 +1671,7 @@ function renderOrgEventsData(events) {
 
 initDashboard();
 
-// Messages
 // ── Messaging system ──────────────────────────────────────────────────────
-// In-memory thread store: { [vendorId]: { name, messages: [{from,text,time}] } }
-const MSG_THREADS = {};
-let currentChatId = null;  // vendorId of open chat
-let pendingChatId = null;  // vendorId of chat opened but not yet sent to
-
 function startChat(vendorId, vendorName) {
   // If we had a pending (empty) thread, discard it from the sidebar
   if (pendingChatId && pendingChatId !== vendorId) {
@@ -2082,16 +2081,6 @@ function neCalBlurDate(key, which, input) {
   neCalCommitIso(key, which, iso);
 }
 
-// Close on outside click
-document.addEventListener('click', function(e) {
-  ['event', 'deadline'].forEach(function(key) {
-    var popup = document.getElementById('ne-cal-' + key);
-    if (popup && popup.classList.contains('open') && !popup.contains(e.target)) {
-      var toggle = document.getElementById('ne-cal-toggle-' + key);
-      if (!toggle || !toggle.contains(e.target)) neCalClose(key);
-    }
-  });
-});
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeBroadcast(); });
 </script>
 </body>
