@@ -480,7 +480,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
   </nav>
   <div class="sidebar-footer">
     <a href="/events" class="sidebar-footer-link">↗ View public events</a>
-    <button class="sidebar-footer-link" id="logout-btn">🚪 Log out</button>
+    <button class="sidebar-footer-link" id="logout-btn" onclick="pitchLogout()">🚪 Log out</button>
   </div>
 </aside>
 
@@ -1478,6 +1478,16 @@ async function publishEvent() {
   }
 }
 
+/* ── Logout — standalone, works even if initDashboard errors ── */
+async function pitchLogout() {
+  try {
+    const token = window.__PITCH_TOKEN__;
+    const headers = token ? { 'X-Pitch-Auth': token } : {};
+    await fetch('/api/logout', { method: 'POST', headers });
+  } catch(e) {}
+  window.location.href = '/';
+}
+
 /* ── Auth-aware fetch (sends X-Pitch-Auth header when cookie may not work) ── */
 function pitchFetch(url, opts = {}) {
   const token = window.__PITCH_TOKEN__;
@@ -1503,11 +1513,6 @@ async function initDashboard() {
 
   const orgNameInput = document.getElementById('settings-org-name');
   if (orgNameInput) orgNameInput.value = orgName;
-
-  document.getElementById('logout-btn').onclick = async () => {
-    await pitchFetch('/api/logout', { method: 'POST' });
-    window.location.href = '/';
-  };
 
   // Render injected data — wrapped so any render bug can't break the rest
   const init = window.__PITCH_INIT_DATA__;

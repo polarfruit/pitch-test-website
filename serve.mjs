@@ -123,13 +123,22 @@ function serveDashboard(file, expectedRole, getInitData) {
         try { initData = await getInitData(user, profile); } catch(e) { console.error('[initData]', e); }
       }
 
+      // Compute display name server-side so it's in the HTML before JS runs
+      const displayName = expectedRole === 'organiser'
+        ? (profile && profile.org_name) || `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email
+        : (profile && profile.trading_name) || `${user.first_name || ''} ${user.last_name || ''}`.trim() || user.email;
+
       let html = readHtml(file);
+      // Inject JS data
       html = html.replace('</head>', `<script>
 window.__PITCH_USER__      = ${JSON.stringify(userSafe)};
 window.__PITCH_PROFILE__   = ${JSON.stringify(profile || {})};
 window.__PITCH_TOKEN__     = ${JSON.stringify(token)};
 window.__PITCH_INIT_DATA__ = ${JSON.stringify(initData)};
 </script></head>`);
+      // Server-render the display name directly — visible instantly, even if JS errors
+      html = html.replace(' id="org-display-name">—<', ` id="org-display-name">${displayName}<`);
+      html = html.replace(' id="vendor-display-name">—<', ` id="vendor-display-name">${displayName}<`);
       res.send(html);
     } catch (e) {
       console.error('[serveDashboard]', e);

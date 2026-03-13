@@ -932,7 +932,7 @@ body::before {
 
   <div class="sidebar-footer">
     <a href="#" id="sidebar-profile-link" class="sidebar-footer-link">↗ View public profile</a>
-    <button class="sidebar-footer-link" id="logout-btn">🚪 Log out</button>
+    <button class="sidebar-footer-link" id="logout-btn" onclick="pitchLogout()">🚪 Log out</button>
   </div>
 </aside>
 
@@ -1711,6 +1711,16 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDeleteM
 updateBioCounter();
 updatePreview();
 
+/* ── Logout — standalone, works even if initDashboard errors ── */
+async function pitchLogout() {
+  try {
+    const token = window.__PITCH_TOKEN__;
+    const headers = token ? { 'X-Pitch-Auth': token } : {};
+    await fetch('/api/logout', { method: 'POST', headers });
+  } catch(e) {}
+  window.location.href = '/';
+}
+
 /* ── Auth-aware fetch (sends X-Pitch-Auth header when cookie may not work) ── */
 function pitchFetch(url, opts = {}) {
   const token = window.__PITCH_TOKEN__;
@@ -1770,11 +1780,7 @@ async function initDashboard() {
     updatePreview();
   }
 
-  // Logout button
-  document.getElementById('logout-btn').onclick = async () => {
-    await pitchFetch('/api/logout', { method: 'POST' });
-    window.location.href = '/';
-  };
+  // Logout handled by inline onclick → pitchLogout()
 
   // Photos panel
   loadPhotos(profile);
