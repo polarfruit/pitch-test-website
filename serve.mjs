@@ -778,7 +778,7 @@ app.get('/api/vendor/applications', requireAuth, async (req, res) => {
 app.get('/api/messages', requireAuth, async (req, res) => {
   try {
     const userId = req.session.userId;
-    const threads = await stmts.getThreadsForUser.all({ userId });
+    const threads = await stmts.getThreadsForUser.all(userId, userId, userId);
     res.json({ threads });
   } catch (e) { console.error('[messages list]', e); res.status(500).json({ error: 'Server error' }); }
 });

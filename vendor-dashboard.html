@@ -1652,13 +1652,23 @@ function syncMsgBadge(count) {
   badge.style.display = count > 0 ? '' : 'none';
 }
 
-// Poll for new messages every 12 seconds when messages panel is visible
+// Poll for new messages every 8 seconds when messages panel is visible
 function startMsgPoll() {
   if (_msgPollInterval) return;
   _msgPollInterval = setInterval(async () => {
     await loadAllThreads();
-    if (activeThread) await loadThreadMessages(activeThread);
-  }, 12000);
+    // Refresh open thread messages
+    if (activeThread && THREADS[activeThread]) {
+      try {
+        const r = await pitchFetch(`/api/messages/${activeThread}`);
+        if (r.ok) {
+          const { messages } = await r.json();
+          THREADS[activeThread].messages = messages;
+          renderMessages(messages);
+        }
+      } catch(e) {}
+    }
+  }, 8000);
 }
 function stopMsgPoll() {
   if (_msgPollInterval) { clearInterval(_msgPollInterval); _msgPollInterval = null; }
