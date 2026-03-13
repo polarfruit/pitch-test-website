@@ -1462,6 +1462,7 @@ function showPanel(name, clickedEl, pushHistory = true) {
   }
 
   if (name === 'browse') loadBrowseEvents();
+  if (name === 'applications') loadApplications();
 
   if (name === 'messages') {
     loadAllThreads();
@@ -1914,11 +1915,13 @@ let _eventsCache = [];
 async function loadBrowseEvents() {
   // If we already have cached events, render immediately then refresh
   if (_eventsCache.length) renderBrowseGrid(_eventsCache);
-  const r = await pitchFetch('/api/vendor/events');
-  if (!r.ok) return;
-  const { events } = await r.json();
-  _eventsCache = events;
-  renderBrowseGrid(events);
+  try {
+    const r = await pitchFetch('/api/vendor/events');
+    if (!r.ok) { console.error('[loadBrowseEvents] status', r.status); return; }
+    const { events } = await r.json();
+    _eventsCache = events;
+    renderBrowseGrid(events);
+  } catch (e) { console.error('[loadBrowseEvents]', e); }
 }
 
 function openEventDetail(eventId) {
@@ -2048,6 +2051,7 @@ async function loadApplications() {
   if (!r.ok) return;
   const { applications } = await r.json();
   renderApplicationsData(applications);
+  renderActivityData(applications);
 }
 
 function renderApplicationsData(applications) {
