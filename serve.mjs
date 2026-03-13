@@ -780,8 +780,12 @@ app.get('/api/vendor/applications', requireAuth, async (req, res) => {
 app.get('/api/messages', requireAuth, async (req, res) => {
   try {
     const userId = req.session.userId;
-    const threads = await stmts.getThreadsForUser.all(userId, userId, userId);
-    res.json({ threads });
+    const threads = await stmts.getThreadsForUser.all(userId, userId);
+    const enriched = await Promise.all(threads.map(async t => {
+      const row = await stmts.getUnreadByThread.get(t.thread_key, userId);
+      return { ...t, unread_count: row ? Number(row.count) : 0 };
+    }));
+    res.json({ threads: enriched });
   } catch (e) { console.error('[messages list]', e); res.status(500).json({ error: 'Server error' }); }
 });
 
