@@ -662,13 +662,13 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
             <div class="ne-date-wrap" id="ne-event-date-wrap">
               <div class="date-field">
                 <div class="date-field-label">From</div>
-                <input class="date-text-input" id="ne-date-display" placeholder="DD/MM/YYYY" oninput="neCalTypeDate('event','start',this)" onblur="neCalBlurDate('event','start',this)" />
+                <input class="date-text-input" id="ne-date-display" placeholder="DD/MM/YYYY" oninput="neCalTypeDate('event','start',this)" onblur="neCalBlurDate('event','start',this)" onclick="neCalOpen('event','ne-event-date-wrap')" />
                 <input type="hidden" id="ne-date" />
               </div>
               <div class="date-sep" style="padding-bottom:9px;">→</div>
               <div class="date-field">
                 <div class="date-field-label">To <span style="font-weight:400;opacity:0.5;text-transform:none;letter-spacing:0;">— leave blank for one day</span></div>
-                <input class="date-text-input" id="ne-enddate-display" placeholder="DD/MM/YYYY" oninput="neCalTypeDate('event','end',this)" onblur="neCalBlurDate('event','end',this)" />
+                <input class="date-text-input" id="ne-enddate-display" placeholder="DD/MM/YYYY" oninput="neCalTypeDate('event','end',this)" onblur="neCalBlurDate('event','end',this)" onclick="neCalOpen('event','ne-event-date-wrap')" />
                 <input type="hidden" id="ne-enddate" />
               </div>
               <button class="ne-cal-toggle" id="ne-cal-toggle-event" onclick="neCalOpen('event','ne-event-date-wrap')" title="Open calendar">
@@ -776,7 +776,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
             <label class="form-label">Application deadline</label>
             <div class="ne-date-wrap" id="ne-deadline-date-wrap">
               <div class="date-field">
-                <input class="date-text-input" id="ne-deadline-display" placeholder="DD/MM/YYYY" oninput="neCalTypeDate('deadline','start',this)" onblur="neCalBlurDate('deadline','start',this)" />
+                <input class="date-text-input" id="ne-deadline-display" placeholder="DD/MM/YYYY" oninput="neCalTypeDate('deadline','start',this)" onblur="neCalBlurDate('deadline','start',this)" onclick="neCalOpen('deadline','ne-deadline-date-wrap')" />
                 <input type="hidden" id="ne-deadline" />
               </div>
               <button class="ne-cal-toggle" id="ne-cal-toggle-deadline" onclick="neCalOpen('deadline','ne-deadline-date-wrap')" title="Open calendar">
@@ -1978,6 +1978,13 @@ function neCalClear(key) {
   neCalUpdateInputs(key);
   neCalRender(key);
 }
+
+// Close calendar when clicking outside any date-wrap
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('.ne-date-wrap')) {
+    Object.keys(neCal).forEach(function(key) { neCalClose(key); });
+  }
+});
 
 function neCalApply(key) {
   neCalUpdateInputs(key);
