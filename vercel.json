@@ -11,7 +11,8 @@
           "*.html",
           "*.mjs",
           "*.js",
-          "brand_assets/**/*"
+          "brand_assets/**/*",
+          "fonts/**/*"
         ]
       }
     }

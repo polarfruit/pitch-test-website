@@ -1493,15 +1493,10 @@ async function initDashboard() {
   const profile = window.__PITCH_PROFILE__;
   if (!user || user.role !== 'organiser') { window.location.href = '/login'; return; }
 
-  // Render data FIRST — before any other setup — so it's visible immediately
-  const init = window.__PITCH_INIT_DATA__;
-  if (init) {
-    if (init.overview) renderOrgOverview(init.overview);
-    if (init.events)   renderOrgEventsData(init.events);
-  }
-
+  // Set name FIRST — unconditionally, nothing can block this
   const orgName = (profile && profile.org_name) ? profile.org_name : (user.first_name + ' ' + user.last_name);
-  document.getElementById('org-display-name').textContent = orgName;
+  const nameEl = document.getElementById('org-display-name');
+  if (nameEl) nameEl.textContent = orgName;
 
   const emailEl = document.getElementById('settings-email');
   if (emailEl) emailEl.textContent = user.email || '—';
@@ -1513,6 +1508,13 @@ async function initDashboard() {
     await pitchFetch('/api/logout', { method: 'POST' });
     window.location.href = '/';
   };
+
+  // Render injected data — wrapped so any render bug can't break the rest
+  const init = window.__PITCH_INIT_DATA__;
+  if (init) {
+    try { if (init.overview) renderOrgOverview(init.overview); } catch(e) { console.error('[renderOrgOverview]', e); }
+    try { if (init.events)   renderOrgEventsData(init.events); } catch(e) { console.error('[renderOrgEventsData]', e); }
+  }
 
   // Background refresh to pick up any changes since page was served
   loadOrgEvents();
