@@ -151,6 +151,7 @@ async function orgInitData(user) {
   const events = await stmts.getOrganiserEvents.all(user.id);
   let totalApps = 0, totalApproved = 0, totalSpots = 0, totalFilled = 0;
   const recentApps = [];
+  const eventsWithCounts = [];
   for (const ev of events) {
     const apps = await stmts.getApplicationsByEvent.all(ev.id);
     totalApps += apps.length;
@@ -161,15 +162,16 @@ async function orgInitData(user) {
       totalFilled += Math.min(approved.length, ev.stalls_available);
     }
     for (const a of apps) recentApps.push({ ...a, event_name: ev.name, event_id: ev.id });
+    eventsWithCounts.push({ ...ev, approved_count: approved.length });
   }
   recentApps.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
   const fillRate = totalSpots > 0 ? Math.round((totalFilled / totalSpots) * 100) : 0;
-  const upcoming = events.filter(e => e.status === 'published').slice(0, 5);
+  const upcoming = eventsWithCounts.filter(e => e.status === 'published').slice(0, 5);
   const unreadRow = await stmts.getUnreadMsgCount.get(user.id, user.id, user.id);
   const unreadMessages = unreadRow ? Number(unreadRow.count) : 0;
   return {
     overview: { total_apps: totalApps, vendors_approved: totalApproved, fill_rate: fillRate, upcoming, recent_apps: recentApps.slice(0, 5) },
-    events,
+    events: eventsWithCounts,
     unreadMessages,
   };
 }
@@ -935,7 +937,12 @@ app.post('/api/organiser/events', requireAuth, async (req, res) => {
 app.get('/api/organiser/events', requireAuth, async (req, res) => {
   if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
   const events = await stmts.getOrganiserEvents.all(req.session.userId);
-  res.json({ events });
+  // Attach approved count to each event so the table can show filled spots
+  const eventsWithCounts = await Promise.all(events.map(async ev => {
+    const row = await stmts.countApprovedByEvent.get(ev.id);
+    return { ...ev, approved_count: row ? Number(row.n) : 0 };
+  }));
+  res.json({ events: eventsWithCounts });
 });
 
 app.get('/api/organiser/events/:id/applications', requireAuth, async (req, res) => {
