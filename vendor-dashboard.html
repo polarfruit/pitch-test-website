@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Vendor Dashboard — Pitch.</title>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="/fonts/fonts.css">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -960,7 +960,7 @@ body::before {
         <div class="stat-card ember">
           <div class="stat-label">Active Applications</div>
           <div class="stat-value" id="stat-active-apps">—</div>
-          <div class="stat-delta" id="stat-active-apps-sub">Loading…</div>
+          <div class="stat-delta" id="stat-active-apps-sub"></div>
         </div>
         <div class="stat-card herb">
           <div class="stat-label">Approved Events</div>
@@ -1029,7 +1029,7 @@ body::before {
     <!-- ── PANEL: BROWSE EVENTS ─────────────────────────────────────────── -->
     <div class="panel" id="panel-browse">
       <div class="browse-grid" id="browse-grid">
-        <div style="color:var(--text-lo);font-size:13px;padding:24px 0;grid-column:1/-1;">Loading events…</div>
+        <div id="browse-loading" style="color:var(--text-lo);font-size:13px;padding:24px 0;grid-column:1/-1;display:none;"></div>
       </div>
     </div>
 
@@ -1727,6 +1727,13 @@ async function initDashboard() {
   const profile = window.__PITCH_PROFILE__;
   if (!user || user.role !== 'vendor') { window.location.href = '/login'; return; }
 
+  // Render data FIRST — immediately after auth check, before anything else
+  const init = window.__PITCH_INIT_DATA__;
+  if (init) {
+    if (init.events)       { _eventsCache = init.events; renderEventsMiniList(init.events); renderBrowseGrid(init.events); }
+    if (init.applications) { renderApplicationsData(init.applications); renderActivityData(init.applications); }
+  }
+
   // Populate user name + plan
   const tradingName = (profile && profile.trading_name) ? profile.trading_name : (user.first_name + ' ' + user.last_name);
   document.querySelector('.vendor-mini-name').textContent = tradingName;
@@ -1778,7 +1785,7 @@ async function initDashboard() {
   // Settings plan card
   renderPlanCard(profile);
 
-  // Load real events
+  // Background refresh
   loadEvents();
   loadApplications();
   loadActivity();
@@ -1788,18 +1795,19 @@ async function loadEvents() {
   const r = await pitchFetch('/api/vendor/events');
   if (!r.ok) return;
   const { events } = await r.json();
+  _eventsCache = events;
+  renderEventsMiniList(events);
+  renderBrowseGrid(events);
+}
 
+function renderEventsMiniList(events) {
   const list = document.querySelector('.event-mini-list');
-  if (!list || !events.length) return;
-
+  if (!list) return;
+  if (!events.length) { list.innerHTML = '<div style="color:var(--text-lo);font-size:13px;padding:16px 0;">No events available right now.</div>'; return; }
   list.innerHTML = events.slice(0, 6).map(ev => {
-    const applied = ev.applied;
-    const statusLabel = applied
-      ? `<span class="event-mini-spots" style="color:${ev.appStatus==='approved'?'var(--herb)':ev.appStatus==='rejected'?'var(--terra)':'var(--gold);'}">${
-          ev.appStatus==='approved'?'✓ Approved':ev.appStatus==='rejected'?'✕ Not accepted':'● Applied'
-        }</span>`
+    const statusLabel = ev.applied
+      ? `<span class="event-mini-spots" style="color:${ev.appStatus==='approved'?'var(--herb)':ev.appStatus==='rejected'?'var(--terra)':'var(--gold);'}">${ev.appStatus==='approved'?'✓ Approved':ev.appStatus==='rejected'?'✕ Not accepted':'● Applied'}</span>`
       : `<button class="btn-apply-mini" onclick="openEventDetail(${ev.id})">View →</button>`;
-
     return `<div class="event-mini" data-event-id="${ev.id}" onclick="openEventDetail(${ev.id})" style="cursor:pointer;">
       <div class="event-mini-icon" style="background:linear-gradient(135deg,#1A1208,#3D2C10);">🎪</div>
       <div class="event-mini-body">
@@ -1814,31 +1822,18 @@ async function loadEvents() {
   }).join('');
 }
 
-// Cache for events across browse + detail
-let _eventsCache = [];
-
-async function loadBrowseEvents() {
+function renderBrowseGrid(events) {
   const grid = document.getElementById('browse-grid');
   if (!grid) return;
-  const r = await pitchFetch('/api/vendor/events');
-  if (!r.ok) { grid.innerHTML = '<div style="color:var(--text-lo);font-size:13px;">Could not load events.</div>'; return; }
-  const { events } = await r.json();
-  _eventsCache = events;
-  if (!events.length) {
-    grid.innerHTML = '<div style="color:var(--text-lo);font-size:13px;grid-column:1/-1;">No events available right now.</div>';
-    return;
-  }
+  if (!events.length) { grid.innerHTML = '<div style="color:var(--text-lo);font-size:13px;grid-column:1/-1;">No events available right now.</div>'; return; }
+  const fmtDate = iso => { if (!iso) return ''; const p = iso.split('-'); return p[2]+'/'+p[1]+'/'+p[0]; };
   grid.innerHTML = events.map(ev => {
-    const fmtDate = iso => { if (!iso) return ''; const p = iso.split('-'); return p[2]+'/'+p[1]+'/'+p[0]; };
     const dateStr = ev.date_sort ? fmtDate(ev.date_sort) + (ev.date_end ? ' → ' + fmtDate(ev.date_end) : '') : 'TBC';
     const statusBadge = ev.applied
       ? `<span style="font-size:11px;font-weight:700;color:${ev.appStatus==='approved'?'var(--herb)':ev.appStatus==='rejected'?'var(--terra)':'var(--gold)'};">${ev.appStatus==='approved'?'✓ Approved':ev.appStatus==='rejected'?'✕ Not accepted':'● Applied'}</span>`
       : `<button class="btn-view-event" onclick="event.stopPropagation();openEventDetail(${ev.id})">View & Apply →</button>`;
     return `<div class="browse-card" onclick="openEventDetail(${ev.id})">
-      <div class="browse-card-header">
-        🎪
-        ${ev.category ? `<span class="browse-card-cat">${ev.category}</span>` : ''}
-      </div>
+      <div class="browse-card-header">🎪${ev.category ? `<span class="browse-card-cat">${ev.category}</span>` : ''}</div>
       <div class="browse-card-body">
         <div class="browse-card-name">${ev.name}</div>
         <div class="browse-card-meta">
@@ -1853,6 +1848,19 @@ async function loadBrowseEvents() {
       </div>
     </div>`;
   }).join('');
+}
+
+// Cache for events across browse + detail
+let _eventsCache = [];
+
+async function loadBrowseEvents() {
+  // If we already have cached events, render immediately then refresh
+  if (_eventsCache.length) renderBrowseGrid(_eventsCache);
+  const r = await pitchFetch('/api/vendor/events');
+  if (!r.ok) return;
+  const { events } = await r.json();
+  _eventsCache = events;
+  renderBrowseGrid(events);
 }
 
 function openEventDetail(eventId) {
@@ -1981,7 +1989,10 @@ async function loadApplications() {
   const r = await pitchFetch('/api/vendor/applications');
   if (!r.ok) return;
   const { applications } = await r.json();
+  renderApplicationsData(applications);
+}
 
+function renderApplicationsData(applications) {
   // Counts by status
   const counts = { pending: 0, approved: 0, rejected: 0, withdrawn: 0 };
   applications.forEach(a => { if (counts[a.status] !== undefined) counts[a.status]++; });
@@ -2048,37 +2059,37 @@ async function loadApplications() {
 }
 
 async function loadActivity() {
+  const r = await pitchFetch('/api/vendor/applications');
+  if (!r.ok) return;
+  const { applications } = await r.json();
+  renderActivityData(applications);
+}
+
+function renderActivityData(applications) {
   const feed = document.getElementById('activity-feed');
   if (!feed) return;
-  try {
-    const r = await pitchFetch('/api/vendor/applications');
-    if (!r.ok) throw new Error();
-    const { applications } = await r.json();
-    if (!applications.length) {
-      feed.innerHTML = '<div style="padding:16px 0;font-size:13px;color:var(--text-lo);">No activity yet — apply to an event to get started.</div>';
-      return;
-    }
-    const dotClass = { pending: 'submitted', approved: 'approved', rejected: 'rejected', withdrawn: 'review' };
-    const label = {
-      pending:   name => `Application submitted to <strong>${name}</strong>`,
-      approved:  name => `Application <strong style="color:var(--herb);">approved</strong> for <strong>${name}</strong>`,
-      rejected:  name => `Application <strong style="color:var(--terra);">not accepted</strong> for <strong>${name}</strong>`,
-      withdrawn: name => `Withdrew application from <strong>${name}</strong>`,
-    };
-    feed.innerHTML = applications.slice(0, 8).map(a => {
-      const date = new Date(a.created_at);
-      const dateStr = date.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
-      return `<div class="feed-item">
-        <div class="feed-dot ${dotClass[a.status] || 'submitted'}"></div>
-        <div class="feed-body">
-          <div class="feed-text">${(label[a.status] || label.pending)(a.event_name)}</div>
-          <div class="feed-time">${dateStr}</div>
-        </div>
-      </div>`;
-    }).join('');
-  } catch (e) {
-    feed.innerHTML = '<div style="padding:16px 0;font-size:13px;color:var(--text-lo);">No activity yet.</div>';
+  if (!applications.length) {
+    feed.innerHTML = '<div style="padding:16px 0;font-size:13px;color:var(--text-lo);">No activity yet — apply to an event to get started.</div>';
+    return;
   }
+  const dotClass = { pending: 'submitted', approved: 'approved', rejected: 'rejected', withdrawn: 'review' };
+  const label = {
+    pending:   name => `Application submitted to <strong>${name}</strong>`,
+    approved:  name => `Application <strong style="color:var(--herb);">approved</strong> for <strong>${name}</strong>`,
+    rejected:  name => `Application <strong style="color:var(--terra);">not accepted</strong> for <strong>${name}</strong>`,
+    withdrawn: name => `Withdrew application from <strong>${name}</strong>`,
+  };
+  feed.innerHTML = applications.slice(0, 8).map(a => {
+    const date = new Date(a.created_at);
+    const dateStr = date.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
+    return `<div class="feed-item">
+      <div class="feed-dot ${dotClass[a.status] || 'submitted'}"></div>
+      <div class="feed-body">
+        <div class="feed-text">${(label[a.status] || label.pending)(a.event_name)}</div>
+        <div class="feed-time">${dateStr}</div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 async function withdrawApp(eventId, btn) {

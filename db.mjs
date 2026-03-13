@@ -4,59 +4,128 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// ── Database client ────────────────────────────────────────────────────────
-// On Vercel: use @libsql/client/web (pure HTTP, no native bindings required).
-// Locally without Turso: use @libsql/client with a local file: URL.
-const { createClient } = process.env.TURSO_DATABASE_URL
-  ? await import('@libsql/client/web')
-  : await import('@libsql/client');
+// ── Database client ──────────────────────────────────────────────────────────
+// Vercel/Turso: @libsql/client/web  — async HTTP, required for serverless
+// Local:        better-sqlite3      — synchronous, zero-latency, no overhead
+//
+// Both expose the same async interface (.get/.all/.run return Promises) so
+// the rest of the codebase is unchanged.
 
-export const client = createClient({
-  url: process.env.TURSO_DATABASE_URL ?? `file:${path.join(__dirname, 'pitch.db')}`,
-  authToken: process.env.TURSO_AUTH_TOKEN,
-});
+let prepare;
+let _safeExec;   // runs a single DDL statement, silently ignores errors (migrations)
+let _execSchema; // runs a multi-statement schema block
+let _txSignupVendor;
+let _txSignupOrganiser;
+let _client; // libsql client (Vercel path only)
+let _localDb; // better-sqlite3 instance (local path only)
 
-// ── Async prepare wrapper ──────────────────────────────────────────────────
-// Matches the better-sqlite3 .get/.all/.run interface but returns Promises.
+if (process.env.TURSO_DATABASE_URL) {
+  // ── Vercel / Turso ───────────────────────────────────────────────────────
+  const { createClient } = await import('@libsql/client/web');
+  _client = createClient({
+    url: process.env.TURSO_DATABASE_URL,
+    authToken: process.env.TURSO_AUTH_TOKEN,
+  });
 
-// libsql can return BigInt for INTEGER columns, which JSON.stringify can't handle
-// (breaks cookie-session). Convert all BigInt values to Number in every row.
-const toPlain = v => typeof v === 'bigint' ? Number(v) : v;
-const convertRow = row => {
-  if (!row) return null;
-  const out = {};
-  for (const [k, v] of Object.entries(row)) out[k] = toPlain(v);
-  return out;
-};
-
-function prepare(sql) {
+  const toPlain = v => typeof v === 'bigint' ? Number(v) : v;
+  const convertRow = row => {
+    if (!row) return null;
+    const out = {};
+    for (const [k, v] of Object.entries(row)) out[k] = toPlain(v);
+    return out;
+  };
   const norm = (...a) => {
     if (!a.length) return [];
     if (a.length === 1 && a[0] !== null && typeof a[0] === 'object' && !Array.isArray(a[0])) return a[0];
     return a;
   };
-  return {
-    get:  async (...a) => { const r = await client.execute({ sql, args: norm(...a) }); return convertRow(r.rows[0] ?? null); },
-    all:  async (...a) => { const r = await client.execute({ sql, args: norm(...a) }); return r.rows.map(convertRow); },
-    run:  async (...a) => { const r = await client.execute({ sql, args: norm(...a) }); return { lastInsertRowid: Number(r.lastInsertRowid), changes: r.rowsAffected }; },
+
+  prepare = sql => ({
+    get: async (...a) => { const r = await _client.execute({ sql, args: norm(...a) }); return convertRow(r.rows[0] ?? null); },
+    all: async (...a) => { const r = await _client.execute({ sql, args: norm(...a) }); return r.rows.map(convertRow); },
+    run: async (...a) => { const r = await _client.execute({ sql, args: norm(...a) }); return { lastInsertRowid: Number(r.lastInsertRowid), changes: r.rowsAffected }; },
+  });
+
+  _safeExec   = async sql => { try { await _client.execute(sql); } catch {} };
+  _execSchema = async sql => { await _client.executeMultiple(sql); };
+
+  _txSignupVendor = async (userData, vendorData) => {
+    const tx = await _client.transaction('write');
+    try {
+      const r = await tx.execute({ sql: `INSERT INTO users (email,password_hash,first_name,last_name,role) VALUES (@email,@password_hash,@first_name,@last_name,@role)`, args: userData });
+      const userId = Number(r.lastInsertRowid);
+      await tx.execute({ sql: `INSERT INTO vendors (user_id,trading_name,abn,abn_verified,mobile,state,suburb,bio,cuisine_tags,setup_type,stall_w,stall_d,power,water,price_range,instagram,plan) VALUES (@user_id,@trading_name,@abn,@abn_verified,@mobile,@state,@suburb,@bio,@cuisine_tags,@setup_type,@stall_w,@stall_d,@power,@water,@price_range,@instagram,@plan)`, args: { ...vendorData, user_id: userId } });
+      await tx.commit();
+      return userId;
+    } catch (e) { await tx.rollback(); throw e; }
+  };
+
+  _txSignupOrganiser = async (userData, organiserData) => {
+    const tx = await _client.transaction('write');
+    try {
+      const r = await tx.execute({ sql: `INSERT INTO users (email,password_hash,first_name,last_name,role) VALUES (@email,@password_hash,@first_name,@last_name,@role)`, args: userData });
+      const userId = Number(r.lastInsertRowid);
+      await tx.execute({ sql: `INSERT INTO organisers (user_id,org_name,abn,abn_verified,website,state,suburb,phone,bio,event_types,event_scale,stall_range,referral) VALUES (@user_id,@org_name,@abn,@abn_verified,@website,@state,@suburb,@phone,@bio,@event_types,@event_scale,@stall_range,@referral)`, args: { ...organiserData, user_id: userId } });
+      await tx.commit();
+      return userId;
+    } catch (e) { await tx.rollback(); throw e; }
+  };
+
+} else {
+  // ── Local / better-sqlite3 ───────────────────────────────────────────────
+  // Synchronous, in-process SQLite. Queries complete in microseconds.
+  const { default: Database } = await import('better-sqlite3');
+  _localDb = new Database(path.join(__dirname, 'pitch.db'));
+  _localDb.pragma('journal_mode = WAL');
+
+  // norm always returns an array so we can spread into stmt.get/all/run
+  const norm = (...a) => {
+    if (!a.length) return [];
+    if (a.length === 1 && a[0] !== null && typeof a[0] === 'object' && !Array.isArray(a[0])) return [a[0]];
+    return a;
+  };
+
+  prepare = sql => {
+    const stmt = _localDb.prepare(sql);
+    return {
+      get: (...a) => Promise.resolve(stmt.get(...norm(...a)) ?? null),
+      all: (...a) => Promise.resolve(stmt.all(...norm(...a))),
+      run: (...a) => { const r = stmt.run(...norm(...a)); return Promise.resolve({ lastInsertRowid: r.lastInsertRowid, changes: r.changes }); },
+    };
+  };
+
+  _safeExec   = sql => { try { _localDb.exec(sql); } catch {} return Promise.resolve(); };
+  _execSchema = sql => { _localDb.exec(sql); return Promise.resolve(); };
+
+  _txSignupVendor = (userData, vendorData) => {
+    const fn = _localDb.transaction(() => {
+      const r = _localDb.prepare(`INSERT INTO users (email,password_hash,first_name,last_name,role) VALUES (@email,@password_hash,@first_name,@last_name,@role)`).run(userData);
+      const userId = r.lastInsertRowid;
+      _localDb.prepare(`INSERT INTO vendors (user_id,trading_name,abn,abn_verified,mobile,state,suburb,bio,cuisine_tags,setup_type,stall_w,stall_d,power,water,price_range,instagram,plan) VALUES (@user_id,@trading_name,@abn,@abn_verified,@mobile,@state,@suburb,@bio,@cuisine_tags,@setup_type,@stall_w,@stall_d,@power,@water,@price_range,@instagram,@plan)`).run({ ...vendorData, user_id: userId });
+      return userId;
+    });
+    return Promise.resolve(fn());
+  };
+
+  _txSignupOrganiser = (userData, organiserData) => {
+    const fn = _localDb.transaction(() => {
+      const r = _localDb.prepare(`INSERT INTO users (email,password_hash,first_name,last_name,role) VALUES (@email,@password_hash,@first_name,@last_name,@role)`).run(userData);
+      const userId = r.lastInsertRowid;
+      _localDb.prepare(`INSERT INTO organisers (user_id,org_name,abn,abn_verified,website,state,suburb,phone,bio,event_types,event_scale,stall_range,referral) VALUES (@user_id,@org_name,@abn,@abn_verified,@website,@state,@suburb,@phone,@bio,@event_types,@event_scale,@stall_range,@referral)`).run({ ...organiserData, user_id: userId });
+      return userId;
+    });
+    return Promise.resolve(fn());
   };
 }
 
-// ── Schema + seed guard ────────────────────────────────────────────────────
-// Single RTT on warm starts: try SELECT COUNT(*) FROM users.
-//   - If it succeeds → schema already exists, check if seed needed (same result).
-//   - If it throws  → first boot, create all tables then seed.
-// This avoids the previous 3-RTT pattern (PRAGMA + executeMultiple + COUNT).
+// ── Schema + seed guard ──────────────────────────────────────────────────────
 let _needsSeed = false;
 try {
-  const _check = await client.execute(`SELECT COUNT(*) as n FROM users`);
-  _needsSeed = Number(_check.rows[0].n) === 0;
+  const _check = await prepare(`SELECT COUNT(*) as n FROM users`).get();
+  _needsSeed = Number(_check.n) === 0;
 } catch {
   // First boot — schema doesn't exist yet
-  if (!process.env.TURSO_DATABASE_URL) {
-    await client.execute('PRAGMA journal_mode = WAL');
-  }
-  await client.executeMultiple(`
+  await _execSchema(`
     CREATE TABLE IF NOT EXISTS users (
       id                INTEGER PRIMARY KEY AUTOINCREMENT,
       email             TEXT    UNIQUE NOT NULL,
@@ -178,34 +247,33 @@ try {
   _needsSeed = true;
 }
 
-// ── Migrations (safe to run every boot) ────────────────────────────────────
-try { await client.execute(`ALTER TABLE vendors ADD COLUMN photos TEXT DEFAULT '[]'`); } catch {}
-try { await client.execute(`ALTER TABLE vendors ADD COLUMN food_safety_url TEXT`); } catch {}
-try { await client.execute(`ALTER TABLE vendors ADD COLUMN pli_url TEXT`); } catch {}
-try { await client.execute(`ALTER TABLE vendors ADD COLUMN council_url TEXT`); } catch {}
-try { await client.execute(`ALTER TABLE events ADD COLUMN date_end TEXT`); } catch {}
-try { await client.execute(`ALTER TABLE event_applications ADD COLUMN spot_number INTEGER`); } catch {}
-try { await client.execute(`ALTER TABLE event_applications ADD COLUMN approved_at DATETIME`); } catch {}
+// ── Migrations (safe to run every boot) ─────────────────────────────────────
+await _safeExec(`ALTER TABLE vendors ADD COLUMN photos TEXT DEFAULT '[]'`);
+await _safeExec(`ALTER TABLE vendors ADD COLUMN food_safety_url TEXT`);
+await _safeExec(`ALTER TABLE vendors ADD COLUMN pli_url TEXT`);
+await _safeExec(`ALTER TABLE vendors ADD COLUMN council_url TEXT`);
+await _safeExec(`ALTER TABLE events ADD COLUMN date_end TEXT`);
+await _safeExec(`ALTER TABLE event_applications ADD COLUMN spot_number INTEGER`);
+await _safeExec(`ALTER TABLE event_applications ADD COLUMN approved_at DATETIME`);
 
 if (_needsSeed) {
-  const _ins = prepare(`INSERT OR IGNORE INTO events (slug, name, category, suburb, state, date_sort, organiser_name) VALUES (@slug, @name, @category, @suburb, @state, @date_sort, @organiser_name)`);
+  const _ins = prepare(`INSERT OR IGNORE INTO events (slug,name,category,suburb,state,date_sort,organiser_name) VALUES (@slug,@name,@category,@suburb,@state,@date_sort,@organiser_name)`);
   for (const ev of [
-    { slug: 'rundle-mall-night-eats',     name: 'Rundle Mall Night Eats',           category: 'Night Market',    suburb: 'Adelaide CBD',  state: 'SA', date_sort: '2026-04-12', organiser_name: 'Adelaide City Council Events' },
-    { slug: 'showground-harvest-fair',    name: 'Adelaide Showground Harvest Fair',  category: 'Farmers Market',  suburb: 'Wayville',      state: 'SA', date_sort: '2026-04-19', organiser_name: 'SA Showground Events' },
-    { slug: 'fringe-food-village',        name: 'Fringe Food Village 2026',          category: 'Festival',        suburb: 'Adelaide CBD',  state: 'SA', date_sort: '2026-03-02', organiser_name: 'Adelaide Fringe Festival' },
-    { slug: 'barossa-food-wine',          name: 'Barossa Valley Food & Wine',        category: 'Festival',        suburb: 'Tanunda',       state: 'SA', date_sort: '2026-04-26', organiser_name: 'Barossa Valley Tourism' },
-    { slug: 'glenelg-twilight',           name: 'Glenelg Twilight Market',           category: 'Twilight Market', suburb: 'Glenelg',       state: 'SA', date_sort: '2026-05-03', organiser_name: 'City of Holdfast Bay' },
-    { slug: 'port-adelaide-night-market', name: 'Port Adelaide Night Market',        category: 'Night Market',    suburb: 'Port Adelaide', state: 'SA', date_sort: '2026-05-10', organiser_name: 'Port Adelaide Enfield Council' },
-    { slug: 'norwood-food-bazaar',        name: 'Norwood Food Bazaar',               category: 'Pop-up',          suburb: 'Norwood',       state: 'SA', date_sort: '2026-05-17', organiser_name: 'Norwood Payneham St Peters Council' },
-    { slug: 'victor-harbor-summer-fair',  name: 'Victor Harbor Summer Fair',         category: 'Festival',        suburb: 'Victor Harbor', state: 'SA', date_sort: '2026-05-24', organiser_name: 'Victor Harbor Council' },
-    { slug: 'prospect-farmers-market',    name: 'Prospect Farmers Market',           category: 'Farmers Market',  suburb: 'Prospect',      state: 'SA', date_sort: '2026-05-31', organiser_name: 'City of Prospect' },
-    { slug: 'westpac-corporate-day',      name: 'Westpac Corporate Food Day',        category: 'Corporate',       suburb: 'Adelaide CBD',  state: 'SA', date_sort: '2026-06-07', organiser_name: 'Westpac Corporate Events' },
-    { slug: 'henley-sunset-market',       name: 'Henley Beach Sunset Market',        category: 'Twilight Market', suburb: 'Henley Beach',  state: 'SA', date_sort: '2026-06-14', organiser_name: 'City of Charles Sturt' },
-    { slug: 'marion-popup',               name: 'Marion Shopping Centre Pop-up',     category: 'Pop-up',          suburb: 'Marion',        state: 'SA', date_sort: '2026-06-21', organiser_name: 'Westfield Marion Events' },
+    { slug:'rundle-mall-night-eats',     name:'Rundle Mall Night Eats',           category:'Night Market',    suburb:'Adelaide CBD',  state:'SA', date_sort:'2026-04-12', organiser_name:'Adelaide City Council Events' },
+    { slug:'showground-harvest-fair',    name:'Adelaide Showground Harvest Fair',  category:'Farmers Market',  suburb:'Wayville',      state:'SA', date_sort:'2026-04-19', organiser_name:'SA Showground Events' },
+    { slug:'fringe-food-village',        name:'Fringe Food Village 2026',          category:'Festival',        suburb:'Adelaide CBD',  state:'SA', date_sort:'2026-03-02', organiser_name:'Adelaide Fringe Festival' },
+    { slug:'barossa-food-wine',          name:'Barossa Valley Food & Wine',        category:'Festival',        suburb:'Tanunda',       state:'SA', date_sort:'2026-04-26', organiser_name:'Barossa Valley Tourism' },
+    { slug:'glenelg-twilight',           name:'Glenelg Twilight Market',           category:'Twilight Market', suburb:'Glenelg',       state:'SA', date_sort:'2026-05-03', organiser_name:'City of Holdfast Bay' },
+    { slug:'port-adelaide-night-market', name:'Port Adelaide Night Market',        category:'Night Market',    suburb:'Port Adelaide', state:'SA', date_sort:'2026-05-10', organiser_name:'Port Adelaide Enfield Council' },
+    { slug:'norwood-food-bazaar',        name:'Norwood Food Bazaar',               category:'Pop-up',          suburb:'Norwood',       state:'SA', date_sort:'2026-05-17', organiser_name:'Norwood Payneham St Peters Council' },
+    { slug:'victor-harbor-summer-fair',  name:'Victor Harbor Summer Fair',         category:'Festival',        suburb:'Victor Harbor', state:'SA', date_sort:'2026-05-24', organiser_name:'Victor Harbor Council' },
+    { slug:'prospect-farmers-market',    name:'Prospect Farmers Market',           category:'Farmers Market',  suburb:'Prospect',      state:'SA', date_sort:'2026-05-31', organiser_name:'City of Prospect' },
+    { slug:'westpac-corporate-day',      name:'Westpac Corporate Food Day',        category:'Corporate',       suburb:'Adelaide CBD',  state:'SA', date_sort:'2026-06-07', organiser_name:'Westpac Corporate Events' },
+    { slug:'henley-sunset-market',       name:'Henley Beach Sunset Market',        category:'Twilight Market', suburb:'Henley Beach',  state:'SA', date_sort:'2026-06-14', organiser_name:'City of Charles Sturt' },
+    { slug:'marion-popup',               name:'Marion Shopping Centre Pop-up',     category:'Pop-up',          suburb:'Marion',        state:'SA', date_sort:'2026-06-21', organiser_name:'Westfield Marion Events' },
   ]) await _ins.run(ev);
 }
 
-// ── Seed demo vendors + organisers ─────────────────────────────────────────
 if (_needsSeed) {
   const HASH = await bcryptjs.hash('pitch2026', 8);
   const _su  = prepare(`INSERT OR IGNORE INTO users (email,password_hash,first_name,last_name,role,status) VALUES (@email,@hash,@first_name,@last_name,@role,@status)`);
@@ -250,56 +318,44 @@ if (_needsSeed) {
   }
 }
 
-// ── Prepared statements ────────────────────────────────────────────────────
+// ── Prepared statements ──────────────────────────────────────────────────────
 export const stmts = {
   // users
-  createUser:     prepare(`INSERT INTO users (email, password_hash, first_name, last_name, role) VALUES (@email, @password_hash, @first_name, @last_name, @role)`),
+  createUser:     prepare(`INSERT INTO users (email,password_hash,first_name,last_name,role) VALUES (@email,@password_hash,@first_name,@last_name,@role)`),
   getUserByEmail: prepare(`SELECT * FROM users WHERE email = ?`),
   getUserById:    prepare(`SELECT * FROM users WHERE id = ?`),
   setUserStatus:  prepare(`UPDATE users SET status = ? WHERE id = ?`),
 
   // vendors
   createVendor: prepare(`
-    INSERT INTO vendors (user_id, trading_name, abn, abn_verified, mobile, state, suburb, bio,
-      cuisine_tags, setup_type, stall_w, stall_d, power, water, price_range, instagram, plan)
-    VALUES (@user_id, @trading_name, @abn, @abn_verified, @mobile, @state, @suburb, @bio,
-      @cuisine_tags, @setup_type, @stall_w, @stall_d, @power, @water, @price_range, @instagram, @plan)
+    INSERT INTO vendors (user_id,trading_name,abn,abn_verified,mobile,state,suburb,bio,
+      cuisine_tags,setup_type,stall_w,stall_d,power,water,price_range,instagram,plan)
+    VALUES (@user_id,@trading_name,@abn,@abn_verified,@mobile,@state,@suburb,@bio,
+      @cuisine_tags,@setup_type,@stall_w,@stall_d,@power,@water,@price_range,@instagram,@plan)
   `),
   getVendorByUserId: prepare(`SELECT * FROM vendors WHERE user_id = ?`),
-  allVendors: prepare(`
-    SELECT v.*, u.email, u.first_name, u.last_name, u.status, u.created_at as joined
-    FROM vendors v JOIN users u ON v.user_id = u.id ORDER BY v.created_at DESC
-  `),
-  vendorsByStatus: prepare(`
-    SELECT v.*, u.email, u.first_name, u.last_name, u.status, u.created_at as joined
-    FROM vendors v JOIN users u ON v.user_id = u.id WHERE u.status = ? ORDER BY v.created_at DESC
-  `),
+  allVendors: prepare(`SELECT v.*,u.email,u.first_name,u.last_name,u.status,u.created_at as joined FROM vendors v JOIN users u ON v.user_id=u.id ORDER BY v.created_at DESC`),
+  vendorsByStatus: prepare(`SELECT v.*,u.email,u.first_name,u.last_name,u.status,u.created_at as joined FROM vendors v JOIN users u ON v.user_id=u.id WHERE u.status=? ORDER BY v.created_at DESC`),
 
   // organisers
   createOrganiser: prepare(`
-    INSERT INTO organisers (user_id, org_name, abn, abn_verified, website, state, suburb, phone, bio,
-      event_types, event_scale, stall_range, referral)
-    VALUES (@user_id, @org_name, @abn, @abn_verified, @website, @state, @suburb, @phone, @bio,
-      @event_types, @event_scale, @stall_range, @referral)
+    INSERT INTO organisers (user_id,org_name,abn,abn_verified,website,state,suburb,phone,bio,
+      event_types,event_scale,stall_range,referral)
+    VALUES (@user_id,@org_name,@abn,@abn_verified,@website,@state,@suburb,@phone,@bio,
+      @event_types,@event_scale,@stall_range,@referral)
   `),
   getOrganiserByUserId: prepare(`SELECT * FROM organisers WHERE user_id = ?`),
-  allOrganisers: prepare(`
-    SELECT o.*, u.email, u.first_name, u.last_name, u.status, u.created_at as joined
-    FROM organisers o JOIN users u ON o.user_id = u.id ORDER BY o.created_at DESC
-  `),
-  organisersByStatus: prepare(`
-    SELECT o.*, u.email, u.first_name, u.last_name, u.status, u.created_at as joined
-    FROM organisers o JOIN users u ON o.user_id = u.id WHERE u.status = ? ORDER BY o.created_at DESC
-  `),
+  allOrganisers: prepare(`SELECT o.*,u.email,u.first_name,u.last_name,u.status,u.created_at as joined FROM organisers o JOIN users u ON o.user_id=u.id ORDER BY o.created_at DESC`),
+  organisersByStatus: prepare(`SELECT o.*,u.email,u.first_name,u.last_name,u.status,u.created_at as joined FROM organisers o JOIN users u ON o.user_id=u.id WHERE u.status=? ORDER BY o.created_at DESC`),
 
   // admin actions
-  updateUserStatus:                prepare(`UPDATE users SET status = ? WHERE id = ?`),
-  updateUserPassword:              prepare(`UPDATE users SET password_hash = ? WHERE id = ?`),
-  deleteUser:                      prepare(`DELETE FROM users WHERE id = ?`),
-  deleteVendorByUserId:            prepare(`DELETE FROM vendors WHERE user_id = ?`),
-  deleteOrganiserByUserId:         prepare(`DELETE FROM organisers WHERE user_id = ?`),
-  deleteVerificationCodesByUserId: prepare(`DELETE FROM verification_codes WHERE user_id = ?`),
-  deletePaymentsByUserId:          prepare(`DELETE FROM payments WHERE user_id = ?`),
+  updateUserStatus:                prepare(`UPDATE users SET status=? WHERE id=?`),
+  updateUserPassword:              prepare(`UPDATE users SET password_hash=? WHERE id=?`),
+  deleteUser:                      prepare(`DELETE FROM users WHERE id=?`),
+  deleteVendorByUserId:            prepare(`DELETE FROM vendors WHERE user_id=?`),
+  deleteOrganiserByUserId:         prepare(`DELETE FROM organisers WHERE user_id=?`),
+  deleteVerificationCodesByUserId: prepare(`DELETE FROM verification_codes WHERE user_id=?`),
+  deletePaymentsByUserId:          prepare(`DELETE FROM payments WHERE user_id=?`),
 
   // counts
   countVendors:    prepare(`SELECT COUNT(*) as n FROM users WHERE role='vendor'`),
@@ -308,111 +364,74 @@ export const stmts = {
 
   // events
   allEvents:         prepare(`SELECT * FROM events WHERE status != 'deleted' ORDER BY date_sort ASC`),
-  publishedEvents:   prepare(`SELECT * FROM events WHERE status = 'published' ORDER BY date_sort ASC`),
-  getEventBySlug:    prepare(`SELECT * FROM events WHERE slug = ? AND status = 'published'`),
-  getEventById:      prepare(`SELECT * FROM events WHERE id = ?`),
-  updateEventStatus: prepare(`UPDATE events SET status = ? WHERE id = ?`),
-  updateEvent:       prepare(`UPDATE events SET name=@name, category=@category, suburb=@suburb, state=@state, venue_name=@venue_name, date_sort=@date_sort, date_end=@date_end, date_text=@date_text, description=@description, stalls_available=@stalls_available WHERE id=@id`),
-  deleteEvent:       prepare(`DELETE FROM events WHERE id = ?`),
-  countEvents:       prepare(`SELECT COUNT(*) as n FROM events WHERE status = 'published'`),
+  publishedEvents:   prepare(`SELECT * FROM events WHERE status='published' ORDER BY date_sort ASC`),
+  getEventBySlug:    prepare(`SELECT * FROM events WHERE slug=? AND status='published'`),
+  getEventById:      prepare(`SELECT * FROM events WHERE id=?`),
+  updateEventStatus: prepare(`UPDATE events SET status=? WHERE id=?`),
+  updateEvent:       prepare(`UPDATE events SET name=@name,category=@category,suburb=@suburb,state=@state,venue_name=@venue_name,date_sort=@date_sort,date_end=@date_end,date_text=@date_text,description=@description,stalls_available=@stalls_available WHERE id=@id`),
+  deleteEvent:       prepare(`DELETE FROM events WHERE id=?`),
+  countEvents:       prepare(`SELECT COUNT(*) as n FROM events WHERE status='published'`),
 
   // vendor/organiser detail (admin)
-  getVendorDetail:    prepare(`SELECT v.*, u.email, u.first_name, u.last_name, u.status, u.role, u.created_at FROM vendors v JOIN users u ON v.user_id = u.id WHERE v.user_id = ?`),
-  getOrganiserDetail: prepare(`SELECT o.*, u.email, u.first_name, u.last_name, u.status, u.role, u.created_at FROM organisers o JOIN users u ON o.user_id = u.id WHERE o.user_id = ?`),
+  getVendorDetail:    prepare(`SELECT v.*,u.email,u.first_name,u.last_name,u.status,u.role,u.created_at FROM vendors v JOIN users u ON v.user_id=u.id WHERE v.user_id=?`),
+  getOrganiserDetail: prepare(`SELECT o.*,u.email,u.first_name,u.last_name,u.status,u.role,u.created_at FROM organisers o JOIN users u ON o.user_id=u.id WHERE o.user_id=?`),
 
   // payments
-  getPaymentsByUser: prepare(`SELECT * FROM payments WHERE user_id = ? ORDER BY created_at DESC`),
-  createPayment:     prepare(`INSERT INTO payments (user_id, plan, amount, currency, status, description) VALUES (@user_id, @plan, @amount, @currency, @status, @description)`),
+  getPaymentsByUser: prepare(`SELECT * FROM payments WHERE user_id=? ORDER BY created_at DESC`),
+  createPayment:     prepare(`INSERT INTO payments (user_id,plan,amount,currency,status,description) VALUES (@user_id,@plan,@amount,@currency,@status,@description)`),
 
   // update profiles (admin)
-  updateUserProfile:      prepare(`UPDATE users SET first_name=@first_name, last_name=@last_name, email=@email, status=@status WHERE id=@id`),
-  updateVendorProfile:    prepare(`UPDATE vendors SET trading_name=@trading_name, mobile=@mobile, suburb=@suburb, state=@state, bio=@bio, plan=@plan, instagram=@instagram, setup_type=@setup_type, stall_w=@stall_w, stall_d=@stall_d, power=@power, water=@water, price_range=@price_range, abn=@abn WHERE user_id=@user_id`),
+  updateUserProfile:      prepare(`UPDATE users SET first_name=@first_name,last_name=@last_name,email=@email,status=@status WHERE id=@id`),
+  updateVendorProfile:    prepare(`UPDATE vendors SET trading_name=@trading_name,mobile=@mobile,suburb=@suburb,state=@state,bio=@bio,plan=@plan,instagram=@instagram,setup_type=@setup_type,stall_w=@stall_w,stall_d=@stall_d,power=@power,water=@water,price_range=@price_range,abn=@abn WHERE user_id=@user_id`),
   updateVendorPhotos:     prepare(`UPDATE vendors SET photos=@photos WHERE user_id=@user_id`),
-  updateVendorDoc:        prepare(`UPDATE vendors SET food_safety_url=@food_safety_url, pli_url=@pli_url, council_url=@council_url WHERE user_id=@user_id`),
-  updateOrganiserProfile: prepare(`UPDATE organisers SET org_name=@org_name, phone=@phone, website=@website, suburb=@suburb, state=@state, bio=@bio, event_scale=@event_scale, stall_range=@stall_range, abn=@abn WHERE user_id=@user_id`),
+  updateVendorDoc:        prepare(`UPDATE vendors SET food_safety_url=@food_safety_url,pli_url=@pli_url,council_url=@council_url WHERE user_id=@user_id`),
+  updateOrganiserProfile: prepare(`UPDATE organisers SET org_name=@org_name,phone=@phone,website=@website,suburb=@suburb,state=@state,bio=@bio,event_scale=@event_scale,stall_range=@stall_range,abn=@abn WHERE user_id=@user_id`),
 
-  // verification codes (post-signup)
-  createVerificationCode: prepare(`INSERT INTO verification_codes (user_id, type, code, target, expires_at) VALUES (@user_id, @type, @code, @target, @expires_at)`),
+  // verification codes
+  createVerificationCode: prepare(`INSERT INTO verification_codes (user_id,type,code,target,expires_at) VALUES (@user_id,@type,@code,@target,@expires_at)`),
   getVerificationCode:    prepare(`SELECT * FROM verification_codes WHERE user_id=? AND type=? AND used=0 AND expires_at > datetime('now') ORDER BY created_at DESC LIMIT 1`),
   markCodeUsed:           prepare(`UPDATE verification_codes SET used=1 WHERE id=?`),
   setEmailVerified:       prepare(`UPDATE users SET email_verified=1 WHERE id=?`),
   setPhoneVerified:       prepare(`UPDATE users SET phone_verified=1 WHERE id=?`),
 
-  // presignup codes (pre-account email verification — stored in DB for cross-instance access)
-  upsertPresignupCode:  prepare(`INSERT OR REPLACE INTO presignup_codes (email, code, expires, verified) VALUES (?, ?, ?, 0)`),
-  getPresignupCode:     prepare(`SELECT * FROM presignup_codes WHERE email = ?`),
-  setPresignupVerified: prepare(`UPDATE presignup_codes SET verified = 1 WHERE email = ?`),
-  deletePresignupCode:  prepare(`DELETE FROM presignup_codes WHERE email = ?`),
+  // presignup codes
+  upsertPresignupCode:  prepare(`INSERT OR REPLACE INTO presignup_codes (email,code,expires,verified) VALUES (?,?,?,0)`),
+  getPresignupCode:     prepare(`SELECT * FROM presignup_codes WHERE email=?`),
+  setPresignupVerified: prepare(`UPDATE presignup_codes SET verified=1 WHERE email=?`),
+  deletePresignupCode:  prepare(`DELETE FROM presignup_codes WHERE email=?`),
 
   // event applications
-  createApplication:       prepare(`INSERT OR IGNORE INTO event_applications (event_id, vendor_user_id, message) VALUES (?, ?, ?)`),
+  createApplication:       prepare(`INSERT OR IGNORE INTO event_applications (event_id,vendor_user_id,message) VALUES (?,?,?)`),
   getApplicationById:      prepare(`SELECT * FROM event_applications WHERE id=?`),
   getApplicationByIds:     prepare(`SELECT * FROM event_applications WHERE event_id=? AND vendor_user_id=?`),
-  getApplicationsByVendor: prepare(`SELECT ea.*, e.name as event_name, e.category, e.suburb, e.state, e.date_sort, e.date_text, e.organiser_name FROM event_applications ea JOIN events e ON ea.event_id=e.id WHERE ea.vendor_user_id=? ORDER BY ea.created_at DESC`),
-  getApplicationsByEvent:  prepare(`SELECT ea.*, u.first_name, u.last_name, u.email, v.trading_name, v.mobile, v.suburb as v_suburb, v.state as v_state, v.bio, v.cuisine_tags, v.plan, v.instagram, v.setup_type, v.stall_w, v.stall_d, v.power, v.water, v.price_range FROM event_applications ea JOIN users u ON ea.vendor_user_id=u.id JOIN vendors v ON v.user_id=u.id WHERE ea.event_id=?`),
+  getApplicationsByVendor: prepare(`SELECT ea.*,e.name as event_name,e.category,e.suburb,e.state,e.date_sort,e.date_text,e.organiser_name FROM event_applications ea JOIN events e ON ea.event_id=e.id WHERE ea.vendor_user_id=? ORDER BY ea.created_at DESC`),
+  getApplicationsByEvent:  prepare(`SELECT ea.*,u.first_name,u.last_name,u.email,v.trading_name,v.mobile,v.suburb as v_suburb,v.state as v_state,v.bio,v.cuisine_tags,v.plan,v.instagram,v.setup_type,v.stall_w,v.stall_d,v.power,v.water,v.price_range FROM event_applications ea JOIN users u ON ea.vendor_user_id=u.id JOIN vendors v ON v.user_id=u.id WHERE ea.event_id=?`),
   updateApplicationStatus: prepare(`UPDATE event_applications SET status=? WHERE id=?`),
-  setApplicationSpot:      prepare(`UPDATE event_applications SET spot_number=?, approved_at=datetime('now') WHERE id=?`),
+  setApplicationSpot:      prepare(`UPDATE event_applications SET spot_number=?,approved_at=datetime('now') WHERE id=?`),
   countApprovedByEvent:    prepare(`SELECT COUNT(*) as n FROM event_applications WHERE event_id=? AND status='approved'`),
   withdrawApplication:     prepare(`UPDATE event_applications SET status='withdrawn' WHERE event_id=? AND vendor_user_id=?`),
 
   // organiser events
-  createEvent:        prepare(`INSERT INTO events (slug, name, category, suburb, state, date_sort, date_end, date_text, description, stalls_available, organiser_name, organiser_user_id, venue_name) VALUES (@slug, @name, @category, @suburb, @state, @date_sort, @date_end, @date_text, @description, @stalls_available, @organiser_name, @organiser_user_id, @venue_name)`),
+  createEvent:        prepare(`INSERT INTO events (slug,name,category,suburb,state,date_sort,date_end,date_text,description,stalls_available,organiser_name,organiser_user_id,venue_name) VALUES (@slug,@name,@category,@suburb,@state,@date_sort,@date_end,@date_text,@description,@stalls_available,@organiser_name,@organiser_user_id,@venue_name)`),
   getOrganiserEvents: prepare(`SELECT * FROM events WHERE organiser_user_id=? ORDER BY date_sort ASC`),
 
   // public vendors
   publicVendors: prepare(`
-    SELECT v.user_id, v.trading_name, v.suburb, v.state, v.bio, v.cuisine_tags,
-           v.setup_type, v.stall_w, v.stall_d, v.power, v.water, v.price_range,
-           v.instagram, v.plan, u.status
-    FROM vendors v JOIN users u ON v.user_id = u.id
-    WHERE u.status = 'active' ORDER BY v.plan DESC, v.created_at ASC
+    SELECT v.user_id,v.trading_name,v.suburb,v.state,v.bio,v.cuisine_tags,
+           v.setup_type,v.stall_w,v.stall_d,v.power,v.water,v.price_range,
+           v.instagram,v.plan,u.status
+    FROM vendors v JOIN users u ON v.user_id=u.id
+    WHERE u.status='active' ORDER BY v.plan DESC,v.created_at ASC
   `),
   publicVendorById: prepare(`
-    SELECT v.*, u.status, u.first_name, u.last_name
-    FROM vendors v JOIN users u ON v.user_id = u.id
-    WHERE v.user_id = ? AND u.status = 'active'
+    SELECT v.*,u.status,u.first_name,u.last_name
+    FROM vendors v JOIN users u ON v.user_id=u.id
+    WHERE v.user_id=? AND u.status='active'
   `),
 };
 
-// ── Transactions ───────────────────────────────────────────────────────────
-export async function txSignupVendor(userData, vendorData) {
-  const tx = await client.transaction('write');
-  try {
-    const r = await tx.execute({
-      sql: `INSERT INTO users (email, password_hash, first_name, last_name, role) VALUES (@email, @password_hash, @first_name, @last_name, @role)`,
-      args: userData,
-    });
-    const userId = Number(r.lastInsertRowid);
-    await tx.execute({
-      sql: `INSERT INTO vendors (user_id, trading_name, abn, abn_verified, mobile, state, suburb, bio, cuisine_tags, setup_type, stall_w, stall_d, power, water, price_range, instagram, plan) VALUES (@user_id, @trading_name, @abn, @abn_verified, @mobile, @state, @suburb, @bio, @cuisine_tags, @setup_type, @stall_w, @stall_d, @power, @water, @price_range, @instagram, @plan)`,
-      args: { ...vendorData, user_id: userId },
-    });
-    await tx.commit();
-    return userId;
-  } catch (e) {
-    await tx.rollback();
-    throw e;
-  }
-}
+// ── Transactions ─────────────────────────────────────────────────────────────
+export const txSignupVendor    = _txSignupVendor;
+export const txSignupOrganiser = _txSignupOrganiser;
 
-export async function txSignupOrganiser(userData, organiserData) {
-  const tx = await client.transaction('write');
-  try {
-    const r = await tx.execute({
-      sql: `INSERT INTO users (email, password_hash, first_name, last_name, role) VALUES (@email, @password_hash, @first_name, @last_name, @role)`,
-      args: userData,
-    });
-    const userId = Number(r.lastInsertRowid);
-    await tx.execute({
-      sql: `INSERT INTO organisers (user_id, org_name, abn, abn_verified, website, state, suburb, phone, bio, event_types, event_scale, stall_range, referral) VALUES (@user_id, @org_name, @abn, @abn_verified, @website, @state, @suburb, @phone, @bio, @event_types, @event_scale, @stall_range, @referral)`,
-      args: { ...organiserData, user_id: userId },
-    });
-    await tx.commit();
-    return userId;
-  } catch (e) {
-    await tx.rollback();
-    throw e;
-  }
-}
-
-export default client;
+export default _client ?? _localDb;
