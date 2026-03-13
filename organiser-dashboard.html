@@ -1210,6 +1210,30 @@ async function reviewApp(appId, status, btn) {
     const badge = card.querySelector('.badge');
     if (badge) { badge.className = `badge badge-${status}`; badge.textContent = labels[status]; }
 
+    // Update spots count in My Events table and mgmt meta header
+    const eventId = card ? card.dataset.eventId : null;
+    if (eventId) {
+      // Re-count approved from DOM cards
+      const allCards = document.querySelectorAll(`.app-card[data-event-id="${eventId}"]`);
+      const newApproved = Array.from(allCards).filter(c => c.dataset.appStatus === 'approved').length;
+      // Update My Events row spots
+      const spotsEl = document.getElementById('spots-text-' + eventId);
+      if (spotsEl) {
+        const match = spotsEl.textContent.match(/\/(\d+)/);
+        const total = match ? match[1] : null;
+        if (total) spotsEl.innerHTML = `<span style="color:${newApproved >= parseInt(total) ? 'var(--herb)' : 'inherit'}">${newApproved}</span>/${total}`;
+      }
+      // Update My Events approved count column
+      const evRow = document.querySelector(`#org-events-tbody tr[data-event-id="${eventId}"]`);
+      if (evRow) { const cells = evRow.querySelectorAll('td'); if (cells[5]) cells[5].textContent = newApproved; }
+      // Update mgmt meta header
+      const metaSpots = document.querySelector('#mgmt-meta .mgmt-meta-item:last-child');
+      if (metaSpots && metaSpots.textContent.includes('spots filled')) {
+        const totalMatch = metaSpots.textContent.match(/\/(\d+)/);
+        if (totalMatch) metaSpots.textContent = `${newApproved}/${totalMatch[1]} spots filled`;
+      }
+    }
+
     // If approved, add vendor to lineup tab in real time
     if (status === 'approved') {
       const vendorId   = card.dataset.vendorId;
@@ -1659,14 +1683,18 @@ function renderOrgEventsData(events) {
     const statusBadge = ev.status === 'archived'
       ? `<span class="badge" style="color:var(--gold);background:#C9840A12;border:1px solid #C9840A30;">● Archived</span>`
       : `<span class="badge badge-live">● Live</span>`;
+    const approvedCount = ev.approved_count || 0;
+    const spotsText = ev.stalls_available
+      ? `<span style="color:${approvedCount >= ev.stalls_available ? 'var(--herb)' : 'inherit'}">${approvedCount}</span>/${ev.stalls_available}`
+      : '—';
     return `
-      <tr>
+      <tr data-event-id="${ev.id}">
         <td style="padding-left:24px;"><div class="td-event">${ev.name}</div><div class="td-sub">${ev.category || ''} · ${ev.suburb || ''}${ev.state ? ', ' + ev.state : ''}</div></td>
         <td style="white-space:nowrap;">${date}</td>
-        <td><span class="spots-text">${ev.stalls_available ? '0/' + ev.stalls_available : '—'}</span></td>
+        <td><span class="spots-text" id="spots-text-${ev.id}">${spotsText}</span></td>
         <td><span style="color:var(--text-lo);">—</span></td>
         <td>${statusBadge}</td>
-        <td>0</td>
+        <td>${approvedCount}</td>
         <td style="padding-right:24px;"><div class="action-btns"><button class="btn-action btn-manage" onclick="openEventMgmt(${ev.id},'${ev.name.replace(/'/g,"\\'")}')">Manage</button></div></td>
       </tr>
     `;
