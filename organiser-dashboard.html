@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Organiser Dashboard — Pitch.</title>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="/fonts/fonts.css">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
@@ -465,7 +465,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
     <div class="org-card">
       <div class="org-avatar">🏛️</div>
       <div class="org-info">
-        <div class="org-name">Loading…</div>
+        <div class="org-name" id="org-display-name">—</div>
         <div class="org-role">Event Organiser</div>
       </div>
     </div>
@@ -505,7 +505,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
         <div class="stat-card ember">
           <div class="stat-label">Live Events</div>
           <div class="stat-value" id="stat-live-events">—</div>
-          <div class="stat-delta" id="stat-live-delta">Loading…</div>
+          <div class="stat-delta" id="stat-live-delta"></div>
         </div>
         <div class="stat-card herb">
           <div class="stat-label">Total Applications</div>
@@ -528,17 +528,13 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
         <!-- Upcoming events -->
         <div class="card">
           <div class="section-title">Your upcoming events</div>
-          <div class="upcoming-list" id="overview-upcoming-list">
-            <div style="color:var(--text-lo);font-size:13px;padding:16px 0;">Loading…</div>
-          </div>
+          <div class="upcoming-list" id="overview-upcoming-list"></div>
         </div>
 
         <!-- Recent applications -->
         <div class="card">
           <div class="section-title">Recent applications</div>
-          <div class="recent-apps-list" id="overview-recent-apps">
-            <div style="color:var(--text-lo);font-size:13px;padding:16px 0;">Loading…</div>
-          </div>
+          <div class="recent-apps-list" id="overview-recent-apps"></div>
         </div>
       </div>
     </div>
@@ -563,7 +559,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
             </tr>
           </thead>
           <tbody id="org-events-tbody">
-            <tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-lo);">Loading events…</td></tr>
+            <tr id="org-events-empty-row"><td colspan="7" style="text-align:center;padding:40px;color:var(--text-lo);font-size:13px;">No events yet — post your first event above.</td></tr>
           </tbody>
         </table>
       </div>
@@ -1497,8 +1493,15 @@ async function initDashboard() {
   const profile = window.__PITCH_PROFILE__;
   if (!user || user.role !== 'organiser') { window.location.href = '/login'; return; }
 
+  // Render data FIRST — before any other setup — so it's visible immediately
+  const init = window.__PITCH_INIT_DATA__;
+  if (init) {
+    if (init.overview) renderOrgOverview(init.overview);
+    if (init.events)   renderOrgEventsData(init.events);
+  }
+
   const orgName = (profile && profile.org_name) ? profile.org_name : (user.first_name + ' ' + user.last_name);
-  document.querySelector('.org-name').textContent = orgName;
+  document.getElementById('org-display-name').textContent = orgName;
 
   const emailEl = document.getElementById('settings-email');
   if (emailEl) emailEl.textContent = user.email || '—';
@@ -1511,6 +1514,7 @@ async function initDashboard() {
     window.location.href = '/';
   };
 
+  // Background refresh to pick up any changes since page was served
   loadOrgEvents();
   loadOrgOverview();
 }
@@ -1526,6 +1530,10 @@ async function loadOrgOverview() {
   const r = await pitchFetch('/api/organiser/overview');
   if (!r.ok) return;
   const d = await r.json();
+  renderOrgOverview(d);
+}
+
+function renderOrgOverview(d) {
 
   // Stat cards
   const appsEl = document.getElementById('stat-total-apps');
@@ -1612,8 +1620,10 @@ async function loadOrgEvents() {
   const r = await pitchFetch('/api/organiser/events');
   if (!r.ok) return;
   const { events } = await r.json();
+  renderOrgEventsData(events);
+}
 
-  // Update stat card
+function renderOrgEventsData(events) {
   const liveCount = events.filter(e => e.status === 'published').length;
   const statEl = document.getElementById('stat-live-events');
   if (statEl) statEl.textContent = liveCount;
@@ -1630,13 +1640,16 @@ async function loadOrgEvents() {
 
   tbody.innerHTML = events.map(ev => {
     const date = ev.date_sort ? new Date(ev.date_sort).toLocaleDateString('en-AU', {day:'numeric',month:'short',year:'numeric'}) : 'TBC';
+    const statusBadge = ev.status === 'archived'
+      ? `<span class="badge" style="color:var(--gold);background:#C9840A12;border:1px solid #C9840A30;">● Archived</span>`
+      : `<span class="badge badge-live">● Live</span>`;
     return `
       <tr>
         <td style="padding-left:24px;"><div class="td-event">${ev.name}</div><div class="td-sub">${ev.category || ''} · ${ev.suburb || ''}${ev.state ? ', ' + ev.state : ''}</div></td>
         <td style="white-space:nowrap;">${date}</td>
         <td><span class="spots-text">${ev.stalls_available ? '0/' + ev.stalls_available : '—'}</span></td>
         <td><span style="color:var(--text-lo);">—</span></td>
-        <td><span class="badge badge-live">● Live</span></td>
+        <td>${statusBadge}</td>
         <td>0</td>
         <td style="padding-right:24px;"><div class="action-btns"><button class="btn-action btn-manage" onclick="openEventMgmt(${ev.id},'${ev.name.replace(/'/g,"\\'")}')">Manage</button></div></td>
       </tr>

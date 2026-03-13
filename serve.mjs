@@ -1,4 +1,5 @@
 import express from 'express';
+import compression from 'compression';
 import { createHmac } from 'crypto';
 import fs from 'fs';
 import bcrypt from 'bcryptjs';
@@ -10,6 +11,20 @@ import { sendVerificationEmail, sendVerificationSMS } from './mailer.mjs';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = 3000;
+
+// ── Gzip all responses ──────────────────────────────────────────────────────
+app.use(compression());
+
+// ── In-memory HTML file cache ───────────────────────────────────────────────
+// Reads each HTML file once, then serves from memory. Eliminates disk I/O on
+// every page request. Restart the server to pick up HTML changes.
+const _htmlCache = new Map();
+function readHtml(file) {
+  if (!_htmlCache.has(file)) {
+    _htmlCache.set(file, fs.readFileSync(path.join(__dirname, file), 'utf8'));
+  }
+  return _htmlCache.get(file);
+}
 
 // ── Simple HMAC-signed session cookie ──────────────────────────────────────
 // Replaces cookie-session. Stores session payload directly in a signed cookie.
@@ -89,7 +104,7 @@ function verifyPageToken(token) {
 
 // Serve a dashboard page with auth check + injected user data and page token.
 // This eliminates the need for a /api/me call from the client entirely.
-function serveDashboard(file, expectedRole) {
+function serveDashboard(file, expectedRole, getInitData) {
   return async (req, res) => {
     if (!req.session.userId) return res.redirect('/login');
     try {
@@ -103,11 +118,17 @@ function serveDashboard(file, expectedRole) {
       const token = makePageToken(user.id, user.role);
       const { password_hash, ...userSafe } = user;
 
-      let html = fs.readFileSync(path.join(__dirname, file), 'utf8');
+      let initData = {};
+      if (getInitData) {
+        try { initData = await getInitData(user, profile); } catch(e) { console.error('[initData]', e); }
+      }
+
+      let html = readHtml(file);
       html = html.replace('</head>', `<script>
-window.__PITCH_USER__    = ${JSON.stringify(userSafe)};
-window.__PITCH_PROFILE__ = ${JSON.stringify(profile || {})};
-window.__PITCH_TOKEN__   = ${JSON.stringify(token)};
+window.__PITCH_USER__      = ${JSON.stringify(userSafe)};
+window.__PITCH_PROFILE__   = ${JSON.stringify(profile || {})};
+window.__PITCH_TOKEN__     = ${JSON.stringify(token)};
+window.__PITCH_INIT_DATA__ = ${JSON.stringify(initData)};
 </script></head>`);
       res.send(html);
     } catch (e) {
@@ -115,6 +136,40 @@ window.__PITCH_TOKEN__   = ${JSON.stringify(token)};
       res.redirect('/login');
     }
   };
+}
+
+async function orgInitData(user) {
+  const events = await stmts.getOrganiserEvents.all(user.id);
+  let totalApps = 0, totalApproved = 0, totalSpots = 0, totalFilled = 0;
+  const recentApps = [];
+  for (const ev of events) {
+    const apps = await stmts.getApplicationsByEvent.all(ev.id);
+    totalApps += apps.length;
+    const approved = apps.filter(a => a.status === 'approved');
+    totalApproved += approved.length;
+    if (ev.stalls_available) {
+      totalSpots  += ev.stalls_available;
+      totalFilled += Math.min(approved.length, ev.stalls_available);
+    }
+    for (const a of apps) recentApps.push({ ...a, event_name: ev.name, event_id: ev.id });
+  }
+  recentApps.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  const fillRate = totalSpots > 0 ? Math.round((totalFilled / totalSpots) * 100) : 0;
+  const upcoming = events.filter(e => e.status === 'published').slice(0, 5);
+  return {
+    overview: { total_apps: totalApps, vendors_approved: totalApproved, fill_rate: fillRate, upcoming, recent_apps: recentApps.slice(0, 5) },
+    events,
+  };
+}
+
+async function vendorInitData(user) {
+  const publishedEvts = await stmts.publishedEvents.all();
+  const events = await Promise.all(publishedEvts.map(async ev => {
+    const app = await stmts.getApplicationByIds.get(ev.id, user.id);
+    return { ...ev, applied: !!app, appStatus: app ? app.status : null };
+  }));
+  const applications = await stmts.getApplicationsByVendor.all(user.id);
+  return { events, applications };
 }
 
 // ── Auth helpers ───────────────────────────────────────────────────────────
@@ -883,7 +938,10 @@ app.patch('/api/organiser/applications/:id/status', requireAuth, async (req, res
 
 // ── Static page routes ─────────────────────────────────────────────────────
 function page(file) {
-  return (req, res) => res.sendFile(path.join(__dirname, file));
+  return (req, res) => {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.send(readHtml(file));
+  };
 }
 
 app.get('/',                    page('index.html'));
@@ -907,18 +965,19 @@ app.get('/vendors/:id', async (req, res) => {
         vendor.cuisine_tags = (() => { try { return JSON.parse(row.cuisine_tags || '[]'); } catch { return []; } })();
         vendor.photos       = (() => { try { return JSON.parse(row.photos       || '[]'); } catch { return []; } })();
         delete vendor.password_hash;
-        let html = fs.readFileSync(path.join(__dirname, 'vendor-detail.html'), 'utf8');
+        let html = readHtml('vendor-detail.html');
         html = html.replace('</head>', `<script>window.__PITCH_VENDOR__=${JSON.stringify(vendor)};</script></head>`);
         return res.send(html);
       }
     } catch (e) { console.error('[vendor page]', e); }
   }
-  res.sendFile(path.join(__dirname, 'vendor-detail.html'));
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.send(readHtml('vendor-detail.html'));
 });
-app.get('/dashboard/vendor',          serveDashboard('vendor-dashboard.html', 'vendor'));
-app.get('/dashboard/vendor/*splat',   serveDashboard('vendor-dashboard.html', 'vendor'));
-app.get('/dashboard/organiser',       serveDashboard('organiser-dashboard.html', 'organiser'));
-app.get('/dashboard/organiser/*splat', serveDashboard('organiser-dashboard.html', 'organiser'));
+app.get('/dashboard/vendor',           serveDashboard('vendor-dashboard.html',     'vendor',    vendorInitData));
+app.get('/dashboard/vendor/*splat',    serveDashboard('vendor-dashboard.html',     'vendor',    vendorInitData));
+app.get('/dashboard/organiser',        serveDashboard('organiser-dashboard.html',  'organiser', orgInitData));
+app.get('/dashboard/organiser/*splat', serveDashboard('organiser-dashboard.html',  'organiser', orgInitData));
 app.get('/admin/login',         page('admin-login.html'));
 app.get('/admin',               requireAdminPage, page('admin-dashboard.html'));
 app.get('/admin/*splat',        requireAdminPage, page('admin-dashboard.html'));
