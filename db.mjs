@@ -255,6 +255,10 @@ await _safeExec(`ALTER TABLE vendors ADD COLUMN council_url TEXT`);
 await _safeExec(`ALTER TABLE events ADD COLUMN date_end TEXT`);
 await _safeExec(`ALTER TABLE event_applications ADD COLUMN spot_number INTEGER`);
 await _safeExec(`ALTER TABLE event_applications ADD COLUMN approved_at DATETIME`);
+// Deduplicate organisers rows (caused by missing UNIQUE constraint on user_id)
+await _safeExec(`DELETE FROM organisers WHERE id NOT IN (SELECT MIN(id) FROM organisers GROUP BY user_id)`);
+// Add unique index so this can never happen again
+await _safeExec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_organisers_user_id ON organisers(user_id)`);
 
 if (_needsSeed) {
   const _ins = prepare(`INSERT OR IGNORE INTO events (slug,name,category,suburb,state,date_sort,organiser_name) VALUES (@slug,@name,@category,@suburb,@state,@date_sort,@organiser_name)`);
@@ -317,6 +321,16 @@ if (_needsSeed) {
     if (row) await _so.run({ user_id: row.id, org_name: o.org_name, suburb: o.suburb, state: o.state, bio: o.bio, website: o.website, phone: o.phone, event_types: o.event_types, event_scale: o.event_scale, stall_range: o.stall_range });
   }
 }
+
+// Link seed events to their organiser accounts by matching organiser_name → org_name.
+// Runs unconditionally so it also repairs any existing rows with organiser_user_id=null.
+await _safeExec(`
+  UPDATE events
+  SET organiser_user_id = (
+    SELECT o.user_id FROM organisers o WHERE o.org_name = events.organiser_name LIMIT 1
+  )
+  WHERE organiser_user_id IS NULL
+`);
 
 // ── Prepared statements ──────────────────────────────────────────────────────
 export const stmts = {
