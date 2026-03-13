@@ -260,6 +260,27 @@ await _safeExec(`DELETE FROM organisers WHERE id NOT IN (SELECT MIN(id) FROM org
 // Add unique index so this can never happen again
 await _safeExec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_organisers_user_id ON organisers(user_id)`);
 
+// ── Messaging tables ─────────────────────────────────────────────────────────
+await _safeExec(`
+  CREATE TABLE IF NOT EXISTS message_threads (
+    thread_key        TEXT PRIMARY KEY,
+    vendor_user_id    INTEGER NOT NULL,
+    organiser_user_id INTEGER NOT NULL,
+    created_at        DATETIME DEFAULT (datetime('now'))
+  )
+`);
+await _safeExec(`
+  CREATE TABLE IF NOT EXISTS messages (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    thread_key     TEXT NOT NULL,
+    sender_user_id INTEGER NOT NULL,
+    body           TEXT NOT NULL,
+    is_read        INTEGER DEFAULT 0,
+    created_at     DATETIME DEFAULT (datetime('now'))
+  )
+`);
+await _safeExec(`CREATE INDEX IF NOT EXISTS idx_msg_thread ON messages(thread_key, id)`);
+
 if (_needsSeed) {
   const _ins = prepare(`INSERT OR IGNORE INTO events (slug,name,category,suburb,state,date_sort,organiser_name) VALUES (@slug,@name,@category,@suburb,@state,@date_sort,@organiser_name)`);
   for (const ev of [
@@ -418,7 +439,7 @@ export const stmts = {
   createApplication:       prepare(`INSERT OR IGNORE INTO event_applications (event_id,vendor_user_id,message) VALUES (?,?,?)`),
   getApplicationById:      prepare(`SELECT * FROM event_applications WHERE id=?`),
   getApplicationByIds:     prepare(`SELECT * FROM event_applications WHERE event_id=? AND vendor_user_id=?`),
-  getApplicationsByVendor: prepare(`SELECT ea.*,e.name as event_name,e.category,e.suburb,e.state,e.date_sort,e.date_text,e.organiser_name FROM event_applications ea JOIN events e ON ea.event_id=e.id WHERE ea.vendor_user_id=? ORDER BY ea.created_at DESC`),
+  getApplicationsByVendor: prepare(`SELECT ea.*,e.name as event_name,e.category,e.suburb,e.state,e.date_sort,e.date_text,e.organiser_name,e.organiser_user_id FROM event_applications ea JOIN events e ON ea.event_id=e.id WHERE ea.vendor_user_id=? ORDER BY ea.created_at DESC`),
   getApplicationsByEvent:  prepare(`SELECT ea.*,u.first_name,u.last_name,u.email,v.trading_name,v.mobile,v.suburb as v_suburb,v.state as v_state,v.bio,v.cuisine_tags,v.plan,v.instagram,v.setup_type,v.stall_w,v.stall_d,v.power,v.water,v.price_range FROM event_applications ea JOIN users u ON ea.vendor_user_id=u.id JOIN vendors v ON v.user_id=u.id WHERE ea.event_id=?`),
   updateApplicationStatus: prepare(`UPDATE event_applications SET status=? WHERE id=?`),
   setApplicationSpot:      prepare(`UPDATE event_applications SET spot_number=?,approved_at=datetime('now') WHERE id=?`),
@@ -428,6 +449,45 @@ export const stmts = {
   // organiser events
   createEvent:        prepare(`INSERT INTO events (slug,name,category,suburb,state,date_sort,date_end,date_text,description,stalls_available,organiser_name,organiser_user_id,venue_name) VALUES (@slug,@name,@category,@suburb,@state,@date_sort,@date_end,@date_text,@description,@stalls_available,@organiser_name,@organiser_user_id,@venue_name)`),
   getOrganiserEvents: prepare(`SELECT * FROM events WHERE organiser_user_id=? ORDER BY date_sort ASC`),
+
+  // optimised single-query events+application status for vendor dashboard
+  publishedEventsForVendor: prepare(`
+    SELECT e.*, ea.status as appStatus, CASE WHEN ea.id IS NOT NULL THEN 1 ELSE 0 END as applied
+    FROM events e
+    LEFT JOIN event_applications ea ON ea.event_id = e.id AND ea.vendor_user_id = ?
+    WHERE e.status = 'published'
+    ORDER BY e.date_sort ASC
+  `),
+
+  // messaging
+  createOrGetThread: prepare(`INSERT OR IGNORE INTO message_threads (thread_key, vendor_user_id, organiser_user_id) VALUES (?, ?, ?)`),
+  getThread:         prepare(`
+    SELECT mt.*, v.trading_name as vendor_name, o.org_name as organiser_name
+    FROM message_threads mt
+    JOIN vendors v ON v.user_id = mt.vendor_user_id
+    JOIN organisers o ON o.user_id = mt.organiser_user_id
+    WHERE mt.thread_key = ?
+  `),
+  getThreadsForUser: prepare(`
+    SELECT mt.thread_key, mt.vendor_user_id, mt.organiser_user_id,
+      v.trading_name as vendor_name, o.org_name as organiser_name,
+      (SELECT body FROM messages WHERE thread_key = mt.thread_key ORDER BY id DESC LIMIT 1) as last_body,
+      (SELECT created_at FROM messages WHERE thread_key = mt.thread_key ORDER BY id DESC LIMIT 1) as last_at,
+      (SELECT COUNT(*) FROM messages WHERE thread_key = mt.thread_key AND sender_user_id != @userId AND is_read = 0) as unread_count
+    FROM message_threads mt
+    JOIN vendors v ON v.user_id = mt.vendor_user_id
+    JOIN organisers o ON o.user_id = mt.organiser_user_id
+    WHERE mt.vendor_user_id = @userId OR mt.organiser_user_id = @userId
+    ORDER BY last_at DESC
+  `),
+  getMessagesInThread: prepare(`SELECT * FROM messages WHERE thread_key = ? ORDER BY id ASC`),
+  sendMessage:         prepare(`INSERT INTO messages (thread_key, sender_user_id, body) VALUES (?, ?, ?)`),
+  markThreadRead:      prepare(`UPDATE messages SET is_read = 1 WHERE thread_key = ? AND sender_user_id != ? AND is_read = 0`),
+  getUnreadMsgCount:   prepare(`
+    SELECT COUNT(*) as count FROM messages m
+    JOIN message_threads mt ON mt.thread_key = m.thread_key
+    WHERE (mt.vendor_user_id = ? OR mt.organiser_user_id = ?) AND m.sender_user_id != ? AND m.is_read = 0
+  `),
 
   // public vendors
   publicVendors: prepare(`

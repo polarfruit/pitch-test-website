@@ -165,20 +165,22 @@ async function orgInitData(user) {
   recentApps.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
   const fillRate = totalSpots > 0 ? Math.round((totalFilled / totalSpots) * 100) : 0;
   const upcoming = events.filter(e => e.status === 'published').slice(0, 5);
+  const unreadRow = await stmts.getUnreadMsgCount.get(user.id, user.id, user.id);
+  const unreadMessages = unreadRow ? Number(unreadRow.count) : 0;
   return {
     overview: { total_apps: totalApps, vendors_approved: totalApproved, fill_rate: fillRate, upcoming, recent_apps: recentApps.slice(0, 5) },
     events,
+    unreadMessages,
   };
 }
 
 async function vendorInitData(user) {
-  const publishedEvts = await stmts.publishedEvents.all();
-  const events = await Promise.all(publishedEvts.map(async ev => {
-    const app = await stmts.getApplicationByIds.get(ev.id, user.id);
-    return { ...ev, applied: !!app, appStatus: app ? app.status : null };
-  }));
+  // Single JOIN replaces N+1 per-event lookups — much faster on Vercel
+  const events = await stmts.publishedEventsForVendor.all(user.id);
   const applications = await stmts.getApplicationsByVendor.all(user.id);
-  return { events, applications };
+  const unreadRow = await stmts.getUnreadMsgCount.get(user.id, user.id, user.id);
+  const unreadMessages = unreadRow ? Number(unreadRow.count) : 0;
+  return { events, applications, unreadMessages };
 }
 
 // ── Auth helpers ───────────────────────────────────────────────────────────
@@ -769,6 +771,52 @@ app.get('/api/vendor/applications', requireAuth, async (req, res) => {
   if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Vendors only' });
   const apps = await stmts.getApplicationsByVendor.all(req.session.userId);
   res.json({ applications: apps });
+});
+
+// ── API: Messaging ─────────────────────────────────────────────────────────
+// GET /api/messages — list all threads for current user with unread counts
+app.get('/api/messages', requireAuth, async (req, res) => {
+  try {
+    const userId = req.session.userId;
+    const threads = await stmts.getThreadsForUser.all({ userId });
+    res.json({ threads });
+  } catch (e) { console.error('[messages list]', e); res.status(500).json({ error: 'Server error' }); }
+});
+
+// POST /api/messages — create or get a thread
+app.post('/api/messages', requireAuth, async (req, res) => {
+  try {
+    const { vendor_user_id, organiser_user_id } = req.body;
+    if (!vendor_user_id || !organiser_user_id) return res.status(400).json({ error: 'Missing participant IDs' });
+    const threadKey = `v${vendor_user_id}_o${organiser_user_id}`;
+    await stmts.createOrGetThread.run(threadKey, vendor_user_id, organiser_user_id);
+    const thread = await stmts.getThread.get(threadKey);
+    res.json({ thread_key: threadKey, thread });
+  } catch (e) { console.error('[messages create]', e); res.status(500).json({ error: 'Server error' }); }
+});
+
+// GET /api/messages/:threadKey — load messages + mark as read
+app.get('/api/messages/:threadKey', requireAuth, async (req, res) => {
+  try {
+    const { threadKey } = req.params;
+    const userId = req.session.userId;
+    await stmts.markThreadRead.run(threadKey, userId);
+    const messages = await stmts.getMessagesInThread.all(threadKey);
+    const thread = await stmts.getThread.get(threadKey);
+    res.json({ messages, thread });
+  } catch (e) { console.error('[messages get]', e); res.status(500).json({ error: 'Server error' }); }
+});
+
+// POST /api/messages/:threadKey — send a message
+app.post('/api/messages/:threadKey', requireAuth, async (req, res) => {
+  try {
+    const { threadKey } = req.params;
+    const { body } = req.body;
+    if (!body || !body.trim()) return res.status(400).json({ error: 'Message body required' });
+    const result = await stmts.sendMessage.run(threadKey, req.session.userId, body.trim());
+    const msg = { id: result.lastInsertRowid, thread_key: threadKey, sender_user_id: req.session.userId, body: body.trim(), is_read: 0, created_at: new Date().toISOString() };
+    res.json({ message: msg });
+  } catch (e) { console.error('[messages send]', e); res.status(500).json({ error: 'Server error' }); }
 });
 
 // ── API: Vendor photos ─────────────────────────────────────────────────────
