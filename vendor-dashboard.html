@@ -893,7 +893,7 @@ body::before {
     <div class="vendor-card-mini">
       <div class="vendor-avatar">🔥</div>
       <div class="vendor-info">
-        <div class="vendor-mini-name">Loading…</div>
+        <div class="vendor-mini-name" id="vendor-display-name">—</div>
         <div class="plan-pill">Free Plan</div>
       </div>
     </div>
@@ -1504,7 +1504,7 @@ function startChatWithOrganiser(threadKey, orgName, eventName) {
   }
 
   if (!THREADS[threadKey]) {
-    THREADS[threadKey] = { org: orgName, event: eventName, eventSlug: '', messages: [] };
+    THREADS[threadKey] = { org: orgName, event: eventName, eventSlug: '', messages: [], unread: false };
   }
   pendingVendorThread = threadKey;
   activeThread = threadKey;
@@ -1534,12 +1534,15 @@ function renderVendorThreadList() {
         <div class="thread-preview">${preview}</div>
         ${t.event ? `<div style="font-size:10px;color:var(--text-lo);margin-top:2px;">Re: ${t.event}</div>` : ''}
       </div>
+      ${t.unread && !isActive ? `<div class="thread-unread-dot"></div>` : ''}
     </div>`;
   }).join('');
+  syncMsgBadge();
 }
 
 function openThread(id, el) {
   activeThread = id;
+  if (THREADS[id]) THREADS[id].unread = false;
   document.querySelectorAll('.thread-item').forEach(t => t.classList.remove('active'));
   if (el) el.classList.add('active');
   else {
@@ -1604,6 +1607,33 @@ function sendMessage() {
   inp.value = '';
   inp.style.height = '';
   syncMsgBadge();
+
+  // Simulate organiser reply after short delay (demo)
+  const replyThreadKey = activeThread;
+  const orgReplies = [
+    'Great, looking forward to having you at the event!',
+    'Thanks for the message — we'll confirm the details shortly.',
+    'Perfect! We'll send through the stall allocation soon.',
+    'Noted — let us know if you need anything else.',
+    'Sounds good, we'll be in touch with the setup schedule.'
+  ];
+  const replyText = orgReplies[Math.floor(Math.random() * orgReplies.length)];
+  setTimeout(() => {
+    const thr = THREADS[replyThreadKey];
+    if (!thr) return;
+    const now2 = new Date().toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
+    thr.messages.push({ from: 'org', text: replyText, time: now2 });
+    if (activeThread !== replyThreadKey) {
+      thr.unread = true;
+      renderVendorThreadList();
+      // Re-highlight active after re-render
+      const ae = document.querySelector(`.thread-item[onclick*="'${activeThread}'"]`);
+      if (ae) ae.classList.add('active');
+      syncMsgBadge();
+    } else {
+      renderMessages(thr.messages, thr.org);
+    }
+  }, 3000 + Math.random() * 4000);
 }
 
 function handleMsgKey(e) {
@@ -1746,7 +1776,8 @@ async function initDashboard() {
 
   // Populate user name + plan
   const tradingName = (profile && profile.trading_name) ? profile.trading_name : (user.first_name + ' ' + user.last_name);
-  document.querySelector('.vendor-mini-name').textContent = tradingName;
+  const nameEl = document.getElementById('vendor-display-name') || document.querySelector('.vendor-mini-name');
+  if (nameEl) nameEl.textContent = tradingName;
   document.querySelector('.plan-pill').textContent = (profile && profile.plan === 'pro') ? '⭐ Pro Vendor' : 'Free Plan';
 
   // Profile links
