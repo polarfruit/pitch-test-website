@@ -1820,8 +1820,18 @@ function startOrgMsgPoll() {
   if (_orgMsgPollInterval) return;
   _orgMsgPollInterval = setInterval(async () => {
     await loadOrgAllThreads();
-    if (currentChatId) await openChatWindow(currentChatId);
-  }, 12000);
+    // Refresh open thread messages without marking as read (just display new ones)
+    if (currentChatId && MSG_THREADS[currentChatId]) {
+      try {
+        const r = await pitchFetch(`/api/messages/${currentChatId}`);
+        if (r.ok) {
+          const { messages } = await r.json();
+          MSG_THREADS[currentChatId].messages = messages;
+          renderOrgMessages(messages, MSG_THREADS[currentChatId].name);
+        }
+      } catch(e) {}
+    }
+  }, 8000);
 }
 function stopOrgMsgPoll() {
   if (_orgMsgPollInterval) { clearInterval(_orgMsgPollInterval); _orgMsgPollInterval = null; }
