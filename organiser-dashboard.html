@@ -475,7 +475,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
     <button class="nav-link active" onclick="showPanel('overview',this)"><span class="nav-icon">⬡</span>Overview</button>
     <button class="nav-link" onclick="showPanel('events',this)"><span class="nav-icon">📅</span>My Events</button>
     <button class="nav-link" onclick="showPanel('new-event',this)"><span class="nav-icon">＋</span>Post an Event</button>
-    <button class="nav-link" onclick="showPanel('messages',this)"><span class="nav-icon">💬</span>Messages<span class="nav-badge">2</span></button>
+    <button class="nav-link" onclick="showPanel('messages',this)"><span class="nav-icon">💬</span>Messages<span class="nav-badge" id="org-msg-badge" style="display:none;">0</span></button>
     <button class="nav-link" onclick="showPanel('settings',this)"><span class="nav-icon">⚙️</span>Settings</button>
   </nav>
   <div class="sidebar-footer">
@@ -1681,7 +1681,7 @@ function startChat(vendorId, vendorName) {
   }
 
   if (!MSG_THREADS[vendorId]) {
-    MSG_THREADS[vendorId] = { name: vendorName, messages: [] };
+    MSG_THREADS[vendorId] = { name: vendorName, messages: [], unread: false };
   }
   currentChatId = vendorId;
   pendingChatId = vendorId;
@@ -1693,10 +1693,21 @@ function startChat(vendorId, vendorName) {
   showPanel('messages', null);
 }
 
+function syncOrgMsgBadge() {
+  const count = Object.values(MSG_THREADS).filter(t => t.unread).length;
+  const badge = document.getElementById('org-msg-badge');
+  if (badge) {
+    badge.textContent = count;
+    badge.style.display = count > 0 ? '' : 'none';
+  }
+}
+
 function openChatWindow(vendorId) {
   const thread = MSG_THREADS[vendorId];
   if (!thread) return;
   currentChatId = vendorId;
+  thread.unread = false;
+  syncOrgMsgBadge();
 
   // Highlight in sidebar
   document.querySelectorAll('.msg-thread').forEach(t => t.classList.remove('active'));
@@ -1742,8 +1753,10 @@ function renderThreadSidebar() {
         </div>
         <div class="msg-thread-preview">${preview}</div>
       </div>
+      ${t.unread && !isActive ? `<div class="thread-unread-dot" style="width:8px;height:8px;border-radius:50%;background:var(--ember);flex-shrink:0;"></div>` : ''}
     </div>`;
   }).join('');
+  syncOrgMsgBadge();
 }
 
 function sendMsg() {
@@ -1775,6 +1788,42 @@ function sendMsg() {
   document.querySelectorAll('.msg-thread').forEach(t => t.classList.remove('active'));
   const threadEl = document.getElementById('msg-thread-' + currentChatId);
   if (threadEl) threadEl.classList.add('active');
+
+  // Simulate vendor reply after short delay (demo)
+  const replyVendorId = currentChatId;
+  const replies = [
+    'Thanks for reaching out! We'd love to be part of the event.',
+    'Sounds great — can you share more details about the stall setup?',
+    'Appreciated! We'll have our menu ready to go.',
+    'Perfect, we're looking forward to it!',
+    'Happy to confirm. What time should we arrive for setup?'
+  ];
+  const replyText = replies[Math.floor(Math.random() * replies.length)];
+  setTimeout(() => {
+    const t = MSG_THREADS[replyVendorId];
+    if (!t) return;
+    const now2 = new Date().toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
+    t.messages.push({ from: 'them', text: replyText, time: now2 });
+    // Mark unread only if not currently viewing this thread
+    if (currentChatId !== replyVendorId) {
+      t.unread = true;
+      renderThreadSidebar();
+      // Re-highlight active thread after re-render
+      document.querySelectorAll('.msg-thread').forEach(el => el.classList.remove('active'));
+      const ae = document.getElementById('msg-thread-' + currentChatId);
+      if (ae) ae.classList.add('active');
+    } else {
+      // Thread is open — append message directly
+      const body = document.getElementById('msg-body');
+      if (body) {
+        const div = document.createElement('div');
+        div.className = 'msg-bubble-wrap';
+        div.innerHTML = `<div class="msg-bubble">${replyText}</div><div class="msg-timestamp">${t.name} · ${now2}</div>`;
+        body.appendChild(div);
+        body.scrollTop = body.scrollHeight;
+      }
+    }
+  }, 3000 + Math.random() * 4000);
 }
 
 function openThread(el, vendor, eventName) {
