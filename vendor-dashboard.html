@@ -1117,8 +1117,8 @@ body::before {
           <div class="form-group">
             <label class="form-label">Stall dimensions (metres)</label>
             <div class="dim-row">
-              <input class="dim-input" type="number" value="3" min="1" max="20" /> <span class="dim-sep">×</span>
-              <input class="dim-input" type="number" value="3" min="1" max="20" /> <span class="dim-sep" style="color:var(--text-mid);">m</span>
+              <input class="dim-input" id="v-stall-w" type="number" value="3" min="1" max="20" /> <span class="dim-sep">×</span>
+              <input class="dim-input" id="v-stall-d" type="number" value="3" min="1" max="20" /> <span class="dim-sep" style="color:var(--text-mid);">m</span>
             </div>
           </div>
 
@@ -1128,7 +1128,7 @@ body::before {
               <div class="toggle-row">
                 <span class="toggle-label">Power required (15A single phase)</span>
                 <label class="toggle-switch">
-                  <input type="checkbox" checked />
+                  <input type="checkbox" id="v-power" checked />
                   <div class="toggle-track"></div>
                   <div class="toggle-thumb"></div>
                 </label>
@@ -1136,7 +1136,7 @@ body::before {
               <div class="toggle-row">
                 <span class="toggle-label">Water connection needed</span>
                 <label class="toggle-switch">
-                  <input type="checkbox" />
+                  <input type="checkbox" id="v-water" />
                   <div class="toggle-track"></div>
                   <div class="toggle-thumb"></div>
                 </label>
@@ -1833,14 +1833,49 @@ function updatePreview() {
   if (priceEl) { priceEl.textContent = formatPrice(priceVal); priceEl.style.display = priceVal ? '' : 'none'; }
 }
 
-function saveProfile() {
+async function saveProfile() {
   const btn = event.target;
-  btn.textContent = '✓ Saved!';
-  btn.style.background = 'var(--herb)';
-  setTimeout(() => {
-    btn.textContent = 'Save changes';
-    btn.style.background = '';
-  }, 2000);
+  btn.textContent = 'Saving…'; btn.disabled = true;
+
+  const cuisine_tags = [...document.querySelectorAll('.tag-option.selected')].map(b => b.textContent.trim());
+  const setup = document.querySelector('input[name="setup"]:checked');
+  const activePrice = document.querySelector('.price-btn.active');
+
+  const payload = {
+    trading_name: (document.getElementById('prof-name') || {}).value || '',
+    bio:          (document.getElementById('prof-bio')  || {}).value || '',
+    mobile:       (document.getElementById('v-mobile')  || {}).value || '',
+    suburb:       (document.getElementById('v-suburb')  || {}).value || '',
+    state:        (document.getElementById('v-state')   || {}).value || '',
+    instagram:    (document.getElementById('v-instagram') || {}).value || '',
+    stall_w:      Number((document.getElementById('v-stall-w') || {}).value) || null,
+    stall_d:      Number((document.getElementById('v-stall-d') || {}).value) || null,
+    power:        (document.getElementById('v-power')   || {}).checked ? 1 : 0,
+    water:        (document.getElementById('v-water')   || {}).checked ? 1 : 0,
+    setup_type:   setup ? setup.value : '',
+    price_range:  activePrice ? (activePrice.dataset.price || '') : '',
+    cuisine_tags: JSON.stringify(cuisine_tags),
+  };
+
+  try {
+    const res = await pitchFetch('/api/vendor/profile', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    if (res.ok) {
+      // Update cached profile so preview stays in sync
+      if (window.__PITCH_PROFILE__) Object.assign(window.__PITCH_PROFILE__, payload, { cuisine_tags });
+      btn.textContent = '✓ Saved!'; btn.style.background = 'var(--herb)';
+    } else {
+      const d = await res.json().catch(() => ({}));
+      btn.textContent = 'Error: ' + (d.error || res.status); btn.style.background = 'var(--terra)';
+    }
+  } catch (e) {
+    btn.textContent = 'Error: ' + e.message; btn.style.background = 'var(--terra)';
+  }
+  btn.disabled = false;
+  setTimeout(() => { btn.textContent = 'Save changes'; btn.style.background = ''; }, 3000);
 }
 
 /* ── Delete modal ─────────────────────────────────────────────────────────── */
@@ -1950,6 +1985,22 @@ async function initDashboard() {
     if (document.getElementById('v-state')) document.getElementById('v-state').value = v.state || '';
     if (document.getElementById('v-suburb')) document.getElementById('v-suburb').value = v.suburb || '';
     if (document.getElementById('v-instagram')) document.getElementById('v-instagram').value = v.instagram || '';
+    if (document.getElementById('v-stall-w') && v.stall_w) document.getElementById('v-stall-w').value = v.stall_w;
+    if (document.getElementById('v-stall-d') && v.stall_d) document.getElementById('v-stall-d').value = v.stall_d;
+    if (document.getElementById('v-power'))  document.getElementById('v-power').checked  = !!v.power;
+    if (document.getElementById('v-water'))  document.getElementById('v-water').checked  = !!v.water;
+    // Setup type
+    if (v.setup_type) {
+      const radio = document.querySelector(`input[name="setup"][value="${v.setup_type}"]`);
+      if (radio) radio.checked = true;
+    }
+    // Cuisine tags
+    if (v.cuisine_tags) {
+      const tags = Array.isArray(v.cuisine_tags) ? v.cuisine_tags : [];
+      document.querySelectorAll('.tag-option').forEach(b => {
+        b.classList.toggle('selected', tags.includes(b.textContent.trim()));
+      });
+    }
     // Price range — match stored value ($ / $$ / $$$) to correct button
     if (v.price_range) {
       const tier = v.price_range.startsWith('$$$') ? '$$$' : v.price_range.startsWith('$$') ? '$$' : '$';

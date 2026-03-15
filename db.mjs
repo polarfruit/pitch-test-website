@@ -448,9 +448,11 @@ export const stmts = {
   // update profiles (admin)
   updateUserProfile:      prepare(`UPDATE users SET first_name=@first_name,last_name=@last_name,email=@email,status=@status WHERE id=@id`),
   updateVendorProfile:    prepare(`UPDATE vendors SET trading_name=@trading_name,mobile=@mobile,suburb=@suburb,state=@state,bio=@bio,plan=@plan,instagram=@instagram,setup_type=@setup_type,stall_w=@stall_w,stall_d=@stall_d,power=@power,water=@water,price_range=@price_range,abn=@abn WHERE user_id=@user_id`),
+  updateVendorProfileSelf: prepare(`UPDATE vendors SET trading_name=@trading_name,mobile=@mobile,suburb=@suburb,state=@state,bio=@bio,instagram=@instagram,setup_type=@setup_type,stall_w=@stall_w,stall_d=@stall_d,power=@power,water=@water,price_range=@price_range,cuisine_tags=@cuisine_tags WHERE user_id=@user_id`),
   updateVendorPhotos:     prepare(`UPDATE vendors SET photos=@photos WHERE user_id=@user_id`),
   updateVendorDoc:        prepare(`UPDATE vendors SET food_safety_url=@food_safety_url,pli_url=@pli_url,council_url=@council_url WHERE user_id=@user_id`),
   updateOrganiserProfile: prepare(`UPDATE organisers SET org_name=@org_name,phone=@phone,website=@website,suburb=@suburb,state=@state,bio=@bio,event_scale=@event_scale,stall_range=@stall_range,abn=@abn WHERE user_id=@user_id`),
+  updateOrganiserProfileSelf: prepare(`UPDATE organisers SET org_name=@org_name,bio=@bio,website=@website WHERE user_id=@user_id`),
 
   // verification codes
   createVerificationCode: prepare(`INSERT INTO verification_codes (user_id,type,code,target,expires_at) VALUES (@user_id,@type,@code,@target,@expires_at)`),
