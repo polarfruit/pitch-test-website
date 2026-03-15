@@ -1070,7 +1070,7 @@ app.get('/api/organiser/overview', requireAuth, async (req, res) => {
 app.post('/api/organiser/events', requireAuth, async (req, res) => {
   if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
 
-  const { name, category, date_sort, date_end, date_text, suburb, state, venue_name, description, stalls_available } = req.body;
+  const { name, category, date_sort, date_end, date_text, suburb, state, venue_name, description, stalls_available, stall_fee_min, stall_fee_max, deadline } = req.body;
   if (!name || !date_sort || !suburb) {
     return res.status(400).json({ error: 'Name, date, and suburb are required' });
   }
@@ -1090,6 +1090,9 @@ app.post('/api/organiser/events', requireAuth, async (req, res) => {
       date_text: date_text || null,
       description: description || null,
       stalls_available: stalls_available ? parseInt(stalls_available) : null,
+      stall_fee_min: stall_fee_min ? parseInt(stall_fee_min) : null,
+      stall_fee_max: stall_fee_max ? parseInt(stall_fee_max) : null,
+      deadline: deadline || null,
       organiser_name: organiserName,
       organiser_user_id: req.session.userId,
       venue_name: venue_name || null,
@@ -1124,9 +1127,9 @@ app.patch('/api/organiser/events/:id', requireAuth, async (req, res) => {
   if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
   const ev = await stmts.getEventById.get(req.params.id);
   if (!ev || Number(ev.organiser_user_id) !== Number(req.session.userId)) return res.status(403).json({ error: 'Not your event' });
-  const { name, category, suburb, state, venue_name, date_sort, date_end, description, stalls_available } = req.body;
+  const { name, category, suburb, state, venue_name, date_sort, date_end, description, stalls_available, stall_fee_min, stall_fee_max, deadline } = req.body;
   const dateText = date_sort ? new Date(date_sort).toLocaleDateString('en-AU', { day:'numeric', month:'short', year:'numeric' }) : null;
-  await stmts.updateEvent.run({ id: Number(req.params.id), name: name || ev.name, category: category || ev.category, suburb: suburb || ev.suburb, state: state || ev.state, venue_name: venue_name ?? ev.venue_name, date_sort: date_sort || ev.date_sort, date_end: date_end ?? ev.date_end, date_text: dateText || ev.date_text, description: description ?? ev.description, stalls_available: stalls_available != null ? Number(stalls_available) : ev.stalls_available });
+  await stmts.updateEvent.run({ id: Number(req.params.id), name: name || ev.name, category: category || ev.category, suburb: suburb || ev.suburb, state: state || ev.state, venue_name: venue_name ?? ev.venue_name, date_sort: date_sort || ev.date_sort, date_end: date_end ?? ev.date_end, date_text: dateText || ev.date_text, description: description ?? ev.description, stalls_available: stalls_available != null ? Number(stalls_available) : ev.stalls_available, stall_fee_min: stall_fee_min != null ? Number(stall_fee_min) : ev.stall_fee_min, stall_fee_max: stall_fee_max != null ? Number(stall_fee_max) : ev.stall_fee_max, deadline: deadline !== undefined ? deadline : ev.deadline });
   res.json({ ok: true });
 });
 

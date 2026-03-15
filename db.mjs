@@ -254,6 +254,9 @@ await _safeExec(`ALTER TABLE vendors ADD COLUMN food_safety_url TEXT`);
 await _safeExec(`ALTER TABLE vendors ADD COLUMN pli_url TEXT`);
 await _safeExec(`ALTER TABLE vendors ADD COLUMN council_url TEXT`);
 await _safeExec(`ALTER TABLE events ADD COLUMN date_end TEXT`);
+await _safeExec(`ALTER TABLE events ADD COLUMN stall_fee_min INTEGER`);
+await _safeExec(`ALTER TABLE events ADD COLUMN stall_fee_max INTEGER`);
+await _safeExec(`ALTER TABLE events ADD COLUMN deadline TEXT`);
 await _safeExec(`ALTER TABLE event_applications ADD COLUMN spot_number INTEGER`);
 await _safeExec(`ALTER TABLE event_applications ADD COLUMN approved_at DATETIME`);
 // Deduplicate organisers rows (caused by missing UNIQUE constraint on user_id)
@@ -433,7 +436,7 @@ export const stmts = {
   getApprovedVendorsByEvent: prepare(`SELECT v.user_id,v.trading_name,v.cuisine_tags,v.setup_type FROM event_applications ea JOIN vendors v ON v.user_id=ea.vendor_user_id WHERE ea.event_id=? AND ea.status='approved' ORDER BY ea.approved_at ASC`),
   countOrgEvents:    prepare(`SELECT COUNT(*) as n FROM events WHERE organiser_user_id=? AND status='published'`),
   updateEventStatus: prepare(`UPDATE events SET status=? WHERE id=?`),
-  updateEvent:       prepare(`UPDATE events SET name=@name,category=@category,suburb=@suburb,state=@state,venue_name=@venue_name,date_sort=@date_sort,date_end=@date_end,date_text=@date_text,description=@description,stalls_available=@stalls_available WHERE id=@id`),
+  updateEvent:       prepare(`UPDATE events SET name=@name,category=@category,suburb=@suburb,state=@state,venue_name=@venue_name,date_sort=@date_sort,date_end=@date_end,date_text=@date_text,description=@description,stalls_available=@stalls_available,stall_fee_min=@stall_fee_min,stall_fee_max=@stall_fee_max,deadline=@deadline WHERE id=@id`),
   deleteEvent:       prepare(`DELETE FROM events WHERE id=?`),
   countEvents:       prepare(`SELECT COUNT(*) as n FROM events WHERE status='published'`),
 
@@ -479,14 +482,17 @@ export const stmts = {
   withdrawApplication:     prepare(`UPDATE event_applications SET status='withdrawn' WHERE event_id=? AND vendor_user_id=?`),
 
   // organiser events
-  createEvent:        prepare(`INSERT INTO events (slug,name,category,suburb,state,date_sort,date_end,date_text,description,stalls_available,organiser_name,organiser_user_id,venue_name) VALUES (@slug,@name,@category,@suburb,@state,@date_sort,@date_end,@date_text,@description,@stalls_available,@organiser_name,@organiser_user_id,@venue_name)`),
+  createEvent:        prepare(`INSERT INTO events (slug,name,category,suburb,state,date_sort,date_end,date_text,description,stalls_available,stall_fee_min,stall_fee_max,deadline,organiser_name,organiser_user_id,venue_name) VALUES (@slug,@name,@category,@suburb,@state,@date_sort,@date_end,@date_text,@description,@stalls_available,@stall_fee_min,@stall_fee_max,@deadline,@organiser_name,@organiser_user_id,@venue_name)`),
   getOrganiserEvents: prepare(`SELECT * FROM events WHERE organiser_user_id=? ORDER BY date_sort ASC`),
   // single query — all apps across all of an organiser's events (replaces N+1 loop)
   getAllAppsByOrganiser: prepare(`SELECT ea.*,e.name as event_name,u.first_name,u.last_name,u.email,v.trading_name,v.mobile,v.suburb as v_suburb,v.state as v_state,v.bio,v.cuisine_tags,v.plan,v.instagram,v.setup_type,v.stall_w,v.stall_d,v.power,v.water,v.price_range FROM event_applications ea JOIN events e ON ea.event_id=e.id JOIN users u ON ea.vendor_user_id=u.id JOIN vendors v ON v.user_id=u.id WHERE e.organiser_user_id=? ORDER BY ea.created_at DESC`),
 
   // optimised single-query events+application status for vendor dashboard
   publishedEventsForVendor: prepare(`
-    SELECT e.*, ea.status as appStatus, CASE WHEN ea.id IS NOT NULL THEN 1 ELSE 0 END as applied
+    SELECT e.*,
+      ea.status as appStatus,
+      CASE WHEN ea.id IS NOT NULL THEN 1 ELSE 0 END as applied,
+      (SELECT COUNT(*) FROM event_applications WHERE event_id = e.id AND status != 'rejected') as stalls_filled
     FROM events e
     LEFT JOIN event_applications ea ON ea.event_id = e.id AND ea.vendor_user_id = ?
     WHERE e.status = 'published'
