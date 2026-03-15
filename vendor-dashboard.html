@@ -1406,6 +1406,16 @@ body::before {
 </div>
 
 <script>
+/* ── Navigate to messages panel and open a specific organiser thread ─────── */
+function msgOrg(orgId, orgName, eventName) {
+  if (!orgId || Number(orgId) === 0) {
+    showPanel('messages', null);
+    return;
+  }
+  const p = new URLSearchParams({ org: orgId, name: orgName || '', event: eventName || '' });
+  window.location.href = '/dashboard/vendor/messages?' + p.toString();
+}
+
 /* ── Panel switching ──────────────────────────────────────────────────────── */
 const PANEL_TITLES = {
   overview:       'Overview',
@@ -1999,12 +2009,12 @@ function renderEventDetail(ev) {
     const evName  = (ev.name||'').replace(/'/g,"\\'");
     applyBar = `<div style="display:flex;flex-direction:column;gap:10px;align-items:flex-end;">
       <div style="font-size:15px;font-weight:700;color:${statusColor};">${statusText}</div>
-      <button onclick="startChatWithOrganiser(${ev.organiser_user_id||0},'${orgName}','${evName}')" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--ember);background:var(--ember-bg);border:1px solid #E8500A33;padding:8px 18px;border-radius:8px;cursor:pointer;white-space:nowrap;">💬 Message organiser</button>
+      <button onclick="msgOrg(${ev.organiser_user_id||0},'${orgName}','${evName}')" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--ember);background:var(--ember-bg);border:1px solid #E8500A33;padding:8px 18px;border-radius:8px;cursor:pointer;white-space:nowrap;">💬 Message organiser</button>
     </div>`;
   } else {
     applyBar = `<div style="display:flex;flex-direction:column;gap:10px;">
       <button class="btn-apply-full" id="detail-apply-btn" onclick="applyFromDetail(${ev.id})">Apply to this event →</button>
-      ${ev.organiser_user_id ? `<button onclick="startChatWithOrganiser(${ev.organiser_user_id},'${(ev.organiser_name||'Organiser').replace(/'/g,"\\'")}','${(ev.name||'').replace(/'/g,"\\'")}')" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--ember);background:var(--ember-bg);border:1px solid #E8500A33;padding:12px;border-radius:10px;cursor:pointer;width:100%;">💬 Message organiser</button>` : ''}
+      ${ev.organiser_user_id ? `<button onclick="msgOrg(${ev.organiser_user_id},'${(ev.organiser_name||'Organiser').replace(/'/g,"\\'")}','${(ev.name||'').replace(/'/g,"\\'")}')" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--ember);background:var(--ember-bg);border:1px solid #E8500A33;padding:12px;border-radius:10px;cursor:pointer;width:100%;">💬 Message organiser</button>` : ''}
     </div>`;
   }
 
@@ -2164,7 +2174,7 @@ function renderApplicationsData(applications) {
             ? `<button onclick="withdrawApp(${a.event_id}, this)" style="background:none;border:none;color:var(--text-lo);cursor:pointer;font-size:12px;font-family:inherit;text-decoration:underline;">Withdraw</button>`
             : `<a class="action-link" href="/events/${a.event_slug||a.event_id}" target="_blank" rel="noopener">View →</a>`
           }
-          <button onclick="startChatWithOrganiser(${a.organiser_user_id||0},'${(a.organiser_name||'Organiser').replace(/'/g,"\\'")}','${(a.event_name||'').replace(/'/g,"\\'")}')" style="font-family:var(--fb);font-size:11px;font-weight:700;color:var(--ember);background:var(--ember-bg);border:1px solid #E8500A22;padding:4px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;">💬 Message</button>
+          <button onclick="msgOrg(${a.organiser_user_id||0},'${(a.organiser_name||'Organiser').replace(/'/g,"\\'")}','${(a.event_name||'').replace(/'/g,"\\'")}')" style="font-family:var(--fb);font-size:11px;font-weight:700;color:var(--ember);background:var(--ember-bg);border:1px solid #E8500A22;padding:4px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;">💬 Message</button>
         </div>
       </td>
     </tr>
