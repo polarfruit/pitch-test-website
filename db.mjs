@@ -248,6 +248,7 @@ try {
 }
 
 // ── Migrations (safe to run every boot) ─────────────────────────────────────
+await _safeExec(`ALTER TABLE users ADD COLUMN avatar_url TEXT`);
 await _safeExec(`ALTER TABLE vendors ADD COLUMN photos TEXT DEFAULT '[]'`);
 await _safeExec(`ALTER TABLE vendors ADD COLUMN food_safety_url TEXT`);
 await _safeExec(`ALTER TABLE vendors ADD COLUMN pli_url TEXT`);
@@ -410,6 +411,7 @@ export const stmts = {
   organisersByStatus: prepare(`SELECT o.*,u.email,u.first_name,u.last_name,u.status,u.created_at as joined FROM organisers o JOIN users u ON o.user_id=u.id WHERE u.status=? ORDER BY o.created_at DESC`),
 
   // admin actions
+  updateUserAvatar:                prepare(`UPDATE users SET avatar_url=? WHERE id=?`),
   updateUserStatus:                prepare(`UPDATE users SET status=? WHERE id=?`),
   updateUserPassword:              prepare(`UPDATE users SET password_hash=? WHERE id=?`),
   deleteUser:                      prepare(`DELETE FROM users WHERE id=?`),

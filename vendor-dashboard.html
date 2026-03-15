@@ -73,7 +73,7 @@ body::before {
   width: 36px; height: 36px; border-radius: 10px;
   background: linear-gradient(135deg, #3D1A06, #6B2E08);
   display: flex; align-items: center; justify-content: center;
-  font-size: 18px; flex-shrink: 0;
+  font-size: 18px; flex-shrink: 0; overflow: hidden;
 }
 .vendor-info { flex: 1; min-width: 0; }
 .vendor-mini-name {
@@ -1046,6 +1046,23 @@ body::before {
 
     <!-- ── PANEL: PROFILE ───────────────────────────────────────────────── -->
     <div class="panel" id="panel-profile">
+      <!-- Avatar upload card -->
+      <div class="card" style="max-width:480px;margin-bottom:20px;">
+        <div style="font-size:13px;font-weight:700;color:var(--text-hi);text-transform:uppercase;letter-spacing:.06em;margin-bottom:16px;">Profile Picture</div>
+        <div style="display:flex;align-items:center;gap:20px;">
+          <div id="avatar-preview-large" style="width:80px;height:80px;border-radius:16px;background:linear-gradient(135deg,#3D1A06,#6B2E08);display:flex;align-items:center;justify-content:center;font-size:36px;overflow:hidden;flex-shrink:0;">🔥</div>
+          <div style="flex:1;">
+            <div style="font-size:13px;color:var(--text-mid);margin-bottom:10px;line-height:1.5;">Upload a photo to show on your profile, event applications, and messages.</div>
+            <label style="display:inline-flex;align-items:center;gap:8px;background:var(--ember);color:#fff;font-size:13px;font-weight:700;padding:9px 16px;border-radius:10px;cursor:pointer;font-family:var(--fb);">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Choose photo
+              <input type="file" accept="image/jpeg,image/png,image/webp" style="display:none;" onchange="previewAndUploadAvatar(this)">
+            </label>
+            <div id="avatar-upload-status" style="font-size:12px;margin-top:8px;color:var(--text-lo);"></div>
+          </div>
+        </div>
+      </div>
+
       <div class="profile-grid">
 
         <!-- Form -->
@@ -2424,6 +2441,42 @@ function renderPlanCard(profile) {
     </div>
   `;
 }
+
+// ── Avatar upload ────────────────────────────────────────────────────────────
+function _applyAvatarEverywhere(dataUrl) {
+  const img = `<img src="${dataUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;" alt="avatar">`;
+  // Sidebar mini avatar
+  const sidebarAvatar = document.querySelector('.vendor-avatar');
+  if (sidebarAvatar) sidebarAvatar.innerHTML = img;
+  // Large preview in profile panel
+  const large = document.getElementById('avatar-preview-large');
+  if (large) large.innerHTML = img;
+}
+
+function previewAndUploadAvatar(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const status = document.getElementById('avatar-upload-status');
+  if (file.size > 2 * 1024 * 1024) { status.textContent = 'File too large (max 2MB).'; status.style.color = 'var(--terra)'; return; }
+  const reader = new FileReader();
+  reader.onload = async e => {
+    const dataUrl = e.target.result;
+    _applyAvatarEverywhere(dataUrl);
+    status.textContent = 'Uploading…'; status.style.color = 'var(--text-lo)';
+    try {
+      const res = await pitchFetch('/api/profile/avatar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ avatar_url: dataUrl }) });
+      if (res.ok) { status.textContent = 'Profile picture saved.'; status.style.color = 'var(--herb)'; }
+      else { const d = await res.json().catch(()=>({})); status.textContent = 'Upload failed: ' + (d.error||res.status); status.style.color = 'var(--terra)'; }
+    } catch (err) { status.textContent = 'Upload error: ' + err.message; status.style.color = 'var(--terra)'; }
+  };
+  reader.readAsDataURL(file);
+}
+
+// Apply existing avatar on load
+(function initAvatar() {
+  const u = window.__PITCH_USER__;
+  if (u && u.avatar_url) _applyAvatarEverywhere(u.avatar_url);
+})();
 
 initDashboard().catch(e => {
   console.error('[initDashboard fatal]', e);
