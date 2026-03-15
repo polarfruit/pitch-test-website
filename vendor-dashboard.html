@@ -1890,22 +1890,18 @@ async function initDashboard() {
   // Settings plan card
   renderPlanCard(profile);
 
-  // Badge only — init data already rendered from server injection above
-  loadAllThreads().then(function() {
-    // Deep-link: open a specific organiser thread from URL params
-    // e.g. /dashboard/vendor?org=5&name=Foo&event=rundle-night#messages
-    var sp = new URLSearchParams(window.location.search);
-    var orgId = sp.get('org');
-    if (orgId) {
-      var orgName  = sp.get('name')  || 'Organiser';
-      var evName   = sp.get('event') || '';
-      // Navigate to messages panel first
-      showPanel('messages', null);
-      startChatWithOrganiser(Number(orgId), orgName, evName);
-      // Clean up URL without reload
-      history.replaceState(null, '', '/dashboard/vendor#messages');
-    }
-  });
+  // Load threads then check for deep-link params
+  await loadAllThreads();
+
+  const _sp = new URLSearchParams(window.location.search);
+  const _orgId = Number(_sp.get('org'));
+  if (_orgId) {
+    const _orgName = decodeURIComponent(_sp.get('name') || 'Organiser');
+    const _evName  = decodeURIComponent(_sp.get('event') || '');
+    history.replaceState(null, '', '/dashboard/vendor/messages');
+    showPanel('messages', null, false);
+    await startChatWithOrganiser(_orgId, _orgName, _evName);
+  }
 }
 
 async function loadEvents() {
