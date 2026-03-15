@@ -1511,26 +1511,27 @@ function _fmtTime(iso) {
 // skipPanelSwitch = true when caller already switched to messages panel
 async function startChatWithOrganiser(orgUserId, orgName, eventName, skipPanelSwitch) {
   const myId = window.__PITCH_USER__ && window.__PITCH_USER__.id;
-  if (!myId) {
-    const msgArea = document.getElementById('convo-messages');
-    if (msgArea) msgArea.innerHTML = '<div style="color:var(--terra);font-size:13px;text-align:center;padding:40px 20px;">Not logged in — please refresh.</div>';
-    return;
-  }
+  const tok   = window.__PITCH_TOKEN__;
 
-  // Switch to messages panel and show header
+  // Switch to messages panel and show header first
   if (!skipPanelSwitch) showPanel('messages', null);
   _openConvoPane(orgName || 'Organiser', eventName || '');
 
   const msgArea = document.getElementById('convo-messages');
-  msgArea.innerHTML = '<div style="color:var(--text-lo);font-size:13px;text-align:center;padding:40px 20px;">Connecting…</div>';
+  function _status(msg, color) { if (msgArea) msgArea.innerHTML = `<div style="color:${color||'var(--text-lo)'};font-size:13px;text-align:center;padding:40px 20px;">${msg}</div>`; }
+
+  if (!myId) { _status('Not logged in — please refresh the page.', 'var(--terra)'); return; }
+  if (!tok)  { _status('Auth token missing — please log out and back in.', 'var(--terra)'); return; }
+
+  _status('Connecting…');
 
   if (!orgUserId || Number(orgUserId) === 0) {
-    msgArea.innerHTML = '<div style="color:var(--text-lo);font-size:13px;text-align:center;padding:40px 20px;">This event\'s organiser hasn\'t created an account yet.</div>';
+    _status("This event's organiser hasn't linked their account yet.");
     return;
   }
 
   try {
-    // Create (or retrieve) the thread
+    _status(`Opening chat with organiser #${orgUserId}…`);
     const cr = await pitchFetch('/api/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1538,12 +1539,13 @@ async function startChatWithOrganiser(orgUserId, orgName, eventName, skipPanelSw
     });
     if (!cr.ok) {
       const err = await cr.json().catch(() => ({}));
-      msgArea.innerHTML = `<div style="color:var(--terra);font-size:13px;text-align:center;padding:40px 20px;">Could not open chat: ${err.error || cr.status}</div>`;
+      _status(`Could not open chat (${cr.status}): ${err.error || 'server error'}`, 'var(--terra)');
       return;
     }
-    const { thread_key } = await cr.json();
+    const body = await cr.json();
+    const thread_key = body && body.thread_key;
     if (!thread_key) {
-      msgArea.innerHTML = '<div style="color:var(--terra);font-size:13px;text-align:center;padding:40px 20px;">Server did not return a thread key.</div>';
+      _status(`Server returned no thread key. Response: ${JSON.stringify(body)}`, 'var(--terra)');
       return;
     }
 
@@ -1554,7 +1556,7 @@ async function startChatWithOrganiser(orgUserId, orgName, eventName, skipPanelSw
     _refreshThreadList();
   } catch (e) {
     console.error('[startChatWithOrganiser]', e);
-    msgArea.innerHTML = `<div style="color:var(--terra);font-size:13px;text-align:center;padding:40px 20px;">Error: ${e.message}</div>`;
+    _status(`Error: ${e.message}`, 'var(--terra)');
   }
 }
 
