@@ -1441,6 +1441,11 @@ const PANEL_PATHS = {
   settings:     '/dashboard/vendor/settings',
 };
 
+/* ── Messages state (declared here so showPanel/stopMsgPoll can reference them) */
+let _activeThread   = null;
+let _threadCache    = {};
+let _msgPollTimer   = null;
+
 function showPanel(name, clickedEl, pushHistory = true) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   const panel = document.getElementById('panel-' + name);
@@ -1504,9 +1509,6 @@ window.addEventListener('popstate', e => {
 });
 
 /* ── Messages ────────────────────────────────────────────────────────────── */
-let _activeThread   = null;   // current thread key
-let _threadCache    = {};     // threadKey → { orgName, eventName, messages[] }
-let _msgPollTimer   = null;
 
 function _fmtTime(iso) {
   if (!iso) return '';
