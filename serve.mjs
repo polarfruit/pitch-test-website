@@ -795,6 +795,51 @@ app.get('/api/messages', requireAuth, async (req, res) => {
   } catch (e) { console.error('[messages list]', e); res.status(500).json({ error: 'Server error' }); }
 });
 
+// POST /api/messages/by-event — create/get thread using event_id (server resolves organiser)
+// More reliable than passing organiser_user_id from the client
+app.post('/api/messages/by-event', requireAuth, async (req, res) => {
+  try {
+    if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Vendors only' });
+    const vendor_user_id = req.session.userId;
+    const event_id = Number(req.body.event_id);
+    if (!event_id) return res.status(400).json({ error: 'Missing event_id' });
+
+    // Look up the event to get organiser_user_id directly from DB
+    const ev = await stmts.getEventById.get(event_id).catch(() => null);
+    if (!ev) return res.status(404).json({ error: 'Event not found' });
+
+    let organiser_user_id = Number(ev.organiser_user_id);
+
+    // Fallback: look up organiser by org_name if organiser_user_id is missing
+    if (!organiser_user_id && ev.organiser_name) {
+      const org = await stmts.getOrganiserByName.get(ev.organiser_name).catch(() => null);
+      if (org) organiser_user_id = Number(org.user_id);
+    }
+
+    if (!organiser_user_id) return res.status(400).json({ error: 'This event has no linked organiser account yet.' });
+
+    const threadKey = `v${vendor_user_id}_o${organiser_user_id}`;
+    await stmts.createOrGetThread.run(threadKey, vendor_user_id, organiser_user_id);
+    const thread = await stmts.getThread.get(threadKey).catch(() => null);
+    res.json({ thread_key: threadKey, thread, organiser_user_id });
+  } catch (e) { console.error('[messages by-event]', e); res.status(500).json({ error: 'Server error: ' + e.message }); }
+});
+
+// GET /api/debug/organiser/:id — check if an organiser account exists (vendor auth required)
+app.get('/api/debug/organiser/:id', requireAuth, async (req, res) => {
+  try {
+    const userId = Number(req.params.id);
+    const user = await stmts.getUserById.get(userId).catch(() => null);
+    const org  = await stmts.getOrganiserByUserId.get(userId).catch(() => null);
+    res.json({
+      exists: !!user,
+      role: user ? user.role : null,
+      has_organiser_profile: !!org,
+      org_name: org ? org.org_name : null,
+    });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 // POST /api/messages — create or get a thread
 app.post('/api/messages', requireAuth, async (req, res) => {
   try {
