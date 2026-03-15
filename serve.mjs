@@ -814,6 +814,34 @@ app.put('/api/admin/organisers/:userId', requireAdmin, async (req, res) => {
 
 // ── API: Vendor dashboard ──────────────────────────────────────────────────
 
+// PUT /api/vendor/profile — vendor updates their own profile
+app.put('/api/vendor/profile', requireAuth, async (req, res) => {
+  if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Vendors only' });
+  const { trading_name, bio, mobile, suburb, state, instagram, stall_w, stall_d, power, water, setup_type, price_range, cuisine_tags } = req.body;
+  try {
+    await stmts.updateVendorProfileSelf.run({
+      trading_name: trading_name || null,
+      bio:          bio          || null,
+      mobile:       mobile       || null,
+      suburb:       suburb       || null,
+      state:        state        || null,
+      instagram:    instagram    || null,
+      stall_w:      stall_w      || null,
+      stall_d:      stall_d      || null,
+      power:        power  ? 1 : 0,
+      water:        water  ? 1 : 0,
+      setup_type:   setup_type   || null,
+      price_range:  price_range  || null,
+      cuisine_tags: typeof cuisine_tags === 'string' ? cuisine_tags : JSON.stringify(cuisine_tags || []),
+      user_id:      req.session.userId,
+    });
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('[vendor/profile PUT]', e);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 app.get('/api/vendor/events', requireAuth, async (req, res) => {
   const events = await stmts.publishedEventsForVendor.all(req.session.userId);
   res.json({ events });
@@ -992,6 +1020,18 @@ app.get('/api/stats', async (req, res) => {
 });
 
 // ── API: Organiser dashboard ───────────────────────────────────────────────
+
+app.put('/api/organiser/profile', requireAuth, async (req, res) => {
+  if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
+  const { org_name, bio, website } = req.body;
+  try {
+    await stmts.updateOrganiserProfileSelf.run({ org_name: org_name || null, bio: bio || null, website: website || null, user_id: req.session.userId });
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('[organiser/profile PUT]', e);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
 
 app.get('/api/organiser/overview', requireAuth, async (req, res) => {
   if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
