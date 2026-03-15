@@ -528,7 +528,7 @@ export const stmts = {
   publicVendors: prepare(`
     SELECT v.user_id,v.trading_name,v.suburb,v.state,v.bio,v.cuisine_tags,
            v.setup_type,v.stall_w,v.stall_d,v.power,v.water,v.price_range,
-           v.instagram,v.plan,u.status
+           v.instagram,v.plan,u.status,u.avatar_url
     FROM vendors v JOIN users u ON v.user_id=u.id
     WHERE u.status='active' ORDER BY v.plan DESC,v.created_at ASC
   `),
