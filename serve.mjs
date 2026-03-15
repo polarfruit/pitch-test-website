@@ -148,30 +148,37 @@ window.__PITCH_INIT_DATA__ = ${JSON.stringify(initData)};
 }
 
 async function orgInitData(user) {
-  const events = await stmts.getOrganiserEvents.all(user.id);
-  let totalApps = 0, totalApproved = 0, totalSpots = 0, totalFilled = 0;
-  const recentApps = [];
-  const eventsWithCounts = [];
-  for (const ev of events) {
-    const apps = await stmts.getApplicationsByEvent.all(ev.id);
-    totalApps += apps.length;
+  // Run all queries in parallel — avoids N+1 round-trips to Turso
+  const [events, allApps, unreadRow] = await Promise.all([
+    stmts.getOrganiserEvents.all(user.id).catch(e => { console.error('[orgInitData] events', e); return []; }),
+    stmts.getAllAppsByOrganiser.all(user.id).catch(e => { console.error('[orgInitData] apps', e); return []; }),
+    stmts.getUnreadMsgCount.get(user.id, user.id, user.id).catch(e => { console.error('[orgInitData] unread', e); return null; }),
+  ]);
+
+  // Group apps by event_id for per-event counts
+  const appsByEvent = {};
+  for (const a of allApps) {
+    if (!appsByEvent[a.event_id]) appsByEvent[a.event_id] = [];
+    appsByEvent[a.event_id].push(a);
+  }
+
+  let totalApps = allApps.length, totalApproved = 0, totalSpots = 0, totalFilled = 0;
+  const eventsWithCounts = events.map(ev => {
+    const apps = appsByEvent[ev.id] || [];
     const approved = apps.filter(a => a.status === 'approved');
     totalApproved += approved.length;
     if (ev.stalls_available) {
       totalSpots  += ev.stalls_available;
       totalFilled += Math.min(approved.length, ev.stalls_available);
     }
-    for (const a of apps) recentApps.push({ ...a, event_name: ev.name, event_id: ev.id });
-    eventsWithCounts.push({ ...ev, approved_count: approved.length });
-  }
-  recentApps.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    return { ...ev, approved_count: approved.length };
+  });
+
+  const recentApps = [...allApps].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
   const fillRate = totalSpots > 0 ? Math.round((totalFilled / totalSpots) * 100) : 0;
   const upcoming = eventsWithCounts.filter(e => e.status === 'published').slice(0, 5);
-  let unreadMessages = 0;
-  try {
-    const unreadRow = await stmts.getUnreadMsgCount.get(user.id, user.id, user.id);
-    unreadMessages = unreadRow ? Number(unreadRow.count) : 0;
-  } catch (e) { console.error('[orgInitData] unread', e); }
+  const unreadMessages = unreadRow ? Number(unreadRow.count) : 0;
+
   return {
     overview: { total_apps: totalApps, vendors_approved: totalApproved, fill_rate: fillRate, upcoming, recent_apps: recentApps.slice(0, 5) },
     events: eventsWithCounts,
@@ -180,15 +187,13 @@ async function orgInitData(user) {
 }
 
 async function vendorInitData(user) {
-  // Each query is isolated so one failure doesn't blank the whole dashboard
-  const events = await stmts.publishedEventsForVendor.all(user.id).catch(e => { console.error('[vendorInitData] events', e); return []; });
-  const applications = await stmts.getApplicationsByVendor.all(user.id).catch(e => { console.error('[vendorInitData] applications', e); return []; });
-  let unreadMessages = 0;
-  try {
-    const unreadRow = await stmts.getUnreadMsgCount.get(user.id, user.id, user.id);
-    unreadMessages = unreadRow ? Number(unreadRow.count) : 0;
-  } catch (e) { console.error('[vendorInitData] unread', e); }
-  return { events, applications, unreadMessages };
+  // Run all queries in parallel — avoids sequential round-trips to Turso
+  const [events, applications, unreadRow] = await Promise.all([
+    stmts.publishedEventsForVendor.all(user.id).catch(e => { console.error('[vendorInitData] events', e); return []; }),
+    stmts.getApplicationsByVendor.all(user.id).catch(e => { console.error('[vendorInitData] applications', e); return []; }),
+    stmts.getUnreadMsgCount.get(user.id, user.id, user.id).catch(e => { console.error('[vendorInitData] unread', e); return null; }),
+  ]);
+  return { events, applications, unreadMessages: unreadRow ? Number(unreadRow.count) : 0 };
 }
 
 // ── Auth helpers ───────────────────────────────────────────────────────────

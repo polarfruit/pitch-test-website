@@ -1875,11 +1875,8 @@ async function initDashboard() {
   // Settings plan card
   renderPlanCard(profile);
 
-  // Background refresh
-  loadEvents();
-  loadApplications();
-  loadActivity();
-  loadAllThreads(); // update message badge from DB
+  // Badge only — init data already rendered from server injection above
+  loadAllThreads();
 }
 
 async function loadEvents() {
