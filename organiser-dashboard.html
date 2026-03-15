@@ -1553,10 +1553,8 @@ async function initDashboard() {
     if (badge) { badge.textContent = init.unreadMessages; badge.style.display = init.unreadMessages > 0 ? '' : 'none'; }
   }
 
-  // Background refresh to pick up any changes since page was served
-  loadOrgEvents();
-  loadOrgOverview();
-  loadOrgAllThreads(); // update message badge
+  // Badge only — events/overview already rendered from server injection above
+  loadOrgAllThreads();
 }
 
 const EMOJI_POOL = ['🍽','🎪','🌟','🎉','🍴','🥘','🎊','🌮','🎶','🍻'];
@@ -1712,21 +1710,37 @@ function _orgFmtTime(iso) {
 async function startChat(vendorUserId, vendorName) {
   const myId = window.__PITCH_USER__ && window.__PITCH_USER__.id;
   if (!myId || !vendorUserId) return;
+
+  // Show panel + loading state immediately so user sees something happen
+  showPanel('messages', null);
+  document.getElementById('msg-vendor-name').textContent = vendorName || 'Vendor';
+  document.getElementById('msg-event-name-thread').textContent = '';
+  document.getElementById('msg-body').innerHTML = '<div style="color:var(--text-lo);font-size:13px;text-align:center;margin-top:40px;">Connecting…</div>';
+
   try {
     const r = await pitchFetch('/api/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ vendor_user_id: vendorUserId, organiser_user_id: myId })
     });
-    if (!r.ok) { console.error('[startChat] status', r.status); return; }
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({}));
+      document.getElementById('msg-body').innerHTML = `<div style="color:var(--terra);font-size:13px;text-align:center;margin-top:40px;">Could not open chat: ${err.error || r.status}</div>`;
+      return;
+    }
     const { thread_key } = await r.json();
-    if (!thread_key) { console.error('[startChat] no thread_key'); return; }
+    if (!thread_key) {
+      document.getElementById('msg-body').innerHTML = '<div style="color:var(--terra);font-size:13px;text-align:center;margin-top:40px;">Server error — please try again.</div>';
+      return;
+    }
     if (!MSG_THREADS[thread_key]) MSG_THREADS[thread_key] = { name: vendorName, messages: [] };
     currentChatId = thread_key;
-    showPanel('messages', null);
     await openChatWindow(thread_key);
     loadOrgAllThreads();
-  } catch (e) { console.error('[startChat]', e); }
+  } catch (e) {
+    console.error('[startChat]', e);
+    document.getElementById('msg-body').innerHTML = `<div style="color:var(--terra);font-size:13px;text-align:center;margin-top:40px;">Error: ${e.message}</div>`;
+  }
 }
 
 function syncOrgMsgBadge(count) {
