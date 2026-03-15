@@ -235,37 +235,51 @@ body::before {
 
 /* ── BROWSE EVENTS ──────────────────────────────────────────────────────── */
 .browse-grid {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;
 }
 .browse-card {
-  background: var(--char); border: 1px solid #ffffff08; border-radius: 16px;
+  background: var(--parchment); border-radius: 18px;
   overflow: hidden; display: flex; flex-direction: column;
-  transition: border-color 0.15s, transform 0.15s;
-  cursor: pointer;
+  transition: transform 0.18s, box-shadow 0.18s;
+  cursor: pointer; text-decoration: none;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.22), 0 1px 3px rgba(0,0,0,0.14);
 }
-.browse-card:hover { border-color: #E8500A40; transform: translateY(-2px); }
+.browse-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.32), 0 4px 8px rgba(0,0,0,0.2); }
 .browse-card-header {
-  height: 90px; display: flex; align-items: center; justify-content: center;
-  font-size: 44px; position: relative;
+  height: 140px; display: flex; align-items: center; justify-content: center;
+  font-size: 52px; position: relative;
   background: linear-gradient(135deg, #1A1208, #3D2C10);
 }
-.browse-card-cat {
-  position: absolute; top: 10px; right: 10px;
-  font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
-  background: #E8500A22; border: 1px solid #E8500A33; color: var(--ember);
-  padding: 3px 8px; border-radius: 6px;
+.browse-card-header-overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(26,18,8,0.65) 0%, transparent 60%);
 }
-.browse-card-body { padding: 16px; flex: 1; display: flex; flex-direction: column; gap: 6px; }
-.browse-card-name { font-family: var(--fd); font-size: 17px; font-weight: 900; letter-spacing: -0.02em; color: var(--text-hi); line-height: 1.2; }
-.browse-card-meta { font-size: 12px; color: var(--text-lo); display: flex; flex-wrap: wrap; gap: 8px; margin-top: 2px; }
+.browse-card-cat {
+  position: absolute; top: 12px; left: 12px; z-index: 1;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  background: rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.2); color: #fff;
+  padding: 4px 9px; border-radius: 6px; backdrop-filter: blur(4px);
+}
+.browse-card-spots-badge {
+  position: absolute; top: 12px; right: 12px; z-index: 1;
+  font-size: 10px; font-weight: 700;
+  padding: 4px 9px; border-radius: 6px;
+}
+.browse-card-body { padding: 16px; flex: 1; display: flex; flex-direction: column; gap: 5px; background: var(--parchment); }
+.browse-card-name { font-family: var(--fd); font-size: 16px; font-weight: 900; letter-spacing: -0.02em; color: #1A1612; line-height: 1.25; }
+.browse-card-meta { font-size: 12px; color: #6B5A4A; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 2px; }
 .browse-card-meta span { display: flex; align-items: center; gap: 4px; }
-.browse-card-desc { font-size: 12px; color: var(--text-mid); line-height: 1.6; margin-top: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.browse-card-footer { padding: 12px 16px; border-top: 1px solid #ffffff07; display: flex; align-items: center; justify-content: space-between; }
-.browse-card-spots { font-size: 12px; font-weight: 700; color: var(--text-mid); }
+.browse-card-fill-row { display: flex; justify-content: space-between; font-size: 11px; color: #6B5A4A; margin-top: 6px; }
+.browse-card-bar-bg { height: 4px; background: #EDE3CC; border-radius: 2px; margin-top: 4px; }
+.browse-card-bar { height: 4px; border-radius: 2px; transition: width 0.3s; }
+.browse-card-footer { padding: 11px 16px; border-top: 1px solid #EDE3CC; display: flex; align-items: center; justify-content: space-between; background: var(--parchment); }
+.browse-card-fee { font-size: 11px; color: #5A4A3A; }
+.browse-card-fee strong { color: #1A1612; }
+.browse-card-dl { font-size: 11px; color: #8B7A6A; }
 .btn-view-event {
   font-family: var(--fb); font-size: 12px; font-weight: 700;
   color: var(--ember); background: var(--ember-bg); border: 1px solid #E8500A33;
-  padding: 7px 16px; border-radius: 8px; cursor: pointer; transition: all 0.14s;
+  padding: 7px 14px; border-radius: 8px; cursor: pointer; transition: all 0.14s;
 }
 .btn-view-event:hover { background: #E8500A22; }
 
@@ -1040,6 +1054,28 @@ body::before {
 
     <!-- ── PANEL: BROWSE EVENTS ─────────────────────────────────────────── -->
     <div class="panel" id="panel-browse">
+      <!-- Filter bar -->
+      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px;align-items:center;">
+        <input id="browse-search" type="text" placeholder="Search events…" oninput="applyBrowseFilters()"
+          style="font-family:var(--fb);font-size:13px;background:#ffffff08;border:1px solid #ffffff12;color:var(--text-hi);border-radius:10px;padding:9px 14px;min-width:200px;flex:1;outline:none;" />
+        <select id="browse-cat" onchange="applyBrowseFilters()"
+          style="font-family:var(--fb);font-size:13px;background:#ffffff08;border:1px solid #ffffff12;color:var(--text-hi);border-radius:10px;padding:9px 14px;cursor:pointer;outline:none;">
+          <option value="">All categories</option>
+          <option>Night Market</option><option>Festival</option><option>Markets</option>
+          <option>Twilight Market</option><option>Food Festival</option><option>Community Event</option>
+        </select>
+        <select id="browse-status" onchange="applyBrowseFilters()"
+          style="font-family:var(--fb);font-size:13px;background:#ffffff08;border:1px solid #ffffff12;color:var(--text-hi);border-radius:10px;padding:9px 14px;cursor:pointer;outline:none;">
+          <option value="">All events</option>
+          <option value="not-applied">Not applied</option>
+          <option value="applied">Applied</option>
+          <option value="approved">Approved</option>
+        </select>
+        <button onclick="clearBrowseFilters()"
+          style="font-family:var(--fb);font-size:12px;font-weight:700;color:var(--text-lo);background:transparent;border:1px solid #ffffff12;border-radius:10px;padding:9px 14px;cursor:pointer;">
+          Clear filters
+        </button>
+      </div>
       <div class="browse-grid" id="browse-grid">
         <div id="browse-loading" style="color:var(--text-lo);font-size:13px;padding:24px 0;grid-column:1/-1;display:none;"></div>
       </div>
@@ -2071,32 +2107,97 @@ function renderEventsMiniList(events) {
   }).join('');
 }
 
+function _browseFmtDate(iso) {
+  if (!iso) return '';
+  const p = iso.split('-');
+  return p[2] + '/' + p[1] + '/' + p[0];
+}
+function _browseFmtDeadline(iso) {
+  if (!iso) return '';
+  try {
+    return new Date(iso).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
+  } catch { return iso; }
+}
+function _browseFillColor(pct) {
+  if (pct >= 90) return '#C0392B';
+  if (pct >= 70) return '#C9840A';
+  return '#2D8B55';
+}
+
 function renderBrowseGrid(events) {
   const grid = document.getElementById('browse-grid');
   if (!grid) return;
-  if (!events.length) { grid.innerHTML = '<div style="color:var(--text-lo);font-size:13px;grid-column:1/-1;">No events available right now.</div>'; return; }
-  const fmtDate = iso => { if (!iso) return ''; const p = iso.split('-'); return p[2]+'/'+p[1]+'/'+p[0]; };
+  if (!events.length) {
+    grid.innerHTML = '<div style="color:#6B5A4A;font-size:13px;grid-column:1/-1;padding:40px 0;text-align:center;">No events match your filters.</div>';
+    return;
+  }
   grid.innerHTML = events.map(ev => {
-    const dateStr = ev.date_sort ? fmtDate(ev.date_sort) + (ev.date_end ? ' → ' + fmtDate(ev.date_end) : '') : 'TBC';
+    const dateStr = ev.date_sort ? _browseFmtDate(ev.date_sort) + (ev.date_end ? ' → ' + _browseFmtDate(ev.date_end) : '') : 'TBC';
+    const total  = Number(ev.stalls_available) || 0;
+    const filled = Number(ev.stalls_filled)    || 0;
+    const pct    = total > 0 ? Math.round((filled / total) * 100) : 0;
+    const fc     = _browseFillColor(pct);
+    const spotsLeft = total - filled;
+    const spotsBg   = spotsLeft <= 3 ? '#C0392B22' : spotsLeft <= 8 ? '#C9840A22' : '#2D8B5522';
+    const spotsCol  = spotsLeft <= 3 ? '#C0392B'   : spotsLeft <= 8 ? '#C9840A'   : '#2D8B55';
+    const spotsTxt  = spotsLeft <= 0 ? 'Full' : spotsLeft + ' left';
     const statusBadge = ev.applied
       ? `<span style="font-size:11px;font-weight:700;color:${ev.appStatus==='approved'?'var(--herb)':ev.appStatus==='rejected'?'var(--terra)':'var(--gold)'};">${ev.appStatus==='approved'?'✓ Approved':ev.appStatus==='rejected'?'✕ Not accepted':'● Applied'}</span>`
       : `<button class="btn-view-event" onclick="event.stopPropagation();openEventDetail(${ev.id})">View & Apply →</button>`;
+    const feeHtml = (ev.stall_fee_min || ev.stall_fee_max)
+      ? `<span class="browse-card-fee">Booth: <strong>$${ev.stall_fee_min||'?'}–$${ev.stall_fee_max||'?'}</strong></span>`
+      : `<span class="browse-card-fee" style="color:#8B7A6A;">Fee TBC</span>`;
+    const dlHtml = ev.deadline
+      ? `<span class="browse-card-dl">Apply by ${_browseFmtDeadline(ev.deadline)}</span>`
+      : '';
     return `<div class="browse-card" onclick="openEventDetail(${ev.id})">
-      <div class="browse-card-header">🎪${ev.category ? `<span class="browse-card-cat">${ev.category}</span>` : ''}</div>
+      <div class="browse-card-header" style="background:linear-gradient(135deg,#1A1208,#3D2C10);">
+        <div class="browse-card-header-overlay"></div>
+        <span style="position:relative;z-index:1;font-size:52px;">🎪</span>
+        ${ev.category ? `<span class="browse-card-cat">${ev.category}</span>` : ''}
+        ${total > 0 ? `<span class="browse-card-spots-badge" style="background:${spotsBg};color:${spotsCol};border:1px solid ${spotsCol}33;">${spotsTxt}</span>` : ''}
+      </div>
       <div class="browse-card-body">
         <div class="browse-card-name">${ev.name}</div>
         <div class="browse-card-meta">
-          ${ev.suburb ? `<span>📍 ${ev.suburb}${ev.state?', '+ev.state:''}</span>` : ''}
+          ${ev.suburb ? `<span>📍 ${ev.suburb}${ev.state ? ', '+ev.state : ''}</span>` : ''}
           ${ev.date_sort ? `<span>📅 ${dateStr}</span>` : ''}
         </div>
-        ${ev.description ? `<div class="browse-card-desc">${ev.description}</div>` : ''}
+        ${total > 0 ? `
+        <div class="browse-card-fill-row">
+          <span>${filled}/${total} spots filled</span>
+          <span style="color:${fc};font-weight:700;">${pct}%</span>
+        </div>
+        <div class="browse-card-bar-bg"><div class="browse-card-bar" style="width:${pct}%;background:${fc};"></div></div>` : ''}
       </div>
       <div class="browse-card-footer">
-        <span class="browse-card-spots">${ev.stalls_available ? ev.stalls_available + ' spots available' : ''}</span>
+        <div style="display:flex;flex-direction:column;gap:2px;">${feeHtml}${dlHtml}</div>
         ${statusBadge}
       </div>
     </div>`;
   }).join('');
+}
+
+function applyBrowseFilters() {
+  const q      = (document.getElementById('browse-search')?.value || '').toLowerCase().trim();
+  const cat    = document.getElementById('browse-cat')?.value    || '';
+  const status = document.getElementById('browse-status')?.value || '';
+  const filtered = _eventsCache.filter(ev => {
+    if (q && !ev.name.toLowerCase().includes(q) && !(ev.suburb||'').toLowerCase().includes(q)) return false;
+    if (cat && ev.category !== cat) return false;
+    if (status === 'not-applied' && ev.applied) return false;
+    if (status === 'applied'     && (!ev.applied || ev.appStatus === 'approved')) return false;
+    if (status === 'approved'    && ev.appStatus !== 'approved') return false;
+    return true;
+  });
+  renderBrowseGrid(filtered);
+}
+
+function clearBrowseFilters() {
+  const s = document.getElementById('browse-search'); if (s) s.value = '';
+  const c = document.getElementById('browse-cat');    if (c) c.value = '';
+  const t = document.getElementById('browse-status'); if (t) t.value = '';
+  renderBrowseGrid(_eventsCache);
 }
 
 // Cache for events across browse + detail
