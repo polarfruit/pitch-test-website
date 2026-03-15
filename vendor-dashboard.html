@@ -909,7 +909,7 @@ body::before {
 }
 
 /* ── BROWSE CALENDAR ──────────────────────────────────────────────────────── */
-.browse-date-range-wrap { display: flex; align-items: center; gap: 6px; flex-shrink: 0; position: relative; }
+.browse-date-range-wrap { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
 .browse-date-field { display: flex; flex-direction: column; gap: 2px; }
 .browse-date-field-label { font-size: 10px; font-weight: 700; color: var(--text-lo); letter-spacing: 0.06em; text-transform: uppercase; padding-left: 2px; }
 .browse-date-text-input {
@@ -935,18 +935,12 @@ body::before {
 }
 .browse-cal-popup {
   display: none;
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  left: auto;
-  z-index: 600;
   background: var(--char);
   border: 1px solid #ffffff12;
   border-radius: 18px;
   padding: 20px;
-  box-shadow: 0 24px 64px rgba(0,0,0,0.6), 0 4px 16px rgba(0,0,0,0.4);
-  min-width: 520px;
-  max-width: calc(100vw - 260px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  margin-bottom: 20px;
 }
 .browse-cal-popup.open { display: block; }
 .browse-cal-popup-inner { display: flex; gap: 24px; }
@@ -1178,8 +1172,7 @@ body::before {
         </select>
       </div>
       <!-- Filter bar row 2: date range + clear -->
-      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px;align-items:center;">
-        <!-- Date range calendar -->
+      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px;align-items:center;">
         <div class="browse-date-range-wrap">
           <div class="browse-date-field">
             <span class="browse-date-field-label">From</span>
@@ -1200,35 +1193,6 @@ body::before {
           </button>
           <input type="hidden" id="browse-f-from" />
           <input type="hidden" id="browse-f-to" />
-
-          <div class="browse-cal-popup" id="browse-cal-popup">
-            <div class="browse-cal-popup-inner">
-              <div class="browse-cal-month">
-                <div class="browse-cal-month-header">
-                  <button class="browse-cal-nav" onclick="browseCalPrev()">‹</button>
-                  <span class="browse-cal-month-name" id="browse-cal-month-a"></span>
-                  <span></span>
-                </div>
-                <div class="browse-cal-grid" id="browse-cal-grid-a"></div>
-              </div>
-              <div class="browse-cal-divider"></div>
-              <div class="browse-cal-month">
-                <div class="browse-cal-month-header">
-                  <span></span>
-                  <span class="browse-cal-month-name" id="browse-cal-month-b"></span>
-                  <button class="browse-cal-nav" onclick="browseCalNext()">›</button>
-                </div>
-                <div class="browse-cal-grid" id="browse-cal-grid-b"></div>
-              </div>
-            </div>
-            <div class="browse-cal-footer">
-              <div class="browse-cal-selected-label" id="browse-cal-selected-label">Click a date to start</div>
-              <div class="browse-cal-footer-actions">
-                <button class="browse-cal-btn-clear" onclick="browseCalClear()">Clear</button>
-                <button class="browse-cal-btn-apply" onclick="browseCalApply()">Apply</button>
-              </div>
-            </div>
-          </div>
         </div>
 
         <button onclick="clearBrowseFilters()"
@@ -1236,6 +1200,37 @@ body::before {
           Clear filters
         </button>
       </div>
+
+      <!-- Calendar popup — sits inline below filter bar, full width -->
+      <div class="browse-cal-popup" id="browse-cal-popup">
+        <div class="browse-cal-popup-inner">
+          <div class="browse-cal-month">
+            <div class="browse-cal-month-header">
+              <button class="browse-cal-nav" onclick="browseCalPrev()">‹</button>
+              <span class="browse-cal-month-name" id="browse-cal-month-a"></span>
+              <span></span>
+            </div>
+            <div class="browse-cal-grid" id="browse-cal-grid-a"></div>
+          </div>
+          <div class="browse-cal-divider"></div>
+          <div class="browse-cal-month">
+            <div class="browse-cal-month-header">
+              <span></span>
+              <span class="browse-cal-month-name" id="browse-cal-month-b"></span>
+              <button class="browse-cal-nav" onclick="browseCalNext()">›</button>
+            </div>
+            <div class="browse-cal-grid" id="browse-cal-grid-b"></div>
+          </div>
+        </div>
+        <div class="browse-cal-footer">
+          <div class="browse-cal-selected-label" id="browse-cal-selected-label">Click a date to start</div>
+          <div class="browse-cal-footer-actions">
+            <button class="browse-cal-btn-clear" onclick="browseCalClear()">Clear</button>
+            <button class="browse-cal-btn-apply" onclick="browseCalApply()">Apply</button>
+          </div>
+        </div>
+      </div>
+
       <div class="browse-grid" id="browse-grid">
         <div id="browse-loading" style="color:var(--text-lo);font-size:13px;padding:24px 0;grid-column:1/-1;display:none;"></div>
       </div>
