@@ -1486,182 +1486,168 @@ window.addEventListener('popstate', e => {
   showPanel(name, null, false);
 });
 
-/* ── Messages — DB-backed ────────────────────────────────────────────────── */
-const THREADS = {};          // local cache: threadKey → { org, event, messages[] }
-let activeThread = null;
-let _msgPollInterval = null;
+/* ── Messages ────────────────────────────────────────────────────────────── */
+let _activeThread   = null;   // current thread key
+let _threadCache    = {};     // threadKey → { orgName, eventName, messages[] }
+let _msgPollTimer   = null;
 
-function _fmtTime(isoStr) {
-  if (!isoStr) return '';
-  try { return new Date(isoStr).toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' }); } catch { return ''; }
+function _fmtTime(iso) {
+  if (!iso) return '';
+  try { return new Date(iso).toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' }); } catch { return ''; }
 }
 
-// Called from event/application "Message" buttons
-// orgUserId comes from event.organiser_user_id (in init data)
+// ── Open a chat from any Message button ──────────────────────────────────
+// orgUserId = the organiser's users.id  (0/null = no linked account)
 async function startChatWithOrganiser(orgUserId, orgName, eventName) {
   const myId = window.__PITCH_USER__ && window.__PITCH_USER__.id;
   if (!myId) return;
 
-  // Open messages panel immediately with loading state so user gets feedback
+  // Switch to messages panel immediately so user sees something
   showPanel('messages', null);
-  document.getElementById('convo-org-name').textContent = orgName || 'Organiser';
-  document.getElementById('convo-event-line').textContent = eventName ? 'Re: ' + eventName : '';
-  document.getElementById('messages-layout').classList.add('convo-open');
+  _openConvoPane(orgName || 'Organiser', eventName || '');
+
   const msgArea = document.getElementById('convo-messages');
   msgArea.innerHTML = '<div style="color:var(--text-lo);font-size:13px;text-align:center;padding:40px 20px;">Connecting…</div>';
 
-  if (!orgUserId || orgUserId == 0) {
-    msgArea.innerHTML = '<div style="color:var(--terra);font-size:13px;text-align:center;padding:40px 20px;">This organiser hasn\'t linked their account yet — you can\'t message them directly.</div>';
+  if (!orgUserId || Number(orgUserId) === 0) {
+    msgArea.innerHTML = '<div style="color:var(--text-lo);font-size:13px;text-align:center;padding:40px 20px;">This event\'s organiser hasn\'t created an account yet.</div>';
     return;
   }
 
   try {
-    const r = await pitchFetch('/api/messages', {
+    // Create (or retrieve) the thread
+    const cr = await pitchFetch('/api/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ vendor_user_id: myId, organiser_user_id: orgUserId })
+      body: JSON.stringify({ vendor_user_id: myId, organiser_user_id: Number(orgUserId) })
     });
-    if (!r.ok) {
-      const errText = await r.text().catch(() => '');
-      msgArea.innerHTML = `<div style="color:var(--terra);font-size:13px;text-align:center;padding:40px 20px;">Could not open chat (${r.status}). ${errText}</div>`;
+    if (!cr.ok) {
+      const err = await cr.json().catch(() => ({}));
+      msgArea.innerHTML = `<div style="color:var(--terra);font-size:13px;text-align:center;padding:40px 20px;">Could not open chat: ${err.error || cr.status}</div>`;
       return;
     }
-    const { thread_key } = await r.json();
+    const { thread_key } = await cr.json();
     if (!thread_key) {
-      msgArea.innerHTML = '<div style="color:var(--terra);font-size:13px;text-align:center;padding:40px 20px;">Could not create conversation thread.</div>';
+      msgArea.innerHTML = '<div style="color:var(--terra);font-size:13px;text-align:center;padding:40px 20px;">Server did not return a thread key.</div>';
       return;
     }
-    if (!THREADS[thread_key]) THREADS[thread_key] = { org: orgName, event: eventName, messages: [] };
-    activeThread = thread_key;
-    await loadThreadMessages(thread_key);
-    renderVendorThreadList();
+
+    _activeThread = thread_key;
+    if (!_threadCache[thread_key]) _threadCache[thread_key] = { orgName: orgName || '', eventName: eventName || '', messages: [] };
+
+    await _loadConversation(thread_key);
+    _refreshThreadList();
   } catch (e) {
-    console.error('[startChat]', e);
+    console.error('[startChatWithOrganiser]', e);
     msgArea.innerHTML = `<div style="color:var(--terra);font-size:13px;text-align:center;padding:40px 20px;">Error: ${e.message}</div>`;
   }
 }
 
-async function loadAllThreads() {
-  try {
-    const r = await pitchFetch('/api/messages');
-    if (!r.ok) return;
-    const { threads } = await r.json();
-    let totalUnread = 0;
-    threads.forEach(t => {
-      const key = t.thread_key;
-      if (!THREADS[key]) THREADS[key] = { org: t.organiser_name, event: '', messages: [] };
-      THREADS[key].org = t.organiser_name;
-      THREADS[key].unreadCount = t.unread_count || 0;
-      THREADS[key].lastBody = t.last_body || '';
-      totalUnread += t.unread_count || 0;
-    });
-    renderVendorThreadList();
-    syncMsgBadge(totalUnread);
-  } catch (e) { console.error('[loadAllThreads]', e); }
+// ── Load + render messages for a thread ──────────────────────────────────
+async function _loadConversation(threadKey) {
+  const r = await pitchFetch(`/api/messages/${threadKey}`);
+  if (!r.ok) {
+    document.getElementById('convo-messages').innerHTML =
+      `<div style="color:var(--terra);font-size:13px;text-align:center;padding:40px 20px;">Failed to load messages (${r.status}).</div>`;
+    return;
+  }
+  const { messages, thread } = await r.json();
+
+  // Merge into cache
+  if (!_threadCache[threadKey]) _threadCache[threadKey] = { orgName: '', eventName: '', messages: [] };
+  _threadCache[threadKey].messages = messages || [];
+  if (thread && thread.organiser_name) _threadCache[threadKey].orgName = thread.organiser_name;
+
+  _openConvoPane(_threadCache[threadKey].orgName, _threadCache[threadKey].eventName);
+  _renderMessages(messages || []);
+  document.getElementById('convo-input').focus();
 }
 
-async function loadThreadMessages(threadKey) {
-  try {
-    const r = await pitchFetch(`/api/messages/${threadKey}`);
-    if (!r.ok) {
-      const msgArea = document.getElementById('convo-messages');
-      if (msgArea) msgArea.innerHTML = `<div style="color:var(--terra);font-size:13px;text-align:center;padding:40px 20px;">Could not load messages (${r.status}). Check your connection.</div>`;
-      return;
-    }
-    const { messages, thread } = await r.json();
-    if (!THREADS[threadKey]) THREADS[threadKey] = { org: thread ? thread.organiser_name : '?', event: '', messages: [] };
-    THREADS[threadKey].messages = messages;
-    THREADS[threadKey].unreadCount = 0;
-    if (thread) THREADS[threadKey].org = thread.organiser_name;
-
-    document.getElementById('convo-org-name').textContent = THREADS[threadKey].org;
-    document.getElementById('convo-event-line').textContent = THREADS[threadKey].event ? 'Re: ' + THREADS[threadKey].event : '';
-    renderMessages(messages);
-    document.getElementById('messages-layout').classList.add('convo-open');
-    document.getElementById('convo-input').focus();
-    renderVendorThreadList();
-    // Refresh badge after marking read
-    loadAllThreads();
-  } catch (e) { console.error('[loadThreadMessages]', e); }
+// ── Shows the conversation panel with correct header ─────────────────────
+function _openConvoPane(orgName, eventName) {
+  document.getElementById('messages-layout').classList.add('convo-open');
+  document.getElementById('convo-org-name').textContent = orgName || 'Organiser';
+  document.getElementById('convo-event-line').textContent = eventName ? 'Re: ' + eventName : '';
 }
 
-function renderVendorThreadList() {
+// ── Click a thread in the sidebar ────────────────────────────────────────
+function openThread(threadKey) {
+  _activeThread = threadKey;
+  document.querySelectorAll('.thread-item').forEach(t => t.classList.remove('active'));
+  const el = document.querySelector(`.thread-item[data-key="${threadKey}"]`);
+  if (el) el.classList.add('active');
+  _loadConversation(threadKey).then(() => _refreshThreadList());
+}
+
+// ── Render message bubbles ───────────────────────────────────────────────
+function _renderMessages(msgs) {
+  const c = document.getElementById('convo-messages');
+  const myId = window.__PITCH_USER__ && window.__PITCH_USER__.id;
+  const t = _activeThread && _threadCache[_activeThread];
+  const otherName = (t && t.orgName) || 'Organiser';
+  const otherInit = otherName.charAt(0).toUpperCase();
+
+  if (!msgs.length) {
+    c.innerHTML = `<div style="color:var(--text-lo);font-size:13px;text-align:center;padding:40px 20px;">No messages yet — send one below.</div>`;
+    return;
+  }
+  c.innerHTML = msgs.map(m => {
+    const mine = Number(m.sender_user_id) === Number(myId);
+    return `<div>
+      <div class="msg-bubble-wrap ${mine ? 'mine' : ''}">
+        ${!mine ? `<div class="msg-avatar" style="background:linear-gradient(135deg,#2A1E14,#5C3A1A);">${otherInit}</div>` : ''}
+        <div class="msg-bubble ${mine ? 'mine' : 'theirs'}">${m.body}</div>
+        ${mine ? `<div class="msg-avatar" style="background:linear-gradient(135deg,#3D1A06,#6B2E08);">Me</div>` : ''}
+      </div>
+      <div class="msg-time ${mine ? 'mine' : ''}">${_fmtTime(m.created_at)}</div>
+    </div>`;
+  }).join('');
+  c.scrollTop = c.scrollHeight;
+}
+
+// ── Render the thread list sidebar ───────────────────────────────────────
+function _refreshThreadList() {
   const list = document.getElementById('thread-list');
   if (!list) return;
-  const keys = Object.keys(THREADS);
+  const keys = Object.keys(_threadCache);
   if (!keys.length) {
     list.innerHTML = `<div style="padding:40px 20px;text-align:center;color:var(--text-lo);font-size:13px;line-height:1.7;">No messages yet.<br>Use the Message button on any event or application to start a conversation.</div>`;
     return;
   }
   list.innerHTML = keys.map(key => {
-    const t = THREADS[key];
-    const last = t.messages[t.messages.length - 1];
-    const preview = t.lastBody || (last ? last.body : '') || 'No messages yet — start the conversation';
-    const isActive = activeThread === key;
-    const hasUnread = !isActive && t.unreadCount > 0;
-    return `<div class="thread-item${isActive ? ' active' : ''}" onclick="openThread('${key}', this)">
-      <div class="thread-avatar" style="background:linear-gradient(135deg,#2A1E14,#5C3A1A);">${(t.org || '?').charAt(0).toUpperCase()}</div>
+    const t = _threadCache[key];
+    const msgs = t.messages || [];
+    const last = msgs[msgs.length - 1];
+    const preview = t.lastBody || (last ? last.body : '') || 'Start the conversation…';
+    const isActive = _activeThread === key;
+    const hasUnread = !isActive && (t.unreadCount || 0) > 0;
+    return `<div class="thread-item${isActive ? ' active' : ''}" data-key="${key}" onclick="openThread('${key}')">
+      <div class="thread-avatar" style="background:linear-gradient(135deg,#2A1E14,#5C3A1A);">${(t.orgName || '?').charAt(0).toUpperCase()}</div>
       <div class="thread-body">
-        <div class="thread-name">${t.org || '—'}</div>
+        <div class="thread-name">${t.orgName || '—'}</div>
         <div class="thread-preview">${preview}</div>
-        ${t.event ? `<div style="font-size:10px;color:var(--text-lo);margin-top:2px;">Re: ${t.event}</div>` : ''}
+        ${t.eventName ? `<div style="font-size:10px;color:var(--text-lo);margin-top:2px;">Re: ${t.eventName}</div>` : ''}
       </div>
       ${hasUnread ? `<div class="thread-unread-dot"></div>` : ''}
     </div>`;
   }).join('');
 }
 
-function openThread(id, el) {
-  activeThread = id;
-  document.querySelectorAll('.thread-item').forEach(t => t.classList.remove('active'));
-  if (el) el.classList.add('active');
-  else {
-    const match = document.querySelector(`.thread-item[onclick*="'${id}'"]`);
-    if (match) match.classList.add('active');
-  }
-  loadThreadMessages(id);
-}
-
-function renderMessages(msgs) {
-  const c = document.getElementById('convo-messages');
-  const myId = window.__PITCH_USER__ && window.__PITCH_USER__.id;
-  const orgName = activeThread && THREADS[activeThread] ? THREADS[activeThread].org : '';
-  const orgInit = (orgName || 'O').charAt(0).toUpperCase();
-  if (!msgs || !msgs.length) {
-    c.innerHTML = `<div style="color:var(--text-lo);font-size:13px;text-align:center;padding:40px 20px;">Start your conversation with ${orgName || 'the organiser'}.</div>`;
-    return;
-  }
-  c.innerHTML = msgs.map(m => {
-    const mine = m.sender_user_id == myId;
-    const time = _fmtTime(m.created_at);
-    return `<div>
-      <div class="msg-bubble-wrap ${mine ? 'mine' : ''}">
-        ${!mine ? `<div class="msg-avatar" style="background:linear-gradient(135deg,#2A1E14,#5C3A1A);">${orgInit}</div>` : ''}
-        <div class="msg-bubble ${mine ? 'mine' : 'theirs'}">${m.body}</div>
-        ${mine ? `<div class="msg-avatar" style="background:linear-gradient(135deg,#3D1A06,#6B2E08);">Me</div>` : ''}
-      </div>
-      <div class="msg-time ${mine ? 'mine' : ''}">${time}</div>
-    </div>`;
-  }).join('');
-  c.scrollTop = c.scrollHeight;
-}
-
+// ── Send a message ───────────────────────────────────────────────────────
 async function sendMessage() {
   const inp = document.getElementById('convo-input');
   const text = inp.value.trim();
-  if (!text || !activeThread) return;
-
+  if (!text || !_activeThread) return;
   inp.value = '';
   inp.style.height = '';
   try {
-    const r = await pitchFetch(`/api/messages/${activeThread}`, {
+    const r = await pitchFetch(`/api/messages/${_activeThread}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ body: text })
     });
     if (!r.ok) { inp.value = text; return; }
-    // Reload messages to get server-canonical state
-    await loadThreadMessages(activeThread);
+    await _loadConversation(_activeThread);
     loadAllThreads();
   } catch (e) { console.error('[sendMessage]', e); inp.value = text; }
 }
@@ -1670,38 +1656,56 @@ function handleMsgKey(e) {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
 }
 
-function syncMsgBadge(count) {
+// ── Load all threads (badge + sidebar) ──────────────────────────────────
+async function loadAllThreads() {
+  try {
+    const r = await pitchFetch('/api/messages');
+    if (!r.ok) return;
+    const { threads } = await r.json();
+    let totalUnread = 0;
+    (threads || []).forEach(t => {
+      const key = t.thread_key;
+      if (!_threadCache[key]) _threadCache[key] = { orgName: t.organiser_name || '', eventName: '', messages: [] };
+      _threadCache[key].orgName    = t.organiser_name || _threadCache[key].orgName;
+      _threadCache[key].unreadCount = t.unread_count || 0;
+      _threadCache[key].lastBody    = t.last_body || '';
+      totalUnread += t.unread_count || 0;
+    });
+    _refreshThreadList();
+    _syncBadge(totalUnread);
+  } catch (e) { console.error('[loadAllThreads]', e); }
+}
+
+function _syncBadge(count) {
   const badge = document.getElementById('msg-badge');
   if (!badge) return;
-  if (count == null) {
-    const unread = document.querySelectorAll('.thread-item .thread-unread-dot').length;
-    count = unread;
-  }
   badge.textContent = count;
   badge.style.display = count > 0 ? '' : 'none';
 }
 
-// Poll for new messages every 8 seconds when messages panel is visible
+// ── Polling ──────────────────────────────────────────────────────────────
 function startMsgPoll() {
-  if (_msgPollInterval) return;
-  _msgPollInterval = setInterval(async () => {
+  if (_msgPollTimer) return;
+  _msgPollTimer = setInterval(async () => {
     await loadAllThreads();
-    // Refresh open thread messages
-    if (activeThread && THREADS[activeThread]) {
-      try {
-        const r = await pitchFetch(`/api/messages/${activeThread}`);
-        if (r.ok) {
-          const { messages } = await r.json();
-          THREADS[activeThread].messages = messages;
-          renderMessages(messages);
-        }
-      } catch(e) {}
+    if (_activeThread) {
+      const r = await pitchFetch(`/api/messages/${_activeThread}`).catch(() => null);
+      if (r && r.ok) {
+        const { messages } = await r.json();
+        if (_threadCache[_activeThread]) _threadCache[_activeThread].messages = messages;
+        _renderMessages(messages || []);
+      }
     }
-  }, 8000);
+  }, 5000);
 }
 function stopMsgPoll() {
-  if (_msgPollInterval) { clearInterval(_msgPollInterval); _msgPollInterval = null; }
+  if (_msgPollTimer) { clearInterval(_msgPollTimer); _msgPollTimer = null; }
 }
+
+// Keep old name aliases so any existing callers still work
+const THREADS = _threadCache;
+const activeThread = null;  // replaced by _activeThread
+function syncMsgBadge(n) { _syncBadge(n); }
 
 /* ── Applications filter ─────────────────────────────────────────────────── */
 function filterApps(status, btn) {
