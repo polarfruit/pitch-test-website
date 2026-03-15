@@ -1092,7 +1092,7 @@ body::before {
           <div class="form-group">
             <label class="form-label">Cuisine types</label>
             <div class="tag-selector" id="cuisine-selector">
-              <button class="tag-option selected" onclick="toggleTag(this)">BBQ</button>
+              <button class="tag-option" onclick="toggleTag(this)">BBQ</button>
               <button class="tag-option" onclick="toggleTag(this)">Mexican</button>
               <button class="tag-option" onclick="toggleTag(this)">Asian Fusion</button>
               <button class="tag-option" onclick="toggleTag(this)">Italian</button>
@@ -1173,7 +1173,7 @@ body::before {
             <div class="photo-grid" id="photo-grid"></div>
           </div>
 
-          <button class="btn-save" onclick="saveProfile()">Save changes</button>
+          <button class="btn-save" onclick="saveProfile(this)">Save changes</button>
         </div>
 
         <!-- Live preview -->
@@ -1833,9 +1833,8 @@ function updatePreview() {
   if (priceEl) { priceEl.textContent = formatPrice(priceVal); priceEl.style.display = priceVal ? '' : 'none'; }
 }
 
-async function saveProfile() {
-  const btn = event.target;
-  btn.textContent = 'Saving…'; btn.disabled = true;
+async function saveProfile(btn) {
+  btn.textContent = 'Saving…'; btn.disabled = true; btn.style.background = '';
 
   const cuisine_tags = [...document.querySelectorAll('.tag-option.selected')].map(b => b.textContent.trim());
   const setup = document.querySelector('input[name="setup"]:checked');
@@ -1864,18 +1863,26 @@ async function saveProfile() {
       body: JSON.stringify(payload),
     });
     if (res.ok) {
-      // Update cached profile so preview stays in sync
+      // Update in-memory profile cache so preview and re-renders stay in sync
       if (window.__PITCH_PROFILE__) Object.assign(window.__PITCH_PROFILE__, payload, { cuisine_tags });
+      // Also update sessionStorage cache so public profile page reflects changes instantly
+      try {
+        const cached = JSON.parse(sessionStorage.getItem('pitch_vendor_' + (window.__PITCH_USER__ || {}).id) || '{}');
+        Object.assign(cached, payload, { cuisine_tags });
+        sessionStorage.setItem('pitch_vendor_' + window.__PITCH_USER__.id, JSON.stringify(cached));
+      } catch {}
       btn.textContent = '✓ Saved!'; btn.style.background = 'var(--herb)';
+      btn.disabled = false;
+      setTimeout(() => { btn.textContent = 'Save changes'; btn.style.background = ''; }, 3000);
     } else {
       const d = await res.json().catch(() => ({}));
-      btn.textContent = 'Error: ' + (d.error || res.status); btn.style.background = 'var(--terra)';
+      btn.textContent = '✗ ' + (d.error || 'Save failed — try again'); btn.style.background = 'var(--terra)';
+      btn.disabled = false;
     }
   } catch (e) {
-    btn.textContent = 'Error: ' + e.message; btn.style.background = 'var(--terra)';
+    btn.textContent = '✗ ' + e.message; btn.style.background = 'var(--terra)';
+    btn.disabled = false;
   }
-  btn.disabled = false;
-  setTimeout(() => { btn.textContent = 'Save changes'; btn.style.background = ''; }, 3000);
 }
 
 /* ── Delete modal ─────────────────────────────────────────────────────────── */
@@ -1994,9 +2001,10 @@ async function initDashboard() {
       const radio = document.querySelector(`input[name="setup"][value="${v.setup_type}"]`);
       if (radio) radio.checked = true;
     }
-    // Cuisine tags
-    if (v.cuisine_tags) {
-      const tags = Array.isArray(v.cuisine_tags) ? v.cuisine_tags : [];
+    // Cuisine tags — v.cuisine_tags is a raw JSON string from the DB
+    {
+      let tags = [];
+      try { tags = Array.isArray(v.cuisine_tags) ? v.cuisine_tags : JSON.parse(v.cuisine_tags || '[]'); } catch {}
       document.querySelectorAll('.tag-option').forEach(b => {
         b.classList.toggle('selected', tags.includes(b.textContent.trim()));
       });
