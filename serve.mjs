@@ -5,7 +5,7 @@ import fs from 'fs';
 import bcrypt from 'bcryptjs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { stmts, txSignupVendor, txSignupOrganiser } from './db.mjs';
+import db, { stmts, txSignupVendor, txSignupOrganiser } from './db.mjs';
 import { sendVerificationEmail, sendVerificationSMS } from './mailer.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -684,6 +684,50 @@ app.post('/api/admin/users/:id/delete', requireAdmin, async (req, res) => {
     console.error('[admin] Delete user error:', err);
     res.status(500).json({ error: err.message });
   }
+});
+
+// GET /api/admin/account-info — show user IDs and status for leroy/polarfruit accounts
+app.get('/api/admin/account-info', requireAdmin, async (req, res) => {
+  try {
+    const emails = ['leroy.anton@yahoo.com', 'polarfruit@outlook.com'];
+    const accounts = await Promise.all(emails.map(async email => {
+      const user = await stmts.getUserByEmail.get(email).catch(() => null);
+      if (!user) return { email, exists: false };
+      const profile = user.role === 'vendor'
+        ? await stmts.getVendorByUserId.get(user.id).catch(() => null)
+        : await stmts.getOrganiserByUserId.get(user.id).catch(() => null);
+      const events = user.role === 'organiser'
+        ? await stmts.getOrganiserEvents.all(user.id).catch(() => [])
+        : [];
+      return {
+        email,
+        exists: true,
+        user_id: user.id,
+        role: user.role,
+        status: user.status,
+        profile_name: profile ? (profile.trading_name || profile.org_name || '—') : null,
+        event_count: events.length,
+        event_ids: events.map(e => ({ id: e.id, name: e.name, organiser_user_id: e.organiser_user_id })),
+      };
+    }));
+    res.json({ accounts });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// POST /api/admin/fix-event-links — re-link all events to their organiser accounts
+app.post('/api/admin/fix-event-links', requireAdmin, async (req, res) => {
+  try {
+    const rawExec = async sql => {
+      try {
+        if (db && typeof db.execute === 'function') await db.execute(sql);      // Turso
+        else if (db && typeof db.exec === 'function') db.exec(sql);             // better-sqlite3
+      } catch (e) { console.warn('[fix-event-links]', e.message); }
+    };
+    await rawExec(`UPDATE users SET status='active' WHERE email IN ('leroy.anton@yahoo.com','polarfruit@outlook.com')`);
+    await rawExec(`UPDATE events SET organiser_user_id = (SELECT o.user_id FROM organisers o WHERE o.org_name = events.organiser_name LIMIT 1) WHERE organiser_user_id IS NULL`);
+    await rawExec(`UPDATE events SET organiser_user_id = (SELECT u.id FROM users u JOIN organisers o ON o.user_id=u.id WHERE u.email IN ('leroy.anton@yahoo.com','polarfruit@outlook.com') LIMIT 1) WHERE organiser_user_id IS NULL`);
+    res.json({ ok: true, message: 'Done. Visit /api/admin/account-info to verify.' });
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 app.get('/api/admin/events', requireAdmin, async (req, res) => {
