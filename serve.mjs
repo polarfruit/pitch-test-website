@@ -1030,7 +1030,19 @@ app.get('/signup/vendor',       page('signup-vendor.html'));
 app.get('/signup/organiser',    page('signup-organiser.html'));
 app.get('/verify/email',        page('verify-email.html'));
 app.get('/verify/phone',        page('verify-phone.html'));
-app.get('/events/*splat',       page('event-detail.html'));
+app.get('/events/*splat', async (req, res) => {
+  const slug = req.params.splat;
+  try {
+    const ev = await stmts.getEventBySlug.get(slug);
+    if (ev) {
+      let html = readHtml('event-detail.html');
+      html = html.replace('</head>', `<script>window.__PITCH_DB_EVENT__=${JSON.stringify(ev)};</script></head>`);
+      return res.send(html);
+    }
+  } catch (e) { console.error('[event page]', e); }
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.send(readHtml('event-detail.html'));
+});
 app.get('/vendors/:id', async (req, res) => {
   const id = req.params.id;
   // Only inject data for numeric IDs (real accounts); slug-based demo vendors use client-side data.js
