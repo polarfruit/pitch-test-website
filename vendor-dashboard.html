@@ -1959,14 +1959,14 @@ async function loadBrowseEvents() {
 }
 
 function openEventDetail(eventId) {
-  // Use cache if available, otherwise re-fetch
-  const ev = _eventsCache.find(e => e.id === eventId);
+  const id = Number(eventId);
+  const ev = _eventsCache.find(e => Number(e.id) === id);
   if (ev) {
     renderEventDetail(ev);
   } else {
     pitchFetch('/api/vendor/events').then(r => r.json()).then(d => {
       _eventsCache = d.events || [];
-      const found = _eventsCache.find(e => e.id === eventId);
+      const found = _eventsCache.find(e => Number(e.id) === id);
       if (found) renderEventDetail(found);
     });
   }
@@ -2040,7 +2040,7 @@ async function applyFromDetail(eventId) {
     const d = await r.json();
     if (r.ok) {
       // Update cache
-      const ev = _eventsCache.find(e => e.id === eventId);
+      const ev = _eventsCache.find(e => Number(e.id) === Number(eventId));
       if (ev) { ev.applied = true; ev.appStatus = 'pending'; }
       // Re-render the apply bar
       const applyBar = document.querySelector('.event-detail-apply-bar');
@@ -2145,7 +2145,7 @@ function renderApplicationsData(applications) {
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
           ${a.status === 'pending'
             ? `<button onclick="withdrawApp(${a.event_id}, this)" style="background:none;border:none;color:var(--text-lo);cursor:pointer;font-size:12px;font-family:inherit;text-decoration:underline;">Withdraw</button>`
-            : `<a class="action-link" href="/events/${a.event_id}">View →</a>`
+            : `<button onclick="openEventDetail(${a.event_id})" class="action-link" style="background:none;border:none;cursor:pointer;font-family:inherit;">View →</button>`
           }
           <button onclick="startChatWithOrganiser(${a.organiser_user_id||0},'${(a.organiser_name||'Organiser').replace(/'/g,"\\'")}','${(a.event_name||'').replace(/'/g,"\\'")}')" style="font-family:var(--fb);font-size:11px;font-weight:700;color:var(--ember);background:var(--ember-bg);border:1px solid #E8500A22;padding:4px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;">💬 Message</button>
         </div>
