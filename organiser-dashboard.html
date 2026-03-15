@@ -28,7 +28,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .logo-mark { font-family:var(--fd); font-size:22px; font-weight:900; letter-spacing:-0.04em; color:var(--text-hi); text-decoration:none; display:block; margin-bottom:16px; }
 .logo-mark .dot { color:var(--ember); }
 .org-card { display:flex; align-items:center; gap:10px; background:#ffffff07; border:1px solid #ffffff0a; border-radius:12px; padding:10px 12px; }
-.org-avatar { width:36px; height:36px; border-radius:10px; background:linear-gradient(135deg,#0A1A2D,#0A3060); display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+.org-avatar { width:36px; height:36px; border-radius:10px; background:linear-gradient(135deg,#0A1A2D,#0A3060); display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; overflow:hidden; }
 .org-info { flex:1; min-width:0; }
 .org-name { font-size:13px; font-weight:700; color:var(--text-hi); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .org-role { font-size:10px; color:var(--text-lo); margin-top:1px; }
@@ -899,6 +899,21 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
     <div class="panel" id="panel-settings">
       <div style="max-width:600px;">
         <div class="settings-card">
+          <div class="settings-section-title">Profile Picture</div>
+          <div style="display:flex;align-items:center;gap:20px;padding:4px 0;">
+            <div id="avatar-preview-large" style="width:80px;height:80px;border-radius:16px;background:linear-gradient(135deg,#0A1A2D,#0A3060);display:flex;align-items:center;justify-content:center;font-size:36px;overflow:hidden;flex-shrink:0;">🏛️</div>
+            <div style="flex:1;">
+              <div style="font-size:13px;color:var(--text-mid);margin-bottom:10px;line-height:1.5;">Upload a photo to show on your profile, event listings, and messages.</div>
+              <label style="display:inline-flex;align-items:center;gap:8px;background:var(--ember);color:#fff;font-size:13px;font-weight:700;padding:9px 16px;border-radius:10px;cursor:pointer;font-family:var(--fb);">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Choose photo
+                <input type="file" accept="image/jpeg,image/png,image/webp" style="display:none;" onchange="previewAndUploadAvatar(this)">
+              </label>
+              <div id="avatar-upload-status" style="font-size:12px;margin-top:8px;color:var(--text-lo);"></div>
+            </div>
+          </div>
+        </div>
+        <div class="settings-card">
           <div class="settings-section-title">Account</div>
           <div class="settings-row">
             <div><div class="settings-row-label">Organisation name</div><div class="settings-row-desc">Displayed on all your event listings.</div></div>
@@ -1700,6 +1715,39 @@ function renderOrgEventsData(events) {
 }
 
 initDashboard();
+
+// ── Avatar upload ─────────────────────────────────────────────────────────
+function _applyAvatarEverywhere(dataUrl) {
+  const img = `<img src="${dataUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;" alt="avatar">`;
+  const sidebarAvatar = document.querySelector('.org-avatar');
+  if (sidebarAvatar) sidebarAvatar.innerHTML = img;
+  const large = document.getElementById('avatar-preview-large');
+  if (large) large.innerHTML = img;
+}
+
+function previewAndUploadAvatar(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const status = document.getElementById('avatar-upload-status');
+  if (file.size > 2 * 1024 * 1024) { status.textContent = 'File too large (max 2MB).'; status.style.color = 'var(--terra)'; return; }
+  const reader = new FileReader();
+  reader.onload = async e => {
+    const dataUrl = e.target.result;
+    _applyAvatarEverywhere(dataUrl);
+    status.textContent = 'Uploading…'; status.style.color = 'var(--text-lo)';
+    try {
+      const res = await pitchFetch('/api/profile/avatar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ avatar_url: dataUrl }) });
+      if (res.ok) { status.textContent = 'Profile picture saved.'; status.style.color = 'var(--herb)'; }
+      else { const d = await res.json().catch(()=>({})); status.textContent = 'Upload failed: ' + (d.error||res.status); status.style.color = 'var(--terra)'; }
+    } catch (err) { status.textContent = 'Upload error: ' + err.message; status.style.color = 'var(--terra)'; }
+  };
+  reader.readAsDataURL(file);
+}
+
+(function initAvatar() {
+  const u = window.__PITCH_USER__;
+  if (u && u.avatar_url) _applyAvatarEverywhere(u.avatar_url);
+})();
 
 // ── Messaging ─────────────────────────────────────────────────────────────
 function _orgFmtTime(iso) {

@@ -139,6 +139,12 @@ window.__PITCH_INIT_DATA__ = ${JSON.stringify(initData)};
       // Server-render the display name directly — visible instantly, even if JS errors
       html = html.replace(' id="org-display-name">—<', ` id="org-display-name">${displayName}<`);
       html = html.replace(' id="vendor-display-name">—<', ` id="vendor-display-name">${displayName}<`);
+      // Server-render avatar if present
+      if (user.avatar_url) {
+        const avatarImg = `<img src="${user.avatar_url}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;" alt="avatar">`;
+        html = html.replace('>🔥<', `>${avatarImg}<`);
+        html = html.replace('>🏛️<', `>${avatarImg}<`);
+      }
       res.send(html);
     } catch (e) {
       console.error('[serveDashboard]', e);
@@ -575,6 +581,25 @@ app.post('/api/logout', (req, res) => {
 app.get('/logout', (req, res) => {
   sessWrite(res, {});
   res.redirect('/');
+});
+
+// POST /api/profile/avatar — save base64 data URL as avatar
+app.post('/api/profile/avatar', requireAuth, async (req, res) => {
+  try {
+    const { avatar_url } = req.body;
+    if (!avatar_url || !avatar_url.startsWith('data:image/')) {
+      return res.status(400).json({ error: 'Invalid image data' });
+    }
+    // Rough size check — base64 encodes ~4/3, so 2MB raw ≈ 2.7MB base64 string
+    if (avatar_url.length > 3 * 1024 * 1024) {
+      return res.status(400).json({ error: 'Image too large (max 2MB)' });
+    }
+    await stmts.updateUserAvatar.run(avatar_url, req.session.userId);
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('[avatar]', e);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 // GET /api/me
