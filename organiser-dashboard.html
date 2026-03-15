@@ -1718,8 +1718,9 @@ async function startChat(vendorUserId, vendorName) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ vendor_user_id: vendorUserId, organiser_user_id: myId })
     });
-    if (!r.ok) return;
+    if (!r.ok) { console.error('[startChat] status', r.status); return; }
     const { thread_key } = await r.json();
+    if (!thread_key) { console.error('[startChat] no thread_key'); return; }
     if (!MSG_THREADS[thread_key]) MSG_THREADS[thread_key] = { name: vendorName, messages: [] };
     currentChatId = thread_key;
     showPanel('messages', null);

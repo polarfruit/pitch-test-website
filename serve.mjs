@@ -793,11 +793,13 @@ app.get('/api/messages', requireAuth, async (req, res) => {
 // POST /api/messages — create or get a thread
 app.post('/api/messages', requireAuth, async (req, res) => {
   try {
-    const { vendor_user_id, organiser_user_id } = req.body;
+    const vendor_user_id = Number(req.body.vendor_user_id);
+    const organiser_user_id = Number(req.body.organiser_user_id);
     if (!vendor_user_id || !organiser_user_id) return res.status(400).json({ error: 'Missing participant IDs' });
     const threadKey = `v${vendor_user_id}_o${organiser_user_id}`;
     await stmts.createOrGetThread.run(threadKey, vendor_user_id, organiser_user_id);
-    const thread = await stmts.getThread.get(threadKey);
+    let thread = null;
+    try { thread = await stmts.getThread.get(threadKey); } catch(e) { console.error('[getThread]', e); }
     res.json({ thread_key: threadKey, thread });
   } catch (e) { console.error('[messages create]', e); res.status(500).json({ error: 'Server error' }); }
 });
@@ -809,7 +811,8 @@ app.get('/api/messages/:threadKey', requireAuth, async (req, res) => {
     const userId = req.session.userId;
     await stmts.markThreadRead.run(threadKey, userId);
     const messages = await stmts.getMessagesInThread.all(threadKey);
-    const thread = await stmts.getThread.get(threadKey);
+    let thread = null;
+    try { thread = await stmts.getThread.get(threadKey); } catch(e) { console.error('[getThread]', e); }
     res.json({ messages, thread });
   } catch (e) { console.error('[messages get]', e); res.status(500).json({ error: 'Server error' }); }
 });

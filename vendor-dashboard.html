@@ -1500,15 +1500,20 @@ function _fmtTime(isoStr) {
 // orgUserId comes from event.organiser_user_id (in init data)
 async function startChatWithOrganiser(orgUserId, orgName, eventName) {
   const myId = window.__PITCH_USER__ && window.__PITCH_USER__.id;
-  if (!myId || !orgUserId) return;
+  if (!myId) return;
+  if (!orgUserId || orgUserId == 0) {
+    alert('This event does not have a linked organiser account. The organiser may not have signed up yet.');
+    return;
+  }
   try {
     const r = await pitchFetch('/api/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ vendor_user_id: myId, organiser_user_id: orgUserId })
     });
-    if (!r.ok) return;
+    if (!r.ok) { console.error('[startChat] status', r.status); return; }
     const { thread_key } = await r.json();
+    if (!thread_key) { console.error('[startChat] no thread_key in response'); return; }
     if (!THREADS[thread_key]) THREADS[thread_key] = { org: orgName, event: eventName, messages: [] };
     activeThread = thread_key;
     showPanel('messages', null);
