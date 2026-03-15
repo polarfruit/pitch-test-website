@@ -1501,25 +1501,44 @@ function _fmtTime(isoStr) {
 async function startChatWithOrganiser(orgUserId, orgName, eventName) {
   const myId = window.__PITCH_USER__ && window.__PITCH_USER__.id;
   if (!myId) return;
+
+  // Open messages panel immediately with loading state so user gets feedback
+  showPanel('messages', null);
+  document.getElementById('convo-org-name').textContent = orgName || 'Organiser';
+  document.getElementById('convo-event-line').textContent = eventName ? 'Re: ' + eventName : '';
+  document.getElementById('messages-layout').classList.add('convo-open');
+  const msgArea = document.getElementById('convo-messages');
+  msgArea.innerHTML = '<div style="color:var(--text-lo);font-size:13px;text-align:center;padding:40px 20px;">Connecting…</div>';
+
   if (!orgUserId || orgUserId == 0) {
-    alert('This event does not have a linked organiser account. The organiser may not have signed up yet.');
+    msgArea.innerHTML = '<div style="color:var(--terra);font-size:13px;text-align:center;padding:40px 20px;">This organiser hasn\'t linked their account yet — you can\'t message them directly.</div>';
     return;
   }
+
   try {
     const r = await pitchFetch('/api/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ vendor_user_id: myId, organiser_user_id: orgUserId })
     });
-    if (!r.ok) { console.error('[startChat] status', r.status); return; }
+    if (!r.ok) {
+      const errText = await r.text().catch(() => '');
+      msgArea.innerHTML = `<div style="color:var(--terra);font-size:13px;text-align:center;padding:40px 20px;">Could not open chat (${r.status}). ${errText}</div>`;
+      return;
+    }
     const { thread_key } = await r.json();
-    if (!thread_key) { console.error('[startChat] no thread_key in response'); return; }
+    if (!thread_key) {
+      msgArea.innerHTML = '<div style="color:var(--terra);font-size:13px;text-align:center;padding:40px 20px;">Could not create conversation thread.</div>';
+      return;
+    }
     if (!THREADS[thread_key]) THREADS[thread_key] = { org: orgName, event: eventName, messages: [] };
     activeThread = thread_key;
-    showPanel('messages', null);
     await loadThreadMessages(thread_key);
     renderVendorThreadList();
-  } catch (e) { console.error('[startChat]', e); }
+  } catch (e) {
+    console.error('[startChat]', e);
+    msgArea.innerHTML = `<div style="color:var(--terra);font-size:13px;text-align:center;padding:40px 20px;">Error: ${e.message}</div>`;
+  }
 }
 
 async function loadAllThreads() {
@@ -1544,7 +1563,11 @@ async function loadAllThreads() {
 async function loadThreadMessages(threadKey) {
   try {
     const r = await pitchFetch(`/api/messages/${threadKey}`);
-    if (!r.ok) return;
+    if (!r.ok) {
+      const msgArea = document.getElementById('convo-messages');
+      if (msgArea) msgArea.innerHTML = `<div style="color:var(--terra);font-size:13px;text-align:center;padding:40px 20px;">Could not load messages (${r.status}). Check your connection.</div>`;
+      return;
+    }
     const { messages, thread } = await r.json();
     if (!THREADS[threadKey]) THREADS[threadKey] = { org: thread ? thread.organiser_name : '?', event: '', messages: [] };
     THREADS[threadKey].messages = messages;
