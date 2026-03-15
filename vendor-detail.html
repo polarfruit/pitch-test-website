@@ -857,9 +857,13 @@ function applyDbVendor(db) {
   document.getElementById('vd-plan-name').textContent = isPro ? 'Pro Vendor' : 'Free Plan';
   if (bio) document.getElementById('vd-bio').textContent = bio;
 
+  var _priceLabels = { '$':'$ (under $15)', '$$':'$$ ($15–$25)', '$$$':'$$$ ($25+)' };
+  function _fmtPrice(p) { return p ? (_priceLabels[p.trim()] || p) : ''; }
+
   var metaParts = cuisines.map(function(c){ return '<span class="vendor-tag">' + c + '</span>'; });
   if (setup)  metaParts.push('<span class="vendor-setup-tag">🚚 ' + setup + '</span>');
   if (suburb) metaParts.push('<span class="vendor-suburb">📍 ' + suburb + (state ? ', ' + state : '') + '</span>');
+  if (db.price_range) metaParts.push('<span class="vendor-setup-tag" style="color:var(--ember);">💲 ' + _fmtPrice(db.price_range) + '</span>');
   document.getElementById('vd-meta-row').innerHTML = metaParts.join('');
 }
 
