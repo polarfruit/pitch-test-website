@@ -907,6 +907,109 @@ body::before {
   .profile-grid { grid-template-columns: 1fr; }
   .overview-grid { grid-template-columns: 1fr; }
 }
+
+/* ── BROWSE CALENDAR ──────────────────────────────────────────────────────── */
+.browse-date-range-wrap { display: flex; align-items: center; gap: 6px; flex-shrink: 0; position: relative; }
+.browse-date-field { display: flex; flex-direction: column; gap: 2px; }
+.browse-date-field-label { font-size: 10px; font-weight: 700; color: var(--text-lo); letter-spacing: 0.06em; text-transform: uppercase; padding-left: 2px; }
+.browse-date-text-input {
+  width: 108px; height: 38px;
+  background: #ffffff08; border: 1px solid #ffffff12;
+  border-radius: 10px; padding: 0 10px;
+  font-family: var(--fb); font-size: 13px; color: var(--text-hi); outline: none;
+  transition: border-color 0.14s, box-shadow 0.14s;
+}
+.browse-date-text-input:focus { border-color: #E8500A40; box-shadow: 0 0 0 3px #E8500A12; }
+.browse-date-text-input::placeholder { color: var(--text-lo); }
+.browse-date-text-input.has-value { border-color: #E8500A40; }
+.browse-date-sep { font-size: 13px; color: var(--text-lo); align-self: flex-end; padding-bottom: 8px; }
+.browse-cal-toggle-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 38px; height: 38px; flex-shrink: 0;
+  background: #ffffff08; border: 1px solid #ffffff12;
+  border-radius: 10px; cursor: pointer; color: var(--text-lo); align-self: flex-end;
+  transition: border-color 0.14s, color 0.14s, background 0.14s;
+}
+.browse-cal-toggle-btn:hover, .browse-cal-toggle-btn.active {
+  border-color: #E8500A40; color: var(--ember); background: #E8500A08;
+}
+.browse-cal-popup {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 600;
+  background: var(--char);
+  border: 1px solid #ffffff12;
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.6), 0 4px 16px rgba(0,0,0,0.4);
+  min-width: 560px;
+}
+.browse-cal-popup.open { display: block; }
+.browse-cal-popup-inner { display: flex; gap: 24px; }
+.browse-cal-month { flex: 1; min-width: 230px; }
+.browse-cal-month-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 12px;
+}
+.browse-cal-month-name {
+  font-family: var(--fd); font-size: 14px; font-weight: 800;
+  color: var(--text-hi); letter-spacing: -0.01em;
+}
+.browse-cal-nav {
+  background: none; border: none; cursor: pointer;
+  color: var(--text-lo); padding: 4px 8px; border-radius: 6px;
+  font-size: 16px; line-height: 1;
+  transition: color 0.12s, background 0.12s;
+}
+.browse-cal-nav:hover { color: var(--text-hi); background: #ffffff0A; }
+.browse-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.browse-cal-dow {
+  text-align: center; font-size: 10px; font-weight: 700;
+  color: var(--text-lo); letter-spacing: 0.05em; padding-bottom: 6px;
+}
+.browse-cal-day {
+  aspect-ratio: 1; display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 500; color: var(--text-mid);
+  border-radius: 8px; cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+  border: none; background: none; font-family: var(--fb);
+}
+.browse-cal-day:hover:not(.empty) { background: #ffffff12; color: var(--text-hi); }
+.browse-cal-day.empty { cursor: default; color: var(--text-lo); opacity: 0.35; pointer-events: none; }
+.browse-cal-day.past { color: var(--text-lo); opacity: 0.5; }
+.browse-cal-day.today { color: var(--ember); font-weight: 700; }
+.browse-cal-day.start, .browse-cal-day.end, .browse-cal-day.hover-end {
+  background: var(--ember); color: #fff; font-weight: 700;
+}
+.browse-cal-day.hover-end { opacity: 0.7; }
+.browse-cal-day.in-range { background: #E8500A18; color: var(--text-hi); border-radius: 0; }
+.browse-cal-day.start { border-radius: 8px 0 0 8px; }
+.browse-cal-day.end   { border-radius: 0 8px 8px 0; }
+.browse-cal-day.start.end { border-radius: 8px; }
+.browse-cal-divider { width: 1px; background: #ffffff0A; flex-shrink: 0; }
+.browse-cal-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 16px; padding-top: 14px; border-top: 1px solid #ffffff0A;
+}
+.browse-cal-selected-label { font-size: 12px; color: var(--text-lo); }
+.browse-cal-selected-label strong { color: var(--text-mid); }
+.browse-cal-footer-actions { display: flex; gap: 8px; }
+.browse-cal-btn-clear {
+  font-family: var(--fb); font-size: 12px; font-weight: 600;
+  background: none; border: 1px solid #ffffff12; border-radius: 8px;
+  color: var(--text-lo); padding: 7px 14px; cursor: pointer;
+  transition: color 0.12s, border-color 0.12s;
+}
+.browse-cal-btn-clear:hover { color: var(--text-hi); border-color: #ffffff25; }
+.browse-cal-btn-apply {
+  font-family: var(--fb); font-size: 12px; font-weight: 700;
+  background: var(--ember); border: none; border-radius: 8px;
+  color: #fff; padding: 7px 18px; cursor: pointer;
+  transition: background 0.12s;
+}
+.browse-cal-btn-apply:hover { background: var(--ember-glow); }
 </style>
 </head>
 <body>
@@ -1071,6 +1174,58 @@ body::before {
           <option value="applied">Applied</option>
           <option value="approved">Approved</option>
         </select>
+        <!-- Date range calendar -->
+        <div class="browse-date-range-wrap">
+          <div class="browse-date-field">
+            <span class="browse-date-field-label">From</span>
+            <input class="browse-date-text-input" id="browse-f-from-text" type="text" placeholder="DD/MM/YYYY"
+                   oninput="browseOnDateTextInput('from')" onblur="browseNormalizeDateInput('from')" />
+          </div>
+          <span class="browse-date-sep">→</span>
+          <div class="browse-date-field">
+            <span class="browse-date-field-label">To</span>
+            <input class="browse-date-text-input" id="browse-f-to-text" type="text" placeholder="DD/MM/YYYY"
+                   oninput="browseOnDateTextInput('to')" onblur="browseNormalizeDateInput('to')" />
+          </div>
+          <button class="browse-cal-toggle-btn" id="browse-date-range-btn" onclick="browseToggleCalendar(event)" title="Open calendar">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <rect x="1.5" y="2.5" width="11" height="10" rx="2" stroke="currentColor" stroke-width="1.4"/>
+              <path d="M1.5 5.5h11M4.5 1v3M9.5 1v3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <input type="hidden" id="browse-f-from" />
+          <input type="hidden" id="browse-f-to" />
+
+          <div class="browse-cal-popup" id="browse-cal-popup">
+            <div class="browse-cal-popup-inner">
+              <div class="browse-cal-month">
+                <div class="browse-cal-month-header">
+                  <button class="browse-cal-nav" onclick="browseCalPrev()">‹</button>
+                  <span class="browse-cal-month-name" id="browse-cal-month-a"></span>
+                  <span></span>
+                </div>
+                <div class="browse-cal-grid" id="browse-cal-grid-a"></div>
+              </div>
+              <div class="browse-cal-divider"></div>
+              <div class="browse-cal-month">
+                <div class="browse-cal-month-header">
+                  <span></span>
+                  <span class="browse-cal-month-name" id="browse-cal-month-b"></span>
+                  <button class="browse-cal-nav" onclick="browseCalNext()">›</button>
+                </div>
+                <div class="browse-cal-grid" id="browse-cal-grid-b"></div>
+              </div>
+            </div>
+            <div class="browse-cal-footer">
+              <div class="browse-cal-selected-label" id="browse-cal-selected-label">Click a date to start</div>
+              <div class="browse-cal-footer-actions">
+                <button class="browse-cal-btn-clear" onclick="browseCalClear()">Clear</button>
+                <button class="browse-cal-btn-apply" onclick="browseCalApply()">Apply</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <button onclick="clearBrowseFilters()"
           style="font-family:var(--fb);font-size:12px;font-weight:700;color:var(--text-lo);background:transparent;border:1px solid #ffffff12;border-radius:10px;padding:9px 14px;cursor:pointer;">
           Clear filters
@@ -2182,12 +2337,16 @@ function applyBrowseFilters() {
   const q      = (document.getElementById('browse-search')?.value || '').toLowerCase().trim();
   const cat    = document.getElementById('browse-cat')?.value    || '';
   const status = document.getElementById('browse-status')?.value || '';
+  const from   = document.getElementById('browse-f-from')?.value || '';
+  const to     = document.getElementById('browse-f-to')?.value   || '';
   const filtered = _eventsCache.filter(ev => {
     if (q && !ev.name.toLowerCase().includes(q) && !(ev.suburb||'').toLowerCase().includes(q)) return false;
     if (cat && ev.category !== cat) return false;
     if (status === 'not-applied' && ev.applied) return false;
     if (status === 'applied'     && (!ev.applied || ev.appStatus === 'approved')) return false;
     if (status === 'approved'    && ev.appStatus !== 'approved') return false;
+    if (from && ev.date_sort && ev.date_sort < from) return false;
+    if (to   && ev.date_sort && ev.date_sort > to)   return false;
     return true;
   });
   renderBrowseGrid(filtered);
@@ -2197,6 +2356,7 @@ function clearBrowseFilters() {
   const s = document.getElementById('browse-search'); if (s) s.value = '';
   const c = document.getElementById('browse-cat');    if (c) c.value = '';
   const t = document.getElementById('browse-status'); if (t) t.value = '';
+  browseCalClear();
   renderBrowseGrid(_eventsCache);
 }
 
@@ -2691,6 +2851,255 @@ initDashboard().catch(e => {
   const msgArea = document.getElementById('convo-messages');
   if (msgArea && document.getElementById('panel-messages').classList.contains('active')) {
     msgArea.innerHTML = `<div style="color:var(--terra);font-size:13px;text-align:center;padding:40px 20px;">Startup error: ${e.message}</div>`;
+  }
+});
+
+// ── BROWSE EVENTS CALENDAR ──────────────────────────────────────────────────
+var browseCalViewYear, browseCalViewMonth;
+var browseCalStart = null, browseCalEnd = null, browseCalHover = null;
+
+function browseIsoDate(y, m, d) {
+  return y + '-' + String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+}
+
+function browseParseDisplayDate(str) {
+  str = str.trim();
+  if (!str) return '';
+  var dmyMatch = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+  if (dmyMatch) {
+    var d = dmyMatch[1].padStart(2, '0');
+    var m = dmyMatch[2].padStart(2, '0');
+    var y = dmyMatch[3].length === 2 ? '20' + dmyMatch[3] : dmyMatch[3];
+    var iso = y + '-' + m + '-' + d;
+    return /^\d{4}-\d{2}-\d{2}$/.test(iso) ? iso : '';
+  }
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+  return '';
+}
+
+function browseToDisplayDate(iso) {
+  if (!iso) return '';
+  var p = iso.split('-');
+  return p[2] + '/' + p[1] + '/' + p[0];
+}
+
+function browseNormalizeDateInput(field) {
+  var inp = document.getElementById('browse-f-' + field + '-text');
+  var iso = browseParseDisplayDate(inp.value);
+  if (iso) inp.value = browseToDisplayDate(iso);
+}
+
+function browseOnDateTextInput(field) {
+  var inp = document.getElementById('browse-f-' + field + '-text');
+  var iso = browseParseDisplayDate(inp.value);
+  document.getElementById('browse-f-' + field).value = iso;
+  inp.classList.toggle('has-value', !!iso);
+  if (iso) {
+    if (field === 'from') browseCalStart = iso;
+    if (field === 'to')   browseCalEnd   = iso;
+    applyBrowseFilters();
+  } else if (!inp.value.trim()) {
+    if (field === 'from') browseCalStart = null;
+    if (field === 'to')   browseCalEnd   = null;
+    applyBrowseFilters();
+  }
+}
+
+function browseCalInit() {
+  var base = browseCalStart ? new Date(browseCalStart + 'T00:00:00') : new Date();
+  browseCalViewYear  = base.getFullYear();
+  browseCalViewMonth = base.getMonth();
+  browseRenderCalendar();
+}
+
+function browseRenderCalendar() {
+  browseRenderMonth('a', browseCalViewYear, browseCalViewMonth);
+  var nextM = browseCalViewMonth === 11 ? 0 : browseCalViewMonth + 1;
+  var nextY = browseCalViewMonth === 11 ? browseCalViewYear + 1 : browseCalViewYear;
+  browseRenderMonth('b', nextY, nextM);
+  browseUpdateCalLabel();
+}
+
+function browseRenderMonth(slot, year, month) {
+  var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var DAYS   = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+  document.getElementById('browse-cal-month-' + slot).textContent = MONTHS[month] + ' ' + year;
+
+  var grid = document.getElementById('browse-cal-grid-' + slot);
+  var html = DAYS.map(function(d) { return '<div class="browse-cal-dow">' + d + '</div>'; }).join('');
+
+  var firstDay    = new Date(year, month, 1).getDay();
+  var daysInMonth = new Date(year, month + 1, 0).getDate();
+  var today = browseIsoDate(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+
+  for (var i = 0; i < firstDay; i++) html += '<div class="browse-cal-day empty"></div>';
+  for (var d = 1; d <= daysInMonth; d++) {
+    var iso = browseIsoDate(year, month, d);
+    var cls = ['browse-cal-day'];
+    if (iso < today)  cls.push('past');
+    if (iso === today) cls.push('today');
+    if (browseCalStart && iso === browseCalStart) cls.push('start');
+    if (browseCalEnd   && iso === browseCalEnd)   cls.push('end');
+    if (browseCalStart && browseCalEnd && iso > browseCalStart && iso < browseCalEnd) cls.push('in-range');
+    html += '<button class="' + cls.join(' ') + '" data-iso="' + iso + '">' + d + '</button>';
+  }
+  grid.innerHTML = html;
+}
+
+(function setupBrowseCalDelegation() {
+  var popup = document.getElementById('browse-cal-popup');
+  if (!popup) return;
+
+  popup.addEventListener('click', function(e) {
+    e.stopPropagation();
+    var day = e.target.closest('.browse-cal-day');
+    if (!day || day.classList.contains('empty') || !day.dataset.iso) return;
+    var iso = day.dataset.iso;
+
+    var fromText = document.getElementById('browse-f-from-text');
+    var toText   = document.getElementById('browse-f-to-text');
+
+    if (!browseCalStart || (browseCalStart && browseCalEnd)) {
+      browseCalStart = iso; browseCalEnd = null; browseCalHover = null;
+      if (fromText) { fromText.value = browseToDisplayDate(iso); fromText.classList.add('has-value'); }
+      if (toText)   { toText.value = ''; toText.classList.remove('has-value'); }
+      document.getElementById('browse-f-from').value = iso;
+      document.getElementById('browse-f-to').value   = '';
+      browseRenderCalendar();
+    } else {
+      if (iso === browseCalStart) {
+        browseCalStart = null; browseCalEnd = null; browseCalHover = null;
+        if (fromText) { fromText.value = ''; fromText.classList.remove('has-value'); }
+        if (toText)   { toText.value   = ''; toText.classList.remove('has-value'); }
+        document.getElementById('browse-f-from').value = '';
+        document.getElementById('browse-f-to').value   = '';
+      } else {
+        if (iso < browseCalStart) { browseCalEnd = browseCalStart; browseCalStart = iso; }
+        else                      { browseCalEnd = iso; }
+        browseCalHover = null;
+        if (fromText) { fromText.value = browseToDisplayDate(browseCalStart); fromText.classList.add('has-value'); }
+        if (toText)   { toText.value   = browseToDisplayDate(browseCalEnd);   toText.classList.add('has-value'); }
+        document.getElementById('browse-f-from').value = browseCalStart;
+        document.getElementById('browse-f-to').value   = browseCalEnd;
+        applyBrowseFilters();
+      }
+      browseRenderCalendar();
+    }
+  });
+
+  popup.addEventListener('mouseover', function(e) {
+    if (!browseCalStart || browseCalEnd) return;
+    var day = e.target.closest('.browse-cal-day');
+    if (!day || day.classList.contains('empty') || !day.dataset.iso) return;
+    var iso = day.dataset.iso;
+    if (iso === browseCalHover) return;
+    browseCalHover = iso;
+    browseUpdateHoverClasses();
+  });
+
+  popup.addEventListener('mouseleave', function() {
+    if (!browseCalHover) return;
+    browseCalHover = null;
+    browseUpdateHoverClasses();
+  });
+})();
+
+function browseUpdateHoverClasses() {
+  document.querySelectorAll('#browse-cal-popup .browse-cal-day[data-iso]').forEach(function(el) {
+    el.classList.remove('hover-end', 'in-range');
+    var iso = el.dataset.iso;
+    if (browseCalStart && browseCalEnd && iso > browseCalStart && iso < browseCalEnd) el.classList.add('in-range');
+    if (browseCalStart && !browseCalEnd && browseCalHover && browseCalHover !== browseCalStart) {
+      var hMin = browseCalHover < browseCalStart ? browseCalHover : browseCalStart;
+      var hMax = browseCalHover < browseCalStart ? browseCalStart : browseCalHover;
+      if (iso > hMin && iso < hMax) el.classList.add('in-range');
+      if (iso === browseCalHover)   el.classList.add('hover-end');
+    }
+  });
+}
+
+function browseUpdateCalLabel() {
+  var lbl = document.getElementById('browse-cal-selected-label');
+  if (!lbl) return;
+  if (!browseCalStart && !browseCalEnd) {
+    lbl.innerHTML = 'Click a date to start';
+  } else if (browseCalStart && !browseCalEnd) {
+    lbl.innerHTML = '<strong>' + browseToDisplayDate(browseCalStart) + '</strong> → pick end date';
+  } else {
+    lbl.innerHTML = '<strong>' + browseToDisplayDate(browseCalStart) + '</strong> → <strong>' + browseToDisplayDate(browseCalEnd) + '</strong>';
+  }
+}
+
+function browseCalPrev() {
+  if (browseCalViewMonth === 0) { browseCalViewMonth = 11; browseCalViewYear--; }
+  else browseCalViewMonth--;
+  browseRenderCalendar();
+}
+
+function browseCalNext() {
+  if (browseCalViewMonth === 11) { browseCalViewMonth = 0; browseCalViewYear++; }
+  else browseCalViewMonth++;
+  browseRenderCalendar();
+}
+
+function browseCalClear() {
+  browseCalStart = null; browseCalEnd = null; browseCalHover = null;
+  var fFrom = document.getElementById('browse-f-from');
+  var fTo   = document.getElementById('browse-f-to');
+  if (fFrom) fFrom.value = '';
+  if (fTo)   fTo.value   = '';
+  var fromText = document.getElementById('browse-f-from-text');
+  var toText   = document.getElementById('browse-f-to-text');
+  if (fromText) { fromText.value = ''; fromText.classList.remove('has-value'); }
+  if (toText)   { toText.value   = ''; toText.classList.remove('has-value'); }
+  var btn = document.getElementById('browse-date-range-btn');
+  if (btn) btn.classList.remove('active');
+  browseRenderCalendar();
+  browseCloseCalendar();
+}
+
+function browseCalApply() {
+  if (browseCalStart && !browseCalEnd) {
+    browseCalEnd = browseCalStart;
+    var toText = document.getElementById('browse-f-to-text');
+    var fTo    = document.getElementById('browse-f-to');
+    if (toText) { toText.value = browseToDisplayDate(browseCalStart); toText.classList.add('has-value'); }
+    if (fTo)    fTo.value = browseCalStart;
+  }
+  if (browseCalStart) applyBrowseFilters();
+  browseCloseCalendar();
+}
+
+function browseToggleCalendar(e) {
+  e.stopPropagation();
+  var popup = document.getElementById('browse-cal-popup');
+  if (popup.classList.contains('open')) {
+    browseCloseCalendar();
+  } else {
+    var fromIso = document.getElementById('browse-f-from').value;
+    var toIso   = document.getElementById('browse-f-to').value;
+    if (fromIso) browseCalStart = fromIso;
+    if (toIso)   browseCalEnd   = toIso;
+    browseCalInit();
+    popup.classList.add('open');
+    document.getElementById('browse-date-range-btn').classList.add('active');
+  }
+}
+
+function browseCloseCalendar() {
+  var popup = document.getElementById('browse-cal-popup');
+  var btn   = document.getElementById('browse-date-range-btn');
+  if (popup) popup.classList.remove('open');
+  if (btn)   btn.classList.remove('active');
+}
+
+document.addEventListener('click', function(e) {
+  var popup = document.getElementById('browse-cal-popup');
+  var btn   = document.getElementById('browse-date-range-btn');
+  if (popup && popup.classList.contains('open')) {
+    if (!popup.contains(e.target) && e.target !== btn && !btn.contains(e.target)) {
+      browseCloseCalendar();
+    }
   }
 });
 </script>
