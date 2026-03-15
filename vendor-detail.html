@@ -80,6 +80,15 @@ html.vd-loading footer { visibility: hidden; }
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
   font-size: 120px; opacity: 0.18; user-select: none;
 }
+.vendor-hero-avatar {
+  position: absolute; bottom: -36px; left: 52px; z-index: 3;
+  width: 80px; height: 80px; border-radius: 18px;
+  border: 3px solid #1A1612;
+  background: linear-gradient(135deg,#3D1A06,#6B2E08);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 36px; overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
 .vendor-hero-overlay {
   position: absolute; inset: 0;
   background: linear-gradient(to top, rgba(26,22,18,0.9) 0%, rgba(26,22,18,0.2) 60%, transparent 100%);
@@ -96,7 +105,7 @@ html.vd-loading footer { visibility: hidden; }
 
 /* ── PAGE LAYOUT ─────────────────────────────────────────────────────────── */
 .page-wrap {
-  max-width: 1320px; margin: 0 auto; padding: 48px 52px 80px;
+  max-width: 1320px; margin: 0 auto; padding: 60px 52px 80px;
   position: relative; z-index: 1;
 }
 .detail-grid {
@@ -444,6 +453,7 @@ if (/^\d+$/.test(window.location.pathname.replace(/^\/vendors\//, '').replace(/\
 <div class="vendor-hero" id="vd-hero">
   <div class="vendor-hero-emoji" id="vd-hero-emoji"></div>
   <div class="vendor-hero-overlay"></div>
+  <div class="vendor-hero-avatar" id="vd-hero-avatar"></div>
   <div class="hero-breadcrumb">
     <a href="/">Home</a>
     <span class="sep">/</span>
@@ -855,6 +865,22 @@ function applyDbVendor(db) {
 
 function applyAndReveal(v) {
   applyDbVendor(v);
+
+  // Avatar + banner
+  var heroAvatar = document.getElementById('vd-hero-avatar');
+  var hero = document.getElementById('vd-hero');
+  if (v.avatar_url) {
+    var img = '<img src="' + v.avatar_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;" alt="' + (v.trading_name || '') + '">';
+    if (heroAvatar) heroAvatar.innerHTML = img;
+    if (hero) {
+      hero.style.backgroundImage = 'url(' + v.avatar_url + ')';
+      hero.style.backgroundSize = 'cover';
+      hero.style.backgroundPosition = 'center';
+    }
+  } else {
+    // Fallback: show first letter of trading name
+    if (heroAvatar) heroAvatar.textContent = (v.trading_name || '?').charAt(0).toUpperCase();
+  }
 
   // Gallery
   var photos = v.photos || [];

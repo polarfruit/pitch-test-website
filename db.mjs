@@ -531,7 +531,7 @@ export const stmts = {
     WHERE u.status='active' ORDER BY v.plan DESC,v.created_at ASC
   `),
   publicVendorById: prepare(`
-    SELECT v.*,u.status,u.first_name,u.last_name
+    SELECT v.*,u.status,u.first_name,u.last_name,u.avatar_url
     FROM vendors v JOIN users u ON v.user_id=u.id
     WHERE v.user_id=? AND u.status='active'
   `),
