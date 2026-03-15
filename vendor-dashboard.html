@@ -935,13 +935,17 @@ body::before {
 }
 .browse-cal-popup {
   display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 600;
   width: fit-content;
   background: var(--char);
   border: 1px solid #ffffff12;
   border-radius: 18px;
   padding: 20px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-  margin-bottom: 20px;
+  margin-top: 8px;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.6), 0 4px 16px rgba(0,0,0,0.4);
 }
 .browse-cal-popup.open { display: block; }
 .browse-cal-popup-inner { display: flex; gap: 24px; }
@@ -1154,6 +1158,8 @@ body::before {
 
     <!-- ── PANEL: BROWSE EVENTS ─────────────────────────────────────────── -->
     <div class="panel" id="panel-browse">
+      <!-- Filter bar wrapper (position:relative so popup floats from here) -->
+      <div style="position:relative;">
       <!-- Filter bar row 1: search + dropdowns -->
       <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px;align-items:center;">
         <input id="browse-search" type="text" placeholder="Search events…" oninput="applyBrowseFilters()"
@@ -1202,7 +1208,7 @@ body::before {
         </button>
       </div>
 
-      <!-- Calendar popup — sits inline below filter bar, full width -->
+      <!-- Calendar popup — floats below filter bar -->
       <div class="browse-cal-popup" id="browse-cal-popup">
         <div class="browse-cal-popup-inner">
           <div class="browse-cal-month">
@@ -1231,6 +1237,7 @@ body::before {
           </div>
         </div>
       </div>
+      </div><!-- end filter wrapper -->
 
       <div class="browse-grid" id="browse-grid">
         <div id="browse-loading" style="color:var(--text-lo);font-size:13px;padding:24px 0;grid-column:1/-1;display:none;"></div>
