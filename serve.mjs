@@ -1035,8 +1035,24 @@ app.get('/events/*splat', async (req, res) => {
   try {
     const ev = await stmts.getEventBySlug.get(slug);
     if (ev) {
+      const [approvedVendors, approvedCount, orgEventRow] = await Promise.all([
+        stmts.getApprovedVendorsByEvent.all(ev.id).catch(() => []),
+        stmts.countApprovedByEvent.get(ev.id).catch(() => ({ n: 0 })),
+        ev.organiser_user_id ? stmts.countOrgEvents.get(ev.organiser_user_id).catch(() => ({ n: 0 })) : Promise.resolve({ n: 0 }),
+      ]);
+      const pageData = {
+        ...ev,
+        approved_count: Number(approvedCount?.n ?? 0),
+        org_event_count: Number(orgEventRow?.n ?? 0),
+        approved_vendors: approvedVendors.map(v => ({
+          user_id: v.user_id,
+          trading_name: v.trading_name,
+          cuisine_tags: (() => { try { return JSON.parse(v.cuisine_tags || '[]'); } catch { return []; } })(),
+          setup_type: v.setup_type || '',
+        })),
+      };
       let html = readHtml('event-detail.html');
-      html = html.replace('</head>', `<script>window.__PITCH_DB_EVENT__=${JSON.stringify(ev)};</script></head>`);
+      html = html.replace('</head>', `<script>window.__PITCH_DB_EVENT__=${JSON.stringify(pageData)};</script></head>`);
       return res.send(html);
     }
   } catch (e) { console.error('[event page]', e); }
