@@ -464,8 +464,8 @@ export const stmts = {
   getThread:         prepare(`
     SELECT mt.*, v.trading_name as vendor_name, o.org_name as organiser_name
     FROM message_threads mt
-    JOIN vendors v ON v.user_id = mt.vendor_user_id
-    JOIN organisers o ON o.user_id = mt.organiser_user_id
+    LEFT JOIN vendors v ON v.user_id = mt.vendor_user_id
+    LEFT JOIN organisers o ON o.user_id = mt.organiser_user_id
     WHERE mt.thread_key = ?
   `),
   // LEFT JOINs so threads show even if vendor/organiser profile row is missing
