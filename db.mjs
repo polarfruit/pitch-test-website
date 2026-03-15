@@ -441,7 +441,7 @@ export const stmts = {
   createApplication:       prepare(`INSERT OR IGNORE INTO event_applications (event_id,vendor_user_id,message) VALUES (?,?,?)`),
   getApplicationById:      prepare(`SELECT * FROM event_applications WHERE id=?`),
   getApplicationByIds:     prepare(`SELECT * FROM event_applications WHERE event_id=? AND vendor_user_id=?`),
-  getApplicationsByVendor: prepare(`SELECT ea.*,e.name as event_name,e.category,e.suburb,e.state,e.date_sort,e.date_text,e.organiser_name,e.organiser_user_id FROM event_applications ea JOIN events e ON ea.event_id=e.id WHERE ea.vendor_user_id=? ORDER BY ea.created_at DESC`),
+  getApplicationsByVendor: prepare(`SELECT ea.*,e.name as event_name,e.slug as event_slug,e.category,e.suburb,e.state,e.date_sort,e.date_text,e.organiser_name,e.organiser_user_id FROM event_applications ea JOIN events e ON ea.event_id=e.id WHERE ea.vendor_user_id=? ORDER BY ea.created_at DESC`),
   getApplicationsByEvent:  prepare(`SELECT ea.*,u.first_name,u.last_name,u.email,v.trading_name,v.mobile,v.suburb as v_suburb,v.state as v_state,v.bio,v.cuisine_tags,v.plan,v.instagram,v.setup_type,v.stall_w,v.stall_d,v.power,v.water,v.price_range FROM event_applications ea JOIN users u ON ea.vendor_user_id=u.id JOIN vendors v ON v.user_id=u.id WHERE ea.event_id=?`),
   updateApplicationStatus: prepare(`UPDATE event_applications SET status=? WHERE id=?`),
   setApplicationSpot:      prepare(`UPDATE event_applications SET spot_number=?,approved_at=datetime('now') WHERE id=?`),

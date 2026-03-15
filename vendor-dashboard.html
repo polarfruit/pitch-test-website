@@ -2145,7 +2145,7 @@ function renderApplicationsData(applications) {
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
           ${a.status === 'pending'
             ? `<button onclick="withdrawApp(${a.event_id}, this)" style="background:none;border:none;color:var(--text-lo);cursor:pointer;font-size:12px;font-family:inherit;text-decoration:underline;">Withdraw</button>`
-            : `<button onclick="openEventDetail(${a.event_id})" class="action-link" style="background:none;border:none;cursor:pointer;font-family:inherit;">View →</button>`
+            : `<a class="action-link" href="/events/${a.event_slug||a.event_id}" target="_blank" rel="noopener">View →</a>`
           }
           <button onclick="startChatWithOrganiser(${a.organiser_user_id||0},'${(a.organiser_name||'Organiser').replace(/'/g,"\\'")}','${(a.event_name||'').replace(/'/g,"\\'")}')" style="font-family:var(--fb);font-size:11px;font-weight:700;color:var(--ember);background:var(--ember-bg);border:1px solid #E8500A22;padding:4px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;">💬 Message</button>
         </div>
