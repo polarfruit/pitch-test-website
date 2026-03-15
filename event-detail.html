@@ -1065,7 +1065,7 @@ function messageOrganiser() {
     name:  db.organiser_name || 'Organiser',
     event: db.name || db.slug || ''
   });
-  window.location.href = '/dashboard/vendor?' + params.toString() + '#messages';
+  window.location.href = '/dashboard/vendor/messages?' + params.toString();
 }
 
 // ── SHARE ─────────────────────────────────────────────────────────────────────
