@@ -526,9 +526,20 @@ body::before {
 }
 .preview-top {
   height: 100px; display: flex; align-items: center; justify-content: center;
-  font-size: 40px; position: relative;
+  font-size: 40px; position: relative; background-size: cover; background-position: center;
 }
-.preview-body { padding: 14px 16px; }
+.preview-top-overlay {
+  position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.45));
+}
+.preview-avatar-wrap {
+  position: relative; z-index: 1; width: 56px; height: 56px;
+  border-radius: 14px; border: 3px solid var(--parchment);
+  background: linear-gradient(135deg,#3D1A06,#6B2E08);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 26px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+  margin-top: 44px; /* pushes avatar to bottom edge of banner */
+}
+.preview-body { padding: 8px 16px 14px; }
 .preview-name { font-family: var(--fd); font-size: 16px; font-weight: 900; letter-spacing: -0.02em; color: #1A1612; margin-bottom: 6px; }
 .preview-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
 .preview-tag { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 100px; background: #E8500A14; color: var(--ember); border: 1px solid #E8500A22; }
@@ -1170,7 +1181,10 @@ body::before {
           <div class="section-title">Live preview</div>
           <p style="font-size:12px;color:var(--text-lo);margin-bottom:14px;">How your card looks to organisers &amp; consumers.</p>
           <div class="preview-card">
-            <div class="preview-top" style="background:linear-gradient(135deg,#2D1A0A 0%,#5C2A08 100%);">🔥</div>
+            <div class="preview-top" id="preview-banner" style="background:linear-gradient(135deg,#2D1A0A 0%,#5C2A08 100%);">
+              <div class="preview-top-overlay"></div>
+              <div class="preview-avatar-wrap" id="preview-avatar">🔥</div>
+            </div>
             <div class="preview-body">
               <div class="preview-name" id="preview-name"></div>
               <div class="preview-tags" id="preview-tags">
@@ -2451,6 +2465,16 @@ function _applyAvatarEverywhere(dataUrl) {
   // Large preview in profile panel
   const large = document.getElementById('avatar-preview-large');
   if (large) large.innerHTML = img;
+  // Live preview card — avatar circle
+  const previewAvatar = document.getElementById('preview-avatar');
+  if (previewAvatar) previewAvatar.innerHTML = img;
+  // Live preview card — banner background
+  const banner = document.getElementById('preview-banner');
+  if (banner) {
+    banner.style.backgroundImage = `url(${dataUrl})`;
+    banner.style.backgroundSize = 'cover';
+    banner.style.backgroundPosition = 'center';
+  }
 }
 
 function previewAndUploadAvatar(input) {
