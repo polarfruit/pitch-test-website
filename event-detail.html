@@ -691,6 +691,10 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
       Apply for a pitch →
     </button>
 
+    <button class="btn-msg-org" id="msg-org-btn" onclick="messageOrganiser()" style="display:none;width:100%;font-family:var(--fb);font-size:14px;font-weight:700;color:var(--ember);background:var(--ember-bg);border:1px solid #E8500A33;border-radius:12px;padding:14px;cursor:pointer;margin-bottom:10px;transition:background 0.14s,transform 0.14s;">
+      💬 Message organiser
+    </button>
+
     <button class="btn-share" onclick="shareEvent()">
       🔗 Share this event
     </button>
@@ -966,6 +970,12 @@ if (window.__PITCH_DB_EVENT__) {
   set('ev-org-avatar', (db.organiser_name || 'O').charAt(0).toUpperCase());
   set('ev-org-name', db.organiser_name || '—');
   set('ev-org-meta', db.org_event_count > 0 ? db.org_event_count + ' event' + (db.org_event_count !== 1 ? 's' : '') + ' posted on Pitch.' : 'Organiser on Pitch.');
+
+  // Show Message organiser button if there is a linked organiser account
+  if (db.organiser_user_id) {
+    var msgBtn = document.getElementById('msg-org-btn');
+    if (msgBtn) msgBtn.style.display = '';
+  }
 }
 
 if (ev && !window.__PITCH_DB_EVENT__) {
@@ -1045,6 +1055,18 @@ function renderCountdown() {
 }
 renderCountdown();
 setInterval(renderCountdown, 60000);
+
+// ── MESSAGE ORGANISER ─────────────────────────────────────────────────────────
+function messageOrganiser() {
+  var db = window.__PITCH_DB_EVENT__;
+  if (!db || !db.organiser_user_id) return;
+  var params = new URLSearchParams({
+    org:   db.organiser_user_id,
+    name:  db.organiser_name || 'Organiser',
+    event: db.name || db.slug || ''
+  });
+  window.location.href = '/dashboard/vendor?' + params.toString() + '#messages';
+}
 
 // ── SHARE ─────────────────────────────────────────────────────────────────────
 function shareEvent() {

@@ -261,6 +261,8 @@ await _safeExec(`DELETE FROM organisers WHERE id NOT IN (SELECT MIN(id) FROM org
 await _safeExec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_organisers_user_id ON organisers(user_id)`);
 // Link seeded events (organiser_user_id=NULL) to their matching organiser accounts by org_name
 await _safeExec(`UPDATE events SET organiser_user_id = (SELECT o.user_id FROM organisers o WHERE o.org_name = events.organiser_name LIMIT 1) WHERE organiser_user_id IS NULL AND organiser_name IS NOT NULL`);
+// Fallback: assign any available organiser to events still unlinked after name-match
+await _safeExec(`UPDATE events SET organiser_user_id = (SELECT user_id FROM organisers LIMIT 1) WHERE organiser_user_id IS NULL`);
 
 // ── Messaging tables ─────────────────────────────────────────────────────────
 await _safeExec(`
@@ -352,6 +354,12 @@ await _safeExec(`
   SET organiser_user_id = (
     SELECT o.user_id FROM organisers o WHERE o.org_name = events.organiser_name LIMIT 1
   )
+  WHERE organiser_user_id IS NULL
+`);
+// Fallback: if name-match found nothing, assign any available organiser so messaging works.
+await _safeExec(`
+  UPDATE events
+  SET organiser_user_id = (SELECT user_id FROM organisers LIMIT 1)
   WHERE organiser_user_id IS NULL
 `);
 
