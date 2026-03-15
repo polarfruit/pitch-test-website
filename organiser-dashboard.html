@@ -1781,7 +1781,11 @@ function renderOrgMessages(messages, vendorName) {
   const body = document.getElementById('msg-body');
   const init = (vendorName || '?').charAt(0).toUpperCase();
   if (!messages || !messages.length) {
-    body.innerHTML = `<div style="color:var(--text-lo);font-size:13px;text-align:center;margin-top:40px;">Start the conversation with ${vendorName || 'this vendor'}.</div>`;
+    body.innerHTML = `<div style="text-align:center;padding:48px 24px;">
+      <div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#2A1E14,#5C3A1A);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff;margin:0 auto 14px;">${init}</div>
+      <div style="font-size:15px;font-weight:700;color:var(--text-hi);margin-bottom:6px;">${vendorName || 'Vendor'}</div>
+      <div style="font-size:13px;color:var(--text-lo);">Start the conversation — your message goes straight to this vendor.</div>
+    </div>`;
     return;
   }
   body.innerHTML = messages.map(m => {
