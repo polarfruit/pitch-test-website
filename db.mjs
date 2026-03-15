@@ -390,6 +390,7 @@ export const stmts = {
       @event_types,@event_scale,@stall_range,@referral)
   `),
   getOrganiserByUserId: prepare(`SELECT * FROM organisers WHERE user_id = ?`),
+  getOrganiserByName:   prepare(`SELECT * FROM organisers WHERE org_name = ? LIMIT 1`),
   allOrganisers: prepare(`SELECT o.*,u.email,u.first_name,u.last_name,u.status,u.created_at as joined FROM organisers o JOIN users u ON o.user_id=u.id ORDER BY o.created_at DESC`),
   organisersByStatus: prepare(`SELECT o.*,u.email,u.first_name,u.last_name,u.status,u.created_at as joined FROM organisers o JOIN users u ON o.user_id=u.id WHERE u.status=? ORDER BY o.created_at DESC`),
 
