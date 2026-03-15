@@ -885,6 +885,7 @@ body::before {
 </style>
 </head>
 <body>
+<div id="global-err-toast" style="display:none;position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#C0392B;color:#fff;font-size:12px;font-family:monospace;padding:10px 16px;border-radius:8px;z-index:9999;max-width:90vw;word-break:break-all;"></div>
 
 <!-- SIDEBAR -->
 <aside class="sidebar">
@@ -1483,6 +1484,12 @@ function showPanel(name, clickedEl, pushHistory = true) {
 }
 
 // Route on load
+// Global error toast — catches any uncaught JS errors and shows them visibly
+window.addEventListener('error', ev => {
+  const el = document.getElementById('global-err-toast');
+  if (el) { el.textContent = 'JS Error: ' + ev.message + ' (' + (ev.filename||'').split('/').pop() + ':' + ev.lineno + ')'; el.style.display = 'block'; }
+});
+
 (function routeOnLoad() {
   const path = window.location.pathname.replace(/\/$/, '');
   const match = Object.entries(PANEL_PATHS).find(([, p]) => p === path);
@@ -1506,73 +1513,53 @@ function _fmtTime(iso) {
   try { return new Date(iso).toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' }); } catch { return ''; }
 }
 
-// ── Open a chat from any Message button ──────────────────────────────────
-// orgUserId = the organiser's users.id  (0/null = no linked account)
-// skipPanelSwitch = true when caller already switched to messages panel
-// eventId = events.id (preferred — server resolves organiser directly from DB)
-// orgUserId = fallback if eventId is not available
+// ── Open a conversation — called from onclick or deep-link ────────────────
 async function startChatWithOrganiser(orgUserId, orgName, eventName, skipPanelSwitch, eventId) {
-  const myId = window.__PITCH_USER__ && window.__PITCH_USER__.id;
-  const tok   = window.__PITCH_TOKEN__;
-
-  // Switch to messages panel and show header first
+  // 1. Switch panel and set header immediately (synchronous, no failure possible)
   if (!skipPanelSwitch) showPanel('messages', null);
   _openConvoPane(orgName || 'Organiser', eventName || '');
 
   const msgArea = document.getElementById('convo-messages');
-  function _status(msg, color) { if (msgArea) msgArea.innerHTML = `<div style="color:${color||'var(--text-lo)'};font-size:13px;text-align:center;padding:40px 20px;">${msg}</div>`; }
+  const toast   = document.getElementById('global-err-toast');
+  const say = (msg, err) => {
+    if (msgArea) msgArea.innerHTML = `<div style="color:${err?'var(--terra)':'var(--text-lo)'};font-size:13px;text-align:center;padding:40px 20px;">${msg}</div>`;
+  };
 
-  if (!myId) { _status('Not logged in — please refresh the page.', 'var(--terra)'); return; }
-  if (!tok)  { _status('Auth token missing — please log out and back in.', 'var(--terra)'); return; }
-
-  _status('Connecting…');
+  say('Connecting…');
 
   try {
-    let thread_key;
+    const user = window.__PITCH_USER__;
+    const tok  = window.__PITCH_TOKEN__;
+    if (!user || !user.id) { say('Not logged in — please refresh.', true); return; }
+    if (!tok) { say('Session expired — please log out and back in.', true); return; }
 
+    // Build request: prefer event_id (server resolves organiser), fallback to orgUserId
+    let url, payload;
     if (eventId && Number(eventId) > 0) {
-      // Preferred path: server resolves organiser from event ID
-      const cr = await pitchFetch('/api/messages/by-event', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ event_id: Number(eventId) })
-      });
-      if (!cr.ok) {
-        const err = await cr.json().catch(() => ({}));
-        _status(`Could not open chat (${cr.status}): ${err.error || 'server error'}`, 'var(--terra)');
-        return;
-      }
-      const body = await cr.json();
-      thread_key = body && body.thread_key;
-      if (!thread_key) { _status(`No thread key returned. ${JSON.stringify(body)}`, 'var(--terra)'); return; }
+      url     = '/api/messages/by-event';
+      payload = { event_id: Number(eventId) };
     } else if (orgUserId && Number(orgUserId) > 0) {
-      // Fallback path: use organiser_user_id directly
-      const cr = await pitchFetch('/api/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ vendor_user_id: myId, organiser_user_id: Number(orgUserId) })
-      });
-      if (!cr.ok) {
-        const err = await cr.json().catch(() => ({}));
-        _status(`Could not open chat (${cr.status}): ${err.error || 'server error'}`, 'var(--terra)');
-        return;
-      }
-      const body = await cr.json();
-      thread_key = body && body.thread_key;
-      if (!thread_key) { _status(`No thread key returned. ${JSON.stringify(body)}`, 'var(--terra)'); return; }
+      url     = '/api/messages';
+      payload = { vendor_user_id: user.id, organiser_user_id: Number(orgUserId) };
     } else {
-      _status("This event's organiser hasn't linked their account yet.");
+      say("No organiser linked to this event yet — contact support.", true);
       return;
     }
 
-    _activeThread = thread_key;
-    if (!_threadCache[thread_key]) _threadCache[thread_key] = { orgName: orgName || '', eventName: eventName || '', messages: [] };
+    const res  = await pitchFetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    const data = await res.json().catch(() => ({}));
 
-    await _loadConversation(thread_key);
+    if (!res.ok) { say(`Chat error (${res.status}): ${data.error || 'server error'}`, true); return; }
+    if (!data.thread_key) { say(`No thread returned: ${JSON.stringify(data)}`, true); return; }
+
+    _activeThread = data.thread_key;
+    _threadCache[data.thread_key] = _threadCache[data.thread_key] || { orgName: orgName || '', eventName: eventName || '', messages: [] };
+
+    await _loadConversation(data.thread_key);
     _refreshThreadList();
   } catch (e) {
-    console.error('[startChatWithOrganiser]', e);
-    _status(`Error: ${e.message}`, 'var(--terra)');
+    say(`Error: ${e.message}`, true);
+    if (toast) { toast.textContent = 'startChat error: ' + e.message; toast.style.display = 'block'; }
   }
 }
 
