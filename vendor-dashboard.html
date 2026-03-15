@@ -1147,9 +1147,9 @@ body::before {
           <div class="form-group">
             <label class="form-label">Price range</label>
             <div class="price-group">
-              <button class="price-btn active" onclick="setPrice(this)">$</button>
-              <button class="price-btn" onclick="setPrice(this)">$$</button>
-              <button class="price-btn" onclick="setPrice(this)">$$$</button>
+              <button class="price-btn active" data-price="$" onclick="setPrice(this)">$ <span style="font-weight:400;opacity:0.7;">(under $15)</span></button>
+              <button class="price-btn" data-price="$$" onclick="setPrice(this)">$$ <span style="font-weight:400;opacity:0.7;">($15–$25)</span></button>
+              <button class="price-btn" data-price="$$$" onclick="setPrice(this)">$$$ <span style="font-weight:400;opacity:0.7;">($25+)</span></button>
             </div>
           </div>
 
@@ -1191,8 +1191,10 @@ body::before {
                 <span class="preview-tag">BBQ</span>
                 <span class="preview-tag">Food Truck</span>
               </div>
+              <div id="preview-bio" style="font-size:12px;color:#5A4A3A;line-height:1.5;margin-bottom:10px;display:none;"></div>
               <div class="preview-stats" id="preview-stats">
                 <span style="font-size:10px;color:var(--text-lo);">📍 <span id="preview-location">—</span></span>
+                <span id="preview-price" style="font-size:10px;color:var(--ember);font-weight:700;display:none;"></span>
               </div>
             </div>
           </div>
@@ -1795,9 +1797,13 @@ function toggleTag(btn) {
   updatePreview();
 }
 
+const PRICE_LABELS = { '$': '$ (under $15)', '$$': '$$ ($15–$25)', '$$$': '$$$ ($25+)' };
+function formatPrice(p) { return PRICE_LABELS[p] || p || ''; }
+
 function setPrice(btn) {
   document.querySelectorAll('.price-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
+  updatePreview();
 }
 
 function updatePreview() {
@@ -1814,6 +1820,17 @@ function updatePreview() {
   const state  = (document.getElementById('v-state')  || {}).value || '';
   const locEl  = document.getElementById('preview-location');
   if (locEl) locEl.textContent = [suburb, state].filter(Boolean).join(', ') || '—';
+
+  // Bio
+  const bio = (document.getElementById('prof-bio') || {}).value || '';
+  const bioEl = document.getElementById('preview-bio');
+  if (bioEl) { bioEl.textContent = bio; bioEl.style.display = bio ? '' : 'none'; }
+
+  // Price
+  const activePrice = document.querySelector('.price-btn.active');
+  const priceVal = activePrice ? (activePrice.dataset.price || activePrice.textContent.split(' ')[0]) : '';
+  const priceEl = document.getElementById('preview-price');
+  if (priceEl) { priceEl.textContent = formatPrice(priceVal); priceEl.style.display = priceVal ? '' : 'none'; }
 }
 
 function saveProfile() {
@@ -1933,6 +1950,13 @@ async function initDashboard() {
     if (document.getElementById('v-state')) document.getElementById('v-state').value = v.state || '';
     if (document.getElementById('v-suburb')) document.getElementById('v-suburb').value = v.suburb || '';
     if (document.getElementById('v-instagram')) document.getElementById('v-instagram').value = v.instagram || '';
+    // Price range — match stored value ($ / $$ / $$$) to correct button
+    if (v.price_range) {
+      const tier = v.price_range.startsWith('$$$') ? '$$$' : v.price_range.startsWith('$$') ? '$$' : '$';
+      document.querySelectorAll('.price-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.price === tier);
+      });
+    }
     updatePreview();
   }
 

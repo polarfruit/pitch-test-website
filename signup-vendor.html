@@ -511,11 +511,10 @@ body { background:var(--coal); color:var(--text-hi); font-family:var(--fb); line
       <div class="form-group">
         <label class="form-label">Price range</label>
         <div class="price-group">
-          <button class="price-btn active" onclick="setPriceBtn(this)">$</button>
-          <button class="price-btn" onclick="setPriceBtn(this)">$$</button>
-          <button class="price-btn" onclick="setPriceBtn(this)">$$$</button>
+          <button class="price-btn active" data-price="$" onclick="setPriceBtn(this)">$ <span style="font-weight:400;opacity:0.7;">(under $15)</span></button>
+          <button class="price-btn" data-price="$$" onclick="setPriceBtn(this)">$$ <span style="font-weight:400;opacity:0.7;">($15–$25)</span></button>
+          <button class="price-btn" data-price="$$$" onclick="setPriceBtn(this)">$$$ <span style="font-weight:400;opacity:0.7;">($25+)</span></button>
         </div>
-        <div class="input-hint">$ = under $15 · $$ = $15–30 · $$$ = $30+</div>
       </div>
       <div class="form-group"><label class="form-label">Instagram handle <span style="color:var(--text-lo);font-weight:400;letter-spacing:0;text-transform:none;">(optional)</span></label><input class="form-input" id="v-instagram" type="text" placeholder="@yourhandle" /></div>
       <div class="step-nav"><button class="btn-back" onclick="goStep(2)">← Back</button><button class="btn-next" onclick="goStep(4)">Next: Documents →</button></div>
@@ -791,7 +790,7 @@ function collectVendorPayload() {
     stall_d:      parseFloat(document.getElementById('v-stall-d').value) || 3,
     power:        document.getElementById('v-power').checked,
     water:        document.getElementById('v-water').checked,
-    price_range:  document.querySelector('.price-btn.active')?.textContent || '$',
+    price_range:  document.querySelector('.price-btn.active')?.dataset.price || '$',
     instagram:    document.getElementById('v-instagram').value.trim(),
     plan:         selectedPlan,
   };
