@@ -874,38 +874,98 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
 var slug = window.location.pathname.replace(/^\/events\//, '').replace(/\/$/, '');
 var ev   = (window.PITCH_EVENTS || []).find(function(e){ return e.id === slug; });
 
-// ── DB event override (injected server-side for real organiser events) ────────
+// ── DB event (injected server-side for real organiser events) ────────────────
 if (window.__PITCH_DB_EVENT__) {
   var db = window.__PITCH_DB_EVENT__;
   var fmtD = function(iso) { if (!iso) return 'TBC'; var p = iso.split('-'); return p[2]+'/'+p[1]+'/'+p[0]; };
+  var set = function(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; };
+
   document.title = db.name + ' — Pitch.';
-  var bc = document.getElementById('ev-breadcrumb'); if (bc) bc.textContent = db.name;
-  var emoji = document.getElementById('ev-emoji'); if (emoji) emoji.textContent = '🎪';
-  var hcat = document.getElementById('ev-hero-category'); if (hcat) hcat.textContent = db.category || '';
-  var hloc = document.getElementById('ev-hero-loc'); if (hloc) hloc.textContent = '📍 ' + (db.suburb || '') + (db.state ? ', ' + db.state : '');
-  var hdate = document.getElementById('ev-hero-date'); if (hdate) hdate.textContent = '📅 ' + fmtD(db.date_sort);
-  var htime = document.getElementById('ev-hero-time'); if (htime) htime.textContent = '';
-  var ename = document.getElementById('ev-name'); if (ename) ename.textContent = db.name;
+  set('ev-breadcrumb', db.name);
+  set('ev-emoji', '🎪');
+  set('ev-hero-category', db.category || '');
+  set('ev-hero-loc', '📍 ' + (db.suburb||'') + (db.state?', '+db.state:''));
+  set('ev-hero-date', '📅 ' + fmtD(db.date_sort) + (db.date_end ? ' → ' + fmtD(db.date_end) : ''));
+  set('ev-hero-time', '');
+  set('ev-name', db.name);
+
   var meta = document.getElementById('ev-meta-row');
   if (meta) meta.innerHTML =
     (db.category ? '<span class="meta-badge" style="background:#2B5BA812;color:#2B5BA8;border-color:#2B5BA820;">' + db.category + '</span>' : '') +
     '<span class="meta-badge">📍 ' + (db.suburb||'') + (db.state?', '+db.state:'') + '</span>' +
     '<span class="meta-badge">📅 ' + fmtD(db.date_sort) + (db.date_end ? ' → ' + fmtD(db.date_end) : '') + '</span>';
-  var about = document.getElementById('ev-about'); if (about) about.textContent = db.description || '';
-  var svDate = document.getElementById('sv-date'); if (svDate) svDate.textContent = fmtD(db.date_sort);
-  var svTime = document.getElementById('sv-time'); if (svTime) svTime.textContent = '—';
-  var svLoc = document.getElementById('sv-location'); if (svLoc) svLoc.textContent = (db.venue_name ? db.venue_name + ', ' : '') + (db.suburb||'') + (db.state?', '+db.state:'');
-  var svAtt = document.getElementById('sv-attendance'); if (svAtt) svAtt.textContent = '—';
-  var svSpots = document.getElementById('sv-spots'); if (svSpots) svSpots.textContent = db.stalls_available ? db.stalls_available + ' spots' : '—';
-  var svSize = document.getElementById('sv-size'); if (svSize) svSize.textContent = '—';
-  var orgAvatar = document.getElementById('ev-org-avatar'); if (orgAvatar) orgAvatar.textContent = (db.organiser_name||'O').charAt(0);
-  var orgName = document.getElementById('ev-org-name'); if (orgName) orgName.textContent = db.organiser_name || '—';
-  var orgMeta = document.getElementById('ev-org-meta'); if (orgMeta) orgMeta.textContent = '';
-  var lineup = document.getElementById('ev-lineup'); if (lineup) lineup.innerHTML = '';
-  var lfor = document.getElementById('ev-looking-for'); if (lfor) lfor.innerHTML = '';
-  var feeRange = document.getElementById('ev-fee-range'); if (feeRange) feeRange.textContent = '—';
+
+  set('ev-about', db.description || '');
+
+  // Specs
+  set('sv-date', fmtD(db.date_sort) + (db.date_end ? ' — ' + fmtD(db.date_end) : ''));
+  set('sv-time', '—');
+  set('sv-location', (db.venue_name ? db.venue_name + ', ' : '') + (db.suburb||'') + (db.state?', '+db.state:''));
+  set('sv-attendance', '—');
+  set('sv-spots', db.stalls_available ? db.stalls_available + ' spots' : '—');
+  set('sv-size', '—');
+  set('sv-power', '—');
+  set('sv-water', '—');
+  set('sv-setup', '—');
+  set('sv-packdown', '—');
+
+  // Fee — not stored in DB
+  set('ev-fee-range', '—');
   var feeInc = document.getElementById('ev-fee-includes'); if (feeInc) feeInc.innerHTML = '';
-  var deadlineVal = document.getElementById('ev-deadline-val'); if (deadlineVal) deadlineVal.textContent = '—';
+
+  // Looking for — not stored in DB
+  var lfor = document.getElementById('ev-looking-for'); if (lfor) lfor.innerHTML = '<span style="color:var(--text-lo);font-size:13px;">Details to be announced by the organiser.</span>';
+
+  // Confirmed vendor lineup
+  var lineup = document.getElementById('ev-lineup');
+  if (lineup) {
+    var vendors = db.approved_vendors || [];
+    if (vendors.length) {
+      lineup.innerHTML = vendors.map(function(v) {
+        var tags = v.cuisine_tags || [];
+        var tag = tags[0] || v.setup_type || 'Vendor';
+        var init = (v.trading_name || '?').charAt(0).toUpperCase();
+        return '<a href="/vendors/' + v.user_id + '" class="vendor-mini">' +
+          '<div class="vm-avatar" style="background:#E8500A18;color:var(--ember);">' + init + '</div>' +
+          '<div><div class="vm-name">' + v.trading_name + '</div><div class="vm-type">' + tag + '</div></div>' +
+          '</a>';
+      }).join('');
+    } else {
+      lineup.innerHTML = '<span style="color:var(--text-lo);font-size:13px;padding:8px 0;">No vendors confirmed yet.</span>';
+    }
+  }
+
+  // Fill ring
+  var total    = db.stalls_available || 0;
+  var approved = db.approved_count   || 0;
+  var fillPct  = total > 0 ? Math.round((approved / total) * 100) : 0;
+  var R2 = 54, CIRC2 = 2 * Math.PI * R2;
+  setTimeout(function() {
+    var ring = document.getElementById('fill-ring-circle');
+    if (ring) {
+      var arc = CIRC2 * (fillPct / 100);
+      ring.setAttribute('stroke-dasharray', arc + ' ' + (CIRC2 - arc));
+      ring.setAttribute('stroke', fillPct >= 85 ? '#C0392B' : fillPct >= 70 ? '#C9840A' : '#2D8B55');
+    }
+  }, 200);
+  set('ev-ring-label', fillPct + '%');
+  var rem = total - approved;
+  var caption = document.getElementById('ev-ring-caption');
+  if (caption) {
+    if (total > 0) {
+      caption.innerHTML = approved + ' of ' + total + ' spots filled — <strong style="color:var(--text-hi);">' + rem + ' spot' + (rem !== 1 ? 's' : '') + ' remaining</strong>';
+    } else {
+      caption.textContent = 'Spots available — apply now';
+    }
+  }
+
+  // Deadline
+  set('ev-deadline-val', '—');
+
+  // Organiser
+  set('ev-org-avatar', (db.organiser_name || 'O').charAt(0).toUpperCase());
+  set('ev-org-name', db.organiser_name || '—');
+  set('ev-org-meta', db.org_event_count > 0 ? db.org_event_count + ' event' + (db.org_event_count !== 1 ? 's' : '') + ' posted on Pitch.' : 'Organiser on Pitch.');
 }
 
 if (ev && !window.__PITCH_DB_EVENT__) {

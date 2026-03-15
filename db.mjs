@@ -404,6 +404,8 @@ export const stmts = {
   publishedEvents:   prepare(`SELECT * FROM events WHERE status='published' ORDER BY date_sort ASC`),
   getEventBySlug:    prepare(`SELECT * FROM events WHERE slug=? AND status='published'`),
   getEventById:      prepare(`SELECT * FROM events WHERE id=?`),
+  getApprovedVendorsByEvent: prepare(`SELECT v.user_id,v.trading_name,v.cuisine_tags,v.setup_type FROM event_applications ea JOIN vendors v ON v.user_id=ea.vendor_user_id WHERE ea.event_id=? AND ea.status='approved' ORDER BY ea.approved_at ASC`),
+  countOrgEvents:    prepare(`SELECT COUNT(*) as n FROM events WHERE organiser_user_id=? AND status='published'`),
   updateEventStatus: prepare(`UPDATE events SET status=? WHERE id=?`),
   updateEvent:       prepare(`UPDATE events SET name=@name,category=@category,suburb=@suburb,state=@state,venue_name=@venue_name,date_sort=@date_sort,date_end=@date_end,date_text=@date_text,description=@description,stalls_available=@stalls_available WHERE id=@id`),
   deleteEvent:       prepare(`DELETE FROM events WHERE id=?`),
