@@ -937,14 +937,16 @@ body::before {
   display: none;
   position: absolute;
   top: calc(100% + 8px);
-  left: 0;
+  right: 0;
+  left: auto;
   z-index: 600;
   background: var(--char);
   border: 1px solid #ffffff12;
   border-radius: 18px;
   padding: 20px;
   box-shadow: 0 24px 64px rgba(0,0,0,0.6), 0 4px 16px rgba(0,0,0,0.4);
-  min-width: 560px;
+  min-width: 520px;
+  max-width: calc(100vw - 260px);
 }
 .browse-cal-popup.open { display: block; }
 .browse-cal-popup-inner { display: flex; gap: 24px; }
@@ -1157,10 +1159,10 @@ body::before {
 
     <!-- ── PANEL: BROWSE EVENTS ─────────────────────────────────────────── -->
     <div class="panel" id="panel-browse">
-      <!-- Filter bar -->
-      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px;align-items:center;">
+      <!-- Filter bar row 1: search + dropdowns -->
+      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px;align-items:center;">
         <input id="browse-search" type="text" placeholder="Search events…" oninput="applyBrowseFilters()"
-          style="font-family:var(--fb);font-size:13px;background:#ffffff08;border:1px solid #ffffff12;color:var(--text-hi);border-radius:10px;padding:9px 14px;min-width:200px;flex:1;outline:none;" />
+          style="font-family:var(--fb);font-size:13px;background:#ffffff08;border:1px solid #ffffff12;color:var(--text-hi);border-radius:10px;padding:9px 14px;min-width:180px;flex:1;outline:none;" />
         <select id="browse-cat" onchange="applyBrowseFilters()"
           style="font-family:var(--fb);font-size:13px;background:#ffffff08;border:1px solid #ffffff12;color:var(--text-hi);border-radius:10px;padding:9px 14px;cursor:pointer;outline:none;">
           <option value="">All categories</option>
@@ -1174,6 +1176,9 @@ body::before {
           <option value="applied">Applied</option>
           <option value="approved">Approved</option>
         </select>
+      </div>
+      <!-- Filter bar row 2: date range + clear -->
+      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px;align-items:center;">
         <!-- Date range calendar -->
         <div class="browse-date-range-wrap">
           <div class="browse-date-field">
@@ -2345,8 +2350,9 @@ function applyBrowseFilters() {
     if (status === 'not-applied' && ev.applied) return false;
     if (status === 'applied'     && (!ev.applied || ev.appStatus === 'approved')) return false;
     if (status === 'approved'    && ev.appStatus !== 'approved') return false;
+    const effectiveTo = to || from; // single date = exact match
     if (from && ev.date_sort && ev.date_sort < from) return false;
-    if (to   && ev.date_sort && ev.date_sort > to)   return false;
+    if (effectiveTo && ev.date_sort && ev.date_sort > effectiveTo) return false;
     return true;
   });
   renderBrowseGrid(filtered);
