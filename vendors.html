@@ -419,14 +419,15 @@ fetch('/api/vendors').then(function(r){ return r.json(); }).then(function(data) 
     });
     if (!db) return v;
     return Object.assign({}, v, {
-      name:      db.trading_name || v.name,
-      suburb:    db.suburb       || v.suburb,
-      state:     db.state        || v.state,
-      bio:       db.bio          || v.bio,
-      cuisines:  (db.cuisine_tags && db.cuisine_tags.length) ? db.cuisine_tags : v.cuisines,
-      setup:     db.setup_type   || v.setup,
-      isPro:     db.plan === 'pro',
-      _dbUserId: db.user_id,
+      name:       db.trading_name || v.name,
+      suburb:     db.suburb       || v.suburb,
+      state:      db.state        || v.state,
+      bio:        db.bio          || v.bio,
+      cuisines:   (db.cuisine_tags && db.cuisine_tags.length) ? db.cuisine_tags : v.cuisines,
+      setup:      db.setup_type   || v.setup,
+      isPro:      db.plan === 'pro',
+      avatar_url: db.avatar_url   || null,
+      _dbUserId:  db.user_id,
     });
   });
 
@@ -436,21 +437,22 @@ fetch('/api/vendors').then(function(r){ return r.json(); }).then(function(data) 
     if (staticNames.has(db.trading_name.toLowerCase())) return;
     var tags = db.cuisine_tags || [];
     VENDORS.push({
-      id:        String(db.user_id),
-      name:      db.trading_name,
-      suburb:    db.suburb    || 'Adelaide',
-      state:     db.state     || 'SA',
-      bio:       db.bio       || '',
-      cuisines:  tags.length ? tags : ['Food'],
-      setup:     db.setup_type || 'Market Stall',
-      rating:    0,
-      reviews:   0,
-      events:    0,
-      isPro:     db.plan === 'pro',
-      emoji:     '🍽',
-      bg:        'linear-gradient(135deg,#1A1612,#2A1A0A)',
-      _dbUserId: db.user_id,
-      _real:     true,
+      id:         String(db.user_id),
+      name:       db.trading_name,
+      suburb:     db.suburb    || 'Adelaide',
+      state:      db.state     || 'SA',
+      bio:        db.bio       || '',
+      cuisines:   tags.length ? tags : ['Food'],
+      setup:      db.setup_type || 'Market Stall',
+      rating:     0,
+      reviews:    0,
+      events:     0,
+      isPro:      db.plan === 'pro',
+      emoji:      '🍽',
+      bg:         'linear-gradient(135deg,#1A1612,#2A1A0A)',
+      avatar_url: db.avatar_url || null,
+      _dbUserId:  db.user_id,
+      _real:      true,
     });
   });
 
@@ -475,9 +477,19 @@ function renderCard(v) {
         <div class="vc-sep"></div>
         <div class="vc-events"><strong>${v.events}</strong> events</div>
         <div class="vc-suburb">📍 ${v.suburb}</div>`;
+  var topStyle = v.avatar_url
+    ? `background:${v.bg};background-image:url(${v.avatar_url});background-size:cover;background-position:center;`
+    : `background:${v.bg};`;
+  var avatarHtml = v.avatar_url
+    ? `<div style="position:absolute;bottom:10px;left:14px;width:44px;height:44px;border-radius:10px;border:2.5px solid rgba(255,255,255,0.3);background-image:url(${v.avatar_url});background-size:cover;background-position:center;box-shadow:0 2px 8px rgba(0,0,0,0.4);"></div>`
+    : `<div style="font-size:52px;">${v.emoji}</div>`;
+  var overlayHtml = v.avatar_url
+    ? `<div style="position:absolute;inset:0;background:linear-gradient(to bottom,transparent 40%,rgba(0,0,0,0.5));"></div>`
+    : '';
   return `<a class="vendor-card" href="/vendors/${v._dbUserId || v.id}">
-    <div class="vc-top" style="background:${v.bg};">
-      ${v.emoji}
+    <div class="vc-top" style="${topStyle}">
+      ${overlayHtml}
+      ${avatarHtml}
       ${v.isPro ? '<span class="vc-pro-badge">PRO</span>' : ''}
       <span class="vc-setup-badge">${v.setup}</span>
     </div>
