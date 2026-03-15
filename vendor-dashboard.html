@@ -1508,12 +1508,17 @@ function _fmtTime(iso) {
 
 // ── Open a chat from any Message button ──────────────────────────────────
 // orgUserId = the organiser's users.id  (0/null = no linked account)
-async function startChatWithOrganiser(orgUserId, orgName, eventName) {
+// skipPanelSwitch = true when caller already switched to messages panel
+async function startChatWithOrganiser(orgUserId, orgName, eventName, skipPanelSwitch) {
   const myId = window.__PITCH_USER__ && window.__PITCH_USER__.id;
-  if (!myId) return;
+  if (!myId) {
+    const msgArea = document.getElementById('convo-messages');
+    if (msgArea) msgArea.innerHTML = '<div style="color:var(--terra);font-size:13px;text-align:center;padding:40px 20px;">Not logged in — please refresh.</div>';
+    return;
+  }
 
-  // Switch to messages panel immediately so user sees something
-  showPanel('messages', null);
+  // Switch to messages panel and show header
+  if (!skipPanelSwitch) showPanel('messages', null);
   _openConvoPane(orgName || 'Organiser', eventName || '');
 
   const msgArea = document.getElementById('convo-messages');
@@ -1826,6 +1831,20 @@ function pitchFetch(url, opts = {}) {
 
 /* ── Real data init ──────────────────────────────────────────────────────── */
 async function initDashboard() {
+  // Capture deep-link params IMMEDIATELY before any await (so they can't be lost)
+  const _dlSp    = new URLSearchParams(window.location.search);
+  const _dlOrgId = Number(_dlSp.get('org'));
+  const _dlOrgName = _dlOrgId ? decodeURIComponent(_dlSp.get('name') || 'Organiser') : '';
+  const _dlEvName  = _dlOrgId ? decodeURIComponent(_dlSp.get('event') || '') : '';
+  if (_dlOrgId) {
+    // Strip params early so browser back works cleanly
+    history.replaceState(null, '', window.location.pathname);
+    // Prime the convo pane immediately so user sees it's loading
+    _openConvoPane(_dlOrgName, _dlEvName);
+    const msgArea = document.getElementById('convo-messages');
+    if (msgArea) msgArea.innerHTML = '<div style="color:var(--text-lo);font-size:13px;text-align:center;padding:40px 20px;">Connecting…</div>';
+  }
+
   // Auth data injected server-side — no fetch('/api/me') needed
   const user = window.__PITCH_USER__;
   const profile = window.__PITCH_PROFILE__;
@@ -1890,17 +1909,13 @@ async function initDashboard() {
   // Settings plan card
   renderPlanCard(profile);
 
-  // Load threads then check for deep-link params
-  await loadAllThreads();
+  // Load threads (non-blocking for deep-link case)
+  loadAllThreads().catch(() => {});
 
-  const _sp = new URLSearchParams(window.location.search);
-  const _orgId = Number(_sp.get('org'));
-  if (_orgId) {
-    const _orgName = decodeURIComponent(_sp.get('name') || 'Organiser');
-    const _evName  = decodeURIComponent(_sp.get('event') || '');
-    history.replaceState(null, '', '/dashboard/vendor/messages');
+  // Open deep-link conversation if present
+  if (_dlOrgId) {
     showPanel('messages', null, false);
-    await startChatWithOrganiser(_orgId, _orgName, _evName);
+    await startChatWithOrganiser(_dlOrgId, _dlOrgName, _dlEvName, true);
   }
 }
 
@@ -2005,12 +2020,12 @@ function renderEventDetail(ev) {
     const evName  = (ev.name||'').replace(/'/g,"\\'");
     applyBar = `<div style="display:flex;flex-direction:column;gap:10px;align-items:flex-end;">
       <div style="font-size:15px;font-weight:700;color:${statusColor};">${statusText}</div>
-      <button onclick="msgOrg(${ev.organiser_user_id||0},'${orgName}','${evName}')" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--ember);background:var(--ember-bg);border:1px solid #E8500A33;padding:8px 18px;border-radius:8px;cursor:pointer;white-space:nowrap;">💬 Message organiser</button>
+      <button onclick="startChatWithOrganiser(${ev.organiser_user_id||0},'${orgName}','${evName}')" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--ember);background:var(--ember-bg);border:1px solid #E8500A33;padding:8px 18px;border-radius:8px;cursor:pointer;white-space:nowrap;">💬 Message organiser</button>
     </div>`;
   } else {
     applyBar = `<div style="display:flex;flex-direction:column;gap:10px;">
       <button class="btn-apply-full" id="detail-apply-btn" onclick="applyFromDetail(${ev.id})">Apply to this event →</button>
-      ${ev.organiser_user_id ? `<button onclick="msgOrg(${ev.organiser_user_id},'${(ev.organiser_name||'Organiser').replace(/'/g,"\\'")}','${(ev.name||'').replace(/'/g,"\\'")}')" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--ember);background:var(--ember-bg);border:1px solid #E8500A33;padding:12px;border-radius:10px;cursor:pointer;width:100%;">💬 Message organiser</button>` : ''}
+      ${ev.organiser_user_id ? `<button onclick="startChatWithOrganiser(${ev.organiser_user_id},'${(ev.organiser_name||'Organiser').replace(/'/g,"\\'")}','${(ev.name||'').replace(/'/g,"\\'")}')" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--ember);background:var(--ember-bg);border:1px solid #E8500A33;padding:12px;border-radius:10px;cursor:pointer;width:100%;">💬 Message organiser</button>` : ''}
     </div>`;
   }
 
@@ -2170,7 +2185,7 @@ function renderApplicationsData(applications) {
             ? `<button onclick="withdrawApp(${a.event_id}, this)" style="background:none;border:none;color:var(--text-lo);cursor:pointer;font-size:12px;font-family:inherit;text-decoration:underline;">Withdraw</button>`
             : `<a class="action-link" href="/events/${a.event_slug||a.event_id}" target="_blank" rel="noopener">View →</a>`
           }
-          <button onclick="msgOrg(${a.organiser_user_id||0},'${(a.organiser_name||'Organiser').replace(/'/g,"\\'")}','${(a.event_name||'').replace(/'/g,"\\'")}')" style="font-family:var(--fb);font-size:11px;font-weight:700;color:var(--ember);background:var(--ember-bg);border:1px solid #E8500A22;padding:4px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;">💬 Message</button>
+          <button onclick="startChatWithOrganiser(${a.organiser_user_id||0},'${(a.organiser_name||'Organiser').replace(/'/g,"\\'")}','${(a.event_name||'').replace(/'/g,"\\'")}')" style="font-family:var(--fb);font-size:11px;font-weight:700;color:var(--ember);background:var(--ember-bg);border:1px solid #E8500A22;padding:4px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;">💬 Message</button>
         </div>
       </td>
     </tr>
@@ -2403,7 +2418,13 @@ function renderPlanCard(profile) {
   `;
 }
 
-initDashboard();
+initDashboard().catch(e => {
+  console.error('[initDashboard fatal]', e);
+  const msgArea = document.getElementById('convo-messages');
+  if (msgArea && document.getElementById('panel-messages').classList.contains('active')) {
+    msgArea.innerHTML = `<div style="color:var(--terra);font-size:13px;text-align:center;padding:40px 20px;">Startup error: ${e.message}</div>`;
+  }
+});
 </script>
 </body>
 </html>
