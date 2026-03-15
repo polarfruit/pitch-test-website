@@ -1703,10 +1703,10 @@ function renderOrgEventsData(events) {
 
 initDashboard();
 
-// ── Messaging system — DB-backed ──────────────────────────────────────────
-function _orgFmtTime(isoStr) {
-  if (!isoStr) return '';
-  try { return new Date(isoStr).toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' }); } catch { return ''; }
+// ── Messaging ─────────────────────────────────────────────────────────────
+function _orgFmtTime(iso) {
+  if (!iso) return '';
+  try { return new Date(iso).toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' }); } catch { return ''; }
 }
 
 async function startChat(vendorUserId, vendorName) {
