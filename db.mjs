@@ -347,6 +347,11 @@ if (_needsSeed) {
   }
 }
 
+// Ensure leroy.anton@yahoo.com and polarfruit@outlook.com accounts are always active.
+for (const email of ['leroy.anton@yahoo.com', 'polarfruit@outlook.com']) {
+  await _safeExec(`UPDATE users SET status='active' WHERE email='${email}' AND status != 'active'`);
+}
+
 // Link seed events to their organiser accounts by matching organiser_name → org_name.
 // Runs unconditionally so it also repairs any existing rows with organiser_user_id=null.
 await _safeExec(`
@@ -356,6 +361,16 @@ await _safeExec(`
   )
   WHERE organiser_user_id IS NULL
 `);
+
+// Also link events created by leroy.anton or polarfruit organiser accounts where the link is missing.
+await _safeExec(`
+  UPDATE events
+  SET organiser_user_id = (
+    SELECT u.id FROM users u WHERE u.email IN ('leroy.anton@yahoo.com','polarfruit@outlook.com') AND u.role='organiser' LIMIT 1
+  )
+  WHERE organiser_user_id IS NULL
+`);
+
 // Fallback: if name-match found nothing, assign any available organiser so messaging works.
 await _safeExec(`
   UPDATE events
