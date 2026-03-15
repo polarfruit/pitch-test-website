@@ -259,6 +259,8 @@ await _safeExec(`ALTER TABLE event_applications ADD COLUMN approved_at DATETIME`
 await _safeExec(`DELETE FROM organisers WHERE id NOT IN (SELECT MIN(id) FROM organisers GROUP BY user_id)`);
 // Add unique index so this can never happen again
 await _safeExec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_organisers_user_id ON organisers(user_id)`);
+// Link seeded events (organiser_user_id=NULL) to their matching organiser accounts by org_name
+await _safeExec(`UPDATE events SET organiser_user_id = (SELECT o.user_id FROM organisers o WHERE o.org_name = events.organiser_name LIMIT 1) WHERE organiser_user_id IS NULL AND organiser_name IS NOT NULL`);
 
 // ── Messaging tables ─────────────────────────────────────────────────────────
 await _safeExec(`
