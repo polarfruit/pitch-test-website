@@ -558,6 +558,46 @@ body::before {
 .cat-name { font-size: 12px; font-weight: 700; color: var(--text-hi); margin-bottom: 4px; letter-spacing: 0.01em; }
 .cat-count { font-size: 10px; color: var(--text-lo); }
 
+/* ── HOW IT WORKS PREVIEW ─────────────────────────────────────────────────── */
+.hiw-preview-grid {
+  display: grid; grid-template-columns: 1fr auto 1fr; gap: 0 48px; align-items: start;
+}
+
+.hiw-preview-divider {
+  width: 1px; background: linear-gradient(to bottom, transparent, #ffffff10 30%, #ffffff10 70%, transparent);
+  align-self: stretch; margin-top: 36px;
+}
+.hiw-preview-steps { display: flex; flex-direction: column; gap: 0; }
+.hiw-preview-step { display: flex; gap: 16px; align-items: flex-start; }
+.hiw-preview-connector {
+  width: 1px; height: 28px; background: #ffffff0c;
+  margin-left: 19px; /* center under the num circle */
+}
+.hiw-preview-num {
+  width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+  background: var(--ash); border: 1px solid #E8500A30;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--fd); font-size: 15px; font-weight: 900; color: var(--ember);
+}
+.hiw-preview-step-body { padding-top: 7px; }
+.hiw-preview-step-title { font-family: var(--fd); font-size: 16px; font-weight: 800; color: var(--text-hi); margin-bottom: 4px; }
+.hiw-preview-step-desc { font-size: 13px; color: var(--text-lo); line-height: 1.65; }
+.hiw-preview-cta {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--fb); font-size: 14px; font-weight: 700;
+  color: var(--ember); text-decoration: none;
+  border: 1px solid #E8500A30; border-radius: 10px;
+  padding: 12px 24px;
+  background: var(--ember-bg);
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.hiw-preview-cta:hover { background: #E8500A20; border-color: #E8500A60; color: var(--ember-glow); }
+.hiw-preview-cta:active { transform: scale(0.98); }
+@media (max-width: 700px) {
+  .hiw-preview-grid { grid-template-columns: 1fr; gap: 40px; }
+  .hiw-preview-divider { display: none; }
+}
+
 /* ── HOW IT WORKS ─────────────────────────────────────────────────────────── */
 .hiw-cols {
   display: grid; grid-template-columns: 1fr 1fr;
@@ -779,7 +819,7 @@ footer {
   <ul class="nav-links">
     <li><a href="/events">Events</a></li>
     <li><a href="/vendors">Vendors</a></li>
-    <li><a href="#how-it-works">How It Works</a></li>
+    <li><a href="/how-it-works">How It Works</a></li>
   </ul>
 
   <!-- Logged-out state (default) -->
@@ -810,7 +850,7 @@ footer {
 <div class="mobile-menu" id="mobile-menu">
   <a href="/events" onclick="closeMobileMenu()">Events</a>
   <a href="/vendors" onclick="closeMobileMenu()">Vendors</a>
-  <a href="#how-it-works" onclick="closeMobileMenu()">How It Works</a>
+  <a href="/how-it-works">How It Works</a>
   <div class="mobile-menu-actions">
     <a href="/login" class="btn-login" style="font-size:15px;">Log in</a>
     <a href="/signup" class="btn-get-started" style="font-size:15px;">Get Started</a>
@@ -1156,115 +1196,85 @@ footer {
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════
-     HOW IT WORKS
+     HOW IT WORKS — PREVIEW
 ═══════════════════════════════════════════════════════════════════════════ -->
 <div class="section-wrap alt" id="how-it-works">
 <div class="section">
   <div class="sec-tag">How It Works</div>
-  <h2 class="sec-title" style="margin-bottom:48px;">Your pitch, <em>simplified.</em></h2>
+  <h2 class="sec-title" style="margin-bottom:12px;">Your pitch, <em>simplified.</em></h2>
+  <p style="font-size:15px;color:var(--text-mid);text-align:center;margin-bottom:52px;line-height:1.7;">Whether you're a food vendor looking for your next gig or an organiser building a world-class lineup — Pitch. handles the matchmaking.</p>
 
-  <div class="hiw-cols">
+  <div class="hiw-preview-grid">
 
-    <!-- For Vendors -->
-    <div>
+    <!-- Vendor steps -->
+    <div class="hiw-preview-col">
       <div class="hiw-col-head">For vendors</div>
-      <div class="hiw-steps">
-
-        <div class="hiw-step">
-          <div class="hiw-step-left">
-            <div class="hiw-icon">🏪</div>
-          </div>
-          <div class="hiw-content">
-            <div class="hiw-step-title">Create your profile</div>
-            <div class="hiw-step-desc">Build a vendor profile with photos, cuisine tags, certifications, and your past event history. First impressions matter.</div>
+      <div class="hiw-preview-steps">
+        <div class="hiw-preview-step">
+          <div class="hiw-preview-num">1</div>
+          <div class="hiw-preview-step-body">
+            <div class="hiw-preview-step-title">Create your profile</div>
+            <div class="hiw-preview-step-desc">Photos, cuisine tags, certifications — build a profile that wins bookings.</div>
           </div>
         </div>
-
-        <div class="hiw-step">
-          <div class="hiw-step-left">
-            <div class="hiw-icon">✅</div>
-          </div>
-          <div class="hiw-content">
-            <div class="hiw-step-title">Get verified</div>
-            <div class="hiw-step-desc">Submit your ABN, food safety cert, and public liability insurance. Verified vendors get priority placement in search.</div>
+        <div class="hiw-preview-connector"></div>
+        <div class="hiw-preview-step">
+          <div class="hiw-preview-num">2</div>
+          <div class="hiw-preview-step-body">
+            <div class="hiw-preview-step-title">Get verified</div>
+            <div class="hiw-preview-step-desc">ABN, food safety cert, public liability. Verified vendors rank higher.</div>
           </div>
         </div>
-
-        <div class="hiw-step">
-          <div class="hiw-step-left">
-            <div class="hiw-icon">🔍</div>
-          </div>
-          <div class="hiw-content">
-            <div class="hiw-step-title">Apply to events</div>
-            <div class="hiw-step-desc">Browse events by location, date, category, and fee range. One-click applications — no chasing emails or phone calls.</div>
+        <div class="hiw-preview-connector"></div>
+        <div class="hiw-preview-step">
+          <div class="hiw-preview-num">3</div>
+          <div class="hiw-preview-step-body">
+            <div class="hiw-preview-step-title">Apply &amp; get confirmed</div>
+            <div class="hiw-preview-step-desc">Browse events, one-click apply, and hear back within 48 hours — guaranteed.</div>
           </div>
         </div>
-
-        <div class="hiw-step">
-          <div class="hiw-step-left">
-            <div class="hiw-icon">⚡</div>
-          </div>
-          <div class="hiw-content">
-            <div class="hiw-step-title">Get confirmed</div>
-            <div class="hiw-step-desc">Organizers review and confirm within 48 hours. You'll always hear back. No ghosting, no uncertainty.</div>
-          </div>
-        </div>
-
       </div>
     </div>
 
     <!-- Divider -->
-    <div class="hiw-divider"></div>
+    <div class="hiw-preview-divider"></div>
 
-    <!-- For Organisers -->
-    <div>
+    <!-- Organiser steps -->
+    <div class="hiw-preview-col">
       <div class="hiw-col-head">For organisers</div>
-      <div class="hiw-steps">
-
-        <div class="hiw-step">
-          <div class="hiw-step-left">
-            <div class="hiw-icon">📝</div>
-          </div>
-          <div class="hiw-content">
-            <div class="hiw-step-title">Post your event</div>
-            <div class="hiw-step-desc">List your event with dates, location, booth specifications, fees, and requirements. Takes less than 5 minutes.</div>
+      <div class="hiw-preview-steps">
+        <div class="hiw-preview-step">
+          <div class="hiw-preview-num">1</div>
+          <div class="hiw-preview-step-body">
+            <div class="hiw-preview-step-title">Post your event</div>
+            <div class="hiw-preview-step-desc">Dates, location, stall specs, fees. Live in under 5 minutes.</div>
           </div>
         </div>
-
-        <div class="hiw-step">
-          <div class="hiw-step-left">
-            <div class="hiw-icon">📥</div>
-          </div>
-          <div class="hiw-content">
-            <div class="hiw-step-title">Receive applications</div>
-            <div class="hiw-step-desc">Verified vendors apply directly to your event. Review their profiles, ratings, certifications, and past events in one place.</div>
+        <div class="hiw-preview-connector"></div>
+        <div class="hiw-preview-step">
+          <div class="hiw-preview-num">2</div>
+          <div class="hiw-preview-step-body">
+            <div class="hiw-preview-step-title">Review applications</div>
+            <div class="hiw-preview-step-desc">Verified vendors apply. View profiles, certs, and past events in one place.</div>
           </div>
         </div>
-
-        <div class="hiw-step">
-          <div class="hiw-step-left">
-            <div class="hiw-icon">🎯</div>
-          </div>
-          <div class="hiw-content">
-            <div class="hiw-step-title">Approve your lineup</div>
-            <div class="hiw-step-desc">One-click approve or decline. Automatic notifications sent to vendors. Build a diverse, quality food lineup with confidence.</div>
+        <div class="hiw-preview-connector"></div>
+        <div class="hiw-preview-step">
+          <div class="hiw-preview-num">3</div>
+          <div class="hiw-preview-step-body">
+            <div class="hiw-preview-step-title">Approve your lineup</div>
+            <div class="hiw-preview-step-desc">One-click approve. Vendors are notified instantly. Your roster is ready.</div>
           </div>
         </div>
-
-        <div class="hiw-step">
-          <div class="hiw-step-left">
-            <div class="hiw-icon">🎪</div>
-          </div>
-          <div class="hiw-content">
-            <div class="hiw-step-title">Event day</div>
-            <div class="hiw-step-desc">Your vendor roster is confirmed, contracts are signed, and everyone knows where to show up. You focus on the event.</div>
-          </div>
-        </div>
-
       </div>
     </div>
 
   </div>
+
+  <div style="text-align:center;margin-top:48px;">
+    <a href="/how-it-works" class="hiw-preview-cta">See the full breakdown <span style="font-size:16px;">→</span></a>
+  </div>
+
 </div>
 </div>
 
@@ -1320,7 +1330,7 @@ footer {
       <div class="footer-col-title">For Vendors</div>
       <ul class="footer-links">
         <li><a href="/signup?role=vendor">Sign up</a></li>
-        <li><a href="#how-it-works">How it works</a></li>
+        <li><a href="/how-it-works">How it works</a></li>
         <li><a href="/pricing">Pricing</a></li>
         <li><a href="/vendors">Browse vendors</a></li>
         <li><a href="/blog">Resources</a></li>
@@ -1331,7 +1341,7 @@ footer {
       <div class="footer-col-title">For Organisers</div>
       <ul class="footer-links">
         <li><a href="/events/new">Post an event</a></li>
-        <li><a href="#how-it-works">How it works</a></li>
+        <li><a href="/how-it-works">How it works</a></li>
         <li><a href="/pricing">Pricing</a></li>
         <li><a href="/contact">Talk to sales</a></li>
       </ul>
