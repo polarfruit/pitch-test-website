@@ -847,6 +847,110 @@ app.get('/api/vendor/events', requireAuth, async (req, res) => {
   res.json({ events });
 });
 
+// ── Notifications ─────────────────────────────────────────────────────────
+function relTime(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr.includes('T') || dateStr.includes('Z') ? dateStr : dateStr + 'Z');
+  const diff = Date.now() - d.getTime();
+  const mins = Math.floor(diff / 60000);
+  const hrs  = Math.floor(diff / 3600000);
+  const days = Math.floor(diff / 86400000);
+  if (mins < 2)  return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  if (hrs  < 24) return `${hrs}h ago`;
+  if (days <  7) return `${days}d ago`;
+  return d.toLocaleDateString('en-AU', { day:'numeric', month:'short' });
+}
+
+app.get('/api/notifications', requireAuth, async (req, res) => {
+  const userId = req.session.userId;
+  const role   = req.session.role;
+  const notifs = [];
+
+  try {
+    if (role === 'vendor') {
+      const [apps, unreadRow, events] = await Promise.all([
+        stmts.getApplicationsByVendor.all(userId),
+        stmts.getUnreadMsgCount.get(userId, userId, userId),
+        stmts.publishedEventsForVendor.all(userId),
+      ]);
+
+      const unread = unreadRow ? Number(unreadRow.count) : 0;
+      if (unread > 0) {
+        notifs.push({ id:'messages', icon:'💬', iconCls:'slate',
+          title:`${unread} unread message${unread > 1 ? 's' : ''}`,
+          desc:'You have unread messages from organisers.', time:'now', unread:true });
+      }
+
+      for (const app of apps) {
+        if (app.status === 'approved') {
+          notifs.push({ id:`app-${app.id}`, icon:'✅', iconCls:'herb',
+            title:'Application approved!',
+            desc:`You've been approved for ${app.event_name}.`,
+            time: relTime(app.approved_at || app.created_at), unread:true });
+        } else if (app.status === 'rejected') {
+          notifs.push({ id:`app-${app.id}`, icon:'❌', iconCls:'terra',
+            title:'Application not accepted',
+            desc:`Your application to ${app.event_name} was unsuccessful.`,
+            time: relTime(app.created_at), unread:false });
+        } else if (app.status === 'pending') {
+          notifs.push({ id:`app-${app.id}`, icon:'📋', iconCls:'ember',
+            title:'Application under review',
+            desc:`Your application to ${app.event_name} is being reviewed by the organiser.`,
+            time: relTime(app.created_at), unread:false });
+        }
+      }
+
+      // New events not yet applied to (up to 3)
+      const unapplied = events.filter(e => !e.appStatus).slice(0, 3);
+      for (const ev of unapplied) {
+        notifs.push({ id:`ev-${ev.id}`, icon:'🎪', iconCls:'gold',
+          title:'New event opportunity',
+          desc:`${ev.name} in ${ev.suburb || 'Adelaide'} is now accepting applications.`,
+          time: ev.date_sort || '', unread:false });
+      }
+
+    } else if (role === 'organiser') {
+      const [apps, unreadRow] = await Promise.all([
+        stmts.getAllAppsByOrganiser.all(userId),
+        stmts.getUnreadMsgCount.get(userId, userId, userId),
+      ]);
+
+      const unread = unreadRow ? Number(unreadRow.count) : 0;
+      if (unread > 0) {
+        notifs.push({ id:'messages', icon:'💬', iconCls:'slate',
+          title:`${unread} unread message${unread > 1 ? 's' : ''}`,
+          desc:'You have unread messages from vendors.', time:'now', unread:true });
+      }
+
+      for (const app of apps.slice(0, 15)) {
+        if (app.status === 'pending') {
+          notifs.push({ id:`app-${app.id}`, icon:'📋', iconCls:'ember',
+            title:'New vendor application',
+            desc:`${app.trading_name} applied for ${app.event_name}.`,
+            time: relTime(app.created_at), unread:true });
+        } else if (app.status === 'approved') {
+          notifs.push({ id:`app-${app.id}`, icon:'✅', iconCls:'herb',
+            title:'Vendor spot confirmed',
+            desc:`${app.trading_name} has been approved for ${app.event_name}.`,
+            time: relTime(app.created_at), unread:false });
+        } else if (app.status === 'rejected') {
+          notifs.push({ id:`app-${app.id}`, icon:'✖', iconCls:'terra',
+            title:'Application declined',
+            desc:`You declined ${app.trading_name}'s application for ${app.event_name}.`,
+            time: relTime(app.created_at), unread:false });
+        }
+      }
+    }
+
+    notifs.sort((a, b) => (b.unread ? 1 : 0) - (a.unread ? 1 : 0));
+    res.json({ notifications: notifs, unreadCount: notifs.filter(n => n.unread).length });
+  } catch (e) {
+    console.error('[notifications]', e);
+    res.json({ notifications: [], unreadCount: 0 });
+  }
+});
+
 app.post('/api/events/:id/apply', requireAuth, async (req, res) => {
   const { message } = req.body;
   if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Only vendors can apply' });

@@ -1628,6 +1628,9 @@ async function initDashboard() {
 
   // Badge only — events/overview already rendered from server injection above
   loadOrgAllThreads();
+
+  // Pre-populate notification dot
+  loadNotifications();
 }
 
 const EMOJI_POOL = ['🍽','🎪','🌟','🎉','🍴','🥘','🎊','🌮','🎶','🍻'];
@@ -2322,23 +2325,27 @@ function neCalBlurDate(key, which, input) {
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeBroadcast(); });
 
 // ── NOTIFICATIONS ──────────────────────────────────────────────────────────
-const _orgNotifs = [
-  { id:1, icon:'📋', iconCls:'ember', title:'New vendor application',        desc:'Smoky Joe\'s BBQ applied for your Rundle Mall Night Eats event.', time:'1h ago',  unread:true  },
-  { id:2, icon:'📋', iconCls:'ember', title:'New vendor application',        desc:'Taco Loco applied for Glenelg Twilight Market.', time:'3h ago',  unread:true  },
-  { id:3, icon:'✅', iconCls:'herb',  title:'Vendor accepted spot',          desc:'Wok & Roll confirmed their stall for Fringe Food Village 2026.', time:'6h ago',  unread:true  },
-  { id:4, icon:'💬', iconCls:'slate', title:'New message from vendor',       desc:'Ocean & Fire sent you a message about power requirements.', time:'1d ago',  unread:false },
-  { id:5, icon:'👀', iconCls:'gold',  title:'Event page views up 40%',       desc:'Norwood Food Bazaar has had 120 views in the last 24 hours.', time:'2d ago',  unread:false },
-  { id:6, icon:'🎉', iconCls:'herb',  title:'Welcome to Pitch.!',            desc:'Your organiser profile is live. Post your first event to start receiving applications.', time:'7d ago', unread:false },
-];
+let _notifs = [];
+
+async function loadNotifications() {
+  try {
+    const r = await pitchFetch('/api/notifications');
+    if (!r.ok) return;
+    const data = await r.json();
+    _notifs = data.notifications || [];
+    const dot = document.getElementById('notif-dot');
+    if (dot) dot.style.display = data.unreadCount > 0 ? '' : 'none';
+  } catch(e) { console.error('[notifications]', e); }
+}
 
 function renderNotifList() {
   const list = document.getElementById('notif-list');
   if (!list) return;
-  if (!_orgNotifs.length) {
+  if (!_notifs.length) {
     list.innerHTML = '<div class="notif-empty">No notifications yet</div>';
     return;
   }
-  list.innerHTML = _orgNotifs.map(n => `
+  list.innerHTML = _notifs.map(n => `
     <div class="notif-item${n.unread ? ' unread' : ''}">
       <div class="notif-icon ${n.iconCls}">${n.icon}</div>
       <div class="notif-body">
@@ -2352,7 +2359,7 @@ function renderNotifList() {
     </div>`).join('');
 }
 
-function toggleNotifPopup(e) {
+async function toggleNotifPopup(e) {
   e.stopPropagation();
   const popup = document.getElementById('notif-popup');
   const btn   = document.getElementById('notif-btn');
@@ -2360,6 +2367,7 @@ function toggleNotifPopup(e) {
     popup.classList.remove('open');
     btn.classList.remove('active');
   } else {
+    await loadNotifications();
     renderNotifList();
     popup.classList.add('open');
     btn.classList.add('active');
@@ -2368,7 +2376,7 @@ function toggleNotifPopup(e) {
 
 function markAllNotifRead(e) {
   e.stopPropagation();
-  _orgNotifs.forEach(n => n.unread = false);
+  _notifs.forEach(n => n.unread = false);
   const dot = document.getElementById('notif-dot');
   if (dot) dot.style.display = 'none';
   renderNotifList();
