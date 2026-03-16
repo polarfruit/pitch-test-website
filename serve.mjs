@@ -1283,6 +1283,7 @@ function page(file) {
 }
 
 app.get('/',                    page('index.html'));
+app.get('/how-it-works',        page('how-it-works.html'));
 app.get('/events',              page('events.html'));
 app.get('/vendors',             page('vendors.html'));
 app.get('/login',               page('login.html'));

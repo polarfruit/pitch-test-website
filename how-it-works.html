@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>How It Works — Pitch.</title>
+<link rel="stylesheet" href="/fonts/fonts.css">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --ember:      #E8500A;
+  --ember-glow: #FF6B2B;
+  --ember-bg:   #E8500A12;
+  --coal:       #1A1612;
+  --char:       #231E19;
+  --ash:        #2E2720;
+  --smoke:      #4A3F36;
+  --parchment:  #FDF4E7;
+  --herb:       #2D8B55;
+  --gold:       #C9840A;
+  --terra:      #C0392B;
+  --slate:      #2B5BA8;
+  --text-hi:    #FDF4E7;
+  --text-mid:   #A89880;
+  --text-lo:    #6B5A4A;
+  --fd:         'Fraunces', Georgia, serif;
+  --fb:         'Instrument Sans', 'Helvetica Neue', sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+body {
+  background: var(--coal);
+  color: var(--text-hi);
+  font-family: var(--fb);
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+/* grain */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 0; opacity: 0.45;
+}
+
+/* ── NAVBAR ── */
+.navbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  height: 66px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 52px;
+  background: rgba(26,22,18,0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid #ffffff07;
+}
+.nav-logo {
+  font-family: var(--fd); font-size: 26px; font-weight: 900;
+  letter-spacing: -0.04em; color: var(--text-hi); text-decoration: none; flex-shrink: 0;
+}
+.nav-logo .dot { color: var(--ember); }
+.nav-links { display: flex; align-items: center; gap: 32px; list-style: none; }
+.nav-links a {
+  font-size: 14px; font-weight: 500; color: var(--text-mid);
+  text-decoration: none; transition: color 0.14s; letter-spacing: 0.01em;
+}
+.nav-links a:hover { color: var(--text-hi); }
+.nav-links a.active { color: var(--text-hi); }
+.nav-actions { display: flex; align-items: center; gap: 10px; }
+.btn-login {
+  font-family: var(--fb); font-size: 13px; font-weight: 600;
+  color: var(--text-mid); background: transparent; border: none;
+  padding: 9px 16px; border-radius: 8px; cursor: pointer;
+  transition: color 0.14s, background 0.14s; text-decoration: none;
+}
+.btn-login:hover { color: var(--text-hi); background: #ffffff09; }
+.btn-get-started {
+  font-family: var(--fb); font-size: 13px; font-weight: 700;
+  color: #fff; background: var(--ember); border: none;
+  padding: 10px 22px; border-radius: 9px; cursor: pointer;
+  text-decoration: none; transition: background 0.14s, transform 0.1s;
+  box-shadow: 0 4px 16px rgba(232,80,10,0.35);
+}
+.btn-get-started:hover { background: var(--ember-glow); }
+.btn-get-started:active { transform: scale(0.97); }
+
+/* ── HERO ── */
+.hiw-hero {
+  position: relative; z-index: 1;
+  padding: 140px 52px 80px;
+  max-width: 900px; margin: 0 auto;
+  text-align: center;
+}
+.hiw-hero-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--ember); background: var(--ember-bg);
+  border: 1px solid #E8500A25; border-radius: 100px;
+  padding: 6px 14px; margin-bottom: 24px;
+}
+.hiw-hero-title {
+  font-family: var(--fd); font-size: clamp(36px, 5vw, 64px);
+  font-weight: 900; letter-spacing: -0.03em;
+  color: var(--text-hi); line-height: 1.08;
+  margin-bottom: 20px;
+}
+.hiw-hero-title em { font-style: italic; color: var(--ember); }
+.hiw-hero-sub {
+  font-size: 17px; color: var(--text-mid); line-height: 1.7;
+  max-width: 600px; margin: 0 auto 40px;
+}
+.hiw-hero-tabs {
+  display: inline-flex; gap: 8px;
+  background: var(--char); border: 1px solid #ffffff0A;
+  border-radius: 12px; padding: 6px;
+}
+.hiw-tab {
+  font-family: var(--fb); font-size: 13px; font-weight: 600;
+  color: var(--text-mid); background: transparent; border: none;
+  padding: 9px 22px; border-radius: 8px; cursor: pointer;
+  transition: background 0.14s, color 0.14s; text-decoration: none;
+}
+.hiw-tab:hover { color: var(--text-hi); }
+.hiw-tab.active { background: var(--ash); color: var(--text-hi); }
+
+/* ── SECTION WRAP ── */
+.hiw-section {
+  position: relative; z-index: 1;
+  max-width: 1100px; margin: 0 auto;
+  padding: 80px 52px;
+}
+.hiw-section + .hiw-section { padding-top: 0; }
+.hiw-section-alt { background: var(--char); border-top: 1px solid #ffffff06; border-bottom: 1px solid #ffffff06; }
+.hiw-section-alt .hiw-section { /* no extra bg needed */ }
+
+.hiw-section-label {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--ember); margin-bottom: 8px;
+  display: flex; align-items: center; gap: 8px;
+}
+.hiw-section-label::before { content: ''; width: 16px; height: 2px; background: var(--ember); border-radius: 1px; }
+.hiw-section-title {
+  font-family: var(--fd); font-size: clamp(26px, 3vw, 40px);
+  font-weight: 900; letter-spacing: -0.03em;
+  color: var(--text-hi); margin-bottom: 12px; line-height: 1.1;
+}
+.hiw-section-title em { font-style: italic; color: var(--ember); }
+.hiw-section-sub {
+  font-size: 15px; color: var(--text-mid); line-height: 1.7;
+  max-width: 540px; margin-bottom: 52px;
+}
+
+/* ── STEP CARDS ── */
+.hiw-step-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;
+}
+.hiw-step-card {
+  background: var(--ash); border: 1px solid #ffffff08;
+  border-radius: 20px; padding: 28px 28px 24px;
+  position: relative; overflow: hidden;
+  transition: border-color 0.2s, transform 0.15s;
+}
+.hiw-step-card:hover { border-color: #E8500A25; transform: translateY(-2px); }
+.hiw-step-card::before {
+  content: attr(data-num);
+  position: absolute; top: 20px; right: 24px;
+  font-family: var(--fd); font-size: 72px; font-weight: 900;
+  color: #ffffff04; line-height: 1; pointer-events: none;
+  letter-spacing: -0.04em;
+}
+.hiw-step-card-icon {
+  width: 44px; height: 44px; border-radius: 13px;
+  background: var(--ember-bg); border: 1px solid #E8500A20;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; margin-bottom: 18px;
+}
+.hiw-step-card-num {
+  font-family: var(--fd); font-size: 11px; font-weight: 900;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--ember); margin-bottom: 8px;
+}
+.hiw-step-card-title {
+  font-family: var(--fd); font-size: 20px; font-weight: 800;
+  color: var(--text-hi); margin-bottom: 8px; letter-spacing: -0.01em;
+}
+.hiw-step-card-desc {
+  font-size: 14px; color: var(--text-lo); line-height: 1.7;
+}
+.hiw-step-card-tip {
+  margin-top: 16px; padding: 10px 14px;
+  background: #E8500A09; border: 1px solid #E8500A18;
+  border-radius: 8px;
+  font-size: 12px; color: var(--text-mid); line-height: 1.55;
+}
+.hiw-step-card-tip strong { color: var(--ember); font-weight: 700; }
+
+/* ── TRUST CARDS ── */
+.hiw-trust-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.hiw-trust-card {
+  background: var(--coal); border: 1px solid #ffffff08;
+  border-radius: 20px; padding: 28px 24px; text-align: center;
+}
+.hiw-trust-icon {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: var(--ember-bg); border: 1px solid #E8500A20;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; margin: 0 auto 16px;
+}
+.hiw-trust-title {
+  font-family: var(--fd); font-size: 17px; font-weight: 800;
+  color: var(--text-hi); margin-bottom: 8px;
+}
+.hiw-trust-desc { font-size: 13px; color: var(--text-lo); line-height: 1.65; }
+
+/* ── FAQ ── */
+.hiw-faq { max-width: 720px; margin: 0 auto; }
+.hiw-faq-item {
+  border-bottom: 1px solid #ffffff08; padding: 0;
+  overflow: hidden;
+}
+.hiw-faq-item:first-child { border-top: 1px solid #ffffff08; }
+.hiw-faq-btn {
+  width: 100%; background: none; border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 4px; gap: 16px;
+  font-family: var(--fb); font-size: 15px; font-weight: 600;
+  color: var(--text-hi); text-align: left;
+  transition: color 0.14s;
+}
+.hiw-faq-btn:hover { color: var(--ember); }
+.hiw-faq-chevron {
+  flex-shrink: 0; font-size: 18px; color: var(--text-lo);
+  transition: transform 0.2s, color 0.14s;
+}
+.hiw-faq-item.open .hiw-faq-chevron { transform: rotate(180deg); color: var(--ember); }
+.hiw-faq-body {
+  display: none; padding: 0 4px 20px;
+  font-size: 14px; color: var(--text-mid); line-height: 1.75;
+}
+.hiw-faq-item.open .hiw-faq-body { display: block; }
+
+/* ── CTA SECTION ── */
+.hiw-cta-wrap {
+  position: relative; z-index: 1;
+  background: var(--char);
+  border-top: 1px solid #ffffff06;
+  padding: 88px 52px;
+  text-align: center;
+}
+.hiw-cta-title {
+  font-family: var(--fd); font-size: clamp(28px, 4vw, 50px);
+  font-weight: 900; letter-spacing: -0.03em;
+  color: var(--text-hi); margin-bottom: 14px;
+}
+.hiw-cta-title em { font-style: italic; color: var(--ember); }
+.hiw-cta-sub {
+  font-size: 16px; color: var(--text-mid); line-height: 1.7;
+  margin-bottom: 40px; max-width: 480px; margin-left: auto; margin-right: auto;
+}
+.hiw-cta-btns { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
+.btn-cta-primary {
+  font-family: var(--fb); font-size: 15px; font-weight: 700;
+  color: #fff; background: var(--ember);
+  padding: 14px 32px; border-radius: 11px; text-decoration: none;
+  box-shadow: 0 4px 20px rgba(232,80,10,0.4);
+  transition: background 0.14s, transform 0.1s;
+}
+.btn-cta-primary:hover { background: var(--ember-glow); }
+.btn-cta-primary:active { transform: scale(0.97); }
+.btn-cta-secondary {
+  font-family: var(--fb); font-size: 15px; font-weight: 600;
+  color: var(--text-mid); background: transparent;
+  border: 1px solid #ffffff14; border-radius: 11px;
+  padding: 14px 32px; text-decoration: none;
+  transition: border-color 0.14s, color 0.14s, background 0.14s;
+}
+.btn-cta-secondary:hover { border-color: #ffffff30; color: var(--text-hi); background: #ffffff08; }
+
+/* ── FOOTER ── */
+footer {
+  position: relative; z-index: 1;
+  background: var(--coal);
+  border-top: 1px solid #ffffff07;
+  padding: 48px 52px 32px;
+}
+.footer-bottom {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 12px;
+  padding-top: 24px; border-top: 1px solid #ffffff07;
+  font-size: 12px; color: var(--text-lo);
+}
+.footer-logo {
+  font-family: var(--fd); font-size: 22px; font-weight: 900;
+  letter-spacing: -0.04em; color: var(--text-hi); text-decoration: none;
+  display: block; margin-bottom: 16px;
+}
+.footer-logo .dot { color: var(--ember); }
+.footer-desc { font-size: 13px; color: var(--text-lo); line-height: 1.65; max-width: 280px; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 860px) {
+  .hiw-step-grid { grid-template-columns: 1fr; }
+  .hiw-trust-grid { grid-template-columns: 1fr; }
+  .navbar { padding: 0 20px; }
+  .hiw-hero { padding: 120px 20px 60px; }
+  .hiw-section { padding: 60px 20px; }
+  .hiw-cta-wrap { padding: 60px 20px; }
+  footer { padding: 40px 20px 24px; }
+}
+@media (max-width: 480px) {
+  .nav-links { display: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── NAVBAR ── -->
+<nav class="navbar">
+  <a href="/" class="nav-logo">Pitch<span class="dot">.</span></a>
+  <ul class="nav-links">
+    <li><a href="/events">Events</a></li>
+    <li><a href="/vendors">Vendors</a></li>
+    <li><a href="/how-it-works" class="active">How It Works</a></li>
+  </ul>
+  <div class="nav-actions">
+    <a href="/login" class="btn-login">Log in</a>
+    <a href="/signup" class="btn-get-started">Get Started</a>
+  </div>
+</nav>
+
+<!-- ── HERO ── -->
+<div class="hiw-hero">
+  <div class="hiw-hero-tag">How It Works</div>
+  <h1 class="hiw-hero-title">Your pitch, <em>simplified.</em></h1>
+  <p class="hiw-hero-sub">Pitch. connects verified food vendors with event organisers across Australia. Here's everything you need to know, step by step.</p>
+  <div class="hiw-hero-tabs">
+    <a href="#vendors" class="hiw-tab active" onclick="switchTab('vendors',this)">For Vendors</a>
+    <a href="#organisers" class="hiw-tab" onclick="switchTab('organisers',this)">For Organisers</a>
+  </div>
+</div>
+
+<!-- ═══════════════════ FOR VENDORS ═══════════════════ -->
+<div id="section-vendors">
+
+  <div style="background:var(--char);border-top:1px solid #ffffff06;border-bottom:1px solid #ffffff06;">
+  <div class="hiw-section">
+    <div class="hiw-section-label">For vendors</div>
+    <h2 class="hiw-section-title">From profile to <em>paid gig.</em></h2>
+    <p class="hiw-section-sub">Four steps stand between you and your next event booking. No phone calls, no chasing emails.</p>
+
+    <div class="hiw-step-grid">
+
+      <div class="hiw-step-card" data-num="1">
+        <div class="hiw-step-card-icon">🏪</div>
+        <div class="hiw-step-card-num">Step 1</div>
+        <div class="hiw-step-card-title">Create your profile</div>
+        <div class="hiw-step-card-desc">Build a professional vendor profile with photos, cuisine tags, stall dimensions, power and water requirements, and your event history. Your profile is your pitch to every organiser on the platform.</div>
+        <div class="hiw-step-card-tip"><strong>Pro tip:</strong> Vendors with 3+ photos and a completed bio receive 4× more profile views than incomplete profiles.</div>
+      </div>
+
+      <div class="hiw-step-card" data-num="2">
+        <div class="hiw-step-card-icon">✅</div>
+        <div class="hiw-step-card-num">Step 2</div>
+        <div class="hiw-step-card-title">Get verified</div>
+        <div class="hiw-step-card-desc">Submit your ABN, current food safety supervisor certificate, and proof of $10M public liability insurance. Our team reviews and verifies within 1–2 business days. Verified vendors appear higher in search results and earn the blue verified badge on their profile.</div>
+        <div class="hiw-step-card-tip"><strong>Required:</strong> ABN registration · Food Safety Supervisor cert · $10M public liability insurance</div>
+      </div>
+
+      <div class="hiw-step-card" data-num="3">
+        <div class="hiw-step-card-icon">🔍</div>
+        <div class="hiw-step-card-num">Step 3</div>
+        <div class="hiw-step-card-title">Browse &amp; apply to events</div>
+        <div class="hiw-step-card-desc">Search events by location, date range, event category, stall fee, and day of week. One-click applications attach your full profile automatically — no copy-pasting. Track all your applications from a single dashboard.</div>
+        <div class="hiw-step-card-tip"><strong>Filter options:</strong> Location · Date range · Day of week · Category · Fee range</div>
+      </div>
+
+      <div class="hiw-step-card" data-num="4">
+        <div class="hiw-step-card-icon">⚡</div>
+        <div class="hiw-step-card-num">Step 4</div>
+        <div class="hiw-step-card-title">Get confirmed, show up, trade</div>
+        <div class="hiw-step-card-desc">Organisers review your application and respond within 48 hours — always. You'll receive an instant notification on approval or decline. Once confirmed, all event details, stall location, and setup instructions are in your dashboard.</div>
+        <div class="hiw-step-card-tip"><strong>Guarantee:</strong> Every application receives a response. No ghosting, ever.</div>
+      </div>
+
+    </div>
+  </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════ FOR ORGANISERS ═══════════════════ -->
+<div id="section-organisers">
+
+  <div class="hiw-section">
+    <div class="hiw-section-label">For organisers</div>
+    <h2 class="hiw-section-title">Build your <em>dream lineup.</em></h2>
+    <p class="hiw-section-sub">From posting your event to a fully confirmed vendor roster — handled entirely on Pitch.</p>
+
+    <div class="hiw-step-grid">
+
+      <div class="hiw-step-card" data-num="1">
+        <div class="hiw-step-card-icon">📝</div>
+        <div class="hiw-step-card-num">Step 1</div>
+        <div class="hiw-step-card-title">Post your event</div>
+        <div class="hiw-step-card-desc">List your event with dates, location, stall specifications, site fees, power and water availability, and any dietary or cuisine requirements. Takes less than 5 minutes. Your event goes live immediately to all verified vendors on the platform.</div>
+        <div class="hiw-step-card-tip"><strong>Include:</strong> Date &amp; times · Address · Stall size · Site fee · Cuisine needs · Setup requirements</div>
+      </div>
+
+      <div class="hiw-step-card" data-num="2">
+        <div class="hiw-step-card-icon">📥</div>
+        <div class="hiw-step-card-num">Step 2</div>
+        <div class="hiw-step-card-title">Receive applications</div>
+        <div class="hiw-step-card-desc">Verified vendors apply directly. Each application includes their full profile: photos, cuisine tags, certifications, stall dimensions, past event history, and ratings. Everything you need to make a confident decision — in one place.</div>
+        <div class="hiw-step-card-tip"><strong>You see:</strong> Vendor photos · Cuisine type · Verification status · Insurance · Past events</div>
+      </div>
+
+      <div class="hiw-step-card" data-num="3">
+        <div class="hiw-step-card-icon">🎯</div>
+        <div class="hiw-step-card-num">Step 3</div>
+        <div class="hiw-step-card-title">Approve your lineup</div>
+        <div class="hiw-step-card-desc">One-click approve or decline from your dashboard. Approved vendors receive an instant notification with full event details. Declined vendors are notified automatically — no awkward emails. Build a diverse, balanced food lineup with full confidence.</div>
+        <div class="hiw-step-card-tip"><strong>Smart filters:</strong> Sort by cuisine type, verified status, or application date to find the perfect mix.</div>
+      </div>
+
+      <div class="hiw-step-card" data-num="4">
+        <div class="hiw-step-card-icon">🎪</div>
+        <div class="hiw-step-card-num">Step 4</div>
+        <div class="hiw-step-card-title">Event day, stress free</div>
+        <div class="hiw-step-card-desc">Your confirmed vendor roster is live in your dashboard. Every vendor knows where to show up, what to bring, and when to arrive. In-app messaging handles last-minute questions. You focus on running a great event.</div>
+        <div class="hiw-step-card-tip"><strong>Dashboard gives you:</strong> Confirmed roster · Stall map · Direct messaging · Setup checklist</div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<!-- ═══════════════════ TRUST / VERIFICATION ═══════════════════ -->
+<div style="background:var(--char);border-top:1px solid #ffffff06;border-bottom:1px solid #ffffff06;">
+<div class="hiw-section">
+  <div class="hiw-section-label">Verification</div>
+  <h2 class="hiw-section-title">Every vendor is <em>verified.</em></h2>
+  <p class="hiw-section-sub">Organisers trust Pitch because every vendor passes our three-point verification process before they can apply to a single event.</p>
+
+  <div class="hiw-trust-grid">
+    <div class="hiw-trust-card">
+      <div class="hiw-trust-icon">🏛️</div>
+      <div class="hiw-trust-title">ABN Verified</div>
+      <div class="hiw-trust-desc">Every vendor's Australian Business Number is confirmed with the ATO before their profile goes live — no unregistered operators on Pitch.</div>
+    </div>
+    <div class="hiw-trust-card">
+      <div class="hiw-trust-icon">🍽️</div>
+      <div class="hiw-trust-title">Food Safety Certified</div>
+      <div class="hiw-trust-desc">We check that vendors hold a current Food Safety Supervisor certificate and that their local council registration is up to date.</div>
+    </div>
+    <div class="hiw-trust-card">
+      <div class="hiw-trust-icon">🛡️</div>
+      <div class="hiw-trust-title">$10M Public Liability</div>
+      <div class="hiw-trust-desc">All vendors must provide proof of at least $10 million in public liability insurance — the standard requirement for Australian events.</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════════════ FAQ ═══════════════════ -->
+<div class="hiw-section" style="padding-bottom:100px;">
+  <div style="text-align:center;margin-bottom:48px;">
+    <div class="hiw-section-label" style="justify-content:center;">FAQ</div>
+    <h2 class="hiw-section-title" style="text-align:center;">Common questions</h2>
+  </div>
+  <div class="hiw-faq">
+
+    <div class="hiw-faq-item">
+      <button class="hiw-faq-btn" onclick="toggleFaq(this)">
+        How long does vendor verification take?
+        <span class="hiw-faq-chevron">↓</span>
+      </button>
+      <div class="hiw-faq-body">Verification typically takes 1–2 business days after you submit your documents. You'll receive an email notification as soon as your account is approved. While pending, your profile is visible but marked as unverified.</div>
+    </div>
+
+    <div class="hiw-faq-item">
+      <button class="hiw-faq-btn" onclick="toggleFaq(this)">
+        Is Pitch. free to use for vendors?
+        <span class="hiw-faq-chevron">↓</span>
+      </button>
+      <div class="hiw-faq-body">The Free plan lets you create a profile and apply to events at no cost. Pro vendors ($29/month) get priority placement, unlimited applications, direct messaging, and analytics. See our <a href="/pricing" style="color:var(--ember);">pricing page</a> for full details.</div>
+    </div>
+
+    <div class="hiw-faq-item">
+      <button class="hiw-faq-btn" onclick="toggleFaq(this)">
+        What if an organiser doesn't respond to my application?
+        <span class="hiw-faq-chevron">↓</span>
+      </button>
+      <div class="hiw-faq-body">Organisers are required to respond to all applications within 48 hours. If you haven't heard back after 48 hours, your application dashboard will flag it and you can follow up via in-app messaging. Pitch. monitors response rates and can suspend organisers who ghost vendors.</div>
+    </div>
+
+    <div class="hiw-faq-item">
+      <button class="hiw-faq-btn" onclick="toggleFaq(this)">
+        Can I apply to multiple events at once?
+        <span class="hiw-faq-chevron">↓</span>
+      </button>
+      <div class="hiw-faq-body">Yes. There's no limit on the number of simultaneous applications. Your dashboard shows all pending, approved, and declined applications in one place so you can track everything easily.</div>
+    </div>
+
+    <div class="hiw-faq-item">
+      <button class="hiw-faq-btn" onclick="toggleFaq(this)">
+        Is there a fee for organisers to post events?
+        <span class="hiw-faq-chevron">↓</span>
+      </button>
+      <div class="hiw-faq-body">Posting events is free. Pitch. charges a small platform fee (included in the stall fee) when a vendor is confirmed. This covers the cost of verification, messaging, and dashboard tools for both parties.</div>
+    </div>
+
+    <div class="hiw-faq-item">
+      <button class="hiw-faq-btn" onclick="toggleFaq(this)">
+        What happens if a vendor cancels after being confirmed?
+        <span class="hiw-faq-chevron">↓</span>
+      </button>
+      <div class="hiw-faq-body">Late cancellations are flagged on the vendor's profile and affect their reliability rating. Organisers are notified immediately and can re-open the spot to other applicants. Repeat cancellations can result in account suspension.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════ CTA ═══════════════════ -->
+<div class="hiw-cta-wrap">
+  <h2 class="hiw-cta-title">Ready to find your <em>pitch?</em></h2>
+  <p class="hiw-cta-sub">Join hundreds of vendors and organisers already using Pitch. across South Australia, Victoria, and Queensland.</p>
+  <div class="hiw-cta-btns">
+    <a href="/signup?role=vendor" class="btn-cta-primary">Join as a Vendor</a>
+    <a href="/signup?role=organiser" class="btn-cta-secondary">Post an Event</a>
+  </div>
+</div>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="footer-bottom">
+    <a href="/" class="footer-logo" style="margin-bottom:0;">Pitch<span class="dot">.</span></a>
+    <span>© 2026 Pitch. Pty Ltd · Adelaide, SA</span>
+    <div style="display:flex;gap:20px;">
+      <a href="/events" style="color:var(--text-lo);text-decoration:none;font-size:12px;">Events</a>
+      <a href="/vendors" style="color:var(--text-lo);text-decoration:none;font-size:12px;">Vendors</a>
+      <a href="/how-it-works" style="color:var(--text-lo);text-decoration:none;font-size:12px;">How It Works</a>
+      <a href="/pricing" style="color:var(--text-lo);text-decoration:none;font-size:12px;">Pricing</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+function switchTab(tab, el) {
+  document.querySelectorAll('.hiw-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  const sv = document.getElementById('section-vendors');
+  const so = document.getElementById('section-organisers');
+  if (tab === 'vendors') {
+    sv.style.display = ''; so.style.display = 'none';
+    sv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } else {
+    sv.style.display = 'none'; so.style.display = '';
+    so.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+}
+
+function toggleFaq(btn) {
+  const item = btn.closest('.hiw-faq-item');
+  item.classList.toggle('open');
+}
+
+// Default: show vendors section
+document.getElementById('section-organisers').style.display = 'none';
+
+// Highlight active nav on scroll / load (no-op here since it's a static page)
+</script>
+</body>
+</html>
