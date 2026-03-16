@@ -358,7 +358,7 @@ window.PITCH_VENDORS = [
   {
     id: 'smoky-joes-bbq',
     name: "Smoky Joe's BBQ",
-    cuisines: ['BBQ'],
+    cuisines: ['BBQ', 'Ribs', 'Brisket'],
     setup: 'Food Truck',
     suburb: 'Norwood', state: 'SA',
     rating: 4.9, reviews: 62, events: 47,
@@ -395,7 +395,7 @@ window.PITCH_VENDORS = [
   {
     id: 'taco-loco',
     name: 'Taco Loco',
-    cuisines: ['Mexican'],
+    cuisines: ['Mexican', 'Tacos', 'Burritos'],
     setup: 'Pop-up Stall',
     suburb: 'Glenelg', state: 'SA',
     rating: 4.7, reviews: 38, events: 23,
@@ -429,7 +429,7 @@ window.PITCH_VENDORS = [
   {
     id: 'wok-and-roll',
     name: 'Wok & Roll',
-    cuisines: ['Asian Fusion'],
+    cuisines: ['Asian Fusion', 'Noodles', 'Bao'],
     setup: 'Food Truck',
     suburb: 'Adelaide CBD', state: 'SA',
     rating: 4.8, reviews: 51, events: 31,
@@ -462,7 +462,7 @@ window.PITCH_VENDORS = [
   {
     id: 'napoli-express',
     name: 'Napoli Express',
-    cuisines: ['Italian'],
+    cuisines: ['Italian', 'Pizza', 'Arancini'],
     setup: 'Pop-up Stall',
     suburb: 'Hindmarsh', state: 'SA',
     rating: 4.6, reviews: 29, events: 19,
@@ -493,7 +493,7 @@ window.PITCH_VENDORS = [
   {
     id: 'the-dessert-lab',
     name: 'The Dessert Lab',
-    cuisines: ['Desserts'],
+    cuisines: ['Desserts', 'Ice Cream', 'Pastry'],
     setup: 'Cart',
     suburb: 'North Adelaide', state: 'SA',
     rating: 4.9, reviews: 44, events: 28,
@@ -526,7 +526,7 @@ window.PITCH_VENDORS = [
   {
     id: 'beanery-coffee',
     name: 'Beanery Coffee Co.',
-    cuisines: ['Coffee & Drinks'],
+    cuisines: ['Coffee & Drinks', 'Cold Brew', 'Matcha'],
     setup: 'Cart',
     suburb: 'Unley', state: 'SA',
     rating: 4.7, reviews: 33, events: 35,
@@ -560,7 +560,7 @@ window.PITCH_VENDORS = [
   {
     id: 'green-bowl',
     name: 'Green Bowl',
-    cuisines: ['Vegan'],
+    cuisines: ['Vegan', 'Plant-Based', 'Bowls'],
     setup: 'Pop-up Stall',
     suburb: 'Prospect', state: 'SA',
     rating: 4.5, reviews: 17, events: 14,
@@ -592,7 +592,7 @@ window.PITCH_VENDORS = [
   {
     id: 'brewski-burgers',
     name: 'Brewski Burgers',
-    cuisines: ['Burgers'],
+    cuisines: ['Burgers', 'Smash Burgers', 'Fries'],
     setup: 'Food Truck',
     suburb: 'Port Adelaide', state: 'SA',
     rating: 4.6, reviews: 26, events: 22,
@@ -623,7 +623,7 @@ window.PITCH_VENDORS = [
   {
     id: 'ocean-and-fire',
     name: 'Ocean & Fire',
-    cuisines: ['Seafood'],
+    cuisines: ['Seafood', 'Grilled Fish', 'Oysters'],
     setup: 'Pop-up Stall',
     suburb: 'Glenelg', state: 'SA',
     rating: 4.8, reviews: 22, events: 17,
@@ -655,7 +655,7 @@ window.PITCH_VENDORS = [
   {
     id: 'the-churro-stand',
     name: 'The Churro Stand',
-    cuisines: ['Desserts'],
+    cuisines: ['Desserts', 'Churros', 'Spanish'],
     setup: 'Cart',
     suburb: 'Adelaide CBD', state: 'SA',
     rating: 4.4, reviews: 14, events: 11,
@@ -685,7 +685,7 @@ window.PITCH_VENDORS = [
   {
     id: 'punjab-palace',
     name: 'Punjab Palace',
-    cuisines: ['Indian'],
+    cuisines: ['Indian', 'Curry', 'Tandoor'],
     setup: 'Food Truck',
     suburb: 'Elizabeth', state: 'SA',
     rating: 4.7, reviews: 31, events: 26,
@@ -716,7 +716,7 @@ window.PITCH_VENDORS = [
   {
     id: 'pressed-and-brewed',
     name: 'Pressed & Brewed',
-    cuisines: ['Coffee & Drinks'],
+    cuisines: ['Coffee & Drinks', 'Juices', 'Herbal'],
     setup: 'Cart',
     suburb: 'Burnside', state: 'SA',
     rating: 4.5, reviews: 12, events: 9,
