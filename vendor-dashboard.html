@@ -199,6 +199,7 @@ body::before {
 .notif-icon.herb  { background: #2D8B5518; }
 .notif-icon.gold  { background: #C9840A18; }
 .notif-icon.slate { background: #2B5BA818; }
+.notif-icon.terra { background: #C0392B18; }
 .notif-body { flex: 1; min-width: 0; }
 .notif-body-title {
   font-size: 12px; font-weight: 700; color: var(--text-hi);
@@ -2391,6 +2392,9 @@ async function initDashboard() {
     showPanel('messages', null, false);
     await startChatWithOrganiser(_dlOrgId, _dlOrgName, _dlEvName, true);
   }
+
+  // Pre-populate notification dot
+  loadNotifications();
 }
 
 async function loadEvents() {
@@ -3284,25 +3288,27 @@ document.addEventListener('click', function(e) {
 });
 
 // ── NOTIFICATIONS ──────────────────────────────────────────────────────────
-const _vendorNotifs = [
-  { id:1, icon:'✅', iconCls:'herb',  title:'Application approved!',         desc:'You\'ve been approved for Rundle Mall Night Eats on 12 Apr.', time:'2h ago',  unread:true  },
-  { id:2, icon:'📨', iconCls:'ember', title:'New message from organiser',     desc:'Adelaide Fringe Festival sent you a message about your stall.', time:'5h ago',  unread:true  },
-  { id:3, icon:'🎪', iconCls:'slate', title:'New event in your area',         desc:'Norwood Food Bazaar is now accepting applications — 18 spots left.', time:'1d ago',  unread:true  },
-  { id:4, icon:'👀', iconCls:'gold',  title:'Profile view spike',             desc:'Your profile was viewed 24 times in the last 48 hours.', time:'2d ago',  unread:false },
-  { id:5, icon:'📋', iconCls:'ember', title:'Application received',           desc:'Your application to Glenelg Twilight Market is under review.', time:'3d ago',  unread:false },
-  { id:6, icon:'🎉', iconCls:'herb',  title:'Welcome to Pitch.!',             desc:'Your vendor profile is live. Start browsing events to apply.', time:'7d ago',  unread:false },
-];
+let _notifs = [];
 
-let _notifUnread = _vendorNotifs.filter(n => n.unread).length;
+async function loadNotifications() {
+  try {
+    const r = await pitchFetch('/api/notifications');
+    if (!r.ok) return;
+    const data = await r.json();
+    _notifs = data.notifications || [];
+    const dot = document.getElementById('notif-dot');
+    if (dot) dot.style.display = data.unreadCount > 0 ? '' : 'none';
+  } catch(e) { console.error('[notifications]', e); }
+}
 
 function renderNotifList() {
   const list = document.getElementById('notif-list');
   if (!list) return;
-  if (!_vendorNotifs.length) {
+  if (!_notifs.length) {
     list.innerHTML = '<div class="notif-empty">No notifications yet</div>';
     return;
   }
-  list.innerHTML = _vendorNotifs.map(n => `
+  list.innerHTML = _notifs.map(n => `
     <div class="notif-item${n.unread ? ' unread' : ''}">
       <div class="notif-icon ${n.iconCls}">${n.icon}</div>
       <div class="notif-body">
@@ -3316,7 +3322,7 @@ function renderNotifList() {
     </div>`).join('');
 }
 
-function toggleNotifPopup(e) {
+async function toggleNotifPopup(e) {
   e.stopPropagation();
   const popup = document.getElementById('notif-popup');
   const btn   = document.getElementById('notif-btn');
@@ -3324,6 +3330,7 @@ function toggleNotifPopup(e) {
     popup.classList.remove('open');
     btn.classList.remove('active');
   } else {
+    await loadNotifications();
     renderNotifList();
     popup.classList.add('open');
     btn.classList.add('active');
@@ -3332,8 +3339,7 @@ function toggleNotifPopup(e) {
 
 function markAllNotifRead(e) {
   e.stopPropagation();
-  _vendorNotifs.forEach(n => n.unread = false);
-  _notifUnread = 0;
+  _notifs.forEach(n => n.unread = false);
   const dot = document.getElementById('notif-dot');
   if (dot) dot.style.display = 'none';
   renderNotifList();
