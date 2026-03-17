@@ -2428,10 +2428,23 @@
     }
   }
 
-  // Boot
-  loadStats();
-  loadVendors();
-  loadOrganisers();
+  // ── Auth guard — verify admin session before rendering anything ────────────
+  (async () => {
+    try {
+      const r = await fetch('/api/admin/stats');
+      if (r.status === 401 || r.status === 403) {
+        window.location.replace('/admin/login');
+        return;
+      }
+    } catch(e) {
+      window.location.replace('/admin/login');
+      return;
+    }
+    // Session confirmed — boot dashboard
+    loadStats();
+    loadVendors();
+    loadOrganisers();
+  })();
 </script>
 </body>
 </html>
