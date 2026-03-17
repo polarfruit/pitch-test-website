@@ -486,6 +486,77 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
   .ne-cal-inner { flex-direction:column; }
   .ne-cal-divider { height:1px; width:100%; }
 }
+
+/* ── ORGANISER NEW PANELS CSS ─────────────────────────────────────────────── */
+.org-rating-hero { display:flex; align-items:center; gap:32px; background:var(--char); border:1px solid #ffffff08; border-radius:16px; padding:24px 28px; margin-bottom:24px; }
+.org-rating-big { font-family:var(--fd); font-size:56px; font-weight:900; letter-spacing:-0.04em; color:var(--text-hi); line-height:1; }
+.org-rating-stars { font-size:22px; letter-spacing:2px; margin-bottom:4px; color:#C9840A; }
+.org-rating-count { font-size:13px; color:var(--text-lo); }
+.org-review-card { background:var(--char); border:1px solid #ffffff08; border-radius:14px; padding:18px 20px; margin-bottom:12px; }
+.org-review-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+.org-review-meta { display:flex; align-items:center; gap:10px; }
+.org-review-body { font-size:13px; color:var(--text-mid); line-height:1.6; margin-bottom:10px; }
+
+/* Vendor ratings panel */
+.vendor-rating-card { background:var(--char); border:1px solid #ffffff08; border-radius:14px; padding:18px 20px; margin-bottom:12px; display:flex; align-items:flex-start; gap:16px; }
+.vendor-rating-info { flex:1; }
+.vendor-rating-name { font-size:14px; font-weight:700; color:var(--text-hi); margin-bottom:4px; }
+.vendor-rating-event { font-size:12px; color:var(--text-lo); margin-bottom:10px; }
+.vendor-rating-scores { display:flex; gap:16px; flex-wrap:wrap; }
+.vendor-rating-score { font-size:12px; color:var(--text-mid); }
+.vendor-rating-score span { color:var(--text-hi); font-weight:700; }
+.btn-rate-vendor { background:var(--ember); color:#fff; border:none; font-family:var(--fb); font-size:12px; font-weight:700; padding:7px 14px; border-radius:9px; cursor:pointer; white-space:nowrap; transition:all 0.12s; }
+.btn-rate-vendor:hover { background:var(--ember-glow); }
+
+/* Org calendar */
+.org-cal-nav { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+.org-cal-month { font-family:var(--fd); font-size:20px; font-weight:900; letter-spacing:-0.02em; color:var(--text-hi); }
+.org-cal-nav-btn { background:#ffffff08; border:1px solid #ffffff10; color:var(--text-mid); width:34px; height:34px; border-radius:9px; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center; transition:all 0.12s; }
+.org-cal-nav-btn:hover { background:#ffffff14; color:var(--text-hi); }
+.org-cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; }
+.org-cal-day-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-lo); text-align:center; padding:8px 0; }
+.org-cal-day { min-height:72px; background:#ffffff04; border:1px solid #ffffff06; border-radius:10px; padding:6px; }
+.org-cal-day.today { border-color:var(--ember); }
+.org-cal-day.other-month { opacity:0.3; }
+.org-cal-day-num { font-size:11px; font-weight:600; color:var(--text-lo); margin-bottom:4px; }
+.org-cal-day.today .org-cal-day-num { color:var(--ember); }
+.org-cal-event { font-size:9px; font-weight:700; padding:2px 5px; border-radius:4px; margin-bottom:2px; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.org-cal-event.live { background:#2D8B5520; color:var(--herb); }
+.org-cal-event.deadline { background:#C9840A20; color:var(--gold); }
+.org-cal-event.archived { background:#ffffff10; color:var(--text-lo); }
+
+/* Analytics */
+.analytics-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:16px; margin-bottom:24px; }
+.analytics-event-card { background:var(--char); border:1px solid #ffffff08; border-radius:14px; padding:18px 20px; }
+.analytics-event-name { font-size:14px; font-weight:700; color:var(--text-hi); margin-bottom:4px; }
+.analytics-event-date { font-size:12px; color:var(--text-lo); margin-bottom:14px; }
+.analytics-bar-row { margin-bottom:10px; }
+.analytics-bar-label { font-size:11px; color:var(--text-lo); display:flex; justify-content:space-between; margin-bottom:4px; }
+.analytics-bar-track { height:6px; background:#ffffff08; border-radius:3px; overflow:hidden; }
+.analytics-bar-fill { height:100%; border-radius:3px; transition:width 0.5s; }
+
+/* Org settings expansion */
+.org-settings-input { width:100%; height:42px; padding:0 14px; background:#ffffff08; border:1px solid #ffffff10; border-radius:10px; font-family:var(--fb); font-size:14px; color:var(--text-hi); outline:none; transition:border-color 0.14s; }
+.org-settings-input:focus { border-color:#E8500A50; }
+.org-settings-label { font-size:12px; font-weight:600; color:var(--text-lo); margin-bottom:6px; display:block; text-transform:uppercase; letter-spacing:0.07em; }
+.org-settings-field { margin-bottom:14px; }
+.org-settings-save { background:var(--ember); color:#fff; border:none; font-family:var(--fb); font-size:13px; font-weight:700; padding:10px 22px; border-radius:10px; cursor:pointer; transition:all 0.14s; }
+.org-settings-save:hover { background:var(--ember-glow); }
+.org-save-msg { font-size:12px; color:var(--herb); margin-left:10px; display:none; }
+.org-save-err { font-size:12px; color:var(--terra); margin-left:10px; display:none; }
+
+/* Rate vendor modal */
+.rate-modal-overlay { position:fixed; inset:0; z-index:500; display:flex; align-items:center; justify-content:center; background:rgba(26,22,18,0.85); backdrop-filter:blur(10px); opacity:0; pointer-events:none; transition:opacity 0.2s; }
+.rate-modal-overlay.open { opacity:1; pointer-events:all; }
+.rate-modal-box { background:var(--char); border:1px solid #ffffff0d; border-radius:20px; padding:32px; width:480px; max-width:92vw; transform:translateY(12px); transition:transform 0.2s; }
+.rate-modal-overlay.open .rate-modal-box { transform:translateY(0); }
+.rate-modal-title { font-family:var(--fd); font-size:20px; font-weight:900; color:var(--text-hi); margin-bottom:4px; }
+.rate-modal-sub { font-size:13px; color:var(--text-lo); margin-bottom:20px; }
+.rate-field { margin-bottom:16px; }
+.rate-field-label { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-lo); margin-bottom:8px; }
+.rate-stars { display:flex; gap:6px; }
+.rate-star { font-size:24px; cursor:pointer; color:#ffffff20; transition:color 0.1s; }
+.rate-star.active { color:#C9840A; }
 </style>
 </head>
 <body>
@@ -507,7 +578,12 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
     <button class="nav-link active" onclick="showPanel('overview',this)"><span class="nav-icon">⬡</span>Overview</button>
     <button class="nav-link" onclick="showPanel('events',this)"><span class="nav-icon">📅</span>My Events</button>
     <button class="nav-link" onclick="showPanel('new-event',this)"><span class="nav-icon">＋</span>Post an Event</button>
-    <button class="nav-link" onclick="showPanel('messages',this)"><span class="nav-icon">💬</span>Messages<span class="nav-badge" id="org-msg-badge" style="display:none;">0</span></button>
+    <button class="nav-link" onclick="showPanel('inbox',this)"><span class="nav-icon">📥</span>Applications<span class="nav-badge" id="inbox-badge" style="display:none;">0</span></button>
+    <button class="nav-link" onclick="showPanel('calendar',this)"><span class="nav-icon">🗓</span>Calendar</button>
+    <button class="nav-link" onclick="showPanel('analytics',this)"><span class="nav-icon">📊</span>Analytics</button>
+    <button class="nav-link" onclick="showPanel('ratings',this)"><span class="nav-icon">⭐</span>Vendor Ratings</button>
+    <button class="nav-link" onclick="showPanel('reviews',this)"><span class="nav-icon">💬</span>My Reviews</button>
+    <button class="nav-link" onclick="showPanel('messages',this)"><span class="nav-icon">✉️</span>Messages<span class="nav-badge" id="org-msg-badge" style="display:none;">0</span></button>
     <button class="nav-link" onclick="showPanel('settings',this)"><span class="nav-icon">⚙️</span>Settings</button>
   </nav>
   <div class="sidebar-footer">
@@ -969,19 +1045,44 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
             <input class="form-input" id="settings-website" value="" style="width:240px;" placeholder="https://…" />
           </div>
           <div class="settings-row">
-            <div><div class="settings-row-label">Email address</div><div class="settings-row-desc">To change your email, contact support.</div></div>
-            <div class="email-display" id="settings-email">—</div>
+            <div><div class="settings-row-label">Email address</div><div class="settings-row-desc" id="settings-email">—</div></div>
           </div>
           <div style="display:flex;justify-content:flex-end;margin-top:12px;">
-            <button id="btn-save-settings" onclick="saveOrgSettings()" style="font-family:var(--fb);font-size:13px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:10px 22px;border-radius:10px;cursor:pointer;">Save changes</button>
+            <button id="btn-save-settings" onclick="saveOrgSettings()" style="font-family:var(--fb);font-size:13px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:10px 22px;border-radius:10px;cursor:pointer;">Save profile</button>
+            <span class="org-save-msg" id="profile-save-msg">Saved!</span>
           </div>
         </div>
+
+        <!-- Email & Password -->
+        <div class="settings-card">
+          <div class="settings-section-title">Email & Password</div>
+          <div class="org-settings-field">
+            <label class="org-settings-label">New email address</label>
+            <input class="org-settings-input" type="email" id="org-new-email" placeholder="Leave blank to keep current" />
+          </div>
+          <div class="org-settings-field">
+            <label class="org-settings-label">Current password</label>
+            <input class="org-settings-input" type="password" id="org-curr-pw" placeholder="Required to change password" />
+          </div>
+          <div class="org-settings-field">
+            <label class="org-settings-label">New password</label>
+            <input class="org-settings-input" type="password" id="org-new-pw" placeholder="Leave blank to keep current" />
+          </div>
+          <button class="org-settings-save" onclick="saveOrgAccount()">Save</button>
+          <span class="org-save-msg" id="org-account-save-msg">Saved!</span>
+          <span class="org-save-err" id="org-account-err-msg"></span>
+        </div>
+
+        <!-- Notifications -->
         <div class="settings-card">
           <div class="settings-section-title">Notifications</div>
-          <div class="settings-row"><div class="settings-row-left"><div class="settings-row-label">New applications</div><div class="settings-row-desc">Email me when a vendor applies to one of my events.</div></div><label class="toggle-switch"><input type="checkbox" checked /><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
-          <div class="settings-row"><div class="settings-row-left"><div class="settings-row-label">Event deadline reminders</div><div class="settings-row-desc">Email me 7 days before my application deadlines close.</div></div><label class="toggle-switch"><input type="checkbox" checked /><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
-          <div class="settings-row"><div class="settings-row-left"><div class="settings-row-label">Vendor messages</div><div class="settings-row-desc">Email me when a vendor sends a message.</div></div><label class="toggle-switch"><input type="checkbox" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+          <div class="settings-row"><div class="settings-row-left"><div class="settings-row-label">New applications</div><div class="settings-row-desc">Notify me when a vendor applies to one of my events.</div></div><label class="toggle-switch"><input type="checkbox" id="org-notif-apps" checked onchange="saveOrgNotifSettings()"/><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+          <div class="settings-row"><div class="settings-row-left"><div class="settings-row-label">Deadline reminders</div><div class="settings-row-desc">Notify me 7 days before my application deadlines close.</div></div><label class="toggle-switch"><input type="checkbox" id="org-notif-deadlines" checked onchange="saveOrgNotifSettings()"/><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+          <div class="settings-row"><div class="settings-row-left"><div class="settings-row-label">Vendor messages</div><div class="settings-row-desc">Notify me when a vendor sends a message.</div></div><label class="toggle-switch"><input type="checkbox" id="org-notif-messages" onchange="saveOrgNotifSettings()"/><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+          <div class="settings-row"><div class="settings-row-left"><div class="settings-row-label">Stall fee payments</div><div class="settings-row-desc">Notify me when a vendor pays their stall fee.</div></div><label class="toggle-switch"><input type="checkbox" id="org-notif-payments" checked onchange="saveOrgNotifSettings()"/><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
         </div>
+
+        <!-- Danger zone -->
         <div class="settings-card">
           <div class="settings-section-title" style="color:var(--terra);">Danger zone</div>
           <div style="background:#C0392B06;border:1px solid #C0392B22;border-radius:12px;padding:18px 20px;">
@@ -993,6 +1094,129 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
       </div>
     </div>
 
+    <!-- ── PANEL: APPLICATION INBOX ───────────────────────────────────────── -->
+    <div class="panel" id="panel-inbox">
+      <div style="max-width:800px;">
+        <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+          <input id="inbox-search" placeholder="Search vendor, event…" oninput="filterInbox()" style="flex:1;min-width:200px;height:38px;padding:0 14px;background:#ffffff08;border:1px solid #ffffff10;border-radius:10px;font-family:var(--fb);font-size:13px;color:var(--text-hi);outline:none;" />
+          <select id="inbox-status-filter" onchange="filterInbox()" style="height:38px;padding:0 12px;background:#ffffff08;border:1px solid #ffffff10;border-radius:10px;font-family:var(--fb);font-size:13px;color:var(--text-hi);outline:none;">
+            <option value="">All statuses</option>
+            <option value="pending">Pending</option>
+            <option value="approved">Approved</option>
+            <option value="rejected">Declined</option>
+            <option value="withdrawn">Withdrawn</option>
+          </select>
+        </div>
+        <div id="inbox-list"><div style="text-align:center;padding:40px;color:var(--text-lo);font-size:13px;">Loading…</div></div>
+      </div>
+    </div>
+
+    <!-- ── PANEL: CALENDAR ────────────────────────────────────────────────── -->
+    <div class="panel" id="panel-calendar">
+      <div style="max-width:860px;">
+        <div class="org-cal-nav">
+          <button class="org-cal-nav-btn" onclick="orgCalNav(-1)">‹</button>
+          <div class="org-cal-month" id="org-cal-month-label">—</div>
+          <button class="org-cal-nav-btn" onclick="orgCalNav(1)">›</button>
+        </div>
+        <div class="settings-card" style="padding:16px;">
+          <div class="org-cal-grid" id="org-cal-grid">
+            <div class="org-cal-day-label">Mon</div><div class="org-cal-day-label">Tue</div><div class="org-cal-day-label">Wed</div>
+            <div class="org-cal-day-label">Thu</div><div class="org-cal-day-label">Fri</div><div class="org-cal-day-label">Sat</div>
+            <div class="org-cal-day-label">Sun</div>
+          </div>
+          <div style="display:flex;gap:16px;margin-top:16px;flex-wrap:wrap;">
+            <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-lo);"><div style="width:10px;height:10px;border-radius:3px;background:var(--herb);"></div> Live event</div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-lo);"><div style="width:10px;height:10px;border-radius:3px;background:var(--gold);"></div> Deadline</div>
+            <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-lo);"><div style="width:10px;height:10px;border-radius:3px;background:#ffffff30;"></div> Past</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PANEL: ANALYTICS ───────────────────────────────────────────────── -->
+    <div class="panel" id="panel-analytics">
+      <div style="max-width:900px;">
+        <div style="margin-bottom:20px;">
+          <div style="font-size:20px;font-family:var(--fd);font-weight:900;letter-spacing:-0.02em;color:var(--text-hi);margin-bottom:4px;">Market Analytics</div>
+          <div style="font-size:13px;color:var(--text-lo);">Application and approval stats for each of your events.</div>
+        </div>
+        <div class="analytics-grid" id="analytics-grid"><div style="text-align:center;padding:40px;color:var(--text-lo);font-size:13px;">Loading…</div></div>
+      </div>
+    </div>
+
+    <!-- ── PANEL: VENDOR RATINGS ──────────────────────────────────────────── -->
+    <div class="panel" id="panel-ratings">
+      <div style="max-width:700px;">
+        <div style="margin-bottom:20px;">
+          <div style="font-size:20px;font-family:var(--fd);font-weight:900;letter-spacing:-0.02em;color:var(--text-hi);margin-bottom:4px;">Vendor Ratings</div>
+          <div style="font-size:13px;color:var(--text-lo);">Private ratings you've given to vendors who attended your markets. Vendors don't see exact scores but they contribute to their trust signal.</div>
+        </div>
+        <div id="ratings-list"><div style="text-align:center;padding:40px;color:var(--text-lo);font-size:13px;">Loading…</div></div>
+      </div>
+    </div>
+
+    <!-- ── PANEL: MY REVIEWS ──────────────────────────────────────────────── -->
+    <div class="panel" id="panel-reviews">
+      <div style="max-width:700px;">
+        <div class="org-rating-hero" id="org-rating-hero">
+          <div>
+            <div class="org-rating-big" id="org-rating-avg">—</div>
+            <div class="org-rating-stars" id="org-rating-stars-lg">☆☆☆☆☆</div>
+            <div class="org-rating-count" id="org-rating-count">No reviews yet</div>
+          </div>
+          <div style="flex:1;color:var(--text-lo);font-size:13px;line-height:1.7;">
+            Vendors who attend your markets can leave a public review. These appear on your public organiser profile. You can flag inappropriate reviews for admin review.
+          </div>
+        </div>
+        <div id="org-reviews-list"><div style="text-align:center;padding:40px;color:var(--text-lo);font-size:13px;">Loading…</div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- RATE VENDOR MODAL -->
+<div class="rate-modal-overlay" id="rate-vendor-modal" onclick="if(event.target===this)closeRateModal()">
+  <div class="rate-modal-box">
+    <div class="rate-modal-title">Rate this vendor</div>
+    <div class="rate-modal-sub" id="rate-modal-sub">How did they perform?</div>
+    <input type="hidden" id="rate-vendor-id" /><input type="hidden" id="rate-event-id" />
+    <div class="rate-field">
+      <div class="rate-field-label">Punctuality (showed up on time, set up properly)</div>
+      <div class="rate-stars" id="rate-punctual-stars">
+        <span class="rate-star" data-val="1" onclick="setRateStar('punctual',1)">★</span>
+        <span class="rate-star" data-val="2" onclick="setRateStar('punctual',2)">★</span>
+        <span class="rate-star" data-val="3" onclick="setRateStar('punctual',3)">★</span>
+        <span class="rate-star" data-val="4" onclick="setRateStar('punctual',4)">★</span>
+        <span class="rate-star" data-val="5" onclick="setRateStar('punctual',5)">★</span>
+      </div>
+    </div>
+    <div class="rate-field">
+      <div class="rate-field-label">Presentation (stall looked good, professional)</div>
+      <div class="rate-stars" id="rate-presentation-stars">
+        <span class="rate-star" data-val="1" onclick="setRateStar('presentation',1)">★</span>
+        <span class="rate-star" data-val="2" onclick="setRateStar('presentation',2)">★</span>
+        <span class="rate-star" data-val="3" onclick="setRateStar('presentation',3)">★</span>
+        <span class="rate-star" data-val="4" onclick="setRateStar('presentation',4)">★</span>
+        <span class="rate-star" data-val="5" onclick="setRateStar('presentation',5)">★</span>
+      </div>
+    </div>
+    <div class="rate-field">
+      <div class="rate-field-label">Would you invite them back?</div>
+      <div style="display:flex;gap:10px;margin-top:6px;">
+        <button id="rebook-yes" onclick="setRebook(true)" style="flex:1;padding:9px;border-radius:9px;border:1.5px solid #ffffff20;background:#ffffff08;color:var(--text-mid);font-family:var(--fb);font-size:13px;font-weight:700;cursor:pointer;">👍 Yes</button>
+        <button id="rebook-no" onclick="setRebook(false)" style="flex:1;padding:9px;border-radius:9px;border:1.5px solid #ffffff20;background:#ffffff08;color:var(--text-mid);font-family:var(--fb);font-size:13px;font-weight:700;cursor:pointer;">👎 No</button>
+      </div>
+    </div>
+    <div class="rate-field">
+      <div class="rate-field-label">Private notes (optional)</div>
+      <textarea id="rate-notes" style="width:100%;min-height:70px;padding:10px 14px;background:#ffffff08;border:1px solid #ffffff10;border-radius:10px;font-family:var(--fb);font-size:13px;color:var(--text-hi);outline:none;resize:vertical;" placeholder="Add a private note for your own reference…"></textarea>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:20px;">
+      <button onclick="closeRateModal()" style="flex:1;padding:12px;border-radius:10px;background:#ffffff08;border:1px solid #ffffff12;color:var(--text-mid);font-family:var(--fb);font-size:13px;font-weight:700;cursor:pointer;">Cancel</button>
+      <button onclick="submitVendorRating()" style="flex:1;padding:12px;border-radius:10px;background:var(--ember);border:none;color:#fff;font-family:var(--fb);font-size:13px;font-weight:700;cursor:pointer;">Save rating</button>
+    </div>
   </div>
 </div>
 
@@ -1011,12 +1235,17 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 </div>
 
 <script>
-const PANEL_TITLES = { overview:'Overview', events:'My Events', 'event-mgmt':'Event Management', 'new-event':'Post an Event', messages:'Messages', settings:'Settings' };
+const PANEL_TITLES = { overview:'Overview', events:'My Events', 'event-mgmt':'Event Management', 'new-event':'Post an Event', inbox:'Applications', calendar:'Calendar', analytics:'Analytics', ratings:'Vendor Ratings', reviews:'My Reviews', messages:'Messages', settings:'Settings' };
 
 const PANEL_PATHS_ORG = {
   overview:    '/dashboard/organiser',
   events:      '/dashboard/organiser/events',
   'new-event': '/dashboard/organiser/events/new',
+  inbox:       '/dashboard/organiser/applications',
+  calendar:    '/dashboard/organiser/calendar',
+  analytics:   '/dashboard/organiser/analytics',
+  ratings:     '/dashboard/organiser/ratings',
+  reviews:     '/dashboard/organiser/reviews',
   messages:    '/dashboard/organiser/messages',
   settings:    '/dashboard/organiser/settings',
 };
@@ -1044,6 +1273,12 @@ function showPanel(name, clickedEl, pushHistory = true) {
   if (pushHistory && PANEL_PATHS_ORG[name]) {
     history.pushState({ panel: name }, '', PANEL_PATHS_ORG[name]);
   }
+  if (name === 'inbox')    loadOrgInbox();
+  if (name === 'calendar') loadOrgCalendar();
+  if (name === 'analytics') loadOrgAnalytics();
+  if (name === 'ratings')  loadOrgRatings();
+  if (name === 'reviews')  loadOrgReviews();
+
   if (name === 'messages') {
     loadOrgAllThreads();
     startOrgMsgPoll();
@@ -1631,6 +1866,9 @@ async function initDashboard() {
 
   // Pre-populate notification dot
   loadNotifications();
+
+  // Init expanded settings panel
+  initOrgSettingsPanel(user, profile);
 }
 
 const EMOJI_POOL = ['🍽','🎪','🌟','🎉','🍴','🥘','🎊','🌮','🎶','🍻'];
@@ -2392,6 +2630,356 @@ document.addEventListener('click', function(e) {
     }
   }
 });
+
+// ── Org settings helpers ────────────────────────────────────────────────────
+function initOrgSettingsPanel(user, profile) {
+  const emailEl = document.getElementById('settings-email');
+  if (emailEl) emailEl.textContent = user.email || '—';
+
+  if (profile) {
+    const notifMap = { 'org-notif-apps': profile.notif_new_apps, 'org-notif-deadlines': profile.notif_deadlines, 'org-notif-messages': profile.notif_messages, 'org-notif-payments': profile.notif_payments };
+    for (const [id, val] of Object.entries(notifMap)) {
+      const el = document.getElementById(id);
+      if (el) el.checked = val !== undefined ? !!val : true;
+    }
+  }
+}
+
+async function saveOrgAccount() {
+  const email = (document.getElementById('org-new-email').value || '').trim();
+  const curr  = document.getElementById('org-curr-pw').value;
+  const next  = document.getElementById('org-new-pw').value;
+  const ok = document.getElementById('org-account-save-msg');
+  const err = document.getElementById('org-account-err-msg');
+  err.style.display = 'none'; ok.style.display = 'none';
+  const payload = {};
+  if (email) payload.email = email;
+  if (next) { payload.current_password = curr; payload.new_password = next; }
+  if (!email && !next) { err.textContent = 'No changes to save.'; err.style.display = 'inline'; return; }
+  const r = await pitchFetch('/api/organiser/settings/account', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+  if (r.ok) {
+    if (email) document.getElementById('settings-email').textContent = email;
+    document.getElementById('org-new-email').value = '';
+    document.getElementById('org-curr-pw').value = '';
+    document.getElementById('org-new-pw').value = '';
+    ok.style.display = 'inline'; setTimeout(() => ok.style.display = 'none', 3000);
+  } else {
+    const d = await r.json().catch(() => ({}));
+    err.textContent = d.error || 'Failed.'; err.style.display = 'inline';
+  }
+}
+
+async function saveOrgNotifSettings() {
+  await pitchFetch('/api/organiser/settings/notifications', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      notif_new_apps:  document.getElementById('org-notif-apps')?.checked     ?? true,
+      notif_deadlines: document.getElementById('org-notif-deadlines')?.checked ?? true,
+      notif_messages:  document.getElementById('org-notif-messages')?.checked  ?? false,
+      notif_payments:  document.getElementById('org-notif-payments')?.checked  ?? true,
+    }),
+  });
+}
+
+// ── Application inbox ───────────────────────────────────────────────────────
+let _inboxCache = [];
+
+async function loadOrgInbox() {
+  try {
+    const r = await pitchFetch('/api/organiser/applications');
+    if (!r.ok) return;
+    const { applications } = await r.json();
+    _inboxCache = applications;
+    renderInbox(applications);
+    const pending = applications.filter(a => a.status === 'pending').length;
+    const badge = document.getElementById('inbox-badge');
+    if (badge) { badge.textContent = pending; badge.style.display = pending > 0 ? '' : 'none'; }
+  } catch(e) { console.error('[inbox]', e); }
+}
+
+function filterInbox() {
+  const q = (document.getElementById('inbox-search').value || '').toLowerCase();
+  const status = document.getElementById('inbox-status-filter').value;
+  let arr = _inboxCache;
+  if (status) arr = arr.filter(a => a.status === status);
+  if (q) arr = arr.filter(a =>
+    (a.trading_name||'').toLowerCase().includes(q) ||
+    (a.event_name||'').toLowerCase().includes(q) ||
+    (a.email||'').toLowerCase().includes(q)
+  );
+  renderInbox(arr);
+}
+
+function renderInbox(arr) {
+  const el = document.getElementById('inbox-list');
+  if (!arr.length) { el.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-lo);font-size:13px;">No applications found.</div>`; return; }
+  const statusColor = { pending: 'var(--gold)', approved: 'var(--herb)', rejected: 'var(--terra)', withdrawn: 'var(--text-lo)' };
+  el.innerHTML = arr.map(a => `
+    <div style="background:var(--char);border:1px solid #ffffff08;border-radius:14px;padding:16px 20px;margin-bottom:10px;display:flex;align-items:center;gap:16px;">
+      <div style="flex:1;">
+        <div style="font-size:14px;font-weight:700;color:var(--text-hi);">${a.trading_name}</div>
+        <div style="font-size:12px;color:var(--text-lo);">${a.event_name} · Applied ${_orgFmtDate(a.created_at)}</div>
+      </div>
+      <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:6px;background:${statusColor[a.status]}20;color:${statusColor[a.status]};">${a.status.charAt(0).toUpperCase()+a.status.slice(1)}</span>
+      ${a.status === 'pending' ? `
+        <button onclick="approveInboxApp(${a.id})" style="background:#2D8B5520;border:1px solid #2D8B5540;color:var(--herb);font-family:var(--fb);font-size:12px;font-weight:700;padding:6px 12px;border-radius:8px;cursor:pointer;">Approve</button>
+        <button onclick="declineInboxApp(${a.id})" style="background:#C0392B14;border:1px solid #C0392B30;color:var(--terra);font-family:var(--fb);font-size:12px;font-weight:700;padding:6px 12px;border-radius:8px;cursor:pointer;">Decline</button>
+      ` : ''}
+    </div>`).join('');
+}
+
+async function approveInboxApp(id) {
+  const r = await pitchFetch(`/api/organiser/applications/${id}/status`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'approved' }) });
+  if (r.ok) loadOrgInbox();
+}
+async function declineInboxApp(id) {
+  const r = await pitchFetch(`/api/organiser/applications/${id}/status`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'rejected' }) });
+  if (r.ok) loadOrgInbox();
+}
+
+// ── Org Calendar ─────────────────────────────────────────────────────────────
+let _orgCalEvents = [], _orgCalYear, _orgCalMonth;
+
+async function loadOrgCalendar() {
+  if (_orgCalEvents.length === 0) {
+    try {
+      const r = await pitchFetch('/api/organiser/calendar');
+      if (r.ok) { const d = await r.json(); _orgCalEvents = d.events || []; }
+    } catch(e) { console.error('[org cal]', e); }
+  }
+  const now = new Date();
+  if (_orgCalYear === undefined) { _orgCalYear = now.getFullYear(); _orgCalMonth = now.getMonth(); }
+  renderOrgCalendar();
+}
+
+function orgCalNav(delta) {
+  _orgCalMonth += delta;
+  if (_orgCalMonth > 11) { _orgCalMonth = 0; _orgCalYear++; }
+  if (_orgCalMonth < 0)  { _orgCalMonth = 11; _orgCalYear--; }
+  renderOrgCalendar();
+}
+
+function renderOrgCalendar() {
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('org-cal-month-label').textContent = `${months[_orgCalMonth]} ${_orgCalYear}`;
+
+  const dayMap = {};
+  for (const ev of _orgCalEvents) {
+    if (ev.date_sort) {
+      const k = ev.date_sort.slice(0,10);
+      if (!dayMap[k]) dayMap[k] = [];
+      dayMap[k].push({ name: ev.name, type: ev.status === 'archived' ? 'archived' : 'live' });
+    }
+    if (ev.deadline) {
+      const k = ev.deadline.slice(0,10);
+      if (!dayMap[k]) dayMap[k] = [];
+      dayMap[k].push({ name: ev.name + ' (deadline)', type: 'deadline' });
+    }
+  }
+
+  const today = new Date().toISOString().slice(0,10);
+  const firstDay = new Date(_orgCalYear, _orgCalMonth, 1);
+  const lastDay  = new Date(_orgCalYear, _orgCalMonth + 1, 0);
+  let startOffset = firstDay.getDay() - 1;
+  if (startOffset < 0) startOffset = 6;
+
+  const grid = document.getElementById('org-cal-grid');
+  const labels = Array.from(grid.children).slice(0, 7);
+  grid.innerHTML = '';
+  labels.forEach(l => grid.appendChild(l));
+
+  for (let i = 0; i < startOffset; i++) {
+    const d = new Date(_orgCalYear, _orgCalMonth, -startOffset + i + 1);
+    grid.appendChild(Object.assign(document.createElement('div'), { className: 'org-cal-day other-month', innerHTML: `<div class="org-cal-day-num">${d.getDate()}</div>` }));
+  }
+
+  for (let d = 1; d <= lastDay.getDate(); d++) {
+    const iso = `${_orgCalYear}-${String(_orgCalMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const events = dayMap[iso] || [];
+    const isToday = iso === today;
+    const cell = document.createElement('div');
+    cell.className = 'org-cal-day' + (isToday ? ' today' : '');
+    cell.innerHTML = `<div class="org-cal-day-num">${d}</div>` +
+      events.slice(0,3).map(ev => `<span class="org-cal-event ${ev.type}" title="${ev.name}">${ev.name}</span>`).join('') +
+      (events.length > 3 ? `<span style="font-size:9px;color:var(--text-lo);">+${events.length-3}</span>` : '');
+    grid.appendChild(cell);
+  }
+
+  const total = startOffset + lastDay.getDate();
+  const rem = total % 7 === 0 ? 0 : 7 - (total % 7);
+  for (let i = 1; i <= rem; i++) {
+    grid.appendChild(Object.assign(document.createElement('div'), { className: 'org-cal-day other-month', innerHTML: `<div class="org-cal-day-num">${i}</div>` }));
+  }
+}
+
+// ── Analytics ────────────────────────────────────────────────────────────────
+async function loadOrgAnalytics() {
+  try {
+    const r = await pitchFetch('/api/organiser/analytics');
+    if (!r.ok) return;
+    const { stats } = await r.json();
+    const grid = document.getElementById('analytics-grid');
+    if (!stats.length) { grid.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-lo);font-size:13px;">No events yet. Post your first market to see analytics here.</div>`; return; }
+    grid.innerHTML = stats.map(s => {
+      const total = s.total_apps || 1;
+      const approvePct = Math.round((s.approved / total) * 100);
+      const pendingPct = Math.round((s.pending / total) * 100);
+      return `<div class="analytics-event-card">
+        <div class="analytics-event-name">${s.name}</div>
+        <div class="analytics-event-date">${_orgFmtDate(s.date_sort)} · ${s.category || '—'}</div>
+        <div class="analytics-bar-row">
+          <div class="analytics-bar-label"><span>Total applications</span><span>${s.total_apps}</span></div>
+        </div>
+        <div class="analytics-bar-row">
+          <div class="analytics-bar-label"><span>Approved</span><span>${s.approved}</span></div>
+          <div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:${approvePct}%;background:var(--herb);"></div></div>
+        </div>
+        <div class="analytics-bar-row">
+          <div class="analytics-bar-label"><span>Pending</span><span>${s.pending}</span></div>
+          <div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:${pendingPct}%;background:var(--gold);"></div></div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) { console.error('[analytics]', e); }
+}
+
+// ── Vendor ratings ────────────────────────────────────────────────────────────
+let _rateVendorPunctual = 3, _rateVendorPresentation = 3, _rateVendorRebook = true;
+
+async function loadOrgRatings() {
+  try {
+    const r = await pitchFetch('/api/organiser/vendor-ratings');
+    if (!r.ok) return;
+    const { ratings } = await r.json();
+    const el = document.getElementById('ratings-list');
+    if (!ratings.length) {
+      el.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-lo);font-size:13px;">No vendor ratings yet. After a market, rate the vendors who attended.</div>`;
+      return;
+    }
+    el.innerHTML = ratings.map(rt => `
+      <div class="vendor-rating-card">
+        <div class="vendor-rating-info">
+          <div class="vendor-rating-name">${rt.trading_name}</div>
+          <div class="vendor-rating-event">${rt.event_name || '—'} · ${_orgFmtDate(rt.created_at)}</div>
+          <div class="vendor-rating-scores">
+            <div class="vendor-rating-score">Punctuality: <span>${rt.punctual}/5</span></div>
+            <div class="vendor-rating-score">Presentation: <span>${rt.presentation}/5</span></div>
+            <div class="vendor-rating-score">Would rebook: <span>${rt.would_rebook ? 'Yes' : 'No'}</span></div>
+          </div>
+          ${rt.notes ? `<div style="font-size:12px;color:var(--text-lo);margin-top:8px;">${rt.notes}</div>` : ''}
+        </div>
+        <button class="btn-rate-vendor" onclick="openRateModal(${rt.vendor_user_id},'${rt.trading_name}',${rt.event_id||0})">Edit</button>
+      </div>`).join('');
+  } catch(e) { console.error('[ratings]', e); }
+}
+
+// Load approved vendor list for rating (from all org events)
+async function openRateNewModal() {
+  const r = await pitchFetch('/api/organiser/applications');
+  if (!r.ok) return;
+  const { applications } = await r.json();
+  const approved = applications.filter(a => a.status === 'approved');
+  if (!approved.length) { alert('No approved vendors found to rate.'); return; }
+  // Pick first for demo; in production would show a selector
+  const a = approved[0];
+  openRateModal(a.vendor_user_id, a.trading_name, a.event_id);
+}
+
+function openRateModal(vendorId, vendorName, eventId) {
+  document.getElementById('rate-vendor-id').value = vendorId;
+  document.getElementById('rate-event-id').value = eventId || '';
+  document.getElementById('rate-modal-sub').textContent = `Rating: ${vendorName}`;
+  _rateVendorPunctual = 3; _rateVendorPresentation = 3; _rateVendorRebook = true;
+  updateRateStars('punctual', 3);
+  updateRateStars('presentation', 3);
+  updateRebookBtns(true);
+  document.getElementById('rate-notes').value = '';
+  document.getElementById('rate-vendor-modal').classList.add('open');
+}
+
+function closeRateModal() { document.getElementById('rate-vendor-modal').classList.remove('open'); }
+
+function setRateStar(field, val) {
+  if (field === 'punctual') _rateVendorPunctual = val;
+  else _rateVendorPresentation = val;
+  updateRateStars(field, val);
+}
+
+function updateRateStars(field, val) {
+  document.querySelectorAll(`#rate-${field}-stars .rate-star`).forEach((s, i) => {
+    s.classList.toggle('active', i < val);
+  });
+}
+
+function setRebook(val) { _rateVendorRebook = val; updateRebookBtns(val); }
+function updateRebookBtns(val) {
+  document.getElementById('rebook-yes').style.background = val ? '#2D8B5520' : '#ffffff08';
+  document.getElementById('rebook-yes').style.color = val ? 'var(--herb)' : 'var(--text-mid)';
+  document.getElementById('rebook-no').style.background = !val ? '#C0392B14' : '#ffffff08';
+  document.getElementById('rebook-no').style.color = !val ? 'var(--terra)' : 'var(--text-mid)';
+}
+
+async function submitVendorRating() {
+  const vendorId = document.getElementById('rate-vendor-id').value;
+  const eventId  = document.getElementById('rate-event-id').value;
+  const notes    = document.getElementById('rate-notes').value;
+  const r = await pitchFetch('/api/organiser/vendor-ratings', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ vendor_user_id: vendorId, event_id: eventId || null, punctual: _rateVendorPunctual, presentation: _rateVendorPresentation, would_rebook: _rateVendorRebook, notes }),
+  });
+  if (r.ok) { closeRateModal(); loadOrgRatings(); }
+}
+
+// ── My reviews (received from vendors) ───────────────────────────────────────
+function _orgStarsHtml(r) { return '★'.repeat(Math.round(r||0)) + '☆'.repeat(5 - Math.round(r||0)); }
+
+async function loadOrgReviews() {
+  try {
+    const r = await pitchFetch('/api/organiser/reviews');
+    if (!r.ok) return;
+    const { reviews, avgRating, totalReviews } = await r.json();
+
+    document.getElementById('org-rating-avg').textContent = totalReviews ? avgRating.toFixed(1) : '—';
+    document.getElementById('org-rating-stars-lg').textContent = totalReviews ? _orgStarsHtml(avgRating) : '☆☆☆☆☆';
+    document.getElementById('org-rating-count').textContent = totalReviews ? `${totalReviews} review${totalReviews===1?'':'s'}` : 'No reviews yet';
+
+    const list = document.getElementById('org-reviews-list');
+    if (!reviews.length) {
+      list.innerHTML = `<div style="text-align:center;padding:48px;color:var(--text-lo);font-size:13px;">No reviews yet. Reviews appear after vendors attend your markets.</div>`;
+      return;
+    }
+    list.innerHTML = reviews.map(rv => `
+      <div class="org-review-card">
+        <div class="org-review-header">
+          <div class="org-review-meta">
+            <span style="color:#C9840A;font-size:14px;">${_orgStarsHtml(rv.rating)}</span>
+            <span style="font-size:13px;font-weight:600;color:var(--text-hi);">${rv.trading_name}</span>
+            ${rv.event_name ? `<span style="font-size:12px;color:var(--text-lo);">· ${rv.event_name}</span>` : ''}
+          </div>
+          <span style="font-size:12px;color:var(--text-lo);">${_orgFmtDate(rv.created_at)}</span>
+        </div>
+        ${rv.body ? `<div class="org-review-body">${rv.body}</div>` : ''}
+        ${rv.flagged
+          ? `<span style="font-size:11px;color:var(--gold);background:#C9840A14;padding:3px 9px;border-radius:6px;">⚑ Flagged for review</span>`
+          : `<button onclick="flagOrgReview(${rv.id},this)" style="background:none;border:1px solid #ffffff12;color:var(--text-lo);font-size:11px;font-weight:600;padding:4px 10px;border-radius:8px;cursor:pointer;">⚑ Flag as inappropriate</button>`
+        }
+      </div>`).join('');
+  } catch(e) { console.error('[org reviews]', e); }
+}
+
+async function flagOrgReview(id, btn) {
+  if (!confirm('Flag this review for admin to assess?')) return;
+  const r = await pitchFetch(`/api/organiser/reviews/${id}/flag`, { method: 'POST' });
+  if (r.ok) { btn.replaceWith(Object.assign(document.createElement('span'), { style: 'font-size:11px;color:var(--gold);background:#C9840A14;padding:3px 9px;border-radius:6px;', textContent: '⚑ Flagged for review' })); }
+}
+
+function _orgFmtDate(iso) {
+  if (!iso) return '—';
+  try { return new Date(iso).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' }); }
+  catch { return iso; }
+}
 </script>
 </body>
 </html>

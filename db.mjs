@@ -270,6 +270,86 @@ await _safeExec(`UPDATE events SET organiser_user_id = (SELECT o.user_id FROM or
 // Fallback: assign any available organiser to events still unlinked after name-match
 await _safeExec(`UPDATE events SET organiser_user_id = (SELECT user_id FROM organisers LIMIT 1) WHERE organiser_user_id IS NULL`);
 
+// ── Organiser feature migrations ──────────────────────────────────────────────
+await _safeExec(`ALTER TABLE organisers ADD COLUMN paused INTEGER NOT NULL DEFAULT 0`);
+await _safeExec(`ALTER TABLE organisers ADD COLUMN notif_new_apps INTEGER NOT NULL DEFAULT 1`);
+await _safeExec(`ALTER TABLE organisers ADD COLUMN notif_deadlines INTEGER NOT NULL DEFAULT 1`);
+await _safeExec(`ALTER TABLE organisers ADD COLUMN notif_messages INTEGER NOT NULL DEFAULT 0`);
+await _safeExec(`ALTER TABLE organisers ADD COLUMN notif_payments INTEGER NOT NULL DEFAULT 1`);
+await _safeExec(`ALTER TABLE events ADD COLUMN cancelled_at DATETIME`);
+await _safeExec(`ALTER TABLE events ADD COLUMN cancel_reason TEXT`);
+await _safeExec(`ALTER TABLE events ADD COLUMN is_recurring INTEGER NOT NULL DEFAULT 0`);
+await _safeExec(`ALTER TABLE events ADD COLUMN recur_frequency TEXT`);
+
+await _safeExec(`
+  CREATE TABLE IF NOT EXISTS organiser_vendor_ratings (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    organiser_user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    vendor_user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    event_id          INTEGER REFERENCES events(id) ON DELETE SET NULL,
+    punctual          INTEGER NOT NULL DEFAULT 3 CHECK(punctual BETWEEN 1 AND 5),
+    presentation      INTEGER NOT NULL DEFAULT 3 CHECK(presentation BETWEEN 1 AND 5),
+    would_rebook      INTEGER NOT NULL DEFAULT 1,
+    notes             TEXT,
+    created_at        DATETIME DEFAULT (datetime('now')),
+    UNIQUE(organiser_user_id, vendor_user_id, event_id)
+  )
+`);
+
+await _safeExec(`
+  CREATE TABLE IF NOT EXISTS organiser_reviews (
+    id                INTEGER PRIMARY KEY AUTOINCREMENT,
+    organiser_user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    vendor_user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    event_id          INTEGER REFERENCES events(id) ON DELETE SET NULL,
+    event_name        TEXT,
+    rating            INTEGER NOT NULL CHECK(rating BETWEEN 1 AND 5),
+    body              TEXT,
+    flagged           INTEGER NOT NULL DEFAULT 0,
+    created_at        DATETIME DEFAULT (datetime('now'))
+  )
+`);
+await _safeExec(`CREATE INDEX IF NOT EXISTS idx_org_reviews ON organiser_reviews(organiser_user_id)`);
+
+// ── Vendor feature migrations ─────────────────────────────────────────────────
+await _safeExec(`ALTER TABLE vendors ADD COLUMN paused INTEGER NOT NULL DEFAULT 0`);
+await _safeExec(`ALTER TABLE vendors ADD COLUMN notif_apps INTEGER NOT NULL DEFAULT 1`);
+await _safeExec(`ALTER TABLE vendors ADD COLUMN notif_docs INTEGER NOT NULL DEFAULT 1`);
+await _safeExec(`ALTER TABLE vendors ADD COLUMN notif_reviews INTEGER NOT NULL DEFAULT 0`);
+await _safeExec(`ALTER TABLE vendors ADD COLUMN notif_payments INTEGER NOT NULL DEFAULT 1`);
+
+await _safeExec(`
+  CREATE TABLE IF NOT EXISTS vendor_reviews (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    vendor_user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    event_id       INTEGER REFERENCES events(id) ON DELETE SET NULL,
+    event_name     TEXT,
+    reviewer_name  TEXT NOT NULL DEFAULT 'Market Visitor',
+    rating         INTEGER NOT NULL CHECK(rating BETWEEN 1 AND 5),
+    body           TEXT,
+    flagged        INTEGER NOT NULL DEFAULT 0,
+    created_at     DATETIME DEFAULT (datetime('now'))
+  )
+`);
+await _safeExec(`CREATE INDEX IF NOT EXISTS idx_reviews_vendor ON vendor_reviews(vendor_user_id)`);
+
+await _safeExec(`
+  CREATE TABLE IF NOT EXISTS stall_fees (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    vendor_user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    event_id       INTEGER REFERENCES events(id) ON DELETE SET NULL,
+    event_name     TEXT NOT NULL,
+    amount         REAL NOT NULL,
+    due_date       TEXT,
+    status         TEXT NOT NULL DEFAULT 'unpaid'
+                   CHECK(status IN ('unpaid','paid','refunded','cancelled')),
+    refund_status  TEXT,
+    paid_at        DATETIME,
+    created_at     DATETIME DEFAULT (datetime('now'))
+  )
+`);
+await _safeExec(`CREATE INDEX IF NOT EXISTS idx_fees_vendor ON stall_fees(vendor_user_id)`);
+
 // ── Messaging tables ─────────────────────────────────────────────────────────
 await _safeExec(`
   CREATE TABLE IF NOT EXISTS message_threads (
@@ -547,6 +627,50 @@ export const stmts = {
     JOIN message_threads mt ON mt.thread_key = m.thread_key
     WHERE (mt.vendor_user_id = ? OR mt.organiser_user_id = ?) AND m.sender_user_id != ? AND m.is_read = 0
   `),
+
+  // organiser ratings + reviews
+  getOrgVendorRatings:   prepare(`SELECT ovr.*,v.trading_name,e.name as event_name FROM organiser_vendor_ratings ovr JOIN vendors v ON v.user_id=ovr.vendor_user_id LEFT JOIN events e ON e.id=ovr.event_id WHERE ovr.organiser_user_id=? ORDER BY ovr.created_at DESC`),
+  upsertVendorRating:    prepare(`INSERT OR REPLACE INTO organiser_vendor_ratings (organiser_user_id,vendor_user_id,event_id,punctual,presentation,would_rebook,notes) VALUES (@organiser_user_id,@vendor_user_id,@event_id,@punctual,@presentation,@would_rebook,@notes)`),
+  getOrgReviews:         prepare(`SELECT or2.*,v.trading_name FROM organiser_reviews or2 JOIN vendors v ON v.user_id=or2.vendor_user_id WHERE or2.organiser_user_id=? ORDER BY or2.created_at DESC`),
+  getOrgReviewAvg:       prepare(`SELECT AVG(rating) as avg, COUNT(*) as total FROM organiser_reviews WHERE organiser_user_id=?`),
+  createOrgReview:       prepare(`INSERT INTO organiser_reviews (organiser_user_id,vendor_user_id,event_id,event_name,rating,body) VALUES (@organiser_user_id,@vendor_user_id,@event_id,@event_name,@rating,@body)`),
+  flagOrgReview:         prepare(`UPDATE organiser_reviews SET flagged=1 WHERE id=? AND organiser_user_id=?`),
+
+  // organiser calendar
+  getOrgCalendar:        prepare(`SELECT id,name,slug,date_sort,date_end,deadline,status,suburb,state,category FROM events WHERE organiser_user_id=? AND status != 'deleted' ORDER BY date_sort ASC`),
+
+  // organiser analytics (applications per event)
+  getOrgEventStats:      prepare(`SELECT e.id,e.name,e.date_sort,e.category, COUNT(ea.id) as total_apps, SUM(CASE WHEN ea.status='approved' THEN 1 ELSE 0 END) as approved, SUM(CASE WHEN ea.status='pending' THEN 1 ELSE 0 END) as pending, SUM(CASE WHEN ea.status='rejected' THEN 1 ELSE 0 END) as rejected FROM events e LEFT JOIN event_applications ea ON ea.event_id=e.id WHERE e.organiser_user_id=? GROUP BY e.id ORDER BY e.date_sort DESC`),
+
+  // organiser settings
+  updateOrganiserSettings: prepare(`UPDATE organisers SET notif_new_apps=@notif_new_apps,notif_deadlines=@notif_deadlines,notif_messages=@notif_messages,notif_payments=@notif_payments WHERE user_id=@user_id`),
+  pauseOrganiser:          prepare(`UPDATE organisers SET paused=? WHERE user_id=?`),
+
+  // cancel event
+  cancelEvent: prepare(`UPDATE events SET status='archived',cancelled_at=datetime('now'),cancel_reason=? WHERE id=?`),
+
+  // vendor reviews
+  getReviewsByVendor:  prepare(`SELECT * FROM vendor_reviews WHERE vendor_user_id=? ORDER BY created_at DESC`),
+  getReviewAvg:        prepare(`SELECT AVG(rating) as avg, COUNT(*) as total FROM vendor_reviews WHERE vendor_user_id=?`),
+  createReview:        prepare(`INSERT INTO vendor_reviews (vendor_user_id,event_id,event_name,reviewer_name,rating,body) VALUES (@vendor_user_id,@event_id,@event_name,@reviewer_name,@rating,@body)`),
+  flagReview:          prepare(`UPDATE vendor_reviews SET flagged=1 WHERE id=? AND vendor_user_id=?`),
+  getReviewById:       prepare(`SELECT * FROM vendor_reviews WHERE id=?`),
+
+  // stall fees
+  getStallFeesByVendor: prepare(`SELECT * FROM stall_fees WHERE vendor_user_id=? ORDER BY created_at DESC`),
+  createStallFee:       prepare(`INSERT INTO stall_fees (vendor_user_id,event_id,event_name,amount,due_date,status) VALUES (@vendor_user_id,@event_id,@event_name,@amount,@due_date,@status)`),
+  payStallFee:          prepare(`UPDATE stall_fees SET status='paid',paid_at=datetime('now') WHERE id=? AND vendor_user_id=?`),
+  getStallFeeById:      prepare(`SELECT * FROM stall_fees WHERE id=?`),
+
+  // vendor calendar (approved apps with future events)
+  getVendorCalendar:   prepare(`SELECT ea.*,e.name as event_name,e.date_sort,e.date_end,e.suburb,e.state,e.category FROM event_applications ea JOIN events e ON ea.event_id=e.id WHERE ea.vendor_user_id=? ORDER BY e.date_sort ASC`),
+
+  // vendor market history (approved apps for past events)
+  getVendorHistory:    prepare(`SELECT ea.*,e.name as event_name,e.date_sort,e.suburb,e.state,e.category,e.organiser_name FROM event_applications ea JOIN events e ON ea.event_id=e.id WHERE ea.vendor_user_id=? AND ea.status='approved' ORDER BY e.date_sort DESC`),
+
+  // vendor settings
+  updateVendorSettings: prepare(`UPDATE vendors SET notif_apps=@notif_apps,notif_docs=@notif_docs,notif_reviews=@notif_reviews,notif_payments=@notif_payments WHERE user_id=@user_id`),
+  pauseVendor:          prepare(`UPDATE vendors SET paused=? WHERE user_id=?`),
 
   // public vendors
   publicVendors: prepare(`

@@ -1127,6 +1127,90 @@ body::before {
   background: var(--ember); border-color: var(--ember);
   color: #fff;
 }
+
+/* ── REVIEWS ──────────────────────────────────────────────────────────────── */
+.rating-hero { display:flex; align-items:center; gap:32px; background:var(--char); border:1px solid #ffffff08; border-radius:16px; padding:24px 28px; margin-bottom:24px; }
+.rating-big { font-family:var(--fd); font-size:56px; font-weight:900; letter-spacing:-0.04em; color:var(--text-hi); line-height:1; }
+.rating-stars-lg { font-size:22px; letter-spacing:2px; margin-bottom:4px; }
+.rating-count { font-size:13px; color:var(--text-lo); }
+.review-card { background:var(--char); border:1px solid #ffffff08; border-radius:14px; padding:18px 20px; margin-bottom:12px; }
+.review-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+.review-meta { display:flex; align-items:center; gap:10px; }
+.review-stars { font-size:14px; letter-spacing:1px; }
+.review-name { font-size:13px; font-weight:600; color:var(--text-hi); }
+.review-event { font-size:12px; color:var(--text-lo); }
+.review-date { font-size:12px; color:var(--text-lo); }
+.review-body { font-size:13px; color:var(--text-mid); line-height:1.6; margin-bottom:12px; }
+.review-flagged { font-size:11px; color:var(--gold); background:#C9840A14; padding:3px 9px; border-radius:6px; display:inline-block; }
+.btn-flag { background:none; border:1px solid #ffffff12; color:var(--text-lo); font-size:11px; font-weight:600; padding:4px 10px; border-radius:8px; cursor:pointer; transition:all 0.14s; }
+.btn-flag:hover { border-color:#C9840A40; color:var(--gold); }
+
+/* ── STALL FEES / PAYMENTS ────────────────────────────────────────────────── */
+.fee-card { background:var(--char); border:1px solid #ffffff08; border-radius:14px; padding:18px 20px; margin-bottom:12px; display:flex; align-items:center; gap:16px; }
+.fee-card.overdue { border-color:#C0392B30; background:#C0392B06; }
+.fee-info { flex:1; }
+.fee-event { font-size:14px; font-weight:700; color:var(--text-hi); margin-bottom:3px; }
+.fee-due { font-size:12px; color:var(--text-lo); }
+.fee-amount { font-family:var(--fd); font-size:24px; font-weight:900; color:var(--text-hi); margin-right:16px; }
+.btn-pay { background:var(--ember); color:#fff; border:none; font-family:var(--fb); font-size:13px; font-weight:700; padding:9px 20px; border-radius:10px; cursor:pointer; transition:all 0.14s; white-space:nowrap; }
+.btn-pay:hover { background:var(--ember-glow); transform:translateY(-1px); }
+.payment-history-table { width:100%; border-collapse:collapse; font-size:13px; }
+.payment-history-table th { text-align:left; padding:10px 14px; color:var(--text-lo); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; border-bottom:1px solid #ffffff08; }
+.payment-history-table td { padding:13px 14px; border-bottom:1px solid #ffffff06; color:var(--text-hi); }
+.payment-history-table tr:last-child td { border-bottom:none; }
+.refund-chip { font-size:11px; font-weight:600; background:#2D8B5518; color:var(--herb); padding:2px 8px; border-radius:6px; }
+
+/* ── CALENDAR ─────────────────────────────────────────────────────────────── */
+.cal-nav { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+.cal-month { font-family:var(--fd); font-size:20px; font-weight:900; letter-spacing:-0.02em; color:var(--text-hi); }
+.cal-nav-btn { background:#ffffff08; border:1px solid #ffffff10; color:var(--text-mid); width:34px; height:34px; border-radius:9px; cursor:pointer; font-size:16px; transition:all 0.12s; display:flex; align-items:center; justify-content:center; }
+.cal-nav-btn:hover { background:#ffffff14; color:var(--text-hi); }
+.cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; }
+.cal-day-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-lo); text-align:center; padding:8px 0; }
+.cal-day { min-height:72px; background:#ffffff04; border:1px solid #ffffff06; border-radius:10px; padding:6px; cursor:default; }
+.cal-day.other-month { opacity:0.3; }
+.cal-day.today { border-color:var(--ember); }
+.cal-day-num { font-size:11px; font-weight:600; color:var(--text-lo); margin-bottom:4px; }
+.cal-day.today .cal-day-num { color:var(--ember); }
+.cal-event-dot { font-size:9px; font-weight:700; padding:2px 5px; border-radius:4px; margin-bottom:2px; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.cal-event-dot.pending { background:#C9840A20; color:var(--gold); }
+.cal-event-dot.approved { background:#2D8B5520; color:var(--herb); }
+.cal-event-dot.rejected { background:#C0392B20; color:var(--terra); }
+.cal-event-dot.withdrawn { background:#ffffff10; color:var(--text-lo); }
+.cal-legend { display:flex; gap:16px; margin-top:16px; flex-wrap:wrap; }
+.cal-legend-item { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-lo); }
+.cal-legend-dot { width:10px; height:10px; border-radius:3px; }
+
+/* ── MARKET HISTORY ───────────────────────────────────────────────────────── */
+.history-card { background:var(--char); border:1px solid #ffffff08; border-radius:14px; padding:18px 20px; margin-bottom:12px; }
+.history-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:10px; }
+.history-name { font-size:15px; font-weight:700; color:var(--text-hi); margin-bottom:3px; }
+.history-meta { font-size:12px; color:var(--text-lo); }
+.history-reviews { margin-top:10px; padding-top:10px; border-top:1px solid #ffffff06; }
+.history-review-item { font-size:12px; color:var(--text-mid); display:flex; gap:8px; align-items:flex-start; margin-bottom:6px; }
+
+/* ── SETTINGS (expanded) ──────────────────────────────────────────────────── */
+.settings-form-field { margin-bottom:14px; }
+.settings-input {
+  width:100%; height:42px; padding:0 14px;
+  background:#ffffff08; border:1px solid #ffffff10; border-radius:10px;
+  font-family:var(--fb); font-size:14px; color:var(--text-hi); outline:none;
+  transition:border-color 0.14s;
+}
+.settings-input:focus { border-color:#E8500A50; }
+.settings-label { font-size:12px; font-weight:600; color:var(--text-lo); margin-bottom:6px; display:block; text-transform:uppercase; letter-spacing:0.07em; }
+.settings-save-btn {
+  background:var(--ember); color:#fff; border:none; font-family:var(--fb); font-size:13px; font-weight:700;
+  padding:10px 22px; border-radius:10px; cursor:pointer; transition:all 0.14s;
+}
+.settings-save-btn:hover { background:var(--ember-glow); }
+.settings-save-msg { font-size:12px; color:var(--herb); margin-left:10px; display:none; }
+.pause-card { background:var(--char); border:1px solid #ffffff08; border-radius:14px; padding:20px 22px; }
+.pause-title { font-size:14px; font-weight:700; color:var(--text-hi); margin-bottom:6px; }
+.pause-desc { font-size:12px; color:var(--text-lo); margin-bottom:16px; line-height:1.6; }
+.btn-pause { font-family:var(--fb); font-size:13px; font-weight:700; padding:10px 22px; border-radius:10px; cursor:pointer; transition:all 0.14s; border:1.5px solid #ffffff20; color:var(--text-mid); background:#ffffff08; }
+.btn-pause.active { border-color:#C9840A50; color:var(--gold); background:#C9840A10; }
+.btn-pause:hover { background:#ffffff14; color:var(--text-hi); }
 </style>
 </head>
 <body>
@@ -1163,6 +1247,18 @@ body::before {
     <button class="nav-link" onclick="showPanel('documents', this)">
       <span class="nav-icon">📄</span> Documents
       <span class="nav-badge" style="background:var(--gold);">!</span>
+    </button>
+    <button class="nav-link" onclick="showPanel('reviews', this)">
+      <span class="nav-icon">⭐</span> Reviews
+    </button>
+    <button class="nav-link" onclick="showPanel('payments', this)">
+      <span class="nav-icon">💳</span> Payments
+    </button>
+    <button class="nav-link" onclick="showPanel('calendar', this)">
+      <span class="nav-icon">📅</span> Calendar
+    </button>
+    <button class="nav-link" onclick="showPanel('history', this)">
+      <span class="nav-icon">🗓</span> Market History
     </button>
     <button class="nav-link" onclick="showPanel('earnings', this)">
       <span class="nav-icon">💰</span> Earnings
@@ -1683,61 +1779,173 @@ body::before {
       </div>
     </div>
 
+    <!-- ── PANEL: REVIEWS ───────────────────────────────────────────────── -->
+    <div class="panel" id="panel-reviews">
+      <div style="max-width:700px;">
+        <div class="rating-hero" id="rating-hero">
+          <div>
+            <div class="rating-big" id="rating-avg">—</div>
+            <div class="rating-stars-lg" id="rating-stars-lg">☆☆☆☆☆</div>
+            <div class="rating-count" id="rating-count">No reviews yet</div>
+          </div>
+          <div style="flex:1;color:var(--text-lo);font-size:13px;line-height:1.7;">
+            Consumers who visited a market where you traded can leave a review of your stall. Your average rating appears on your public profile. You can flag any review you believe is inappropriate for admin review.
+          </div>
+        </div>
+        <div id="reviews-list"><div style="text-align:center;padding:40px;color:var(--text-lo);font-size:13px;">Loading reviews…</div></div>
+      </div>
+    </div>
+
+    <!-- ── PANEL: PAYMENTS ───────────────────────────────────────────────── -->
+    <div class="panel" id="panel-payments">
+      <div style="max-width:700px;">
+
+        <!-- Outstanding fees -->
+        <div class="section-head" style="margin-bottom:16px;">
+          <div class="section-title">Outstanding Stall Fees</div>
+          <div class="section-sub">Fees due for upcoming approved markets.</div>
+        </div>
+        <div id="outstanding-fees"><div style="text-align:center;padding:30px;color:var(--text-lo);font-size:13px;">Loading…</div></div>
+
+        <!-- Payment history -->
+        <div class="section-head" style="margin:28px 0 16px;">
+          <div class="section-title">Payment History</div>
+          <div class="section-sub">All stall fees paid through Pitch.</div>
+        </div>
+        <div class="card" style="overflow-x:auto;" id="payment-history-wrap">
+          <div style="text-align:center;padding:30px;color:var(--text-lo);font-size:13px;">Loading…</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── PANEL: CALENDAR ───────────────────────────────────────────────── -->
+    <div class="panel" id="panel-calendar">
+      <div style="max-width:860px;">
+        <div class="cal-nav">
+          <button class="cal-nav-btn" onclick="calNav(-1)">‹</button>
+          <div class="cal-month" id="cal-month-label">—</div>
+          <button class="cal-nav-btn" onclick="calNav(1)">›</button>
+        </div>
+        <div class="card" style="padding:16px;">
+          <div class="cal-grid" id="cal-grid">
+            <div class="cal-day-label">Mon</div><div class="cal-day-label">Tue</div><div class="cal-day-label">Wed</div>
+            <div class="cal-day-label">Thu</div><div class="cal-day-label">Fri</div><div class="cal-day-label">Sat</div>
+            <div class="cal-day-label">Sun</div>
+          </div>
+          <div class="cal-legend">
+            <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--gold);"></div> Pending</div>
+            <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--herb);"></div> Approved</div>
+            <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--terra);"></div> Declined</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PANEL: MARKET HISTORY ─────────────────────────────────────────── -->
+    <div class="panel" id="panel-history">
+      <div style="max-width:700px;">
+        <div class="section-head" style="margin-bottom:20px;">
+          <div class="section-title">Market History</div>
+          <div class="section-sub">Every market you've been approved for through Pitch. Organisers can see this on your public profile.</div>
+        </div>
+        <div id="history-list"><div style="text-align:center;padding:40px;color:var(--text-lo);font-size:13px;">Loading…</div></div>
+      </div>
+    </div>
+
     <!-- ── PANEL: SETTINGS ──────────────────────────────────────────────── -->
     <div class="panel" id="panel-settings">
       <div style="max-width:600px;">
 
-        <!-- Account -->
+        <!-- Email -->
         <div class="settings-section">
-          <div class="settings-section-title">Account</div>
+          <div class="settings-section-title">Email address</div>
           <div class="card">
-            <div class="settings-row">
-              <div class="settings-row-left">
-                <div class="settings-row-label">Email address</div>
-                <div class="settings-row-desc">To change your email, contact support.</div>
-              </div>
+            <div class="settings-form-field">
+              <label class="settings-label">Current email</label>
               <div class="email-display" id="settings-email">—</div>
             </div>
+            <div class="settings-form-field">
+              <label class="settings-label">New email address</label>
+              <input class="settings-input" type="email" id="settings-new-email" placeholder="Leave blank to keep current" />
+            </div>
+            <button class="settings-save-btn" onclick="saveAccountSettings()">Save email</button>
+            <span class="settings-save-msg" id="email-save-msg">Saved!</span>
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div class="settings-section">
+          <div class="settings-section-title">Password</div>
+          <div class="card">
+            <div class="settings-form-field">
+              <label class="settings-label">Current password</label>
+              <input class="settings-input" type="password" id="settings-curr-pw" placeholder="Enter current password" />
+            </div>
+            <div class="settings-form-field">
+              <label class="settings-label">New password</label>
+              <input class="settings-input" type="password" id="settings-new-pw" placeholder="Enter new password (min 8 chars)" />
+            </div>
+            <button class="settings-save-btn" onclick="savePassword()">Change password</button>
+            <span class="settings-save-msg" id="pw-save-msg">Password updated!</span>
+            <span class="settings-save-msg" id="pw-err-msg" style="color:var(--terra)"></span>
           </div>
         </div>
 
         <!-- Notifications -->
         <div class="settings-section">
-          <div class="settings-section-title">Notifications</div>
+          <div class="settings-section-title">Notification preferences</div>
           <div class="card">
             <div class="settings-row">
               <div class="settings-row-left">
                 <div class="settings-row-label">Application status changes</div>
-                <div class="settings-row-desc">Email me when an application is approved, rejected, or put on hold.</div>
+                <div class="settings-row-desc">Notify me when an application is approved, rejected, or put on hold.</div>
               </div>
               <label class="toggle-switch">
-                <input type="checkbox" checked />
-                <div class="toggle-track"></div>
-                <div class="toggle-thumb"></div>
+                <input type="checkbox" id="notif-apps" checked onchange="saveNotifSettings()" />
+                <div class="toggle-track"></div><div class="toggle-thumb"></div>
               </label>
             </div>
             <div class="settings-row">
               <div class="settings-row-left">
                 <div class="settings-row-label">Certificate expiry reminders</div>
-                <div class="settings-row-desc">Email me 60 days before a document expires.</div>
+                <div class="settings-row-desc">Remind me 60 days before a document expires.</div>
               </div>
               <label class="toggle-switch">
-                <input type="checkbox" checked />
-                <div class="toggle-track"></div>
-                <div class="toggle-thumb"></div>
+                <input type="checkbox" id="notif-docs" checked onchange="saveNotifSettings()" />
+                <div class="toggle-track"></div><div class="toggle-thumb"></div>
               </label>
             </div>
             <div class="settings-row">
               <div class="settings-row-left">
                 <div class="settings-row-label">New reviews</div>
-                <div class="settings-row-desc">Email me when an organiser leaves a review.</div>
+                <div class="settings-row-desc">Notify me when a consumer leaves a review of my stall.</div>
               </div>
               <label class="toggle-switch">
-                <input type="checkbox" />
-                <div class="toggle-track"></div>
-                <div class="toggle-thumb"></div>
+                <input type="checkbox" id="notif-reviews" onchange="saveNotifSettings()" />
+                <div class="toggle-track"></div><div class="toggle-thumb"></div>
               </label>
             </div>
+            <div class="settings-row">
+              <div class="settings-row-left">
+                <div class="settings-row-label">Stall fee due reminders</div>
+                <div class="settings-row-desc">Notify me when a stall fee payment is due.</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="notif-payments" checked onchange="saveNotifSettings()" />
+                <div class="toggle-track"></div><div class="toggle-thumb"></div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pause profile -->
+        <div class="settings-section">
+          <div class="settings-section-title">Pause profile</div>
+          <div class="pause-card">
+            <div class="pause-title">Temporarily hide from search</div>
+            <div class="pause-desc">When paused, your profile won't appear in vendor search results and you won't receive new event recommendations. Your existing applications and data are preserved. Unpause at any time to go back to active.</div>
+            <button class="btn-pause" id="btn-pause-profile" onclick="togglePause()">Pause my profile</button>
           </div>
         </div>
 
@@ -1812,6 +2020,10 @@ const PANEL_TITLES = {
   applications:   'My Applications',
   profile:        'My Profile',
   documents:      'Documents',
+  reviews:        'Reviews & Ratings',
+  payments:       'Stall Fees & Payments',
+  calendar:       'Calendar',
+  history:        'Market History',
   earnings:       'Earnings',
   messages:       'Messages',
   settings:       'Settings',
@@ -1823,6 +2035,10 @@ const PANEL_PATHS = {
   applications: '/dashboard/vendor/applications',
   profile:      '/dashboard/vendor/profile',
   documents:    '/dashboard/vendor/documents',
+  reviews:      '/dashboard/vendor/reviews',
+  payments:     '/dashboard/vendor/payments',
+  calendar:     '/dashboard/vendor/calendar',
+  history:      '/dashboard/vendor/history',
   earnings:     '/dashboard/vendor/earnings',
   messages:     '/dashboard/vendor/messages',
   settings:     '/dashboard/vendor/settings',
@@ -1866,6 +2082,10 @@ function showPanel(name, clickedEl, pushHistory = true) {
 
   if (name === 'browse') loadBrowseEvents();
   if (name === 'applications') loadApplications();
+  if (name === 'reviews')  loadReviews();
+  if (name === 'payments') loadStallFees();
+  if (name === 'calendar') loadCalendar();
+  if (name === 'history')  loadMarketHistory();
 
   if (name === 'messages') {
     loadAllThreads();
@@ -2255,6 +2475,15 @@ function checkDeleteConfirm(input) {
   const btn = document.getElementById('btn-confirm-delete');
   btn.classList.toggle('enabled', input.value === 'DELETE');
 }
+document.getElementById('btn-confirm-delete').addEventListener('click', async function() {
+  if (!this.classList.contains('enabled')) return;
+  this.disabled = true; this.textContent = 'Deleting…';
+  try {
+    const r = await pitchFetch('/api/vendor/account', { method: 'DELETE' });
+    if (r.ok) { window.location.href = '/'; }
+    else { this.disabled = false; this.textContent = 'Delete account'; alert('Delete failed. Please try again.'); }
+  } catch(e) { this.disabled = false; this.textContent = 'Delete account'; }
+});
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDeleteModal(); });
 
 /* ── Init ─────────────────────────────────────────────────────────────────── */
@@ -2329,9 +2558,8 @@ async function initDashboard() {
     sessionStorage.setItem('pitch_vendor_' + user.id, JSON.stringify(cacheData));
   } catch (e) {}
 
-  // Settings email
-  const emailEl = document.getElementById('settings-email');
-  if (emailEl) emailEl.textContent = user.email || '—';
+  // Settings panel
+  initSettingsPanel(user, profile);
 
   // Delete modal name
   const deleteNameEl = document.getElementById('delete-modal-name');
@@ -3427,6 +3655,352 @@ function updateBrowseDayLabel() {
     lbl.textContent = FULL[d];
   } else {
     lbl.textContent = [..._browseDaySelected].sort().map(function(d){ return DAYS[d]; }).join(', ');
+  }
+}
+
+// ── Shared helpers ──────────────────────────────────────────────────────────
+function _fmtDate(iso) {
+  if (!iso) return '—';
+  try { return new Date(iso).toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' }); }
+  catch { return iso; }
+}
+
+// ── REVIEWS & RATINGS ───────────────────────────────────────────────────────
+function starsHtml(rating, size) {
+  const s = size || 14;
+  const full = Math.round(rating || 0);
+  return '★'.repeat(full) + '☆'.repeat(5 - full);
+}
+
+async function loadReviews() {
+  try {
+    const r = await pitchFetch('/api/vendor/reviews');
+    if (!r.ok) return;
+    const { reviews, avgRating, totalReviews } = await r.json();
+
+    document.getElementById('rating-avg').textContent = totalReviews ? avgRating.toFixed(1) : '—';
+    document.getElementById('rating-stars-lg').textContent = totalReviews ? starsHtml(avgRating) : '☆☆☆☆☆';
+    document.getElementById('rating-count').textContent = totalReviews
+      ? `${totalReviews} review${totalReviews === 1 ? '' : 's'}`
+      : 'No reviews yet';
+
+    const list = document.getElementById('reviews-list');
+    if (!reviews.length) {
+      list.innerHTML = `<div style="text-align:center;padding:48px 20px;color:var(--text-lo);font-size:13px;">No reviews yet. Reviews appear here after consumers visit a market where you trade.</div>`;
+      return;
+    }
+    list.innerHTML = reviews.map(rv => `
+      <div class="review-card">
+        <div class="review-header">
+          <div class="review-meta">
+            <span class="review-stars" style="color:#C9840A;">${starsHtml(rv.rating)}</span>
+            <span class="review-name">${rv.reviewer_name || 'Anonymous'}</span>
+            ${rv.event_name ? `<span class="review-event">· ${rv.event_name}</span>` : ''}
+          </div>
+          <span class="review-date">${_fmtDate(rv.created_at)}</span>
+        </div>
+        ${rv.body ? `<div class="review-body">${rv.body}</div>` : ''}
+        ${rv.flagged
+          ? `<span class="review-flagged">⚑ Flagged for review</span>`
+          : `<button class="btn-flag" onclick="flagReview(${rv.id}, this)">⚑ Flag as inappropriate</button>`
+        }
+      </div>
+    `).join('');
+  } catch(e) { console.error('[reviews]', e); }
+}
+
+async function flagReview(id, btn) {
+  if (!confirm('Flag this review for admin to assess? They will determine if it should be removed.')) return;
+  const r = await pitchFetch(`/api/vendor/reviews/${id}/flag`, { method: 'POST' });
+  if (r.ok) { btn.replaceWith(Object.assign(document.createElement('span'), { className: 'review-flagged', textContent: '⚑ Flagged for review' })); }
+}
+
+// ── STALL FEES & PAYMENTS ───────────────────────────────────────────────────
+function _feeStatusBadge(status, refund) {
+  const map = {
+    paid: `<span class="pay-badge paid">✓ Paid</span>`,
+    unpaid: `<span class="pay-badge pending">Due</span>`,
+    refunded: `<span class="pay-badge" style="background:#2D8B5518;color:var(--herb);">Refunded</span>`,
+    cancelled: `<span class="pay-badge" style="background:#ffffff10;color:var(--text-lo);">Cancelled</span>`,
+  };
+  let html = map[status] || `<span class="pay-badge">${status}</span>`;
+  if (refund) html += ` <span class="refund-chip">${refund}</span>`;
+  return html;
+}
+
+async function loadStallFees() {
+  try {
+    const r = await pitchFetch('/api/vendor/stall-fees');
+    if (!r.ok) return;
+    const { fees } = await r.json();
+
+    const outstanding = fees.filter(f => f.status === 'unpaid');
+    const history = fees.filter(f => f.status !== 'unpaid');
+
+    const outEl = document.getElementById('outstanding-fees');
+    if (!outstanding.length) {
+      outEl.innerHTML = `<div class="card" style="text-align:center;padding:24px;color:var(--text-lo);font-size:13px;">No outstanding fees. You're all paid up! 🎉</div>`;
+    } else {
+      outEl.innerHTML = outstanding.map(f => {
+        const overdue = f.due_date && new Date(f.due_date) < new Date();
+        return `<div class="fee-card${overdue ? ' overdue' : ''}">
+          <div class="fee-info">
+            <div class="fee-event">${f.event_name}</div>
+            <div class="fee-due">${f.due_date ? `Due ${_fmtDate(f.due_date)}${overdue ? ' — <span style="color:var(--terra);font-weight:700;">Overdue</span>' : ''}` : 'No due date set'}</div>
+          </div>
+          <div class="fee-amount">$${Number(f.amount).toFixed(2)}</div>
+          <button class="btn-pay" onclick="payFee(${f.id}, this)">Pay now</button>
+        </div>`;
+      }).join('');
+    }
+
+    const histEl = document.getElementById('payment-history-wrap');
+    if (!history.length) {
+      histEl.innerHTML = `<div style="text-align:center;padding:24px;color:var(--text-lo);font-size:13px;">No payment history yet.</div>`;
+    } else {
+      histEl.innerHTML = `<table class="payment-history-table">
+        <thead><tr><th>Market</th><th>Amount</th><th>Date</th><th>Status</th></tr></thead>
+        <tbody>${history.map(f => `
+          <tr>
+            <td>${f.event_name}</td>
+            <td><strong>$${Number(f.amount).toFixed(2)}</strong></td>
+            <td style="color:var(--text-lo);">${f.paid_at ? _fmtDate(f.paid_at) : _fmtDate(f.created_at)}</td>
+            <td>${_feeStatusBadge(f.status, f.refund_status)}</td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
+    }
+  } catch(e) { console.error('[stall fees]', e); }
+}
+
+async function payFee(id, btn) {
+  btn.disabled = true; btn.textContent = 'Processing…';
+  try {
+    const r = await pitchFetch(`/api/vendor/stall-fees/${id}/pay`, { method: 'POST' });
+    if (r.ok) {
+      loadStallFees();
+    } else {
+      btn.disabled = false; btn.textContent = 'Pay now';
+      alert('Payment failed. Please try again.');
+    }
+  } catch(e) { btn.disabled = false; btn.textContent = 'Pay now'; }
+}
+
+// ── CALENDAR ────────────────────────────────────────────────────────────────
+let _calApps = [];
+let _calYear, _calMonth;
+
+async function loadCalendar() {
+  if (_calApps.length === 0) {
+    try {
+      const r = await pitchFetch('/api/vendor/calendar');
+      if (r.ok) { const d = await r.json(); _calApps = d.applications || []; }
+    } catch(e) { console.error('[calendar]', e); }
+  }
+  const now = new Date();
+  if (_calYear === undefined) { _calYear = now.getFullYear(); _calMonth = now.getMonth(); }
+  renderCalendar();
+}
+
+function calNav(delta) {
+  _calMonth += delta;
+  if (_calMonth > 11) { _calMonth = 0; _calYear++; }
+  if (_calMonth < 0)  { _calMonth = 11; _calYear--; }
+  renderCalendar();
+}
+
+function renderCalendar() {
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('cal-month-label').textContent = `${months[_calMonth]} ${_calYear}`;
+
+  // Build a map: date string → array of {name, status}
+  const dayMap = {};
+  for (const app of _calApps) {
+    if (!app.date_sort) continue;
+    const key = app.date_sort.slice(0, 10);
+    if (!dayMap[key]) dayMap[key] = [];
+    dayMap[key].push({ name: app.event_name, status: app.status });
+    // Also mark date_end range
+    if (app.date_end && app.date_end !== app.date_sort) {
+      let d = new Date(app.date_sort + 'T00:00:00');
+      const end = new Date(app.date_end + 'T00:00:00');
+      d.setDate(d.getDate() + 1);
+      while (d <= end) {
+        const k = d.toISOString().slice(0,10);
+        if (!dayMap[k]) dayMap[k] = [];
+        dayMap[k].push({ name: app.event_name, status: app.status });
+        d.setDate(d.getDate() + 1);
+      }
+    }
+  }
+
+  const today = new Date().toISOString().slice(0,10);
+  const firstDay = new Date(_calYear, _calMonth, 1);
+  const lastDay  = new Date(_calYear, _calMonth + 1, 0);
+
+  // Monday-first: Sunday = 6 instead of 0
+  let startOffset = firstDay.getDay() - 1;
+  if (startOffset < 0) startOffset = 6;
+
+  const grid = document.getElementById('cal-grid');
+  // Keep day labels (first 7 children), replace rest
+  const labels = Array.from(grid.children).slice(0, 7);
+  grid.innerHTML = '';
+  labels.forEach(l => grid.appendChild(l));
+
+  // Pad with previous month days
+  for (let i = 0; i < startOffset; i++) {
+    const d = new Date(_calYear, _calMonth, -startOffset + i + 1);
+    grid.appendChild(Object.assign(document.createElement('div'), { className: 'cal-day other-month', innerHTML: `<div class="cal-day-num">${d.getDate()}</div>` }));
+  }
+
+  for (let d = 1; d <= lastDay.getDate(); d++) {
+    const iso = `${_calYear}-${String(_calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const events = dayMap[iso] || [];
+    const isToday = iso === today;
+    const cell = document.createElement('div');
+    cell.className = 'cal-day' + (isToday ? ' today' : '');
+    cell.innerHTML = `<div class="cal-day-num">${d}</div>` +
+      events.slice(0,3).map(ev => `<span class="cal-event-dot ${ev.status}" title="${ev.name}">${ev.name}</span>`).join('') +
+      (events.length > 3 ? `<span style="font-size:9px;color:var(--text-lo);">+${events.length-3} more</span>` : '');
+    grid.appendChild(cell);
+  }
+
+  // Fill remaining cells
+  const total = startOffset + lastDay.getDate();
+  const remaining = total % 7 === 0 ? 0 : 7 - (total % 7);
+  for (let i = 1; i <= remaining; i++) {
+    grid.appendChild(Object.assign(document.createElement('div'), { className: 'cal-day other-month', innerHTML: `<div class="cal-day-num">${i}</div>` }));
+  }
+}
+
+// ── MARKET HISTORY ──────────────────────────────────────────────────────────
+async function loadMarketHistory() {
+  try {
+    const r = await pitchFetch('/api/vendor/history');
+    if (!r.ok) return;
+    const { history } = await r.json();
+
+    const list = document.getElementById('history-list');
+    if (!history.length) {
+      list.innerHTML = `<div style="text-align:center;padding:48px 20px;color:var(--text-lo);font-size:13px;">No market history yet. Once you've been approved and attended a market, it will appear here.</div>`;
+      return;
+    }
+
+    const now = new Date();
+    list.innerHTML = history.map(h => {
+      const eventDate = h.date_sort ? new Date(h.date_sort + 'T00:00:00') : null;
+      const isPast = eventDate && eventDate < now;
+      const reviewsHtml = h.reviews && h.reviews.length
+        ? `<div class="history-reviews">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-lo);margin-bottom:8px;">Reviews received</div>
+            ${h.reviews.map(rv => `
+              <div class="history-review-item">
+                <span style="color:#C9840A;">${starsHtml(rv.rating)}</span>
+                <span>${rv.body || '—'}</span>
+              </div>`).join('')}
+           </div>`
+        : '';
+      return `<div class="history-card">
+        <div class="history-header">
+          <div>
+            <div class="history-name">${h.event_name}</div>
+            <div class="history-meta">${h.date_sort ? _fmtDate(h.date_sort) : '—'} · ${[h.suburb, h.state].filter(Boolean).join(', ')} · ${h.category || '—'}</div>
+          </div>
+          <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:6px;${isPast ? 'background:#2D8B5518;color:var(--herb);' : 'background:#C9840A18;color:var(--gold);'}">${isPast ? 'Attended' : 'Upcoming'}</span>
+        </div>
+        ${reviewsHtml}
+      </div>`;
+    }).join('');
+  } catch(e) { console.error('[history]', e); }
+}
+
+// ── SETTINGS ────────────────────────────────────────────────────────────────
+function initSettingsPanel(user, vendor) {
+  const emailEl = document.getElementById('settings-email');
+  if (emailEl) emailEl.textContent = user.email || '—';
+
+  if (vendor) {
+    const toggleMap = { 'notif-apps': vendor.notif_apps, 'notif-docs': vendor.notif_docs, 'notif-reviews': vendor.notif_reviews, 'notif-payments': vendor.notif_payments };
+    for (const [id, val] of Object.entries(toggleMap)) {
+      const el = document.getElementById(id);
+      if (el) el.checked = !!val;
+    }
+    const pauseBtn = document.getElementById('btn-pause-profile');
+    if (pauseBtn) {
+      pauseBtn.textContent = vendor.paused ? 'Unpause my profile' : 'Pause my profile';
+      pauseBtn.classList.toggle('active', !!vendor.paused);
+    }
+  }
+}
+
+async function saveAccountSettings() {
+  const email = (document.getElementById('settings-new-email').value || '').trim();
+  if (!email) { alert('Enter a new email address.'); return; }
+  const r = await pitchFetch('/api/vendor/settings/account', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  });
+  const msg = document.getElementById('email-save-msg');
+  if (r.ok) {
+    document.getElementById('settings-email').textContent = email;
+    document.getElementById('settings-new-email').value = '';
+    msg.style.display = 'inline'; msg.textContent = 'Email updated!';
+    setTimeout(() => msg.style.display = 'none', 3000);
+  } else {
+    const d = await r.json().catch(() => ({}));
+    alert(d.error || 'Failed to update email.');
+  }
+}
+
+async function savePassword() {
+  const curr = document.getElementById('settings-curr-pw').value;
+  const next = document.getElementById('settings-new-pw').value;
+  const errEl = document.getElementById('pw-err-msg');
+  const okEl  = document.getElementById('pw-save-msg');
+  errEl.style.display = 'none';
+  if (!curr || !next) { errEl.textContent = 'Both fields required.'; errEl.style.display = 'inline'; return; }
+  if (next.length < 8) { errEl.textContent = 'New password must be at least 8 characters.'; errEl.style.display = 'inline'; return; }
+  const r = await pitchFetch('/api/vendor/settings/account', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ current_password: curr, new_password: next }),
+  });
+  if (r.ok) {
+    document.getElementById('settings-curr-pw').value = '';
+    document.getElementById('settings-new-pw').value = '';
+    okEl.style.display = 'inline'; setTimeout(() => okEl.style.display = 'none', 3000);
+  } else {
+    const d = await r.json().catch(() => ({}));
+    errEl.textContent = d.error || 'Failed to update password.'; errEl.style.display = 'inline';
+  }
+}
+
+async function saveNotifSettings() {
+  await pitchFetch('/api/vendor/settings/notifications', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      notif_apps:     document.getElementById('notif-apps')?.checked     ?? true,
+      notif_docs:     document.getElementById('notif-docs')?.checked     ?? true,
+      notif_reviews:  document.getElementById('notif-reviews')?.checked  ?? false,
+      notif_payments: document.getElementById('notif-payments')?.checked ?? true,
+    }),
+  });
+}
+
+async function togglePause() {
+  const btn = document.getElementById('btn-pause-profile');
+  const isPaused = btn.classList.contains('active');
+  const r = await pitchFetch('/api/vendor/settings/pause', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ paused: !isPaused }),
+  });
+  if (r.ok) {
+    btn.classList.toggle('active', !isPaused);
+    btn.textContent = !isPaused ? 'Unpause my profile' : 'Pause my profile';
   }
 }
 </script>
