@@ -659,9 +659,9 @@
 
     <div class="card">
       <div class="filter-bar">
-        <input class="filter-input" type="text" placeholder="Search by name, email, ABN…" />
+        <input class="filter-input" type="text" id="vendor-search" placeholder="Search by name, email, ABN…" oninput="filterVendorsTable()" />
         <button class="filter-chip active" onclick="setVFilter(this,'all')">All</button>
-        <button class="filter-chip" onclick="setVFilter(this,'pending')" style="display:flex;align-items:center;gap:5px;">Pending <span style="background:#C9840A;color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700;">12</span></button>
+        <button class="filter-chip" onclick="setVFilter(this,'pending')">Pending</button>
         <button class="filter-chip" onclick="setVFilter(this,'active')">Active</button>
         <button class="filter-chip" onclick="setVFilter(this,'suspended')">Suspended</button>
         <button class="filter-chip" onclick="setVFilter(this,'banned')">Banned</button>
@@ -680,131 +680,7 @@
           </tr>
         </thead>
         <tbody id="vendor-tbody">
-          <!-- Row 1 — expandable -->
-          <tr class="expand-trigger" onclick="toggleExpand('v1')">
-            <td><strong>Smoky Joe's BBQ</strong><br><span style="font-size:12px;color:#4A3C30;">joe@smokyjoes.com.au</span></td>
-            <td><span style="font-size:12px;">51 824 753 556</span></td>
-            <td><span class="badge badge-green">✓ All docs</span></td>
-            <td><span class="badge badge-amber">Pro</span></td>
-            <td><span style="font-size:12px;">Mar 2, 2026</span></td>
-            <td><span class="badge badge-green">Active</span></td>
-            <td><div class="act-group">
-              <button class="act-btn act-suspend" onclick="event.stopPropagation()">Suspend</button>
-              <button class="act-btn act-view" onclick="event.stopPropagation()">View</button>
-            </div></td>
-          </tr>
-          <tr class="expand-row" id="expand-v1">
-            <td colspan="7">
-              <div class="expand-content">
-                <div style="font-size:13px;color:#A89880;margin-bottom:10px;">🍖 <strong style="color:#FDF4E7;">Smoky Joe's BBQ</strong> — Australian BBQ, SA-based, Food Truck setup. 4.9★ average. 18 events attended.</div>
-                <div class="doc-pills">
-                  <div class="doc-pill">✓ Food Safety Certificate — expires Jun 2027</div>
-                  <div class="doc-pill">✓ Public Liability Insurance — expires Nov 2026</div>
-                  <div class="doc-pill">✓ Council Trading Permit — expires Dec 2026</div>
-                </div>
-              </div>
-            </td>
-          </tr>
-
-          <tr class="expand-trigger" onclick="toggleExpand('v2')">
-            <td><strong>Taco Loco SA</strong><br><span style="font-size:12px;color:#4A3C30;">maria@tacoloco.com</span></td>
-            <td><span style="font-size:12px;">72 148 932 017</span></td>
-            <td><span class="badge badge-green">✓ All docs</span></td>
-            <td><span class="badge badge-grey">Free</span></td>
-            <td><span style="font-size:12px;">Mar 7, 2026</span></td>
-            <td><span class="badge badge-amber">Pending</span></td>
-            <td><div class="act-group">
-              <button class="act-btn act-approve" onclick="event.stopPropagation();approveRow(this)">Approve</button>
-              <button class="act-btn act-reject" onclick="event.stopPropagation();openRejectModal('Taco Loco SA')">Reject</button>
-            </div></td>
-          </tr>
-          <tr class="expand-row" id="expand-v2">
-            <td colspan="7">
-              <div class="expand-content">
-                <div style="font-size:13px;color:#A89880;margin-bottom:10px;">🌮 <strong style="color:#FDF4E7;">Taco Loco SA</strong> — Mexican cuisine, SA-based, Pop-up Stall. New account, no event history yet.</div>
-                <div class="doc-pills">
-                  <div class="doc-pill">✓ Food Safety Certificate — expires Feb 2028</div>
-                  <div class="doc-pill">✓ Public Liability Insurance — expires Aug 2027</div>
-                  <div class="doc-pill missing">✗ Council Trading Permit — not uploaded</div>
-                </div>
-              </div>
-            </td>
-          </tr>
-
-          <tr class="expand-trigger" onclick="toggleExpand('v3')">
-            <td><strong>Noodle Republic</strong><br><span style="font-size:12px;color:#4A3C30;">james@noodlerepublic.au</span></td>
-            <td><span style="font-size:12px;">39 502 817 643</span></td>
-            <td><span class="badge badge-amber">PLI pending</span></td>
-            <td><span class="badge badge-grey">Free</span></td>
-            <td><span style="font-size:12px;">Mar 7, 2026</span></td>
-            <td><span class="badge badge-amber">Pending</span></td>
-            <td><div class="act-group">
-              <button class="act-btn act-suspend" onclick="event.stopPropagation()">Request docs</button>
-              <button class="act-btn act-reject" onclick="event.stopPropagation();openRejectModal('Noodle Republic')">Reject</button>
-            </div></td>
-          </tr>
-          <tr class="expand-row" id="expand-v3">
-            <td colspan="7">
-              <div class="expand-content">
-                <div style="font-size:13px;color:#A89880;margin-bottom:10px;">🍜 <strong style="color:#FDF4E7;">Noodle Republic</strong> — Asian Fusion, SA-based, Food Truck. PLI uploaded but expired.</div>
-                <div class="doc-pills">
-                  <div class="doc-pill">✓ Food Safety Certificate — expires Mar 2027</div>
-                  <div class="doc-pill missing">✗ Public Liability Insurance — expired Jan 2026</div>
-                  <div class="doc-pill missing">✗ Council Trading Permit — not uploaded</div>
-                </div>
-              </div>
-            </td>
-          </tr>
-
-          <tr class="expand-trigger" onclick="toggleExpand('v4')">
-            <td><strong>Street Bao Co.</strong><br><span style="font-size:12px;color:#4A3C30;">hello@streetbao.com.au</span></td>
-            <td><span style="font-size:12px;">18 746 291 053</span></td>
-            <td><span class="badge badge-green">✓ All docs</span></td>
-            <td><span class="badge badge-amber">Pro</span></td>
-            <td><span style="font-size:12px;">Jan 14, 2026</span></td>
-            <td><span class="badge badge-red">Suspended</span></td>
-            <td><div class="act-group">
-              <button class="act-btn act-approve" onclick="event.stopPropagation();approveRow(this)">Reinstate</button>
-              <button class="act-btn act-reject" onclick="event.stopPropagation();openRejectModal('Street Bao Co.')">Ban</button>
-            </div></td>
-          </tr>
-          <tr class="expand-row" id="expand-v4">
-            <td colspan="7">
-              <div class="expand-content">
-                <div style="font-size:13px;color:#A89880;margin-bottom:10px;">🥟 <strong style="color:#FDF4E7;">Street Bao Co.</strong> — Suspended following Report #1048. Alleged misleading application claims. Under review.</div>
-                <div class="doc-pills">
-                  <div class="doc-pill">✓ Food Safety Certificate — expires May 2027</div>
-                  <div class="doc-pill">✓ Public Liability Insurance — expires Oct 2026</div>
-                  <div class="doc-pill">✓ Council Trading Permit — expires Dec 2026</div>
-                </div>
-              </div>
-            </td>
-          </tr>
-
-          <tr class="expand-trigger" onclick="toggleExpand('v5')">
-            <td><strong>Gelato Paradiso</strong><br><span style="font-size:12px;color:#4A3C30;">info@gelatoparadiso.com</span></td>
-            <td><span style="font-size:12px;">55 190 374 822</span></td>
-            <td><span class="badge badge-green">✓ All docs</span></td>
-            <td><span class="badge badge-amber">Pro</span></td>
-            <td><span style="font-size:12px;">Nov 8, 2025</span></td>
-            <td><span class="badge badge-green">Active</span></td>
-            <td><div class="act-group">
-              <button class="act-btn act-feature" onclick="event.stopPropagation()">Feature</button>
-              <button class="act-btn act-view" onclick="event.stopPropagation()">View</button>
-            </div></td>
-          </tr>
-          <tr class="expand-row" id="expand-v5">
-            <td colspan="7">
-              <div class="expand-content">
-                <div style="font-size:13px;color:#A89880;margin-bottom:10px;">🍦 <strong style="color:#FDF4E7;">Gelato Paradiso</strong> — Desserts & gelato, SA-based, Cart setup. 4.8★. 31 events attended. Verified vendor.</div>
-                <div class="doc-pills">
-                  <div class="doc-pill">✓ Food Safety Certificate — expires Sep 2027</div>
-                  <div class="doc-pill">✓ Public Liability Insurance — expires Jul 2026</div>
-                  <div class="doc-pill">✓ Council Trading Permit — expires Dec 2026</div>
-                </div>
-              </div>
-            </td>
-          </tr>
+          <tr><td colspan="7" style="text-align:center;color:#6B5A4A;padding:24px;">Loading…</td></tr>
         </tbody>
       </table>
       <div class="card-footer" style="display:flex;align-items:center;justify-content:space-between;">
@@ -826,11 +702,11 @@
 
     <div class="card">
       <div class="filter-bar">
-        <input class="filter-input" type="text" placeholder="Search by org name, email, ABN…" />
-        <button class="filter-chip active">All</button>
-        <button class="filter-chip" style="display:flex;align-items:center;gap:5px;">Pending <span style="background:#C9840A;color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700;">4</span></button>
-        <button class="filter-chip">Verified</button>
-        <button class="filter-chip">Suspended</button>
+        <input class="filter-input" type="text" id="org-search" placeholder="Search by org name, email, ABN…" oninput="filterOrgsTable()" />
+        <button class="filter-chip active" onclick="setOrgFilter(this,'all')">All</button>
+        <button class="filter-chip" onclick="setOrgFilter(this,'pending')">Pending</button>
+        <button class="filter-chip" onclick="setOrgFilter(this,'active')">Active</button>
+        <button class="filter-chip" onclick="setOrgFilter(this,'suspended')">Suspended</button>
         <span class="filter-count" id="organiser-count">Loading…</span>
       </div>
       <table class="data-table">
@@ -846,66 +722,7 @@
           </tr>
         </thead>
         <tbody id="organiser-tbody">
-          <tr>
-            <td><strong>Adelaide City Council Events</strong><br><span style="font-size:12px;color:#4A3C30;">sarah@adelaidecitycouncil.sa.gov.au</span></td>
-            <td><span style="font-size:12px;">72 091 514 020</span></td>
-            <td><strong>34</strong></td>
-            <td><strong>1,248</strong></td>
-            <td><span style="font-size:12px;">Sep 3, 2024</span></td>
-            <td><span class="badge badge-blue">Verified</span></td>
-            <td><div class="act-group">
-              <button class="act-btn act-feature">Feature</button>
-              <button class="act-btn act-view">View</button>
-            </div></td>
-          </tr>
-          <tr>
-            <td><strong>Port Adelaide Events Co.</strong><br><span style="font-size:12px;color:#4A3C30;">tom@portadelaide.events</span></td>
-            <td><span style="font-size:12px;">38 471 920 614</span></td>
-            <td><strong>0</strong></td>
-            <td><strong>—</strong></td>
-            <td><span style="font-size:12px;">Mar 7, 2026</span></td>
-            <td><span class="badge badge-amber">Pending</span></td>
-            <td><div class="act-group">
-              <button class="act-btn act-approve" onclick="approveRow(this)">Approve</button>
-              <button class="act-btn act-reject" onclick="openRejectModal('Port Adelaide Events Co.')">Reject</button>
-            </div></td>
-          </tr>
-          <tr>
-            <td><strong>Glenelg Market Collective</strong><br><span style="font-size:12px;color:#4A3C30;">hello@glenelgmarket.com</span></td>
-            <td><span style="font-size:12px;">91 625 038 742</span></td>
-            <td><strong>11</strong></td>
-            <td><strong>312</strong></td>
-            <td><span style="font-size:12px;">Feb 1, 2026</span></td>
-            <td><span class="badge badge-green">Active</span></td>
-            <td><div class="act-group">
-              <button class="act-btn act-suspend">Suspend</button>
-              <button class="act-btn act-view">View</button>
-            </div></td>
-          </tr>
-          <tr>
-            <td><strong>Barossa Valley Food Fest</strong><br><span style="font-size:12px;color:#4A3C30;">events@barossafoodfest.com.au</span></td>
-            <td><span style="font-size:12px;">63 819 504 217</span></td>
-            <td><strong>8</strong></td>
-            <td><strong>589</strong></td>
-            <td><span style="font-size:12px;">Oct 22, 2025</span></td>
-            <td><span class="badge badge-blue">Verified</span></td>
-            <td><div class="act-group">
-              <button class="act-btn act-feature">Feature</button>
-              <button class="act-btn act-view">View</button>
-            </div></td>
-          </tr>
-          <tr>
-            <td><strong>Norwood Community Markets</strong><br><span style="font-size:12px;color:#4A3C30;">admin@norwoodmarkets.org.au</span></td>
-            <td><span style="font-size:12px;">45 208 613 971</span></td>
-            <td><strong>0</strong></td>
-            <td><strong>—</strong></td>
-            <td><span style="font-size:12px;">Mar 6, 2026</span></td>
-            <td><span class="badge badge-amber">Pending</span></td>
-            <td><div class="act-group">
-              <button class="act-btn act-approve" onclick="approveRow(this)">Approve</button>
-              <button class="act-btn act-reject" onclick="openRejectModal('Norwood Community Markets')">Reject</button>
-            </div></td>
-          </tr>
+          <tr><td colspan="7" style="text-align:center;color:#6B5A4A;padding:24px;">Loading…</td></tr>
         </tbody>
       </table>
       <div class="card-footer" style="display:flex;align-items:center;justify-content:space-between;">
@@ -927,12 +744,11 @@
 
     <div class="card">
       <div class="filter-bar">
-        <input class="filter-input" type="text" placeholder="Search events…" />
-        <button class="filter-chip active">All</button>
-        <button class="filter-chip">Published</button>
-        <button class="filter-chip">Draft</button>
-        <button class="filter-chip">Featured</button>
-        <button class="filter-chip">Flagged</button>
+        <input class="filter-input" type="text" id="events-search" placeholder="Search events, organiser…" oninput="filterEventsTable()" />
+        <button class="filter-chip active" onclick="setEventsFilter(this,'all')">All</button>
+        <button class="filter-chip" onclick="setEventsFilter(this,'published')">Published</button>
+        <button class="filter-chip" onclick="setEventsFilter(this,'draft')">Draft</button>
+        <button class="filter-chip" onclick="setEventsFilter(this,'archived')">Archived</button>
         <span class="filter-count" id="events-count">Loading…</span>
       </div>
       <table class="data-table">
@@ -947,101 +763,7 @@
           </tr>
         </thead>
         <tbody id="events-tbody">
-          <tr>
-            <td><strong>Rundle Mall Night Eats</strong><br><span style="font-size:12px;color:#4A3C30;">Rundle Mall, Adelaide CBD</span></td>
-            <td><span style="font-size:13px;">Adelaide City Council</span></td>
-            <td><span style="font-size:12px;">Mar 22, 2026</span></td>
-            <td><strong>28</strong></td>
-            <td>
-              <div style="display:flex;align-items:center;gap:8px;">
-                <div style="flex:1;height:6px;background:#2A2018;border-radius:3px;min-width:60px;">
-                  <div style="width:82%;height:100%;background:#2D8B55;border-radius:3px;"></div>
-                </div>
-                <span style="font-size:12px;color:#2D8B55;font-weight:600;">82%</span>
-              </div>
-            </td>
-            <td><span class="badge badge-green">Published</span></td>
-            <td><div class="act-group">
-              <button class="act-btn act-feature">★ Feature</button>
-              <button class="act-btn act-view">View</button>
-            </div></td>
-          </tr>
-          <tr>
-            <td><strong>Barossa Valley Harvest Fest</strong><br><span style="font-size:12px;color:#4A3C30;">Tanunda Oval, Barossa Valley</span></td>
-            <td><span style="font-size:13px;">Barossa Valley Food Fest</span></td>
-            <td><span style="font-size:12px;">Apr 5, 2026</span></td>
-            <td><strong>50</strong></td>
-            <td>
-              <div style="display:flex;align-items:center;gap:8px;">
-                <div style="flex:1;height:6px;background:#2A2018;border-radius:3px;min-width:60px;">
-                  <div style="width:40%;height:100%;background:#C9840A;border-radius:3px;"></div>
-                </div>
-                <span style="font-size:12px;color:#C9840A;font-weight:600;">40%</span>
-              </div>
-            </td>
-            <td><span class="badge badge-green">Published</span></td>
-            <td><div class="act-group">
-              <button class="act-btn act-feature">★ Feature</button>
-              <button class="act-btn act-view">View</button>
-            </div></td>
-          </tr>
-          <tr>
-            <td><strong>Glenelg Summer Sundowner</strong><br><span style="font-size:12px;color:#4A3C30;">Moseley Square, Glenelg</span></td>
-            <td><span style="font-size:13px;">Glenelg Market Collective</span></td>
-            <td><span style="font-size:12px;">Mar 29, 2026</span></td>
-            <td><strong>18</strong></td>
-            <td>
-              <div style="display:flex;align-items:center;gap:8px;">
-                <div style="flex:1;height:6px;background:#2A2018;border-radius:3px;min-width:60px;">
-                  <div style="width:100%;height:100%;background:#2D8B55;border-radius:3px;"></div>
-                </div>
-                <span style="font-size:12px;color:#2D8B55;font-weight:600;">100%</span>
-              </div>
-            </td>
-            <td><span class="badge badge-blue">Featured</span></td>
-            <td><div class="act-group">
-              <button class="act-btn act-suspend">Unfeature</button>
-              <button class="act-btn act-view">View</button>
-            </div></td>
-          </tr>
-          <tr>
-            <td><strong>Hackney Night Market</strong><br><span style="font-size:12px;color:#4A3C30;">Linear Park, Hackney</span></td>
-            <td><span style="font-size:13px;">Unknown Organiser</span></td>
-            <td><span style="font-size:12px;">Apr 12, 2026</span></td>
-            <td><strong>12</strong></td>
-            <td>
-              <div style="display:flex;align-items:center;gap:8px;">
-                <div style="flex:1;height:6px;background:#2A2018;border-radius:3px;min-width:60px;">
-                  <div style="width:8%;height:100%;background:#C0392B;border-radius:3px;"></div>
-                </div>
-                <span style="font-size:12px;color:#C0392B;font-weight:600;">8%</span>
-              </div>
-            </td>
-            <td><span class="badge badge-red">Flagged</span></td>
-            <td><div class="act-group">
-              <button class="act-btn act-reject">Hide</button>
-              <button class="act-btn act-view">Review</button>
-            </div></td>
-          </tr>
-          <tr>
-            <td><strong>Norwood Foodie Weekend</strong><br><span style="font-size:12px;color:#4A3C30;">The Parade, Norwood</span></td>
-            <td><span style="font-size:13px;">Norwood Community Markets</span></td>
-            <td><span style="font-size:12px;">May 3, 2026</span></td>
-            <td><strong>24</strong></td>
-            <td>
-              <div style="display:flex;align-items:center;gap:8px;">
-                <div style="flex:1;height:6px;background:#2A2018;border-radius:3px;min-width:60px;">
-                  <div style="width:0%;height:100%;background:#6B5A4A;border-radius:3px;"></div>
-                </div>
-                <span style="font-size:12px;color:#6B5A4A;font-weight:600;">Draft</span>
-              </div>
-            </td>
-            <td><span class="badge badge-grey">Draft</span></td>
-            <td><div class="act-group">
-              <button class="act-btn act-view">Preview</button>
-              <button class="act-btn act-reject">Delete</button>
-            </div></td>
-          </tr>
+          <tr><td colspan="6" style="text-align:center;color:#6B5A4A;padding:24px;">Loading…</td></tr>
         </tbody>
       </table>
       <div class="card-footer" style="display:flex;align-items:center;justify-content:space-between;">
@@ -1828,11 +1550,6 @@
     }
   }
 
-  function setVFilter(btn, filter) {
-    document.querySelectorAll('#panel-vendors .filter-chip').forEach(c => c.classList.remove('active'));
-    btn.classList.add('active');
-  }
-
   /* ── Modals ── */
   function openRejectModal(name) {
     document.getElementById('rejectModalTitle').textContent = 'Reject — ' + name;
@@ -1890,96 +1607,148 @@
     } catch(e) { console.warn('Stats load failed', e); }
   }
 
-  async function loadVendors(statusFilter) {
-    const url = statusFilter ? `/api/admin/vendors?status=${statusFilter}` : '/api/admin/vendors';
+  let _vendorsCache = [];
+  let _vendorStatusFilter = null;
+
+  async function loadVendors() {
     try {
-      const r = await fetch(url);
+      const r = await fetch('/api/admin/vendors');
       const { vendors } = await r.json();
-      const tbody = document.getElementById('vendor-tbody');
-      const count = document.getElementById('vendor-count');
-      const showing = document.getElementById('vendor-showing');
-
-      if (!vendors.length) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#6B5A4A;padding:24px;">No vendors found.</td></tr>`;
-        count.textContent = '0 vendors';
-        showing.textContent = 'No results';
-        return;
-      }
-
-      count.textContent = `${vendors.length} vendor${vendors.length===1?'':'s'}`;
-      showing.textContent = `Showing ${vendors.length} result${vendors.length===1?'':'s'}`;
-
-      tbody.innerHTML = vendors.map(v => {
-        const name = `${v.first_name} ${v.last_name}`;
-        const actions = v.status === 'pending'
-          ? `<div class="act-group">
-               <button class="act-btn act-approve" onclick="setUserStatus(${v.user_id},'active',this)">Approve</button>
-               <button class="act-btn act-reject" onclick="openRejectModal('${v.trading_name}')">Reject</button>
-             </div>`
-          : v.status === 'suspended'
-          ? `<div class="act-group">
-               <button class="act-btn act-approve" onclick="setUserStatus(${v.user_id},'active',this)">Reinstate</button>
-               <button class="act-btn act-reject" onclick="setUserStatus(${v.user_id},'banned',this)">Ban</button>
-             </div>`
-          : `<div class="act-group">
-               <button class="act-btn act-suspend" onclick="setUserStatus(${v.user_id},'suspended',this)">Suspend</button>
-               <button class="act-btn act-view" onclick="openVendorDetail(${v.user_id})">View</button>
-             </div>`;
-
-        return `<tr>
-          <td><strong>${v.trading_name}</strong><br><span style="font-size:12px;color:#4A3C30;">${v.email}</span></td>
-          <td><span style="font-size:12px;">${v.abn || '—'}</span></td>
-          <td><span class="badge badge-grey">No docs yet</span></td>
-          <td>${planBadge(v.plan)}</td>
-          <td><span style="font-size:12px;">${fmtDate(v.joined)}</span></td>
-          <td>${statusBadge(v.status)}</td>
-          <td>${actions}</td>
-        </tr>`;
-      }).join('');
+      _vendorsCache = vendors;
+      const filtered = _vendorStatusFilter ? vendors.filter(v => v.status === _vendorStatusFilter) : vendors;
+      renderVendorsTable(filtered);
     } catch(e) { console.warn('Vendors load failed', e); }
   }
 
-  async function loadOrganisers(statusFilter) {
-    const url = statusFilter ? `/api/admin/organisers?status=${statusFilter}` : '/api/admin/organisers';
+  function renderVendorsTable(vendors) {
+    const tbody   = document.getElementById('vendor-tbody');
+    const count   = document.getElementById('vendor-count');
+    const showing = document.getElementById('vendor-showing');
+
+    if (!vendors.length) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#6B5A4A;padding:24px;">No vendors found.</td></tr>`;
+      count.textContent = '0 vendors';
+      showing.textContent = 'No results';
+      return;
+    }
+
+    count.textContent = `${vendors.length} vendor${vendors.length===1?'':'s'}`;
+    showing.textContent = `Showing ${vendors.length} result${vendors.length===1?'':'s'}`;
+
+    tbody.innerHTML = vendors.map(v => {
+      const actions = v.status === 'pending'
+        ? `<div class="act-group">
+             <button class="act-btn act-approve" onclick="setUserStatus(${v.user_id},'active',this)">Approve</button>
+             <button class="act-btn act-reject" onclick="openRejectModal('${v.trading_name.replace(/'/g,"\\'")}')">Reject</button>
+           </div>`
+        : v.status === 'suspended'
+        ? `<div class="act-group">
+             <button class="act-btn act-approve" onclick="setUserStatus(${v.user_id},'active',this)">Reinstate</button>
+             <button class="act-btn act-reject" onclick="setUserStatus(${v.user_id},'banned',this)">Ban</button>
+           </div>`
+        : `<div class="act-group">
+             <button class="act-btn act-suspend" onclick="setUserStatus(${v.user_id},'suspended',this)">Suspend</button>
+             <button class="act-btn act-view" onclick="openVendorDetail(${v.user_id})">View</button>
+           </div>`;
+
+      return `<tr>
+        <td><strong>${v.trading_name}</strong><br><span style="font-size:12px;color:#4A3C30;">${v.email}</span></td>
+        <td><span style="font-size:12px;">${v.abn || '—'}</span></td>
+        <td><span class="badge badge-grey">—</span></td>
+        <td>${planBadge(v.plan)}</td>
+        <td><span style="font-size:12px;">${fmtDate(v.joined)}</span></td>
+        <td>${statusBadge(v.status)}</td>
+        <td>${actions}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  function filterVendorsTable() {
+    const q = (document.getElementById('vendor-search').value || '').toLowerCase();
+    const base = _vendorStatusFilter ? _vendorsCache.filter(v => v.status === _vendorStatusFilter) : _vendorsCache;
+    if (!q) { renderVendorsTable(base); return; }
+    renderVendorsTable(base.filter(v =>
+      (v.trading_name||'').toLowerCase().includes(q) ||
+      (v.email||'').toLowerCase().includes(q) ||
+      (v.abn||'').toLowerCase().includes(q) ||
+      (`${v.first_name} ${v.last_name}`).toLowerCase().includes(q)
+    ));
+  }
+
+  let _orgsCache = [];
+  let _orgStatusFilter = null;
+
+  async function loadOrganisers() {
     try {
-      const r = await fetch(url);
+      const r = await fetch('/api/admin/organisers');
       const { organisers } = await r.json();
-      const tbody = document.getElementById('organiser-tbody');
-      const count = document.getElementById('organiser-count');
-      const showing = document.getElementById('organiser-showing');
-
-      if (!organisers.length) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#6B5A4A;padding:24px;">No organisers found.</td></tr>`;
-        count.textContent = '0 organisers';
-        showing.textContent = 'No results';
-        return;
-      }
-
-      count.textContent = `${organisers.length} organiser${organisers.length===1?'':'s'}`;
-      showing.textContent = `Showing ${organisers.length} result${organisers.length===1?'':'s'}`;
-
-      tbody.innerHTML = organisers.map(o => {
-        const actions = o.status === 'pending'
-          ? `<div class="act-group">
-               <button class="act-btn act-approve" onclick="setUserStatus(${o.user_id},'active',this)">Approve</button>
-               <button class="act-btn act-reject" onclick="openRejectModal('${o.org_name}')">Reject</button>
-             </div>`
-          : `<div class="act-group">
-               <button class="act-btn act-suspend" onclick="setUserStatus(${o.user_id},'suspended',this)">Suspend</button>
-               <button class="act-btn act-view" onclick="openOrganiserDetail(${o.user_id})">View</button>
-             </div>`;
-
-        return `<tr>
-          <td><strong>${o.org_name}</strong><br><span style="font-size:12px;color:#4A3C30;">${o.email}</span></td>
-          <td><span style="font-size:12px;">${o.abn || '—'}</span></td>
-          <td><strong>0</strong></td>
-          <td><strong>—</strong></td>
-          <td><span style="font-size:12px;">${fmtDate(o.joined)}</span></td>
-          <td>${statusBadge(o.status)}</td>
-          <td>${actions}</td>
-        </tr>`;
-      }).join('');
+      _orgsCache = organisers;
+      const filtered = _orgStatusFilter ? organisers.filter(o => o.status === _orgStatusFilter) : organisers;
+      renderOrgsTable(filtered);
     } catch(e) { console.warn('Organisers load failed', e); }
+  }
+
+  function renderOrgsTable(organisers) {
+    const tbody   = document.getElementById('organiser-tbody');
+    const count   = document.getElementById('organiser-count');
+    const showing = document.getElementById('organiser-showing');
+
+    if (!organisers.length) {
+      tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:#6B5A4A;padding:24px;">No organisers found.</td></tr>`;
+      count.textContent = '0 organisers';
+      showing.textContent = 'No results';
+      return;
+    }
+
+    count.textContent = `${organisers.length} organiser${organisers.length===1?'':'s'}`;
+    showing.textContent = `Showing ${organisers.length} result${organisers.length===1?'':'s'}`;
+
+    tbody.innerHTML = organisers.map(o => {
+      const actions = o.status === 'pending'
+        ? `<div class="act-group">
+             <button class="act-btn act-approve" onclick="setUserStatus(${o.user_id},'active',this)">Approve</button>
+             <button class="act-btn act-reject" onclick="openRejectModal('${o.org_name.replace(/'/g,"\\'")}')">Reject</button>
+           </div>`
+        : o.status === 'suspended'
+        ? `<div class="act-group">
+             <button class="act-btn act-approve" onclick="setUserStatus(${o.user_id},'active',this)">Reinstate</button>
+             <button class="act-btn act-reject" onclick="setUserStatus(${o.user_id},'banned',this)">Ban</button>
+           </div>`
+        : `<div class="act-group">
+             <button class="act-btn act-suspend" onclick="setUserStatus(${o.user_id},'suspended',this)">Suspend</button>
+             <button class="act-btn act-view" onclick="openOrganiserDetail(${o.user_id})">View</button>
+           </div>`;
+
+      return `<tr>
+        <td><strong>${o.org_name}</strong><br><span style="font-size:12px;color:#4A3C30;">${o.email}</span></td>
+        <td><span style="font-size:12px;">${o.abn || '—'}</span></td>
+        <td><strong>—</strong></td>
+        <td><strong>—</strong></td>
+        <td><span style="font-size:12px;">${fmtDate(o.joined)}</span></td>
+        <td>${statusBadge(o.status)}</td>
+        <td>${actions}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  function filterOrgsTable() {
+    const q = (document.getElementById('org-search').value || '').toLowerCase();
+    const base = _orgStatusFilter ? _orgsCache.filter(o => o.status === _orgStatusFilter) : _orgsCache;
+    if (!q) { renderOrgsTable(base); return; }
+    renderOrgsTable(base.filter(o =>
+      (o.org_name||'').toLowerCase().includes(q) ||
+      (o.email||'').toLowerCase().includes(q) ||
+      (o.abn||'').toLowerCase().includes(q)
+    ));
+  }
+
+  function setOrgFilter(btn, filter) {
+    document.querySelectorAll('#panel-organisers .filter-chip').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('org-search').value = '';
+    _orgStatusFilter = (filter === 'all') ? null : filter;
+    const filtered = _orgStatusFilter ? _orgsCache.filter(o => o.status === _orgStatusFilter) : _orgsCache;
+    renderOrgsTable(filtered);
   }
 
   async function setUserStatus(userId, status, btn) {
@@ -1996,46 +1765,77 @@
     } catch(e) { console.warn('Status update failed', e); }
   }
 
-  // Override setVFilter to reload real data
+  // Override setVFilter — filter cached data, no re-fetch
   window.setVFilter = function(btn, filter) {
     document.querySelectorAll('#panel-vendors .filter-chip').forEach(c => c.classList.remove('active'));
     btn.classList.add('active');
-    loadVendors(filter === 'all' ? null : filter);
+    document.getElementById('vendor-search').value = '';
+    _vendorStatusFilter = (filter === 'all') ? null : filter;
+    const filtered = _vendorStatusFilter ? _vendorsCache.filter(v => v.status === _vendorStatusFilter) : _vendorsCache;
+    renderVendorsTable(filtered);
   };
 
   // ── Admin events ──────────────────────────────────────────────────────────
+  let _eventsCache = [];
+  let _eventsStatusFilter = null;
+
   async function loadAdminEvents() {
     try {
       const r = await fetch('/api/admin/events');
       const { events } = await r.json();
-      const tbody = document.getElementById('events-tbody');
-      const countEl = document.getElementById('events-count');
-      const showingEl = document.getElementById('events-showing');
-      countEl.textContent = events.length + ' event' + (events.length === 1 ? '' : 's');
-      showingEl.textContent = 'Showing ' + events.length;
-      if (!events.length) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#6B5A4A;padding:24px;">No events found.</td></tr>`;
-        return;
-      }
-      tbody.innerHTML = events.map(ev => {
-        const statusCls = ev.status === 'published' ? 'badge-green' : 'badge-grey';
-        const d = ev.date_sort ? new Date(ev.date_sort + 'T00:00:00').toLocaleDateString('en-AU', { day:'numeric', month:'short', year:'numeric' }) : '—';
-        return `<tr style="${ev.status !== 'published' ? 'opacity:0.5;' : ''}">
-          <td><strong>${ev.name}</strong><br><span style="font-size:12px;color:#4A3C30;">${ev.suburb || ''}, ${ev.state || ''}</span></td>
-          <td><span style="font-size:13px;">${ev.organiser_name || '—'}</span></td>
-          <td><span style="font-size:12px;">${d}</span></td>
-          <td><span class="badge badge-grey" style="font-size:11px;">${ev.category || '—'}</span></td>
-          <td><span class="badge ${statusCls}">${ev.status.charAt(0).toUpperCase() + ev.status.slice(1)}</span></td>
-          <td><div class="act-group">
-            ${ev.status === 'published'
-              ? `<button class="act-btn act-suspend" onclick="archiveEvent(${ev.id})">Archive</button>`
-              : `<button class="act-btn act-approve" onclick="publishEvent(${ev.id})">Publish</button>`}
-            <button class="act-btn act-view" onclick="window.open('/events/${ev.slug}','_blank')">View</button>
-            <button class="act-btn act-reject" onclick="deleteAdminEvent(${ev.id})">Delete</button>
-          </div></td>
-        </tr>`;
-      }).join('');
+      _eventsCache = events;
+      renderEventsTable(events);
     } catch(e) { console.warn('Admin events load failed', e); }
+  }
+
+  function renderEventsTable(arr) {
+    const tbody = document.getElementById('events-tbody');
+    const countEl = document.getElementById('events-count');
+    const showingEl = document.getElementById('events-showing');
+    countEl.textContent = arr.length + ' event' + (arr.length === 1 ? '' : 's');
+    showingEl.textContent = 'Showing ' + arr.length;
+    if (!arr.length) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#6B5A4A;padding:24px;">No events found.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = arr.map(ev => {
+      const statusCls = ev.status === 'published' ? 'badge-green' : 'badge-grey';
+      const d = ev.date_sort ? new Date(ev.date_sort + 'T00:00:00').toLocaleDateString('en-AU', { day:'numeric', month:'short', year:'numeric' }) : '—';
+      return `<tr style="${ev.status !== 'published' ? 'opacity:0.5;' : ''}">
+        <td><strong>${ev.name}</strong><br><span style="font-size:12px;color:#4A3C30;">${ev.suburb || ''}, ${ev.state || ''}</span></td>
+        <td><span style="font-size:13px;">${ev.organiser_name || '—'}</span></td>
+        <td><span style="font-size:12px;">${d}</span></td>
+        <td><span class="badge badge-grey" style="font-size:11px;">${ev.category || '—'}</span></td>
+        <td><span class="badge ${statusCls}">${ev.status.charAt(0).toUpperCase() + ev.status.slice(1)}</span></td>
+        <td><div class="act-group">
+          ${ev.status === 'published'
+            ? `<button class="act-btn act-suspend" onclick="archiveEvent(${ev.id})">Archive</button>`
+            : `<button class="act-btn act-approve" onclick="publishEvent(${ev.id})">Publish</button>`}
+          <button class="act-btn act-view" onclick="window.open('/events/${ev.slug}','_blank')">View</button>
+          <button class="act-btn act-reject" onclick="deleteAdminEvent(${ev.id})">Delete</button>
+        </div></td>
+      </tr>`;
+    }).join('');
+  }
+
+  function filterEventsTable() {
+    const q = (document.getElementById('events-search').value || '').toLowerCase();
+    const base = _eventsStatusFilter ? _eventsCache.filter(ev => ev.status === _eventsStatusFilter) : _eventsCache;
+    if (!q) { renderEventsTable(base); return; }
+    renderEventsTable(base.filter(ev =>
+      (ev.name||'').toLowerCase().includes(q) ||
+      (ev.organiser_name||'').toLowerCase().includes(q) ||
+      (ev.suburb||'').toLowerCase().includes(q)
+    ));
+  }
+
+  function setEventsFilter(btn, filter) {
+    document.querySelectorAll('#panel-events .filter-chip').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('events-search').value = '';
+    _eventsStatusFilter = (filter === 'all') ? null : filter;
+    const filtered = _eventsStatusFilter ? _eventsCache.filter(ev => ev.status === _eventsStatusFilter) : _eventsCache;
+    renderEventsTable(filtered);
   }
 
   async function archiveEvent(id) {
