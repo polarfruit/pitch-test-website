@@ -2597,7 +2597,7 @@ function renderNotifList() {
     </div>`).join('');
 }
 
-async function toggleNotifPopup(e) {
+function toggleNotifPopup(e) {
   e.stopPropagation();
   const popup = document.getElementById('notif-popup');
   const btn   = document.getElementById('notif-btn');
@@ -2605,10 +2605,10 @@ async function toggleNotifPopup(e) {
     popup.classList.remove('open');
     btn.classList.remove('active');
   } else {
-    await loadNotifications();
     renderNotifList();
     popup.classList.add('open');
     btn.classList.add('active');
+    loadNotifications().then(() => renderNotifList());
   }
 }
 
