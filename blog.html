@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resources — Pitch.</title>
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --ember:#E8500A;--ember-glow:#FF6B2B;--ember-bg:#E8500A12;--coal:#1A1612;--char:#231E19;--ash:#2E2720;--smoke:#4A3F36;--parchment:#FDF4E7;--herb:#2D8B55;--gold:#C9840A;--terra:#C0392B;--slate:#2B5BA8;--text-hi:#FDF4E7;--text-mid:#A89880;--text-lo:#6B5A4A;--fd:'Fraunces',Georgia,serif;--fb:'Instrument Sans','Helvetica Neue',sans-serif; }
+    html { scroll-behavior: smooth; }
+    body { background:var(--coal);color:var(--text-hi);font-family:var(--fb);line-height:1.5;overflow-x:hidden; }
+    body::before { content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:0.45; }
+    .navbar { position:fixed;top:0;left:0;right:0;z-index:200;height:66px;display:flex;align-items:center;justify-content:space-between;padding:0 52px;background:rgba(26,22,18,0.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid #ffffff07; }
+    .nav-logo { font-family:var(--fd);font-size:26px;font-weight:900;letter-spacing:-0.04em;color:var(--text-hi);text-decoration:none;flex-shrink:0; }
+    .nav-logo .dot { color:var(--ember); }
+    .nav-links { display:flex;align-items:center;gap:32px;list-style:none; }
+    .nav-links a { font-size:14px;font-weight:500;color:var(--text-mid);text-decoration:none;transition:color 0.14s;letter-spacing:0.01em; }
+    .nav-links a:hover, .nav-links a.active { color:var(--text-hi); }
+    .nav-actions { display:flex;align-items:center;gap:10px; }
+    .btn-login { font-family:var(--fb);font-size:13px;font-weight:600;color:var(--text-mid);background:transparent;border:none;padding:9px 16px;border-radius:8px;cursor:pointer;transition:color 0.14s,background 0.14s;text-decoration:none; }
+    .btn-login:hover { color:var(--text-hi);background:#ffffff09; }
+    .btn-get-started { font-family:var(--fb);font-size:13px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:10px 22px;border-radius:9px;cursor:pointer;text-decoration:none;transition:background 0.14s,transform 0.1s;box-shadow:0 4px 16px rgba(232,80,10,0.35); }
+    .btn-get-started:hover { background:var(--ember-glow); }
+
+    main { position:relative;z-index:1; }
+
+    /* Hero */
+    .hero { padding:140px 52px 64px;max-width:760px;margin:0 auto; }
+    .hero-label { font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--ember);margin-bottom:18px; }
+    .hero h1 { font-family:var(--fd);font-size:clamp(40px,5.5vw,60px);font-weight:900;letter-spacing:-0.03em;line-height:1.06;margin-bottom:18px; }
+    .hero p { font-size:18px;color:var(--text-mid);line-height:1.65; }
+
+    /* Filters */
+    .filters-wrap { padding:0 52px 48px;max-width:1100px;margin:0 auto; }
+    .filters { display:flex;gap:8px;flex-wrap:wrap; }
+    .filter-btn { font-family:var(--fb);font-size:13px;font-weight:600;padding:8px 20px;border-radius:24px;cursor:pointer;border:1px solid #ffffff10;background:transparent;color:var(--text-mid);transition:all 0.14s;letter-spacing:0.02em; }
+    .filter-btn:hover { color:var(--text-hi);border-color:#ffffff20; }
+    .filter-btn.active { background:var(--ember);border-color:var(--ember);color:#fff;box-shadow:0 2px 12px rgba(232,80,10,0.3); }
+
+    /* Grid */
+    .articles-wrap { padding:0 52px 80px;max-width:1100px;margin:0 auto; }
+    .articles-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:24px; }
+    @media(max-width:960px){.articles-grid{grid-template-columns:repeat(2,1fr);}}
+    @media(max-width:600px){.articles-grid{grid-template-columns:1fr;}}
+
+    .article-card { background:var(--char);border:1px solid #ffffff09;border-radius:16px;padding:32px;display:flex;flex-direction:column;transition:border-color 0.2s,transform 0.15s; }
+    .article-card:hover { border-color:#ffffff18;transform:translateY(-2px); }
+    .article-card[style*="display: none"] { display:none !important; }
+
+    .card-icon { font-size:32px;margin-bottom:20px;display:block; }
+    .card-meta { display:flex;align-items:center;gap:10px;margin-bottom:14px; }
+    .cat-tag { font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:4px 10px;border-radius:20px; }
+    .cat-tag.vendor { color:var(--ember);background:var(--ember-bg);border:1px solid rgba(232,80,10,0.2); }
+    .cat-tag.organiser { color:var(--herb);background:rgba(45,139,85,0.1);border:1px solid rgba(45,139,85,0.2); }
+    .read-time { font-size:12px;color:var(--text-lo); }
+
+    .article-card h3 { font-family:var(--fd);font-size:19px;font-weight:900;letter-spacing:-0.02em;line-height:1.25;margin-bottom:12px; }
+    .article-card p { font-size:14px;color:var(--text-mid);line-height:1.7;flex:1; }
+    .read-link { display:inline-flex;align-items:center;gap:6px;margin-top:24px;font-size:13px;font-weight:700;color:var(--ember);text-decoration:none;transition:gap 0.14s,color 0.14s; }
+    .read-link:hover { color:var(--ember-glow);gap:10px; }
+
+    /* Empty state */
+    .empty-state { display:none;text-align:center;padding:64px 24px;color:var(--text-lo);font-size:15px; }
+    .empty-state.show { display:block; }
+
+    /* CTA */
+    .cta-section { margin:0 52px 80px;background:var(--char);border:1px solid #ffffff08;border-radius:20px;padding:52px;display:grid;grid-template-columns:1fr auto;gap:32px;align-items:center; }
+    @media(max-width:700px){.cta-section{grid-template-columns:1fr;text-align:center;}}
+    .cta-section h2 { font-family:var(--fd);font-size:28px;font-weight:900;letter-spacing:-0.03em;margin-bottom:8px; }
+    .cta-section p { font-size:15px;color:var(--text-mid); }
+    .cta-btn { font-family:var(--fb);font-size:14px;font-weight:700;color:#fff;background:var(--ember);padding:13px 28px;border-radius:10px;text-decoration:none;white-space:nowrap;transition:background 0.14s;box-shadow:0 4px 20px rgba(232,80,10,0.35); }
+    .cta-btn:hover { background:var(--ember-glow); }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <a href="/" class="nav-logo">Pitch<span class="dot">.</span></a>
+    <ul class="nav-links">
+      <li><a href="/events">Events</a></li>
+      <li><a href="/vendors">Vendors</a></li>
+      <li><a href="/how-it-works">How It Works</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="/login" class="btn-login">Log in</a>
+      <a href="/signup" class="btn-get-started">Get Started</a>
+    </div>
+  </nav>
+
+  <main>
+    <div class="hero">
+      <div class="hero-label">Resources</div>
+      <h1>Resources for vendors &amp; organisers.</h1>
+      <p>Practical guides to help you get the most out of every market.</p>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-wrap">
+      <div class="filters">
+        <button class="filter-btn active" onclick="filterArticles('all', this)">All</button>
+        <button class="filter-btn" onclick="filterArticles('vendor', this)">For Vendors</button>
+        <button class="filter-btn" onclick="filterArticles('organiser', this)">For Organisers</button>
+      </div>
+    </div>
+
+    <!-- Articles -->
+    <div class="articles-wrap">
+      <div class="articles-grid" id="articlesGrid">
+
+        <!-- 1: Vendors - Pricing -->
+        <div class="article-card" data-category="vendor">
+          <span class="card-icon">💰</span>
+          <div class="card-meta">
+            <span class="cat-tag vendor">For Vendors</span>
+            <span class="read-time">5 min read</span>
+          </div>
+          <h3>How to price your market stall</h3>
+          <p>Stall pricing is where most new vendors leave money on the table — or price themselves out of a good market. This guide walks through calculating your costs, setting healthy margins, and adjusting your pricing strategy for different event types.</p>
+          <a href="#" class="read-link">Read guide →</a>
+        </div>
+
+        <!-- 2: Vendors - Applications -->
+        <div class="article-card" data-category="vendor">
+          <span class="card-icon">📋</span>
+          <div class="card-meta">
+            <span class="cat-tag vendor">For Vendors</span>
+            <span class="read-time">4 min read</span>
+          </div>
+          <h3>5 things organisers look for in vendor applications</h3>
+          <p>After speaking to dozens of market organisers, the same five things come up every time: valid PLI, quality product photos, a varied menu, responsive communication, and credible references. Here's how to nail each one.</p>
+          <a href="#" class="read-link">Read guide →</a>
+        </div>
+
+        <!-- 3: Vendors - PLI -->
+        <div class="article-card" data-category="vendor">
+          <span class="card-icon">🛡</span>
+          <div class="card-meta">
+            <span class="cat-tag vendor">For Vendors</span>
+            <span class="read-time">6 min read</span>
+          </div>
+          <h3>Getting your PLI right — a vendor's guide</h3>
+          <p>Public Liability Insurance isn't just a checkbox — it's your protection at every event. This guide explains what PLI covers, why markets require $10M minimum, what it typically costs, and which Australian providers specialise in food vendors.</p>
+          <a href="#" class="read-link">Read guide →</a>
+        </div>
+
+        <!-- 4: Organisers - Listings -->
+        <div class="article-card" data-category="organiser">
+          <span class="card-icon">✍️</span>
+          <div class="card-meta">
+            <span class="cat-tag organiser">For Organisers</span>
+            <span class="read-time">5 min read</span>
+          </div>
+          <h3>How to write a market listing that attracts quality vendors</h3>
+          <p>Vague listings attract vague applicants. The best market listings are specific about stall sizes, expected foot traffic, what's already covered (power, shade), and what matters most to your audience. Here's what vendors actually read.</p>
+          <a href="#" class="read-link">Read guide →</a>
+        </div>
+
+        <!-- 5: Organisers - Applications at scale -->
+        <div class="article-card" data-category="organiser">
+          <span class="card-icon">📊</span>
+          <div class="card-meta">
+            <span class="cat-tag organiser">For Organisers</span>
+            <span class="read-time">4 min read</span>
+          </div>
+          <h3>Managing vendor applications at scale</h3>
+          <p>When your event is popular, you can receive 60+ applications. This guide covers how to evaluate quickly without missing standout vendors, how to communicate decisions professionally, and how to build a waitlist that actually converts.</p>
+          <a href="#" class="read-link">Read guide →</a>
+        </div>
+
+        <!-- 6: Vendors - Photography -->
+        <div class="article-card" data-category="vendor">
+          <span class="card-icon">📸</span>
+          <div class="card-meta">
+            <span class="cat-tag vendor">For Vendors</span>
+            <span class="read-time">3 min read</span>
+          </div>
+          <h3>Photographing your food stall: a practical guide</h3>
+          <p>Your profile photos are doing the selling before you've said a word. Good light, the right angles, and a clean composition can be the difference between getting shortlisted and being scrolled past. No expensive gear required.</p>
+          <a href="#" class="read-link">Read guide →</a>
+        </div>
+
+      </div>
+      <div class="empty-state" id="emptyState">No articles in this category yet.</div>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta-section">
+      <div>
+        <h2>Ready to put the guides into practice?</h2>
+        <p>Create your free account and start applying to events today.</p>
+      </div>
+      <a href="/signup" class="cta-btn">Get started free</a>
+    </div>
+  </main>
+
+  <footer style="background:#161210;border-top:1px solid #ffffff06;padding:40px 52px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;position:relative;z-index:1;">
+    <a href="/" style="font-family:'Fraunces',serif;font-size:22px;font-weight:900;color:#FDF4E7;text-decoration:none;letter-spacing:-0.04em;">Pitch<span style="color:#E8500A;">.</span></a>
+    <div style="display:flex;gap:24px;flex-wrap:wrap;">
+      <a href="/about" style="font-size:13px;color:#6B5A4A;text-decoration:none;transition:color 0.14s;">About</a>
+      <a href="/pricing" style="font-size:13px;color:#6B5A4A;text-decoration:none;transition:color 0.14s;">Pricing</a>
+      <a href="/contact" style="font-size:13px;color:#6B5A4A;text-decoration:none;transition:color 0.14s;">Contact</a>
+      <a href="/terms" style="font-size:13px;color:#6B5A4A;text-decoration:none;transition:color 0.14s;">Terms</a>
+      <a href="/privacy" style="font-size:13px;color:#6B5A4A;text-decoration:none;transition:color 0.14s;">Privacy</a>
+    </div>
+    <span style="font-size:12px;color:#4A3C30;">© 2026 Pitch. Adelaide, Australia.</span>
+  </footer>
+
+  <script>
+    function filterArticles(category, btn) {
+      // Update active button
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      // Filter cards
+      const cards = document.querySelectorAll('.article-card');
+      let visible = 0;
+      cards.forEach(card => {
+        const cat = card.getAttribute('data-category');
+        if (category === 'all' || cat === category) {
+          card.style.display = '';
+          visible++;
+        } else {
+          card.style.display = 'none';
+        }
+      });
+
+      // Empty state
+      const empty = document.getElementById('emptyState');
+      empty.classList.toggle('show', visible === 0);
+    }
+  </script>
+</body>
+</html>

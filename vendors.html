@@ -601,5 +601,9 @@ function goPage(n) {
 
 renderGrid();
 </script>
+<script src="/location-autocomplete.js"></script>
+<script>
+pitchLocAC('f-suburb', { suburbOnly: true, onSelect: () => applyFilters() });
+</script>
 </body>
 </html>

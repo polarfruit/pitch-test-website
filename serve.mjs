@@ -1251,9 +1251,19 @@ app.delete('/api/vendor/account', requireAuth, async (req, res) => {
 
 // ── Public stats ───────────────────────────────────────────────────────────
 app.get('/api/stats', async (req, res) => {
-  const vendors = (await stmts.countVendors.get()).n;
-  const events  = (await stmts.countEvents.get()).n;
-  res.json({ vendors, events });
+  try {
+    const db = await getDb();
+    const vendors      = (await stmts.countVendors.get()).n || 0;
+    const events       = (await stmts.countEvents.get()).n  || 0;
+    const appRow       = db.prepare(`SELECT COUNT(*) as n FROM applications`).get();
+    const applications = appRow ? Number(appRow.n) : 0;
+    const ratingRow    = db.prepare(`SELECT ROUND(AVG(rating),1) as avg FROM vendor_reviews`).get();
+    const rating       = ratingRow && ratingRow.avg ? Number(ratingRow.avg) : null;
+    res.json({ vendors, events, applications, rating });
+  } catch(e) {
+    console.error('[api/stats]', e);
+    res.json({ vendors: 0, events: 0, applications: 0, rating: null });
+  }
 });
 
 // ── API: Organiser dashboard ───────────────────────────────────────────────
@@ -1628,6 +1638,13 @@ app.get('/',                    page('index.html'));
 app.get('/how-it-works',        page('how-it-works.html'));
 app.get('/events',              page('events.html'));
 app.get('/vendors',             page('vendors.html'));
+app.get('/pricing',             page('pricing.html'));
+app.get('/about',               page('about.html'));
+app.get('/contact',             page('contact.html'));
+app.get('/terms',               page('terms.html'));
+app.get('/privacy',             page('privacy.html'));
+app.get('/blog',                page('blog.html'));
+app.get('/events/new',          (req, res) => res.redirect('/signup/organiser'));
 app.get('/login',               page('login.html'));
 app.get('/signup',              page('signup.html'));
 app.get('/signup/vendor',       page('signup-vendor.html'));

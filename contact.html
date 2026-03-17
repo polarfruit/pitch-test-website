@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact — Pitch.</title>
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --ember:#E8500A;--ember-glow:#FF6B2B;--ember-bg:#E8500A12;--coal:#1A1612;--char:#231E19;--ash:#2E2720;--smoke:#4A3F36;--parchment:#FDF4E7;--herb:#2D8B55;--gold:#C9840A;--terra:#C0392B;--slate:#2B5BA8;--text-hi:#FDF4E7;--text-mid:#A89880;--text-lo:#6B5A4A;--fd:'Fraunces',Georgia,serif;--fb:'Instrument Sans','Helvetica Neue',sans-serif; }
+    html { scroll-behavior: smooth; }
+    body { background:var(--coal);color:var(--text-hi);font-family:var(--fb);line-height:1.5;overflow-x:hidden; }
+    body::before { content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:0.45; }
+    .navbar { position:fixed;top:0;left:0;right:0;z-index:200;height:66px;display:flex;align-items:center;justify-content:space-between;padding:0 52px;background:rgba(26,22,18,0.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid #ffffff07; }
+    .nav-logo { font-family:var(--fd);font-size:26px;font-weight:900;letter-spacing:-0.04em;color:var(--text-hi);text-decoration:none;flex-shrink:0; }
+    .nav-logo .dot { color:var(--ember); }
+    .nav-links { display:flex;align-items:center;gap:32px;list-style:none; }
+    .nav-links a { font-size:14px;font-weight:500;color:var(--text-mid);text-decoration:none;transition:color 0.14s;letter-spacing:0.01em; }
+    .nav-links a:hover, .nav-links a.active { color:var(--text-hi); }
+    .nav-actions { display:flex;align-items:center;gap:10px; }
+    .btn-login { font-family:var(--fb);font-size:13px;font-weight:600;color:var(--text-mid);background:transparent;border:none;padding:9px 16px;border-radius:8px;cursor:pointer;transition:color 0.14s,background 0.14s;text-decoration:none; }
+    .btn-login:hover { color:var(--text-hi);background:#ffffff09; }
+    .btn-get-started { font-family:var(--fb);font-size:13px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:10px 22px;border-radius:9px;cursor:pointer;text-decoration:none;transition:background 0.14s,transform 0.1s;box-shadow:0 4px 16px rgba(232,80,10,0.35); }
+    .btn-get-started:hover { background:var(--ember-glow); }
+
+    main { position:relative;z-index:1; }
+
+    .hero { padding:140px 52px 72px;max-width:680px;margin:0 auto;text-align:center; }
+    .hero h1 { font-family:var(--fd);font-size:clamp(44px,6vw,64px);font-weight:900;letter-spacing:-0.03em;line-height:1.05;margin-bottom:16px; }
+    .hero p { font-size:18px;color:var(--text-mid);line-height:1.65; }
+
+    .contact-layout { padding:0 52px 80px;max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 380px;gap:48px;align-items:start; }
+    @media(max-width:900px){.contact-layout{grid-template-columns:1fr;gap:40px;}}
+
+    /* Form */
+    .form-card { background:var(--char);border:1px solid #ffffff09;border-radius:20px;padding:48px; }
+    .form-card h2 { font-family:var(--fd);font-size:24px;font-weight:900;letter-spacing:-0.03em;margin-bottom:32px; }
+    .field-group { margin-bottom:20px; }
+    .field-row { display:grid;grid-template-columns:1fr 1fr;gap:16px; }
+    @media(max-width:580px){.field-row{grid-template-columns:1fr;}}
+    label { display:block;font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-mid);margin-bottom:8px; }
+    input, select, textarea { width:100%;background:var(--ash);border:1px solid #ffffff0d;border-radius:10px;padding:12px 16px;font-family:var(--fb);font-size:14px;color:var(--text-hi);outline:none;transition:border-color 0.14s,box-shadow 0.14s;appearance:none;-webkit-appearance:none; }
+    input::placeholder, textarea::placeholder { color:var(--text-lo); }
+    input:focus, select:focus, textarea:focus { border-color:rgba(232,80,10,0.45);box-shadow:0 0 0 3px rgba(232,80,10,0.1); }
+    select { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' stroke='%23A89880' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;background-size:16px;padding-right:40px; }
+    select option { background:var(--char);color:var(--text-hi); }
+    textarea { min-height:140px;resize:vertical;line-height:1.6; }
+    .submit-btn { width:100%;font-family:var(--fb);font-size:15px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:14px 24px;border-radius:10px;cursor:pointer;margin-top:8px;transition:background 0.14s,transform 0.1s;box-shadow:0 4px 20px rgba(232,80,10,0.35); }
+    .submit-btn:hover { background:var(--ember-glow);transform:translateY(-1px); }
+    .submit-btn:active { transform:translateY(0); }
+
+    /* Success */
+    .success-msg { display:none;text-align:center;padding:48px 24px; }
+    .success-icon { width:64px;height:64px;background:rgba(45,139,85,0.15);border:2px solid rgba(45,139,85,0.3);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:28px; }
+    .success-msg h3 { font-family:var(--fd);font-size:26px;font-weight:900;letter-spacing:-0.02em;margin-bottom:10px; }
+    .success-msg p { font-size:15px;color:var(--text-mid);line-height:1.65; }
+
+    /* Info cards */
+    .info-stack { display:flex;flex-direction:column;gap:16px; }
+    .info-card { background:var(--char);border:1px solid #ffffff09;border-radius:14px;padding:24px 28px;display:flex;gap:20px;align-items:flex-start; }
+    .info-icon { width:40px;height:40px;flex-shrink:0;background:var(--ember-bg);border:1px solid rgba(232,80,10,0.2);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px; }
+    .info-body h4 { font-size:13px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:var(--text-mid);margin-bottom:6px; }
+    .info-body a, .info-body span { font-size:15px;font-weight:600;color:var(--text-hi);text-decoration:none; }
+    .info-body a:hover { color:var(--ember); }
+    .info-body .sub { font-size:13px;color:var(--text-lo);margin-top:3px; }
+
+    .note-card { background:var(--ember-bg);border:1px solid rgba(232,80,10,0.15);border-radius:14px;padding:20px 24px;margin-top:0; }
+    .note-card p { font-size:13px;color:var(--text-mid);line-height:1.65; }
+    .note-card strong { color:var(--ember); }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <a href="/" class="nav-logo">Pitch<span class="dot">.</span></a>
+    <ul class="nav-links">
+      <li><a href="/events">Events</a></li>
+      <li><a href="/vendors">Vendors</a></li>
+      <li><a href="/how-it-works">How It Works</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="/login" class="btn-login">Log in</a>
+      <a href="/signup" class="btn-get-started">Get Started</a>
+    </div>
+  </nav>
+
+  <main>
+    <div class="hero">
+      <h1>Get in touch.</h1>
+      <p>We typically respond within one business day.</p>
+    </div>
+
+    <div class="contact-layout">
+      <!-- Form -->
+      <div class="form-card">
+        <h2>Send us a message</h2>
+        <form id="contactForm" onsubmit="handleSubmit(event)">
+          <div class="field-row">
+            <div class="field-group">
+              <label for="name">Your name</label>
+              <input type="text" id="name" name="name" placeholder="Jane Smith" required>
+            </div>
+            <div class="field-group">
+              <label for="email">Email address</label>
+              <input type="email" id="email" name="email" placeholder="jane@example.com" required>
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field-group">
+              <label for="role">I'm a</label>
+              <select id="role" name="role" required>
+                <option value="" disabled selected>Select your role</option>
+                <option value="vendor">Vendor</option>
+                <option value="organiser">Organiser</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label for="subject">Subject</label>
+              <input type="text" id="subject" name="subject" placeholder="e.g. Question about Pro plan" required>
+            </div>
+          </div>
+          <div class="field-group">
+            <label for="message">Message</label>
+            <textarea id="message" name="message" placeholder="Tell us what's on your mind..." required></textarea>
+          </div>
+          <button type="submit" class="submit-btn">Send message</button>
+        </form>
+
+        <div class="success-msg" id="successMsg">
+          <div class="success-icon">✓</div>
+          <h3>Message sent!</h3>
+          <p>Thanks for reaching out. We'll get back to you within one business day at the email address you provided.</p>
+        </div>
+      </div>
+
+      <!-- Info -->
+      <div class="info-stack">
+        <div class="info-card">
+          <div class="info-icon">✉️</div>
+          <div class="info-body">
+            <h4>Email</h4>
+            <a href="mailto:hello@pitchmkts.com.au">hello@pitchmkts.com.au</a>
+            <div class="sub">General enquiries & support</div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <div class="info-icon">📍</div>
+          <div class="info-body">
+            <h4>Location</h4>
+            <span>Adelaide, South Australia</span>
+            <div class="sub">We're a local team, building for local markets</div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <div class="info-icon">🕐</div>
+          <div class="info-body">
+            <h4>Business hours</h4>
+            <span>Mon–Fri, 9am–5pm ACST</span>
+            <div class="sub">We aim to respond within 1 business day</div>
+          </div>
+        </div>
+
+        <div class="note-card">
+          <p><strong>For legal or privacy enquiries</strong> — please email <a href="mailto:legal@pitchmkts.com.au" style="color:var(--ember);text-decoration:none;">legal@pitchmkts.com.au</a> or <a href="mailto:privacy@pitchmkts.com.au" style="color:var(--ember);text-decoration:none;">privacy@pitchmkts.com.au</a> directly. These are monitored separately from our general inbox.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer style="background:#161210;border-top:1px solid #ffffff06;padding:40px 52px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;position:relative;z-index:1;">
+    <a href="/" style="font-family:'Fraunces',serif;font-size:22px;font-weight:900;color:#FDF4E7;text-decoration:none;letter-spacing:-0.04em;">Pitch<span style="color:#E8500A;">.</span></a>
+    <div style="display:flex;gap:24px;flex-wrap:wrap;">
+      <a href="/about" style="font-size:13px;color:#6B5A4A;text-decoration:none;transition:color 0.14s;">About</a>
+      <a href="/pricing" style="font-size:13px;color:#6B5A4A;text-decoration:none;transition:color 0.14s;">Pricing</a>
+      <a href="/contact" style="font-size:13px;color:#6B5A4A;text-decoration:none;transition:color 0.14s;">Contact</a>
+      <a href="/terms" style="font-size:13px;color:#6B5A4A;text-decoration:none;transition:color 0.14s;">Terms</a>
+      <a href="/privacy" style="font-size:13px;color:#6B5A4A;text-decoration:none;transition:color 0.14s;">Privacy</a>
+    </div>
+    <span style="font-size:12px;color:#4A3C30;">© 2026 Pitch. Adelaide, Australia.</span>
+  </footer>
+
+  <script>
+    function handleSubmit(e) {
+      e.preventDefault();
+      document.getElementById('contactForm').style.display = 'none';
+      document.getElementById('successMsg').style.display = 'block';
+    }
+  </script>
+</body>
+</html>

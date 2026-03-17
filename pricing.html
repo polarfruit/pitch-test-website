@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pricing — Pitch.</title>
+  <link rel="stylesheet" href="/fonts/fonts.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --ember:#E8500A;--ember-glow:#FF6B2B;--ember-bg:#E8500A12;--coal:#1A1612;--char:#231E19;--ash:#2E2720;--smoke:#4A3F36;--parchment:#FDF4E7;--herb:#2D8B55;--gold:#C9840A;--terra:#C0392B;--slate:#2B5BA8;--text-hi:#FDF4E7;--text-mid:#A89880;--text-lo:#6B5A4A;--fd:'Fraunces',Georgia,serif;--fb:'Instrument Sans','Helvetica Neue',sans-serif; }
+    html { scroll-behavior: smooth; }
+    body { background:var(--coal);color:var(--text-hi);font-family:var(--fb);line-height:1.5;overflow-x:hidden; }
+    body::before { content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:0.45; }
+    .navbar { position:fixed;top:0;left:0;right:0;z-index:200;height:66px;display:flex;align-items:center;justify-content:space-between;padding:0 52px;background:rgba(26,22,18,0.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid #ffffff07; }
+    .nav-logo { font-family:var(--fd);font-size:26px;font-weight:900;letter-spacing:-0.04em;color:var(--text-hi);text-decoration:none;flex-shrink:0; }
+    .nav-logo .dot { color:var(--ember); }
+    .nav-links { display:flex;align-items:center;gap:32px;list-style:none; }
+    .nav-links a { font-size:14px;font-weight:500;color:var(--text-mid);text-decoration:none;transition:color 0.14s;letter-spacing:0.01em; }
+    .nav-links a:hover, .nav-links a.active { color:var(--text-hi); }
+    .nav-actions { display:flex;align-items:center;gap:10px; }
+    .btn-login { font-family:var(--fb);font-size:13px;font-weight:600;color:var(--text-mid);background:transparent;border:none;padding:9px 16px;border-radius:8px;cursor:pointer;transition:color 0.14s,background 0.14s;text-decoration:none; }
+    .btn-login:hover { color:var(--text-hi);background:#ffffff09; }
+    .btn-get-started { font-family:var(--fb);font-size:13px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:10px 22px;border-radius:9px;cursor:pointer;text-decoration:none;transition:background 0.14s,transform 0.1s;box-shadow:0 4px 16px rgba(232,80,10,0.35); }
+    .btn-get-started:hover { background:var(--ember-glow); }
+
+    main { position:relative;z-index:1; }
+
+    /* Hero */
+    .hero { padding:140px 52px 72px;text-align:center;max-width:680px;margin:0 auto; }
+    .hero h1 { font-family:var(--fd);font-size:clamp(42px,6vw,64px);font-weight:900;letter-spacing:-0.03em;line-height:1.05;color:var(--text-hi);margin-bottom:16px; }
+    .hero p { font-size:18px;color:var(--text-mid);line-height:1.65;max-width:480px;margin:0 auto; }
+
+    /* Toggle tabs */
+    .toggle-wrap { display:flex;justify-content:center;margin:48px 0 0;gap:0; }
+    .toggle-btn { font-family:var(--fb);font-size:14px;font-weight:600;padding:10px 28px;cursor:pointer;border:1px solid #ffffff10;background:transparent;color:var(--text-mid);transition:all 0.14s;letter-spacing:0.02em; }
+    .toggle-btn:first-child { border-radius:9px 0 0 9px; }
+    .toggle-btn:last-child { border-radius:0 9px 9px 0; }
+    .toggle-btn.active { background:var(--ember-bg);border-color:var(--ember);color:var(--ember); }
+
+    /* Pricing section */
+    .pricing-section { padding:64px 52px 80px;max-width:1100px;margin:0 auto; }
+    .section-label { font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--ember);margin-bottom:12px; }
+    .pricing-grid { display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:40px; }
+    @media(max-width:720px){.pricing-grid{grid-template-columns:1fr;}}
+
+    .plan-card { background:var(--char);border:1px solid #ffffff09;border-radius:18px;padding:40px;transition:border-color 0.2s,transform 0.15s;position:relative;overflow:hidden; }
+    .plan-card:hover { border-color:#ffffff18;transform:translateY(-2px); }
+    .plan-card.featured { border-color:var(--ember);box-shadow:0 0 48px rgba(232,80,10,0.12); }
+    .plan-card.featured::before { content:'Most Popular';position:absolute;top:20px;right:20px;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--ember);background:var(--ember-bg);border:1px solid rgba(232,80,10,0.25);padding:4px 12px;border-radius:20px; }
+
+    .plan-name { font-family:var(--fd);font-size:20px;font-weight:900;color:var(--text-hi);letter-spacing:-0.02em;margin-bottom:8px; }
+    .plan-price { display:flex;align-items:flex-end;gap:4px;margin:16px 0; }
+    .plan-price .amount { font-family:var(--fd);font-size:48px;font-weight:900;letter-spacing:-0.04em;color:var(--text-hi);line-height:1; }
+    .plan-price .period { font-size:14px;color:var(--text-mid);margin-bottom:8px; }
+    .plan-price .free-label { font-family:var(--fd);font-size:40px;font-weight:900;letter-spacing:-0.04em;color:var(--text-hi);line-height:1; }
+
+    .plan-desc { font-size:14px;color:var(--text-mid);line-height:1.6;margin-bottom:28px;padding-bottom:28px;border-bottom:1px solid #ffffff08; }
+    .plan-features { list-style:none;display:flex;flex-direction:column;gap:12px;margin-bottom:32px; }
+    .plan-features li { display:flex;align-items:flex-start;gap:12px;font-size:14px;color:var(--text-mid);line-height:1.5; }
+    .plan-features li::before { content:'';flex-shrink:0;width:16px;height:16px;margin-top:2px;background:var(--ember);border-radius:50%;display:inline-block;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 8l3.5 3.5 6.5-7' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E"); }
+    .plan-features li.muted { color:var(--text-lo); }
+    .plan-features li.muted::before { background:#ffffff15;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 8h8' stroke='%236B5A4A' stroke-width='1.8' stroke-linecap='round' fill='none'/%3E%3C/svg%3E"); }
+
+    .plan-cta { display:block;text-align:center;font-family:var(--fb);font-size:14px;font-weight:700;padding:13px 24px;border-radius:10px;cursor:pointer;text-decoration:none;transition:background 0.14s,transform 0.1s; }
+    .plan-cta.primary { background:var(--ember);color:#fff;box-shadow:0 4px 20px rgba(232,80,10,0.35); }
+    .plan-cta.primary:hover { background:var(--ember-glow); }
+    .plan-cta.secondary { background:#ffffff0a;color:var(--text-hi);border:1px solid #ffffff15; }
+    .plan-cta.secondary:hover { background:#ffffff14; }
+
+    /* Organiser section */
+    .org-section { padding:0 52px 80px;max-width:1100px;margin:0 auto; }
+    .org-card { background:var(--char);border:1px solid #ffffff09;border-radius:18px;padding:52px;display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center; }
+    @media(max-width:860px){.org-card{grid-template-columns:1fr;gap:32px;}}
+    .org-card h3 { font-family:var(--fd);font-size:32px;font-weight:900;letter-spacing:-0.03em;margin-bottom:12px; }
+    .org-card p { font-size:15px;color:var(--text-mid);line-height:1.7;margin-bottom:20px; }
+    .fee-highlight { display:inline-flex;align-items:center;gap:10px;background:var(--ember-bg);border:1px solid rgba(232,80,10,0.2);border-radius:12px;padding:14px 20px;margin-bottom:24px; }
+    .fee-highlight .pct { font-family:var(--fd);font-size:28px;font-weight:900;color:var(--ember); }
+    .fee-highlight .fee-desc { font-size:13px;color:var(--text-mid);line-height:1.4; }
+    .free-tag { display:inline-block;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--herb);background:rgba(45,139,85,0.12);border:1px solid rgba(45,139,85,0.2);padding:4px 10px;border-radius:20px;margin-bottom:24px; }
+    .org-features { list-style:none;display:flex;flex-direction:column;gap:10px; }
+    .org-features li { display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--text-mid); }
+    .org-features li::before { content:'';flex-shrink:0;width:16px;height:16px;margin-top:2px;background:var(--herb);border-radius:50%;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 8l3.5 3.5 6.5-7' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E"); }
+    .org-visual { background:var(--ash);border-radius:14px;padding:32px;text-align:center; }
+    .org-visual .big-free { font-family:var(--fd);font-size:80px;font-weight:900;letter-spacing:-0.05em;color:var(--herb);line-height:1; }
+    .org-visual .sub { font-size:14px;color:var(--text-mid);margin-top:8px; }
+    .org-visual .note { font-size:12px;color:var(--text-lo);margin-top:16px;padding-top:16px;border-top:1px solid #ffffff08; }
+
+    /* FAQ */
+    .faq-section { padding:0 52px 80px;max-width:760px;margin:0 auto; }
+    .faq-section h2 { font-family:var(--fd);font-size:34px;font-weight:900;letter-spacing:-0.03em;margin-bottom:40px; }
+    .faq-item { border-top:1px solid #ffffff08;padding:24px 0; }
+    .faq-item:last-child { border-bottom:1px solid #ffffff08; }
+    .faq-q { font-size:16px;font-weight:600;color:var(--text-hi);cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:16px; }
+    .faq-q .icon { flex-shrink:0;width:22px;height:22px;border:1px solid #ffffff15;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--text-mid);transition:transform 0.2s; }
+    .faq-item.open .faq-q .icon { transform:rotate(45deg);color:var(--ember);border-color:var(--ember); }
+    .faq-a { font-size:14px;color:var(--text-mid);line-height:1.75;margin-top:16px;display:none; }
+    .faq-item.open .faq-a { display:block; }
+
+    /* CTA Banner */
+    .cta-banner { margin:0 52px 80px;border-radius:20px;background:linear-gradient(135deg,var(--char) 0%,#2A1F18 100%);border:1px solid #ffffff08;padding:64px;text-align:center;position:relative;overflow:hidden; }
+    .cta-banner::before { content:'';position:absolute;top:-60px;left:50%;transform:translateX(-50%);width:400px;height:400px;background:radial-gradient(circle,rgba(232,80,10,0.12) 0%,transparent 70%);pointer-events:none; }
+    .cta-banner h2 { font-family:var(--fd);font-size:clamp(32px,4vw,48px);font-weight:900;letter-spacing:-0.03em;margin-bottom:12px;position:relative; }
+    .cta-banner p { font-size:16px;color:var(--text-mid);margin-bottom:36px;position:relative; }
+    .cta-buttons { display:flex;gap:12px;justify-content:center;flex-wrap:wrap;position:relative; }
+    .cta-primary { font-family:var(--fb);font-size:15px;font-weight:700;color:#fff;background:var(--ember);padding:14px 32px;border-radius:10px;text-decoration:none;transition:background 0.14s,transform 0.1s;box-shadow:0 4px 24px rgba(232,80,10,0.4); }
+    .cta-primary:hover { background:var(--ember-glow);transform:translateY(-1px); }
+    .cta-secondary { font-family:var(--fb);font-size:15px;font-weight:600;color:var(--text-hi);background:#ffffff0a;padding:14px 32px;border-radius:10px;text-decoration:none;border:1px solid #ffffff15;transition:background 0.14s; }
+    .cta-secondary:hover { background:#ffffff14; }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <a href="/" class="nav-logo">Pitch<span class="dot">.</span></a>
+    <ul class="nav-links">
+      <li><a href="/events">Events</a></li>
+      <li><a href="/vendors">Vendors</a></li>
+      <li><a href="/how-it-works">How It Works</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="/login" class="btn-login">Log in</a>
+      <a href="/signup" class="btn-get-started">Get Started</a>
+    </div>
+  </nav>
+
+  <main>
+    <div class="hero">
+      <h1>Simple, transparent pricing.</h1>
+      <p>Apply to events for free. Upgrade when you're ready to grow.</p>
+    </div>
+
+    <!-- Vendor Pricing -->
+    <section class="pricing-section">
+      <div class="section-label">For Vendors</div>
+      <h2 style="font-family:var(--fd);font-size:28px;font-weight:900;letter-spacing:-0.03em;">Choose your vendor plan</h2>
+      <div class="pricing-grid">
+        <div class="plan-card">
+          <div class="plan-name">Free</div>
+          <div class="plan-price"><span class="free-label">$0</span><span class="period">/month</span></div>
+          <p class="plan-desc">Everything you need to get started. Apply to events and build your presence on Pitch.</p>
+          <ul class="plan-features">
+            <li>Basic vendor profile with photos & menu</li>
+            <li>Unlimited event applications</li>
+            <li>Standard listing visibility in search</li>
+            <li>Email notifications for new events</li>
+            <li>Vendor messaging with organisers</li>
+            <li class="muted">Priority placement in search</li>
+            <li class="muted">Featured Pro badge</li>
+            <li class="muted">Application analytics</li>
+          </ul>
+          <a href="/signup" class="plan-cta secondary">Get started free</a>
+        </div>
+
+        <div class="plan-card featured">
+          <div class="plan-name">Pro</div>
+          <div class="plan-price"><span class="amount">$29</span><span class="period">/month</span></div>
+          <p class="plan-desc">For vendors serious about growth. Stand out in search results and understand what's working.</p>
+          <ul class="plan-features">
+            <li>Everything in Free</li>
+            <li>Priority placement in search results</li>
+            <li>Featured Pro badge on your profile</li>
+            <li>Application analytics — views, shortlist rate, acceptance trends</li>
+            <li>Dedicated vendor support via email</li>
+            <li>Early access to new events before public listing</li>
+            <li>Profile highlighted in organiser searches</li>
+          </ul>
+          <a href="/signup" class="plan-cta primary">Start Pro trial — 14 days free</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Organiser Pricing -->
+    <section class="org-section">
+      <div class="section-label">For Organisers</div>
+      <div class="org-card">
+        <div>
+          <div class="free-tag">Free to list events</div>
+          <h3>Organise events at no upfront cost.</h3>
+          <p>List unlimited events, manage applications, message vendors, and collect stall fees — all for free. We only take a cut when you process payments through Pitch.</p>
+          <div class="fee-highlight">
+            <span class="pct">3%</span>
+            <div class="fee-desc">platform fee on payments<br>processed through Pitch.<br><span style="color:var(--text-lo);font-size:11px;">Only applies to Pitch-facilitated transactions</span></div>
+          </div>
+          <ul class="org-features">
+            <li>Unlimited event listings</li>
+            <li>Full application management dashboard</li>
+            <li>Direct messaging with all applicants</li>
+            <li>Collect stall fees directly (zero fee)</li>
+            <li>First 3 events processed through Pitch. — fee-free</li>
+            <li>Vendor profile access & shortlisting tools</li>
+          </ul>
+        </div>
+        <div>
+          <div class="org-visual">
+            <div class="big-free">Free</div>
+            <div class="sub">to list & manage events</div>
+            <div class="note">
+              The 3% fee only applies when you use Pitch. as your payment processor. Collect stall fees directly via bank transfer with zero platform fee — always.
+            </div>
+          </div>
+          <a href="/signup" class="plan-cta primary" style="margin-top:16px;display:block;">List your first event</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="faq-section">
+      <h2>Common questions</h2>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          Can I cancel my Pro plan anytime?
+          <span class="icon">+</span>
+        </div>
+        <div class="faq-a">Yes — you can cancel your Pro subscription at any time from your account settings. You'll retain Pro access until the end of your current billing period. No cancellation fees, no questions asked.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          What counts as a "processed" payment for the 3% fee?
+          <span class="icon">+</span>
+        </div>
+        <div class="faq-a">The 3% fee applies only when a vendor pays their stall fee through the Pitch. platform using our integrated payment processor (powered by Stripe). If you agree payment terms directly with vendors and collect payment outside of Pitch. — via bank transfer, cash, or any other method — no fee applies.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          Do I need a credit card to sign up?
+          <span class="icon">+</span>
+        </div>
+        <div class="faq-a">No credit card is required to create a free account — for vendors or organisers. You only need to add payment details if you're upgrading to Vendor Pro, or if you're an organiser wanting to enable Pitch. payment processing for your events.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          Is there a limit on event applications?
+          <span class="icon">+</span>
+        </div>
+        <div class="faq-a">No. Both Free and Pro vendors can apply to an unlimited number of events. There's no cap, no credits system, and no hidden limits. Apply to as many markets, festivals, and pop-ups as you like.</div>
+      </div>
+    </section>
+
+    <!-- CTA Banner -->
+    <div class="cta-banner">
+      <h2>Ready to find your pitch?</h2>
+      <p>Join hundreds of vendors and organisers building Australia's best food markets.</p>
+      <div class="cta-buttons">
+        <a href="/signup" class="cta-primary">Get started free</a>
+        <a href="/how-it-works" class="cta-secondary">See how it works</a>
+      </div>
+    </div>
+  </main>
+
+  <footer style="background:#161210;border-top:1px solid #ffffff06;padding:40px 52px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;position:relative;z-index:1;">
+    <a href="/" style="font-family:'Fraunces',serif;font-size:22px;font-weight:900;color:#FDF4E7;text-decoration:none;letter-spacing:-0.04em;">Pitch<span style="color:#E8500A;">.</span></a>
+    <div style="display:flex;gap:24px;flex-wrap:wrap;">
+      <a href="/about" style="font-size:13px;color:#6B5A4A;text-decoration:none;transition:color 0.14s;">About</a>
+      <a href="/pricing" style="font-size:13px;color:#6B5A4A;text-decoration:none;transition:color 0.14s;">Pricing</a>
+      <a href="/contact" style="font-size:13px;color:#6B5A4A;text-decoration:none;transition:color 0.14s;">Contact</a>
+      <a href="/terms" style="font-size:13px;color:#6B5A4A;text-decoration:none;transition:color 0.14s;">Terms</a>
+      <a href="/privacy" style="font-size:13px;color:#6B5A4A;text-decoration:none;transition:color 0.14s;">Privacy</a>
+    </div>
+    <span style="font-size:12px;color:#4A3C30;">© 2026 Pitch. Adelaide, Australia.</span>
+  </footer>
+
+  <script>
+    function toggleFaq(el) {
+      const item = el.closest('.faq-item');
+      item.classList.toggle('open');
+    }
+  </script>
+</body>
+</html>
