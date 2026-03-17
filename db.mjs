@@ -652,6 +652,8 @@ export const stmts = {
   // vendor reviews
   getReviewsByVendor:  prepare(`SELECT * FROM vendor_reviews WHERE vendor_user_id=? ORDER BY created_at DESC`),
   getReviewAvg:        prepare(`SELECT AVG(rating) as avg, COUNT(*) as total FROM vendor_reviews WHERE vendor_user_id=?`),
+  getGlobalReviewAvg:  prepare(`SELECT ROUND(AVG(rating),1) as avg FROM vendor_reviews`),
+  countAllApplications:prepare(`SELECT COUNT(*) as n FROM event_applications`),
   createReview:        prepare(`INSERT INTO vendor_reviews (vendor_user_id,event_id,event_name,reviewer_name,rating,body) VALUES (@vendor_user_id,@event_id,@event_name,@reviewer_name,@rating,@body)`),
   flagReview:          prepare(`UPDATE vendor_reviews SET flagged=1 WHERE id=? AND vendor_user_id=?`),
   getReviewById:       prepare(`SELECT * FROM vendor_reviews WHERE id=?`),
