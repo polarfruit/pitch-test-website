@@ -1116,6 +1116,119 @@ app.post('/api/vendor/documents', requireAuth, async (req, res) => {
   res.json({ ok: true, url: data });
 });
 
+// ── API: Vendor reviews ────────────────────────────────────────────────────
+app.get('/api/vendor/reviews', requireAuth, async (req, res) => {
+  if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Vendors only' });
+  const [reviews, avg] = await Promise.all([
+    stmts.getReviewsByVendor.all(req.session.userId),
+    stmts.getReviewAvg.get(req.session.userId),
+  ]);
+  res.json({ reviews, avgRating: avg ? Number((avg.avg || 0).toFixed(1)) : 0, totalReviews: avg ? avg.total : 0 });
+});
+
+app.post('/api/vendor/reviews/:id/flag', requireAuth, async (req, res) => {
+  if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Vendors only' });
+  await stmts.flagReview.run(req.params.id, req.session.userId);
+  res.json({ ok: true });
+});
+
+// ── API: Vendor stall fees ─────────────────────────────────────────────────
+app.get('/api/vendor/stall-fees', requireAuth, async (req, res) => {
+  if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Vendors only' });
+  const fees = await stmts.getStallFeesByVendor.all(req.session.userId);
+  res.json({ fees });
+});
+
+app.post('/api/vendor/stall-fees/:id/pay', requireAuth, async (req, res) => {
+  if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Vendors only' });
+  const fee = await stmts.getStallFeeById.get(req.params.id);
+  if (!fee || fee.vendor_user_id !== req.session.userId) return res.status(404).json({ error: 'Not found' });
+  if (fee.status !== 'unpaid') return res.status(400).json({ error: 'Fee is not unpaid' });
+  await stmts.payStallFee.run(req.params.id, req.session.userId);
+  res.json({ ok: true });
+});
+
+// ── API: Vendor calendar ───────────────────────────────────────────────────
+app.get('/api/vendor/calendar', requireAuth, async (req, res) => {
+  if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Vendors only' });
+  const apps = await stmts.getVendorCalendar.all(req.session.userId);
+  res.json({ applications: apps });
+});
+
+// ── API: Vendor market history ─────────────────────────────────────────────
+app.get('/api/vendor/history', requireAuth, async (req, res) => {
+  if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Vendors only' });
+  const [history, reviews] = await Promise.all([
+    stmts.getVendorHistory.all(req.session.userId),
+    stmts.getReviewsByVendor.all(req.session.userId),
+  ]);
+  // Attach reviews to each history entry by event_id
+  const reviewMap = {};
+  for (const r of reviews) {
+    if (r.event_id) {
+      if (!reviewMap[r.event_id]) reviewMap[r.event_id] = [];
+      reviewMap[r.event_id].push(r);
+    }
+  }
+  const enriched = history.map(h => ({ ...h, reviews: reviewMap[h.event_id] || [] }));
+  res.json({ history: enriched });
+});
+
+// ── API: Vendor account settings ──────────────────────────────────────────
+app.put('/api/vendor/settings/account', requireAuth, async (req, res) => {
+  if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Vendors only' });
+  const { email, current_password, new_password } = req.body;
+  const user = await stmts.getUserById.get(req.session.userId);
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  try {
+    if (email && email !== user.email) {
+      await stmts.updateUserProfile.run({ first_name: user.first_name, last_name: user.last_name, email, status: user.status, id: user.id });
+    }
+    if (new_password) {
+      if (!current_password) return res.status(400).json({ error: 'Current password required' });
+      const ok = await bcrypt.compare(current_password, user.password_hash);
+      if (!ok) return res.status(400).json({ error: 'Current password is incorrect' });
+      const hash = await bcrypt.hash(new_password, 10);
+      await stmts.updateUserPassword.run(hash, user.id);
+    }
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('[vendor settings]', e);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.put('/api/vendor/settings/notifications', requireAuth, async (req, res) => {
+  if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Vendors only' });
+  const { notif_apps, notif_docs, notif_reviews, notif_payments } = req.body;
+  await stmts.updateVendorSettings.run({
+    notif_apps: notif_apps ? 1 : 0,
+    notif_docs: notif_docs ? 1 : 0,
+    notif_reviews: notif_reviews ? 1 : 0,
+    notif_payments: notif_payments ? 1 : 0,
+    user_id: req.session.userId,
+  });
+  res.json({ ok: true });
+});
+
+app.post('/api/vendor/settings/pause', requireAuth, async (req, res) => {
+  if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Vendors only' });
+  const { paused } = req.body;
+  await stmts.pauseVendor.run(paused ? 1 : 0, req.session.userId);
+  res.json({ ok: true, paused: !!paused });
+});
+
+app.delete('/api/vendor/account', requireAuth, async (req, res) => {
+  if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Vendors only' });
+  const userId = req.session.userId;
+  await stmts.deleteVendorByUserId.run(userId);
+  await stmts.deleteVerificationCodesByUserId.run(userId);
+  await stmts.deletePaymentsByUserId.run(userId);
+  await stmts.deleteUser.run(userId);
+  sessWrite(res, {});
+  res.json({ ok: true });
+});
+
 // ── Public stats ───────────────────────────────────────────────────────────
 app.get('/api/stats', async (req, res) => {
   const vendors = (await stmts.countVendors.get()).n;
@@ -1252,6 +1365,137 @@ app.delete('/api/organiser/events/:id', requireAuth, async (req, res) => {
   const ev = await stmts.getEventById.get(req.params.id);
   if (!ev || Number(ev.organiser_user_id) !== Number(req.session.userId)) return res.status(403).json({ error: 'Not your event' });
   await stmts.deleteEvent.run(Number(req.params.id));
+  res.json({ ok: true });
+});
+
+// POST /api/organiser/events/:id/cancel
+app.post('/api/organiser/events/:id/cancel', requireAuth, async (req, res) => {
+  if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
+  const ev = await stmts.getEventById.get(req.params.id);
+  if (!ev || Number(ev.organiser_user_id) !== Number(req.session.userId)) return res.status(403).json({ error: 'Not your event' });
+  const { reason } = req.body;
+  await stmts.cancelEvent.run(reason || 'Event cancelled by organiser.', Number(req.params.id));
+  res.json({ ok: true });
+});
+
+// GET /api/organiser/applications — all apps across organiser's events
+app.get('/api/organiser/applications', requireAuth, async (req, res) => {
+  if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
+  const apps = await stmts.getAllAppsByOrganiser.all(req.session.userId);
+  res.json({ applications: apps });
+});
+
+// GET /api/organiser/calendar
+app.get('/api/organiser/calendar', requireAuth, async (req, res) => {
+  if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
+  const events = await stmts.getOrgCalendar.all(req.session.userId);
+  res.json({ events });
+});
+
+// GET /api/organiser/analytics
+app.get('/api/organiser/analytics', requireAuth, async (req, res) => {
+  if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
+  const stats = await stmts.getOrgEventStats.all(req.session.userId);
+  res.json({ stats });
+});
+
+// GET /api/organiser/vendor-ratings — ratings I've given to vendors
+app.get('/api/organiser/vendor-ratings', requireAuth, async (req, res) => {
+  if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
+  const ratings = await stmts.getOrgVendorRatings.all(req.session.userId);
+  res.json({ ratings });
+});
+
+// POST /api/organiser/vendor-ratings — rate a vendor
+app.post('/api/organiser/vendor-ratings', requireAuth, async (req, res) => {
+  if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
+  const { vendor_user_id, event_id, punctual, presentation, would_rebook, notes } = req.body;
+  if (!vendor_user_id) return res.status(400).json({ error: 'vendor_user_id required' });
+  await stmts.upsertVendorRating.run({
+    organiser_user_id: req.session.userId,
+    vendor_user_id: Number(vendor_user_id),
+    event_id: event_id ? Number(event_id) : null,
+    punctual: Number(punctual) || 3,
+    presentation: Number(presentation) || 3,
+    would_rebook: would_rebook ? 1 : 0,
+    notes: notes || null,
+  });
+  res.json({ ok: true });
+});
+
+// POST /api/organiser/reviews/:id/flag
+app.post('/api/organiser/reviews/:id/flag', requireAuth, async (req, res) => {
+  if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
+  await stmts.flagOrgReview.run(req.params.id, req.session.userId);
+  res.json({ ok: true });
+});
+
+// GET /api/organiser/reviews — reviews received from vendors
+app.get('/api/organiser/reviews', requireAuth, async (req, res) => {
+  if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
+  const [reviews, avg] = await Promise.all([
+    stmts.getOrgReviews.all(req.session.userId),
+    stmts.getOrgReviewAvg.get(req.session.userId),
+  ]);
+  res.json({ reviews, avgRating: avg ? Number((avg.avg || 0).toFixed(1)) : 0, totalReviews: avg ? avg.total : 0 });
+});
+
+// PUT /api/organiser/settings/account
+app.put('/api/organiser/settings/account', requireAuth, async (req, res) => {
+  if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
+  const { email, current_password, new_password } = req.body;
+  const user = await stmts.getUserById.get(req.session.userId);
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  try {
+    if (email && email !== user.email) {
+      await stmts.updateUserProfile.run({ first_name: user.first_name, last_name: user.last_name, email, status: user.status, id: user.id });
+    }
+    if (new_password) {
+      if (!current_password) return res.status(400).json({ error: 'Current password required' });
+      const ok = await bcrypt.compare(current_password, user.password_hash);
+      if (!ok) return res.status(400).json({ error: 'Current password is incorrect' });
+      const hash = await bcrypt.hash(new_password, 10);
+      await stmts.updateUserPassword.run(hash, user.id);
+    }
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: 'Server error' }); }
+});
+
+// PUT /api/organiser/settings/notifications
+app.put('/api/organiser/settings/notifications', requireAuth, async (req, res) => {
+  if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
+  const { notif_new_apps, notif_deadlines, notif_messages, notif_payments } = req.body;
+  await stmts.updateOrganiserSettings.run({
+    notif_new_apps:  notif_new_apps  ? 1 : 0,
+    notif_deadlines: notif_deadlines ? 1 : 0,
+    notif_messages:  notif_messages  ? 1 : 0,
+    notif_payments:  notif_payments  ? 1 : 0,
+    user_id: req.session.userId,
+  });
+  res.json({ ok: true });
+});
+
+// POST /api/organiser/settings/pause
+app.post('/api/organiser/settings/pause', requireAuth, async (req, res) => {
+  if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
+  const { paused } = req.body;
+  await stmts.pauseOrganiser.run(paused ? 1 : 0, req.session.userId);
+  res.json({ ok: true, paused: !!paused });
+});
+
+// Vendor leaves a review of an organiser
+app.post('/api/vendor/organiser-review', requireAuth, async (req, res) => {
+  if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Vendors only' });
+  const { organiser_user_id, event_id, event_name, rating, body } = req.body;
+  if (!organiser_user_id || !rating) return res.status(400).json({ error: 'organiser_user_id and rating required' });
+  await stmts.createOrgReview.run({
+    organiser_user_id: Number(organiser_user_id),
+    vendor_user_id: req.session.userId,
+    event_id: event_id ? Number(event_id) : null,
+    event_name: event_name || null,
+    rating: Math.min(5, Math.max(1, Number(rating))),
+    body: body || null,
+  });
   res.json({ ok: true });
 });
 
