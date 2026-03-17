@@ -36,8 +36,9 @@
     .toc { position:sticky;top:90px; }
     .toc-label { font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-lo);margin-bottom:14px; }
     .toc-list { list-style:none;display:flex;flex-direction:column;gap:2px; }
-    .toc-list a { font-size:13px;color:var(--text-lo);text-decoration:none;padding:5px 10px;border-radius:6px;display:block;transition:color 0.14s,background 0.14s;border-left:2px solid transparent; }
+    .toc-list a { font-size:13px;color:var(--text-lo);text-decoration:none;padding:5px 10px;border-radius:6px;display:block;transition:color 0.14s,background 0.14s,border-left-color 0.14s;border-left:2px solid transparent; }
     .toc-list a:hover { color:var(--text-mid);background:#ffffff06;border-left-color:#ffffff15; }
+    .toc-list a.active { color:var(--ember);border-left-color:var(--ember);background:var(--ember-bg); }
     @media(max-width:880px){.toc{display:none;}}
 
     /* Content */
@@ -222,6 +223,31 @@
       </div>
     </div>
   </main>
+
+  <script>
+    (function() {
+      const tocLinks = Array.from(document.querySelectorAll('.toc-list a'));
+      const sections = tocLinks.map(a => document.querySelector(a.getAttribute('href')));
+
+      function setActive(el) {
+        tocLinks.forEach(a => a.classList.remove('active'));
+        if (el) el.classList.add('active');
+      }
+
+      function onScroll() {
+        const scrollY = window.scrollY + 120; // offset for sticky navbar
+        let current = null;
+        sections.forEach(sec => {
+          if (sec && sec.offsetTop <= scrollY) current = sec;
+        });
+        const idx = sections.indexOf(current);
+        setActive(idx >= 0 ? tocLinks[idx] : null);
+      }
+
+      window.addEventListener('scroll', onScroll, { passive: true });
+      onScroll(); // set on load
+    })();
+  </script>
 
   <footer style="background:#161210;border-top:1px solid #ffffff06;padding:40px 52px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;position:relative;z-index:1;">
     <a href="/" style="font-family:'Fraunces',serif;font-size:22px;font-weight:900;color:#FDF4E7;text-decoration:none;letter-spacing:-0.04em;">Pitch<span style="color:#E8500A;">.</span></a>
