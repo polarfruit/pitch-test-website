@@ -408,6 +408,106 @@ footer {
 .footer-legal a { font-size: 12px; color: var(--text-lo); text-decoration: none; transition: color 0.14s; }
 .footer-legal a:hover { color: var(--text-mid); }
 
+/* ── SHARED FIELD STYLES (used in contact modal) ─────────────────────────── */
+.field-input, .field-textarea-vd {
+  width: 100%; background: var(--ash); border: 1px solid #ffffff0A;
+  border-radius: 10px; padding: 11px 14px;
+  font-family: var(--fb); font-size: 14px; color: var(--text-hi);
+  outline: none; transition: border-color 0.14s, box-shadow 0.14s; display: block;
+}
+.field-input:focus, .field-textarea-vd:focus { border-color: #E8500A40; box-shadow: 0 0 0 3px #E8500A12; }
+.field-input::placeholder, .field-textarea-vd::placeholder { color: var(--text-lo); }
+.field-textarea-vd { resize: vertical; min-height: 110px; line-height: 1.6; }
+
+/* ── FOLLOW BUTTON ───────────────────────────────────────────────────────── */
+.btn-follow {
+  width: 100%; font-family: var(--fb); font-size: 14px; font-weight: 700;
+  color: var(--ember); background: var(--ember-bg); border: 1.5px solid #E8500A33;
+  border-radius: 12px; padding: 13px; cursor: pointer; margin-bottom: 12px;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: all 0.14s;
+}
+.btn-follow:hover { background: #E8500A1E; border-color: var(--ember); }
+.btn-follow.following { color: var(--text-mid); background: transparent; border-color: #ffffff14; }
+.btn-follow.following:hover { background: #ffffff08; }
+.follow-count { font-size: 11px; color: var(--text-lo); text-align: center; margin-bottom: 14px; margin-top: -8px; }
+
+/* ── CONTACT BUTTON ──────────────────────────────────────────────────────── */
+.btn-contact {
+  width: 100%; font-family: var(--fb); font-size: 14px; font-weight: 700;
+  color: var(--text-mid); background: transparent; border: 1px solid #ffffff12;
+  border-radius: 12px; padding: 13px; cursor: pointer; margin-bottom: 14px;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  transition: all 0.14s;
+}
+.btn-contact:hover { background: #ffffff09; color: var(--text-hi); border-color: #ffffff22; }
+
+/* ── CONTACT MODAL ───────────────────────────────────────────────────────── */
+.contact-overlay {
+  position: fixed; inset: 0; background: rgba(26,22,18,0.82);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  z-index: 300; display: flex; align-items: flex-end; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.2s;
+}
+.contact-overlay.open { opacity: 1; pointer-events: all; }
+.contact-box {
+  background: var(--char); border-radius: 24px 24px 0 0; width: 100%; max-width: 540px;
+  border: 1px solid #ffffff0A; border-bottom: none;
+  transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+.contact-overlay.open .contact-box { transform: translateY(0); }
+.contact-header {
+  display: flex; align-items: center; justify-content: space-between; padding: 22px 26px 0;
+}
+.contact-title { font-family: var(--fd); font-size: 20px; font-weight: 900; color: var(--text-hi); }
+.contact-close {
+  width: 34px; height: 34px; border-radius: 50%; background: var(--ash);
+  border: none; cursor: pointer; font-size: 17px; color: var(--text-lo);
+  display: flex; align-items: center; justify-content: center; transition: background 0.14s;
+}
+.contact-close:hover { background: var(--smoke); color: var(--text-hi); }
+.contact-body { padding: 18px 26px; }
+.contact-footer { padding: 0 26px 28px; display: flex; justify-content: flex-end; gap: 10px; }
+.contact-cancel {
+  font-family: var(--fb); font-size: 13px; font-weight: 600; color: var(--text-lo);
+  background: none; border: none; cursor: pointer; padding: 11px 16px; transition: color 0.14s;
+}
+.contact-cancel:hover { color: var(--text-mid); }
+.contact-send {
+  font-family: var(--fb); font-size: 14px; font-weight: 700;
+  color: #fff; background: var(--ember); border: none; border-radius: 10px;
+  padding: 11px 24px; cursor: pointer; box-shadow: 0 4px 16px #E8500A28;
+  transition: background 0.14s, transform 0.14s;
+}
+.contact-send:hover { background: var(--ember-glow); transform: translateY(-1px); }
+.contact-send:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+/* ── WHAT THEY SELL ──────────────────────────────────────────────────────── */
+.sell-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+.sell-category {
+  font-size: 12px; font-weight: 700; padding: 5px 14px; border-radius: 100px;
+  background: var(--ember-bg); border: 1px solid #E8500A22; color: var(--ember);
+}
+.sell-item {
+  font-size: 12px; font-weight: 500; padding: 5px 14px; border-radius: 100px;
+  background: var(--char); border: 1px solid #ffffff0a; color: var(--text-mid);
+}
+.sell-price-note { font-size: 12px; color: var(--text-lo); margin-top: 8px; display: flex; align-items: center; gap: 6px; }
+
+/* ── APPLY TO SAME MARKETS ───────────────────────────────────────────────── */
+.same-market-list { display: flex; flex-direction: column; gap: 8px; }
+.same-market-chip {
+  display: flex; align-items: center; gap: 10px;
+  background: #ffffff06; border: 1px solid #ffffff0a; border-radius: 10px;
+  padding: 10px 14px; text-decoration: none; transition: all 0.14s;
+}
+.same-market-chip:hover { background: #ffffff0e; border-color: #E8500A30; }
+.same-market-emoji { font-size: 17px; }
+.same-market-body { flex: 1; }
+.same-market-name { font-size: 12px; font-weight: 600; color: var(--text-hi); margin-bottom: 1px; }
+.same-market-date { font-size: 11px; color: var(--text-lo); }
+.same-market-apply { font-size: 11px; font-weight: 700; color: var(--ember); }
+
 @media (max-width: 1024px) {
   .detail-grid { grid-template-columns: 1fr; }
   .sidebar { position: static; }
@@ -484,6 +584,17 @@ if (/^\d+$/.test(window.location.pathname.replace(/^\/vendors\//, '').replace(/\
       <div class="section-block">
         <h2 class="section-heading">Photos</h2>
         <div class="gallery-grid" id="vd-gallery"></div>
+      </div>
+
+      <!-- What they sell -->
+      <div class="section-block" id="vd-sell-section">
+        <h2 class="section-heading">What they sell</h2>
+        <div class="sell-tags" id="vd-sell-tags">
+          <!-- populated by JS -->
+        </div>
+        <div class="sell-price-note" id="vd-price-note" style="display:none;">
+          <span>💲</span><span id="vd-price-label"></span>
+        </div>
       </div>
 
       <!-- Past Events -->
@@ -609,7 +720,41 @@ if (/^\d+$/.test(window.location.pathname.replace(/^\/vendors\//, '').replace(/\
     <!-- ── RIGHT SIDEBAR ─────────────────────────────────────────────── -->
     <aside class="sidebar">
 
-      <!-- Rating Summary -->
+      <!-- Follow & Contact actions -->
+      <button class="btn-follow" id="follow-btn" onclick="toggleFollow()">
+        ❤️ Follow vendor
+      </button>
+      <div class="follow-count" id="follow-count">248 followers</div>
+
+      <button class="btn-contact" onclick="openContactModal()">
+        💬 Contact vendor
+      </button>
+
+      <!-- Apply to same markets (vendor-only) -->
+      <div class="sidebar-card" id="same-markets-section" style="display:none;">
+        <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-lo);margin-bottom:14px;">Also at these markets</div>
+        <div class="same-market-list" id="same-market-list">
+          <a class="same-market-chip" href="/events/glenelg-twilight-market">
+            <span class="same-market-emoji">🌅</span>
+            <div class="same-market-body">
+              <div class="same-market-name">Glenelg Twilight Market</div>
+              <div class="same-market-date">Sun 3 May · Glenelg</div>
+            </div>
+            <span class="same-market-apply">Apply →</span>
+          </a>
+          <a class="same-market-chip" href="/events/rundle-mall-night-eats">
+            <span class="same-market-emoji">🌃</span>
+            <div class="same-market-body">
+              <div class="same-market-name">Rundle Mall Night Eats</div>
+              <div class="same-market-date">Sat 12 Apr · Adelaide CBD</div>
+            </div>
+            <span class="same-market-apply">Apply →</span>
+          </a>
+        </div>
+        <p style="font-size:11px;color:var(--text-lo);margin-top:12px;line-height:1.5;">This vendor is confirmed at these events. Apply quickly to trade alongside them.</p>
+      </div>
+
+    <!-- Rating Summary -->
       <div class="sidebar-card" id="vd-rating-card">
         <div class="rating-big">
           <div class="rating-number" id="vd-rating-num">4.9</div>
@@ -770,6 +915,32 @@ if (/^\d+$/.test(window.location.pathname.replace(/^\/vendors\//, '').replace(/\
     </aside>
   </div><!-- /detail-grid -->
 </main>
+
+<!-- CONTACT MODAL -->
+<div class="contact-overlay" id="contact-overlay" onclick="handleContactOverlay(event)">
+  <div class="contact-box">
+    <div class="contact-header">
+      <div class="contact-title" id="contact-modal-title">Contact vendor</div>
+      <button class="contact-close" onclick="closeContactModal()">×</button>
+    </div>
+    <div class="contact-body">
+      <p style="font-size:13px;color:var(--text-lo);margin-bottom:18px;line-height:1.6;">Send a message to this vendor. They typically respond within 24 hours.</p>
+      <div style="margin-bottom:14px;">
+        <label style="font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-lo);font-weight:700;margin-bottom:7px;display:block;">Subject</label>
+        <input class="field-input" id="contact-subject" type="text" placeholder="e.g. Interested in having you at our event" />
+      </div>
+      <div>
+        <label style="font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-lo);font-weight:700;margin-bottom:7px;display:block;">Message</label>
+        <textarea id="contact-message" class="field-textarea-vd" maxlength="500" placeholder="Write your message here…" oninput="updateContactCount()"></textarea>
+        <div style="font-size:11px;color:var(--text-lo);text-align:right;margin-top:5px;" id="contact-count">0 / 500</div>
+      </div>
+    </div>
+    <div class="contact-footer">
+      <button class="contact-cancel" onclick="closeContactModal()">Cancel</button>
+      <button class="contact-send" id="contact-send-btn" onclick="sendContactMessage()" disabled>Send message</button>
+    </div>
+  </div>
+</div>
 
 <!-- LIGHTBOX -->
 <div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
@@ -935,6 +1106,9 @@ function applyAndReveal(v) {
       ? items.map(function(i) { return '<div class="doc-item"><div class="doc-check">✓</div>' + i.label + '</div>'; }).join('')
       : '<div style="font-size:12px;color:var(--text-lo);">No documents uploaded yet.</div>';
   }
+
+  // What they sell — use cuisine_tags from DB vendor
+  renderWhatTheySell(cuisines, db.price_range || null, []);
 
   document.documentElement.classList.remove('vd-loading');
 }
@@ -1136,6 +1310,107 @@ document.addEventListener('click', e => {
     document.getElementById('invite-dropdown').classList.remove('open');
   }
 });
+
+/* ── Follow / Unfollow ────────────────────────────────────────────────────── */
+var _following = false;
+var _followCount = 248;
+function toggleFollow() {
+  _following = !_following;
+  _followCount += _following ? 1 : -1;
+  const btn = document.getElementById('follow-btn');
+  const count = document.getElementById('follow-count');
+  btn.innerHTML = _following ? '❤️ Following' : '❤️ Follow vendor';
+  btn.classList.toggle('following', _following);
+  if (count) count.textContent = _followCount + ' followers';
+  showVendorToast(_following ? 'Following — you\'ll be notified of new events' : 'Unfollowed');
+}
+
+/* ── Contact Modal ─────────────────────────────────────────────────────────── */
+function openContactModal() {
+  document.getElementById('contact-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeContactModal() {
+  document.getElementById('contact-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function handleContactOverlay(e) {
+  if (e.target === document.getElementById('contact-overlay')) closeContactModal();
+}
+function updateContactCount() {
+  const ta = document.getElementById('contact-message');
+  const cnt = document.getElementById('contact-count');
+  const btn = document.getElementById('contact-send-btn');
+  const len = ta.value.trim().length;
+  if (cnt) cnt.textContent = ta.value.length + ' / 500';
+  if (btn) btn.disabled = len < 5;
+}
+function sendContactMessage() {
+  closeContactModal();
+  document.getElementById('contact-subject').value = '';
+  document.getElementById('contact-message').value = '';
+  document.getElementById('contact-count').textContent = '0 / 500';
+  document.getElementById('contact-send-btn').disabled = true;
+  showVendorToast('Message sent!');
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeContactModal();
+});
+
+/* ── Toast helper ─────────────────────────────────────────────────────────── */
+function showVendorToast(msg) {
+  const t = document.getElementById('toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+/* ── Populate "What they sell" ─────────────────────────────────────────────── */
+function renderWhatTheySell(cuisines, priceRange, menuItems) {
+  const tagsEl = document.getElementById('vd-sell-tags');
+  const priceEl = document.getElementById('vd-price-note');
+  const priceLbl = document.getElementById('vd-price-label');
+  if (!tagsEl) return;
+
+  var tags = [];
+  // Category tags (orange)
+  (cuisines || []).forEach(function(c) {
+    tags.push('<span class="sell-category">' + c + '</span>');
+  });
+  // Specific menu items (if provided)
+  (menuItems || []).forEach(function(item) {
+    tags.push('<span class="sell-item">' + item + '</span>');
+  });
+  tagsEl.innerHTML = tags.join('');
+
+  // Price range note
+  const priceMap = { '$':'Under $15 per serve', '$$':'$15–$25 per serve', '$$$':'$25+ per serve' };
+  if (priceRange && priceMap[priceRange.trim()] && priceEl && priceLbl) {
+    priceLbl.textContent = priceMap[priceRange.trim()];
+    priceEl.style.display = 'flex';
+  }
+}
+
+// Render for static demo vendor (cuisines + demo menu items)
+if (!isNumericId && typeof vendor !== 'undefined' && vendor) {
+  var _demoMenuItems = {
+    'smoky-joes-bbq': ['Smoked Brisket', 'Baby Back Ribs', 'Pulled Pork Rolls', 'Coleslaw', 'Loaded Fries'],
+    'the-green-fold':  ['Lentil Tacos', 'Falafel Wraps', 'Açaí Bowls', 'Mushroom Burgers'],
+    'barista-mob':     ['Single Origin Espresso', 'Cold Brew', 'Matcha Latte', 'House-made Syrups'],
+    'taco-cartel':     ['Street Tacos', 'Quesadillas', 'Churros', 'Agua Fresca'],
+  };
+  renderWhatTheySell(vendor.cuisines, vendor.price_range || '$', _demoMenuItems[vpath] || []);
+}
+
+// Vendor-only "apply to same markets" toggle (demo)
+(function() {
+  const urlRole = new URLSearchParams(window.location.search).get('role');
+  if (urlRole === 'vendor') {
+    const s = document.getElementById('same-markets-section');
+    if (s) s.style.display = '';
+  }
+})();
 </script>
 </body>
 </html>

@@ -432,6 +432,73 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
 ::-webkit-scrollbar-track { background: var(--coal); }
 ::-webkit-scrollbar-thumb { background: var(--ash); border-radius: 3px; }
 
+/* ── STATUS BANNER ───────────────────────────────────────────────────────── */
+.status-banner {
+  border-radius: 14px; padding: 14px 18px; margin-bottom: 24px;
+  display: none; align-items: flex-start; gap: 12px;
+}
+.status-banner.show { display: flex; }
+.status-banner.cancelled { background: #C0392B12; border: 1px solid #C0392B22; }
+.status-banner.past { background: #6B5A4A14; border: 1px solid #6B5A4A22; }
+.status-banner.full { background: #C9840A12; border: 1px solid #C9840A22; }
+.status-banner.closed { background: #2B5BA812; border: 1px solid #2B5BA822; }
+.status-banner-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+.status-banner-title { font-size: 13px; font-weight: 700; margin-bottom: 3px; }
+.status-banner.cancelled .status-banner-title { color: var(--terra); }
+.status-banner.past .status-banner-title { color: var(--text-mid); }
+.status-banner.full .status-banner-title { color: var(--gold); }
+.status-banner.closed .status-banner-title { color: var(--slate); }
+.status-banner-desc { font-size: 12px; color: var(--text-lo); line-height: 1.5; }
+
+/* ── SAVE BUTTON ─────────────────────────────────────────────────────────── */
+.btn-save {
+  width: 100%; font-family: var(--fb); font-size: 13px; font-weight: 600;
+  color: var(--text-mid); background: transparent; border: 1px solid #ffffff10;
+  border-radius: 10px; padding: 11px; cursor: pointer; margin-bottom: 10px;
+  transition: all 0.14s; display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.btn-save:hover { border-color: #ffffff24; color: var(--text-hi); }
+.btn-save.saved { color: var(--ember); border-color: #E8500A33; background: var(--ember-bg); }
+
+/* ── MAP SECTION ─────────────────────────────────────────────────────────── */
+.ev-map {
+  border-radius: 16px; overflow: hidden; border: 1px solid #ffffff09;
+  height: 260px; position: relative; background: var(--char); margin-top: 16px;
+}
+.ev-map iframe { width: 100%; height: 100%; border: none; display: block; }
+.ev-map-placeholder {
+  width: 100%; height: 100%; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 10px;
+}
+.ev-map-placeholder-icon { font-size: 32px; }
+.ev-map-placeholder-text { font-size: 13px; color: var(--text-lo); }
+.map-actions { display: flex; gap: 10px; margin-top: 12px; }
+.map-action-btn {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
+  font-size: 12px; font-weight: 600; color: var(--text-mid);
+  background: var(--char); border: 1px solid #ffffff09; border-radius: 10px;
+  padding: 9px 14px; text-decoration: none; transition: all 0.14s;
+}
+.map-action-btn:hover { border-color: #ffffff18; color: var(--text-hi); }
+
+/* ── SIMILAR MARKETS ─────────────────────────────────────────────────────── */
+.similar-scroll { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 8px; }
+.similar-scroll::-webkit-scrollbar { display: none; }
+.similar-card {
+  min-width: 215px; background: var(--char); border: 1px solid #ffffff09;
+  border-radius: 16px; padding: 16px 18px; text-decoration: none; flex-shrink: 0;
+  transition: transform 0.16s, border-color 0.16s;
+  display: flex; flex-direction: column; gap: 7px;
+}
+.similar-card:hover { transform: translateY(-2px); border-color: #E8500A22; }
+.similar-emoji { font-size: 26px; }
+.similar-name { font-family: var(--fd); font-size: 13px; font-weight: 800; color: var(--text-hi); line-height: 1.3; }
+.similar-meta { font-size: 11px; color: var(--text-lo); }
+.similar-badge {
+  display: inline-flex; width: fit-content; font-size: 10px; font-weight: 700;
+  padding: 3px 10px; border-radius: 100px; margin-top: 2px;
+}
+
 /* ── RESPONSIVE ──────────────────────────────────────────────────────────── */
 @media (max-width: 1024px) {
   .navbar { padding: 0 28px; }
@@ -487,6 +554,15 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
 
   <!-- ── LEFT COLUMN ────────────────────────────────────────────────────── -->
   <div class="detail-main">
+
+    <!-- Status banner -->
+    <div class="status-banner" id="ev-status-banner">
+      <div class="status-banner-icon" id="ev-status-icon"></div>
+      <div>
+        <div class="status-banner-title" id="ev-status-title"></div>
+        <div class="status-banner-desc" id="ev-status-desc"></div>
+      </div>
+    </div>
 
     <!-- Hero image -->
     <div class="detail-hero" id="ev-hero">
@@ -584,6 +660,22 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
 
     <div class="section-divider"></div>
 
+    <!-- Location & Map -->
+    <div class="subsec-title" style="margin-bottom:8px;">Location</div>
+    <p class="about-text" style="font-size:13px;margin-bottom:0;" id="ev-address-line">Rundle Mall, Adelaide CBD SA 5000</p>
+    <div class="ev-map" id="ev-map">
+      <div class="ev-map-placeholder" id="ev-map-placeholder">
+        <div class="ev-map-placeholder-icon">📍</div>
+        <div class="ev-map-placeholder-text" id="ev-map-placeholder-text">Loading map…</div>
+      </div>
+    </div>
+    <div class="map-actions">
+      <a class="map-action-btn" id="ev-gmaps-link" href="#" target="_blank" rel="noopener">🗺 Google Maps</a>
+      <a class="map-action-btn" id="ev-apmaps-link" href="#" target="_blank" rel="noopener">🍎 Apple Maps</a>
+    </div>
+
+    <div class="section-divider"></div>
+
     <!-- What we're looking for -->
     <div class="subsec-title" style="margin-bottom:12px;">What we're looking for</div>
     <p class="about-text" style="margin-bottom:16px;">We aim to build a diverse lineup that covers a wide range of cuisines and price points. The following categories are preferred — vendors in these categories will receive priority review.</p>
@@ -649,6 +741,14 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
       </a>
     </div>
 
+    <div class="section-divider"></div>
+
+    <!-- Similar markets nearby -->
+    <div class="subsec-title" style="margin-bottom:16px;">Similar markets nearby</div>
+    <div class="similar-scroll" id="ev-similar">
+      <!-- populated by JS -->
+    </div>
+
   </div>
 
   <!-- ── RIGHT / SIDEBAR ───────────────────────────────────────────────── -->
@@ -697,6 +797,10 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
 
     <button class="btn-share" onclick="shareEvent()">
       🔗 Share this event
+    </button>
+
+    <button class="btn-save" id="save-btn" onclick="saveEvent()">
+      🔖 Save this event
     </button>
 
     <!-- Trust note -->
@@ -1182,6 +1286,149 @@ function updateCharCount() {
 
 // ESC to close
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// ── SAVE ──────────────────────────────────────────────────────────────────────
+var _saved = false;
+function saveEvent() {
+  _saved = !_saved;
+  const btn = document.getElementById('save-btn');
+  btn.innerHTML = _saved ? '🔖 Saved!' : '🔖 Save this event';
+  btn.classList.toggle('saved', _saved);
+  if (_saved) {
+    // Prompt sign-up for logged-out users (prototype: check for session cookie)
+    setTimeout(function() {
+      // In a real app: check auth state; for prototype, show a hint via toast
+      const toast = document.getElementById('share-toast');
+      if (!toast) return;
+      const prevText = toast.textContent;
+      toast.textContent = '🔖 Saved to your list';
+      toast.classList.add('show');
+      setTimeout(() => { toast.classList.remove('show'); toast.textContent = prevText; }, 2600);
+    }, 100);
+  }
+}
+
+// ── STATUS DETECTION ──────────────────────────────────────────────────────────
+function detectEventStatus(evData, dbData) {
+  const banner = document.getElementById('ev-status-banner');
+  const applyBtn = document.getElementById('apply-btn');
+  if (!banner) return;
+
+  const today = new Date();
+  const deadline = evData && evData.deadline ? new Date(evData.deadline + 'T23:59:59') : null;
+  const eventDate = evData && evData.date ? new Date(evData.date + 'T23:59:59') : null;
+
+  const isCancelled = evData && evData.status === 'cancelled';
+  const isPast = eventDate && today > eventDate;
+  const isFull = evData && evData.filled >= evData.total;
+  const isClosed = deadline && today > deadline && !isPast && !isCancelled;
+
+  const status = isCancelled ? 'cancelled' : isPast ? 'past' : isFull ? 'full' : isClosed ? 'closed' : 'open';
+  if (status === 'open') return;
+
+  banner.className = 'status-banner show ' + status;
+  const icons  = { cancelled:'🚫', past:'📅', full:'🔒', closed:'⏰' };
+  const titles = { cancelled:'This event has been cancelled', past:'This event has already taken place', full:'All vendor spots are filled', closed:'Applications are now closed' };
+  const descs  = {
+    cancelled: 'The organiser has cancelled this event. All accepted vendors have been notified.',
+    past:      'This event has concluded. Check out similar upcoming markets below.',
+    full:      'All ' + (evData && evData.total ? evData.total : '') + ' vendor spots have been filled for this event.',
+    closed:    'The application deadline has passed. No new applications are being accepted for this event.'
+  };
+
+  document.getElementById('ev-status-icon').textContent = icons[status];
+  document.getElementById('ev-status-title').textContent = titles[status];
+  document.getElementById('ev-status-desc').textContent = descs[status];
+
+  if (applyBtn) {
+    applyBtn.disabled = true;
+    applyBtn.style.opacity = '0.55';
+    applyBtn.style.cursor = 'default';
+    applyBtn.style.boxShadow = 'none';
+    const btnLabels = { cancelled:'Event cancelled', past:'Event has ended', full:'All spots filled', closed:'Applications closed' };
+    applyBtn.textContent = btnLabels[status];
+    applyBtn.onclick = null;
+  }
+}
+
+// Run status detection for static events
+if (ev) detectEventStatus(ev, null);
+
+// ── MAP ────────────────────────────────────────────────────────────────────────
+async function initMap(locationStr) {
+  if (!locationStr) return;
+  const addrLine = document.getElementById('ev-address-line');
+  if (addrLine) addrLine.textContent = locationStr;
+  const encoded = encodeURIComponent(locationStr + ', Australia');
+  const gmLink = document.getElementById('ev-gmaps-link');
+  const apLink = document.getElementById('ev-apmaps-link');
+  if (gmLink) gmLink.href = 'https://www.google.com/maps/search/' + encoded;
+  if (apLink) apLink.href = 'https://maps.apple.com/?q=' + encoded;
+
+  try {
+    const r = await fetch(
+      'https://nominatim.openstreetmap.org/search?format=json&countrycodes=au&limit=1&q=' + encodeURIComponent(locationStr),
+      { headers: { 'Accept-Language': 'en', 'User-Agent': 'Pitch.au/1.0' } }
+    );
+    const data = await r.json();
+    if (data && data[0]) {
+      const lat = parseFloat(data[0].lat), lon = parseFloat(data[0].lon);
+      const d = 0.012;
+      const bbox = [lon - d, lat - d * 0.7, lon + d, lat + d * 0.7].join('%2C');
+      const src = 'https://www.openstreetmap.org/export/embed.html?bbox=' + bbox + '&layer=mapnik&marker=' + lat + '%2C' + lon;
+      const mapEl = document.getElementById('ev-map');
+      const ph = document.getElementById('ev-map-placeholder');
+      if (ph) ph.style.display = 'none';
+      if (mapEl) {
+        const iframe = document.createElement('iframe');
+        iframe.src = src;
+        iframe.setAttribute('loading', 'lazy');
+        mapEl.appendChild(iframe);
+      }
+    } else {
+      const txt = document.getElementById('ev-map-placeholder-text');
+      if (txt) txt.textContent = locationStr;
+    }
+  } catch (e) {
+    const txt = document.getElementById('ev-map-placeholder-text');
+    if (txt) txt.textContent = locationStr;
+  }
+}
+
+// Init map for static event
+if (ev) initMap(ev.location || ev.suburb || '');
+else if (window.__PITCH_DB_EVENT__) {
+  var _dbe = window.__PITCH_DB_EVENT__;
+  initMap((_dbe.venue_name ? _dbe.venue_name + ', ' : '') + (_dbe.suburb || '') + (_dbe.state ? ', ' + _dbe.state : ''));
+  detectEventStatus({
+    status: _dbe.status,
+    total: _dbe.stalls_available,
+    filled: _dbe.approved_count,
+    deadline: _dbe.deadline
+  }, _dbe);
+}
+
+// ── SIMILAR MARKETS ────────────────────────────────────────────────────────────
+var SIMILAR_DEMOS = [
+  { id:'glenelg-twilight-market', emoji:'🌅', name:'Glenelg Twilight Market', suburb:'Glenelg', date:'Sun 3 May', badge:'6 spots left', bc:'#2D8B55' },
+  { id:'adelaide-showground-harvest-fair', emoji:'🌾', name:'Adelaide Showground Harvest Fair', suburb:'Wayville', date:'Sun 18 Apr', badge:'Open now', bc:'#2B5BA8' },
+  { id:'fringe-food-village-2026', emoji:'🎪', name:'Fringe Food Village 2026', suburb:'Adelaide CBD', date:'Sat 22 Mar', badge:'Coming soon', bc:'#C9840A' },
+  { id:'port-noarlunga-twilight', emoji:'🌊', name:'Port Noarlunga Twilight Market', suburb:'Port Noarlunga', date:'Sat 26 Apr', badge:'3 spots left', bc:'#C0392B' },
+];
+(function renderSimilar() {
+  var el = document.getElementById('ev-similar');
+  if (!el) return;
+  var currentId = slug;
+  var items = SIMILAR_DEMOS.filter(function(m){ return m.id !== currentId; }).slice(0, 3);
+  el.innerHTML = items.map(function(m) {
+    return '<a href="/events/' + m.id + '" class="similar-card">' +
+      '<div class="similar-emoji">' + m.emoji + '</div>' +
+      '<div class="similar-name">' + m.name + '</div>' +
+      '<div class="similar-meta">📍 ' + m.suburb + ' · ' + m.date + '</div>' +
+      '<span class="similar-badge" style="background:' + m.bc + '18;color:' + m.bc + ';border:1px solid ' + m.bc + '22;">' + m.badge + '</span>' +
+      '</a>';
+  }).join('');
+})();
 </script>
 </body>
 </html>
