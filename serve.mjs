@@ -951,6 +951,26 @@ app.get('/api/notifications', requireAuth, async (req, res) => {
   }
 });
 
+app.get('/api/admin/notifications', requireAdmin, async (req, res) => {
+  try {
+    const db = await getDb();
+    const pending = db.prepare(`SELECT COUNT(*) as c FROM users WHERE status='pending'`).get();
+    const recentVendors = db.prepare(`SELECT u.id, v.trading_name, u.created_at FROM vendors v JOIN users u ON u.id=v.user_id WHERE u.status='pending' ORDER BY u.created_at DESC LIMIT 5`).all();
+    const recentOrgs = db.prepare(`SELECT u.id, o.org_name, u.created_at FROM organisers o JOIN users u ON u.id=o.user_id WHERE u.status='pending' ORDER BY u.created_at DESC LIMIT 5`).all();
+    const notifs = [];
+    if (pending && pending.c > 0) {
+      notifs.push({ id:'pending', icon:'⏳', iconCls:'gold', title:`${pending.c} account${pending.c>1?'s':''} awaiting approval`, desc:'Pending vendors and organisers need review.', time:'now', unread:true });
+    }
+    for (const v of recentVendors) {
+      notifs.push({ id:`v-${v.id}`, icon:'🍽', iconCls:'ember', title:`New vendor: ${v.trading_name}`, desc:'Vendor account pending approval.', time: v.created_at ? new Date(v.created_at).toLocaleDateString('en-AU') : '', unread:true });
+    }
+    for (const o of recentOrgs) {
+      notifs.push({ id:`o-${o.id}`, icon:'🎪', iconCls:'slate', title:`New organiser: ${o.org_name}`, desc:'Organiser account pending approval.', time: o.created_at ? new Date(o.created_at).toLocaleDateString('en-AU') : '', unread:false });
+    }
+    res.json({ notifications: notifs, unreadCount: notifs.filter(n=>n.unread).length });
+  } catch(e) { console.error('[admin/notifications]', e); res.json({ notifications:[], unreadCount:0 }); }
+});
+
 app.post('/api/events/:id/apply', requireAuth, async (req, res) => {
   const { message } = req.body;
   if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Only vendors can apply' });

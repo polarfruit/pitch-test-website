@@ -466,9 +466,29 @@
       <div class="topbar-sub" id="topbar-sub">Platform at a glance</div>
     </div>
     <div class="topbar-right">
-      <input class="topbar-search" type="text" placeholder="Search vendors, events…" />
-      <div class="icon-btn has-dot">🔔</div>
-      <div class="icon-btn">⚡</div>
+      <input class="topbar-search" id="admin-global-search" type="text" placeholder="Search vendors, events…" oninput="adminGlobalSearch()" />
+      <div style="position:relative;">
+        <div class="icon-btn has-dot" id="admin-notif-btn" onclick="toggleAdminNotifPopup(event)">🔔</div>
+        <div id="admin-notif-popup" style="display:none;position:absolute;top:42px;right:0;width:300px;background:#1C1814;border:1px solid #2A2018;border-radius:12px;box-shadow:0 8px 32px #00000060;z-index:200;overflow:hidden;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #2A2018;">
+            <span style="font-size:13px;font-weight:600;color:#FDF4E7;">Notifications</span>
+            <span style="font-size:11px;color:#6B5A4A;cursor:pointer;" onclick="markAdminNotifsRead()">Mark all read</span>
+          </div>
+          <div id="admin-notif-list" style="max-height:320px;overflow-y:auto;padding:8px 0;">
+            <div style="padding:20px;text-align:center;font-size:13px;color:#6B5A4A;">Loading…</div>
+          </div>
+        </div>
+      </div>
+      <div style="position:relative;">
+        <div class="icon-btn" id="admin-quick-btn" onclick="toggleAdminQuickPopup(event)">⚡</div>
+        <div id="admin-quick-popup" style="display:none;position:absolute;top:42px;right:0;width:220px;background:#1C1814;border:1px solid #2A2018;border-radius:12px;box-shadow:0 8px 32px #00000060;z-index:200;overflow:hidden;">
+          <div style="padding:8px;">
+            <button class="act-btn act-view" style="width:100%;padding:10px 12px;text-align:left;margin-bottom:4px;" onclick="closeAdminPopups();openBanModal()">🚫 Ban a user</button>
+            <button class="act-btn act-view" style="width:100%;padding:10px 12px;text-align:left;margin-bottom:4px;" onclick="closeAdminPopups();openAnnouncementModal()">📢 Post announcement</button>
+            <button class="act-btn act-view" style="width:100%;padding:10px 12px;text-align:left;" onclick="closeAdminPopups();showPanel('vendors',document.querySelectorAll('.nav-item')[1])">⏳ Review pending</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -2428,6 +2448,110 @@
     }
   }
 
+  // ── Topbar global search ──────────────────────────────────────────────────
+  function adminGlobalSearch() {
+    const q = document.getElementById('admin-global-search').value;
+    const active = document.querySelector('.panel.active');
+    if (!active) return;
+    const id = active.id.replace('panel-', '');
+    // Route query into the relevant per-panel search input + trigger filter
+    const routes = {
+      vendors:    { inputId: 'vendor-search',  fn: filterVendorsTable },
+      organisers: { inputId: 'org-search',     fn: filterOrgsTable    },
+      events:     { inputId: 'events-search',  fn: filterEventsTable  },
+    };
+    if (routes[id]) {
+      const el = document.getElementById(routes[id].inputId);
+      if (el) { el.value = q; routes[id].fn(); }
+    } else if (q.trim()) {
+      // For panels without per-panel search, jump to vendors and search there
+      showPanel('vendors', document.querySelectorAll('.nav-item')[1]);
+      setTimeout(() => {
+        const el = document.getElementById('vendor-search');
+        if (el) { el.value = q; filterVendorsTable(); }
+      }, 50);
+    }
+  }
+
+  // ── Admin notifications popup ─────────────────────────────────────────────
+  let _adminNotifs = [];
+
+  async function loadAdminNotifs() {
+    try {
+      const r = await fetch('/api/admin/notifications');
+      if (!r.ok) return;
+      const data = await r.json();
+      _adminNotifs = data.notifications || [];
+      const btn = document.getElementById('admin-notif-btn');
+      if (btn) {
+        if (data.unreadCount > 0) btn.classList.add('has-dot');
+        else btn.classList.remove('has-dot');
+      }
+    } catch(e) {}
+  }
+
+  function renderAdminNotifList() {
+    const list = document.getElementById('admin-notif-list');
+    if (!list) return;
+    if (!_adminNotifs.length) {
+      list.innerHTML = '<div style="padding:20px;text-align:center;font-size:13px;color:#6B5A4A;">No notifications</div>';
+      return;
+    }
+    list.innerHTML = _adminNotifs.map(n => `
+      <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 16px;border-bottom:1px solid #2A2018;${n.unread?'background:rgba(232,80,10,0.04);':''}">
+        <div style="font-size:18px;flex-shrink:0;">${n.icon}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:600;color:#FDF4E7;">${n.title}</div>
+          <div style="font-size:12px;color:#6B5A4A;margin-top:2px;">${n.desc}</div>
+        </div>
+        ${n.unread ? '<div style="width:7px;height:7px;border-radius:50%;background:#E8500A;flex-shrink:0;margin-top:5px;"></div>' : ''}
+      </div>`).join('');
+  }
+
+  function toggleAdminNotifPopup(e) {
+    e.stopPropagation();
+    const popup = document.getElementById('admin-notif-popup');
+    const isOpen = popup.style.display !== 'none';
+    closeAdminPopups();
+    if (!isOpen) {
+      renderAdminNotifList();
+      popup.style.display = 'block';
+      loadAdminNotifs().then(() => renderAdminNotifList());
+    }
+  }
+
+  function markAdminNotifsRead() {
+    _adminNotifs.forEach(n => n.unread = false);
+    const btn = document.getElementById('admin-notif-btn');
+    if (btn) btn.classList.remove('has-dot');
+    renderAdminNotifList();
+  }
+
+  // ── Quick actions popup ───────────────────────────────────────────────────
+  function toggleAdminQuickPopup(e) {
+    e.stopPropagation();
+    const popup = document.getElementById('admin-quick-popup');
+    const isOpen = popup.style.display !== 'none';
+    closeAdminPopups();
+    if (!isOpen) popup.style.display = 'block';
+  }
+
+  function closeAdminPopups() {
+    const n = document.getElementById('admin-notif-popup');
+    const q = document.getElementById('admin-quick-popup');
+    if (n) n.style.display = 'none';
+    if (q) q.style.display = 'none';
+  }
+
+  document.addEventListener('click', function(e) {
+    const nb = document.getElementById('admin-notif-btn');
+    const np = document.getElementById('admin-notif-popup');
+    const qb = document.getElementById('admin-quick-btn');
+    const qp = document.getElementById('admin-quick-popup');
+    if (np && np.style.display !== 'none' && !np.contains(e.target) && !nb.contains(e.target)) np.style.display = 'none';
+    if (qp && qp.style.display !== 'none' && !qp.contains(e.target) && !qb.contains(e.target)) qp.style.display = 'none';
+  });
+
   // ── Auth guard — verify admin session before rendering anything ────────────
   (async () => {
     try {
@@ -2444,6 +2568,7 @@
     loadStats();
     loadVendors();
     loadOrganisers();
+    loadAdminNotifs();
   })();
 </script>
 </body>
