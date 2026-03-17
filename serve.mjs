@@ -1274,6 +1274,84 @@ app.patch('/api/organiser/applications/:id/status', requireAuth, async (req, res
   res.json({ ok: true, spot_number: spotNumber });
 });
 
+// ── Admin — applications ───────────────────────────────────────────────────
+app.get('/api/admin/applications', requireAdmin, async (req, res) => {
+  const { status } = req.query;
+  const apps = (status && status !== 'all')
+    ? await stmts.applicationsByStatus.all(status)
+    : await stmts.allApplications.all();
+  res.json({ applications: apps });
+});
+
+app.patch('/api/admin/applications/:id/status', requireAdmin, async (req, res) => {
+  const { status } = req.body;
+  const allowed = ['pending','approved','declined','withdrawn'];
+  if (!allowed.includes(status)) return res.status(400).json({ error: 'Invalid status' });
+  await stmts.updateApplicationStatus.run(status, req.params.id);
+  res.json({ ok: true });
+});
+
+// ── Admin — all users ──────────────────────────────────────────────────────
+app.get('/api/admin/users-all', requireAdmin, async (req, res) => {
+  const { role } = req.query;
+  const users = (role && role !== 'all')
+    ? await stmts.usersByRole.all(role)
+    : await stmts.allUsers.all();
+  res.json({ users });
+});
+
+app.put('/api/admin/users/:id/role', requireAdmin, async (req, res) => {
+  const { role } = req.body;
+  const allowed = ['vendor','organiser','admin'];
+  if (!allowed.includes(role)) return res.status(400).json({ error: 'Invalid role' });
+  await stmts.updateUserRole.run(role, req.params.id);
+  res.json({ ok: true });
+});
+
+app.post('/api/admin/users/:id/password-reset', requireAdmin, async (req, res) => {
+  const user = await stmts.getUserById.get(req.params.id);
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  const tempPw = Math.random().toString(36).slice(2, 10) + Math.random().toString(36).slice(2, 5).toUpperCase();
+  const hash = bcrypt.hashSync(tempPw, 10);
+  await stmts.updateUserPassword.run(hash, req.params.id);
+  res.json({ ok: true, temp_password: tempPw });
+});
+
+// ── Admin — analytics ─────────────────────────────────────────────────────
+app.get('/api/admin/analytics', requireAdmin, async (req, res) => {
+  const [vendors, organisers, events, appCounts] = await Promise.all([
+    stmts.countVendors.get(),
+    stmts.countOrganisers.get(),
+    stmts.countEvents.get(),
+    stmts.countApplications.all(),
+  ]);
+  res.json({
+    totalVendors: vendors.n,
+    totalOrganisers: organisers.n,
+    totalEvents: events.n,
+    applicationsByStatus: appCounts,
+  });
+});
+
+// ── Admin — featured ──────────────────────────────────────────────────────
+app.get('/api/admin/featured', requireAdmin, async (req, res) => {
+  const [events, vendors] = await Promise.all([
+    stmts.featuredEvents.all(),
+    stmts.featuredVendors.all(),
+  ]);
+  res.json({ events, vendors });
+});
+
+app.patch('/api/admin/events/:id/featured', requireAdmin, async (req, res) => {
+  await stmts.setEventFeatured.run(req.body.featured ? 1 : 0, req.params.id);
+  res.json({ ok: true });
+});
+
+app.patch('/api/admin/vendors/:id/featured', requireAdmin, async (req, res) => {
+  await stmts.setVendorFeatured.run(req.body.featured ? 1 : 0, req.params.id);
+  res.json({ ok: true });
+});
+
 // ── Static page routes ─────────────────────────────────────────────────────
 function page(file) {
   return (req, res) => {

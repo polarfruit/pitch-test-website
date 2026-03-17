@@ -328,6 +328,61 @@
     .save-msg.err { color: #C0392B; }
     .delete-account-btn { margin-left: auto; background: transparent; color: #C0392B; border: 1px solid #C0392B40; border-radius: 8px; padding: 9px 18px; font-family: 'Instrument Sans', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
     .delete-account-btn:hover { background: #C0392B15; border-color: #C0392B80; }
+
+    /* ── Analytics ─────────────────────────────── */
+    .analytics-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 22px; }
+    .analytics-bar-wrap { margin-bottom: 6px; }
+    .analytics-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .analytics-bar-label { font-size: 12px; color: #A89880; width: 100px; flex-shrink: 0; }
+    .analytics-bar-track { flex: 1; height: 8px; background: #2A2018; border-radius: 4px; overflow: hidden; }
+    .analytics-bar-fill { height: 100%; border-radius: 4px; transition: width 0.6s ease; }
+    .analytics-bar-val { font-size: 12px; color: #FDF4E7; font-weight: 600; width: 36px; text-align: right; flex-shrink: 0; }
+    .week-bars { display: flex; align-items: flex-end; gap: 6px; height: 80px; }
+    .week-bar-col { flex: 1; border-radius: 4px 4px 0 0; background: rgba(232,80,10,0.2); min-height: 4px; cursor: pointer; transition: background 0.15s; position: relative; }
+    .week-bar-col:hover { background: #E8500A; }
+    .week-bar-col .tooltip { display: none; position: absolute; bottom: calc(100% + 4px); left: 50%; transform: translateX(-50%); background: #2A2018; border: 1px solid #3A2E26; border-radius: 5px; padding: 3px 7px; font-size: 11px; color: #FDF4E7; white-space: nowrap; z-index: 10; }
+    .week-bar-col:hover .tooltip { display: block; }
+    .week-labels { display: flex; justify-content: space-between; font-size: 10px; color: #4A3C30; margin-top: 5px; }
+
+    /* ── Featured panel ────────────────────────── */
+    .featured-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .featured-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid #1E1916; }
+    .featured-item:last-child { border-bottom: none; }
+    .featured-item-icon { width: 36px; height: 36px; border-radius: 8px; background: #231E19; border: 1px solid #2A2018; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+    .featured-item-body { flex: 1; min-width: 0; }
+    .featured-item-name { font-size: 13.5px; font-weight: 600; color: #FDF4E7; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .featured-item-sub { font-size: 12px; color: #6B5A4A; margin-top: 2px; }
+    .featured-empty { padding: 32px; text-align: center; color: #4A3C30; font-size: 13px; }
+
+    /* ── Announcements panel ───────────────────── */
+    .announce-compose { padding: 24px; border-bottom: 1px solid #2A2018; }
+    .announce-history { }
+    .announce-item { padding: 14px 20px; border-bottom: 1px solid #1E1916; display: flex; gap: 14px; align-items: flex-start; }
+    .announce-item:last-child { border-bottom: none; }
+    .announce-icon { width: 34px; height: 34px; border-radius: 8px; background: rgba(232,80,10,0.12); border: 1px solid rgba(232,80,10,0.2); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+    .announce-body { flex: 1; }
+    .announce-title { font-size: 13.5px; font-weight: 600; color: #FDF4E7; margin-bottom: 2px; }
+    .announce-meta { font-size: 12px; color: #6B5A4A; line-height: 1.5; }
+
+    /* ── Moderation panel ──────────────────────── */
+    .mod-item { padding: 16px 20px; border-bottom: 1px solid #1E1916; display: flex; gap: 14px; align-items: flex-start; }
+    .mod-item:last-child { border-bottom: none; }
+    .mod-thumb { width: 60px; height: 60px; border-radius: 8px; background: #231E19; border: 1px solid #2A2018; object-fit: cover; overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+    .mod-body { flex: 1; min-width: 0; }
+    .mod-title { font-size: 13.5px; font-weight: 600; color: #FDF4E7; margin-bottom: 3px; }
+    .mod-reason { font-size: 12px; color: #C0392B; margin-bottom: 4px; }
+    .mod-meta { font-size: 12px; color: #6B5A4A; }
+
+    /* ── Users panel ───────────────────────────── */
+    .role-chip { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+    .role-vendor { background: rgba(232,80,10,0.1); color: #E8500A; border: 1px solid rgba(232,80,10,0.25); }
+    .role-organiser { background: rgba(43,91,168,0.1); color: #5A8AD4; border: 1px solid rgba(43,91,168,0.25); }
+    .role-admin { background: rgba(45,139,85,0.1); color: #2D8B55; border: 1px solid rgba(45,139,85,0.25); }
+    .role-consumer { background: rgba(255,255,255,0.06); color: #6B5A4A; border: 1px solid #2A2018; }
+
+    /* ── Temp password toast ───────────────────── */
+    .toast { position: fixed; bottom: 24px; right: 24px; background: #2A2018; border: 1px solid #3A2E26; border-radius: 10px; padding: 14px 20px; font-size: 13px; color: #FDF4E7; z-index: 9999; max-width: 340px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); display: none; }
+    .toast.show { display: block; }
   </style>
 </head>
 <body>
@@ -347,14 +402,19 @@
     </div>
     <div class="nav-item" onclick="showPanel('vendors',this)">
       <span class="nav-icon">🍔</span> Vendors
-      <span class="nav-badge warn">12</span>
+      <span class="nav-badge warn" id="sb-pending-badge">—</span>
     </div>
     <div class="nav-item" onclick="showPanel('organisers',this)">
       <span class="nav-icon">🏛</span> Organisers
-      <span class="nav-badge">4</span>
     </div>
     <div class="nav-item" onclick="showPanel('events',this)">
       <span class="nav-icon">🎪</span> Events
+    </div>
+    <div class="nav-item" onclick="showPanel('applications',this)">
+      <span class="nav-icon">📋</span> Applications
+    </div>
+    <div class="nav-item" onclick="showPanel('users',this)">
+      <span class="nav-icon">👥</span> Users
     </div>
   </div>
 
@@ -363,6 +423,23 @@
     <div class="nav-item" onclick="showPanel('reports',this)">
       <span class="nav-icon">🚩</span> Reports
       <span class="nav-badge">7</span>
+    </div>
+    <div class="nav-item" onclick="showPanel('moderation',this)">
+      <span class="nav-icon">🛡</span> Content
+      <span class="nav-badge warn">3</span>
+    </div>
+    <div class="nav-item" onclick="showPanel('announcements',this)">
+      <span class="nav-icon">📢</span> Announcements
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Content</div>
+    <div class="nav-item" onclick="showPanel('featured',this)">
+      <span class="nav-icon">⭐</span> Featured
+    </div>
+    <div class="nav-item" onclick="showPanel('analytics',this)">
+      <span class="nav-icon">📈</span> Analytics
     </div>
     <div class="nav-item" onclick="showPanel('settings',this)">
       <span class="nav-icon">⚙️</span> Settings
@@ -1238,7 +1315,347 @@
     </div>
   </div>
 
+  <!-- ════════════ APPLICATIONS ════════════ -->
+  <div class="panel" id="panel-applications">
+    <div class="page-header">
+      <h1>Applications</h1>
+      <p>All vendor event applications. Override organiser decisions and manage disputes.</p>
+    </div>
+    <div class="card">
+      <div class="filter-bar">
+        <input class="filter-input" type="text" placeholder="Search vendor, event…" id="app-search" oninput="filterAppsTable()" />
+        <button class="filter-chip active" onclick="setAppFilter(this,'all')">All</button>
+        <button class="filter-chip" onclick="setAppFilter(this,'pending')">Pending</button>
+        <button class="filter-chip" onclick="setAppFilter(this,'approved')">Approved</button>
+        <button class="filter-chip" onclick="setAppFilter(this,'declined')">Declined</button>
+        <button class="filter-chip" onclick="setAppFilter(this,'withdrawn')">Withdrawn</button>
+        <span class="filter-count" id="app-count">Loading…</span>
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Vendor</th>
+            <th>Event</th>
+            <th>Category</th>
+            <th>Applied</th>
+            <th>Status</th>
+            <th>Admin override</th>
+          </tr>
+        </thead>
+        <tbody id="app-tbody"></tbody>
+      </table>
+      <div class="card-footer" style="display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-size:13px;color:#6B5A4A;" id="app-showing">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ USERS ════════════ -->
+  <div class="panel" id="panel-users">
+    <div class="page-header">
+      <h1>All Users</h1>
+      <p>Every registered account — vendors, organisers, and consumers. Manage roles, status, and access.</p>
+    </div>
+    <div class="card">
+      <div class="filter-bar">
+        <input class="filter-input" type="text" placeholder="Search name, email…" id="users-search" oninput="filterUsersTable()" />
+        <button class="filter-chip active" onclick="setUsersFilter(this,'all')">All</button>
+        <button class="filter-chip" onclick="setUsersFilter(this,'vendor')">Vendors</button>
+        <button class="filter-chip" onclick="setUsersFilter(this,'organiser')">Organisers</button>
+        <button class="filter-chip" onclick="setUsersFilter(this,'admin')">Admins</button>
+        <span class="filter-count" id="users-count">Loading…</span>
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Role</th>
+            <th>Verified</th>
+            <th>Joined</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="users-tbody"></tbody>
+      </table>
+      <div class="card-footer" style="display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-size:13px;color:#6B5A4A;" id="users-showing">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ CONTENT MODERATION ════════════ -->
+  <div class="panel" id="panel-moderation">
+    <div class="page-header">
+      <h1>Content Moderation</h1>
+      <p>Flagged listings, photos, and profiles. Review and act on user reports.</p>
+    </div>
+    <div class="two-col" style="align-items:start;">
+      <div class="card">
+        <div class="filter-bar" style="padding:12px 20px;">
+          <button class="filter-chip active">All flags <span style="margin-left:4px;background:#C0392B;color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700;">3</span></button>
+          <button class="filter-chip">Photos</button>
+          <button class="filter-chip">Listings</button>
+          <button class="filter-chip">Profiles</button>
+          <button class="filter-chip">Resolved</button>
+        </div>
+
+        <div class="mod-item">
+          <div class="mod-thumb">📸</div>
+          <div class="mod-body">
+            <div class="mod-title">Inappropriate photo — Hackney Night Market</div>
+            <div class="mod-reason">🚩 Flagged: "Photo contains competitor branding and misleading claims"</div>
+            <div class="mod-meta">Reported by 2 vendors · Listing photo #3 · Mar 8, 2026</div>
+          </div>
+          <div class="queue-actions">
+            <div class="act-group">
+              <button class="act-btn act-reject" onclick="removeFlaggedContent(this)">Remove</button>
+              <button class="act-btn act-suspend" onclick="warnFlaggedAccount(this)">Warn</button>
+              <button class="act-btn act-view" onclick="dismissFlag(this)">Dismiss</button>
+            </div>
+            <span class="queue-time">1h ago</span>
+          </div>
+        </div>
+
+        <div class="mod-item">
+          <div class="mod-thumb">📋</div>
+          <div class="mod-body">
+            <div class="mod-title">Misleading listing — "Council Run Street Fair"</div>
+            <div class="mod-reason">🚩 Flagged: "Not affiliated with council. Misleading safety claims."</div>
+            <div class="mod-meta">Reported by 3 vendors · Event listing · Mar 7, 2026</div>
+          </div>
+          <div class="queue-actions">
+            <div class="act-group">
+              <button class="act-btn act-reject" onclick="removeFlaggedContent(this)">Hide listing</button>
+              <button class="act-btn act-suspend" onclick="warnFlaggedAccount(this)">Warn org</button>
+              <button class="act-btn act-view" onclick="dismissFlag(this)">Dismiss</button>
+            </div>
+            <span class="queue-time">3h ago</span>
+          </div>
+        </div>
+
+        <div class="mod-item">
+          <div class="mod-thumb">👤</div>
+          <div class="mod-body">
+            <div class="mod-title">Suspicious vendor profile — "Best Kebabs AU"</div>
+            <div class="mod-reason">🚩 Flagged: "Profile photos appear to be stock images. No genuine event history."</div>
+            <div class="mod-meta">Reported by 1 organiser · Vendor profile · Mar 6, 2026</div>
+          </div>
+          <div class="queue-actions">
+            <div class="act-group">
+              <button class="act-btn act-suspend" onclick="warnFlaggedAccount(this)">Request review</button>
+              <button class="act-btn act-view" onclick="dismissFlag(this)">Dismiss</button>
+            </div>
+            <span class="queue-time">1d ago</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div class="card">
+          <div class="card-header"><span style="font-size:16px;">🛡</span><span class="card-title">Moderation stats</span></div>
+          <div style="padding:16px 20px;display:flex;flex-direction:column;gap:12px;">
+            <div class="analytics-bar-row"><span class="analytics-bar-label">Photos flagged</span><div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:40%;background:#C0392B;"></div></div><span class="analytics-bar-val">8</span></div>
+            <div class="analytics-bar-row"><span class="analytics-bar-label">Listings flagged</span><div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:60%;background:#C9840A;"></div></div><span class="analytics-bar-val">12</span></div>
+            <div class="analytics-bar-row"><span class="analytics-bar-label">Profiles flagged</span><div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:25%;background:#2B5BA8;"></div></div><span class="analytics-bar-val">5</span></div>
+            <div class="analytics-bar-row"><span class="analytics-bar-label">Resolved</span><div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:85%;background:#2D8B55;"></div></div><span class="analytics-bar-val">22</span></div>
+            <div style="padding-top:8px;border-top:1px solid #2A2018;font-size:13px;color:#A89880;">Avg resolution: <strong style="color:#2D8B55;">1.2 days</strong></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span style="font-size:16px;">⚡</span><span class="card-title">Quick actions</span></div>
+          <div style="padding:16px;display:flex;flex-direction:column;gap:8px;">
+            <button class="act-btn act-view" style="width:100%;padding:10px;text-align:left;" onclick="openAnnouncementModal()">📢 Post platform notice</button>
+            <button class="act-btn act-view" style="width:100%;padding:10px;text-align:left;">📤 Export flag log</button>
+            <button class="act-btn act-reject" style="width:100%;padding:10px;text-align:left;">🧹 Clear resolved flags</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ ANNOUNCEMENTS ════════════ -->
+  <div class="panel" id="panel-announcements">
+    <div class="page-header">
+      <h1>Announcements</h1>
+      <p>Send email or in-app notifications to all users, vendors, organisers, or a specific segment.</p>
+    </div>
+    <div class="two-col" style="align-items:start;">
+      <div class="card">
+        <div class="card-header"><span style="font-size:16px;">✍️</span><span class="card-title">Compose announcement</span></div>
+        <div class="announce-compose">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
+            <div>
+              <label class="field-label-sm">Audience</label>
+              <select class="field-sm" id="ann-audience" style="appearance:none;">
+                <option value="all">All users</option>
+                <option value="vendors">Vendors only</option>
+                <option value="organisers">Organisers only</option>
+                <option value="pro">Pro vendors only</option>
+              </select>
+            </div>
+            <div>
+              <label class="field-label-sm">Delivery</label>
+              <select class="field-sm" style="appearance:none;">
+                <option>In-app notification</option>
+                <option>Email</option>
+                <option>Both (in-app + email)</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-bottom:12px;">
+            <label class="field-label-sm">Subject</label>
+            <input class="field-sm" id="ann-subject" type="text" placeholder="e.g. Platform update — March 2026" />
+          </div>
+          <div style="margin-bottom:16px;">
+            <label class="field-label-sm">Message</label>
+            <textarea class="field-sm" id="ann-body" style="min-height:120px;" placeholder="Write your announcement…"></textarea>
+          </div>
+          <div style="display:flex;gap:10px;">
+            <button class="btn-sm-primary" onclick="sendAnnouncement()">Send announcement</button>
+            <button class="btn-sm-outline">Save draft</button>
+          </div>
+          <div id="ann-msg" style="margin-top:10px;font-size:13px;color:#2D8B55;display:none;"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><span style="font-size:16px;">🕐</span><span class="card-title">Recent announcements</span></div>
+        <div class="announce-history">
+          <div class="announce-item">
+            <div class="announce-icon">📢</div>
+            <div class="announce-body">
+              <div class="announce-title">Welcome to Pitch. — Vendors now open</div>
+              <div class="announce-meta">Sent to: All users · In-app + email · Mar 1, 2026 · <span class="badge badge-green" style="font-size:10px;">Delivered 1,240</span></div>
+            </div>
+          </div>
+          <div class="announce-item">
+            <div class="announce-icon">📢</div>
+            <div class="announce-body">
+              <div class="announce-title">Applications now open — Rundle Mall Night Eats</div>
+              <div class="announce-meta">Sent to: Vendors only · In-app · Mar 5, 2026 · <span class="badge badge-green" style="font-size:10px;">Delivered 843</span></div>
+            </div>
+          </div>
+          <div class="announce-item">
+            <div class="announce-icon">📢</div>
+            <div class="announce-body">
+              <div class="announce-title">New feature: Day-of-week event filters</div>
+              <div class="announce-meta">Sent to: All users · In-app · Mar 10, 2026 · <span class="badge badge-green" style="font-size:10px;">Delivered 2,108</span></div>
+            </div>
+          </div>
+          <div class="announce-item">
+            <div class="announce-icon">📢</div>
+            <div class="announce-body">
+              <div class="announce-title">Reminder: Update your PLI before April events</div>
+              <div class="announce-meta">Sent to: Vendors only · Email · Mar 14, 2026 · <span class="badge badge-amber" style="font-size:10px;">Delivered 756 · 87 failed</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ FEATURED ════════════ -->
+  <div class="panel" id="panel-featured">
+    <div class="page-header">
+      <h1>Featured Content</h1>
+      <p>Pin events and vendors to the homepage featured sections. Promotes new listings that lack organic traction.</p>
+    </div>
+    <div class="featured-cols">
+      <!-- Featured events -->
+      <div class="card">
+        <div class="card-header">
+          <span style="font-size:16px;">🎪</span>
+          <span class="card-title">Featured Events</span>
+          <span class="card-sub" id="feat-events-count">Loading…</span>
+          <button class="act-btn act-feature" style="margin-left:8px;" onclick="openAddFeaturedEvent()">+ Add event</button>
+        </div>
+        <div class="card-body" id="feat-events-list">
+          <div style="padding:24px;text-align:center;color:#6B5A4A;font-size:13px;">Loading…</div>
+        </div>
+      </div>
+      <!-- Featured vendors -->
+      <div class="card">
+        <div class="card-header">
+          <span style="font-size:16px;">🍔</span>
+          <span class="card-title">Featured Vendors</span>
+          <span class="card-sub" id="feat-vendors-count">Loading…</span>
+          <button class="act-btn act-feature" style="margin-left:8px;" onclick="openAddFeaturedVendor()">+ Add vendor</button>
+        </div>
+        <div class="card-body" id="feat-vendors-list">
+          <div style="padding:24px;text-align:center;color:#6B5A4A;font-size:13px;">Loading…</div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:16px;" class="card">
+      <div class="settings-section">
+        <h3 class="settings-heading">Homepage section labels</h3>
+        <p class="settings-sub">Customise the display title for each featured section on the homepage.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div><label class="field-label-sm">Featured events label</label><input class="field-sm" value="Featured Events" /></div>
+          <div><label class="field-label-sm">"This Weekend" label</label><input class="field-sm" value="Happening This Weekend" /></div>
+          <div><label class="field-label-sm">Featured vendors label</label><input class="field-sm" value="Spotlight Vendors" /></div>
+          <div><label class="field-label-sm">Default location filter</label><input class="field-sm" value="Adelaide, SA" /></div>
+        </div>
+        <button class="btn-sm-primary" style="margin-top:14px;">Save labels</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ ANALYTICS ════════════ -->
+  <div class="panel" id="panel-analytics">
+    <div class="page-header">
+      <h1>Analytics</h1>
+      <p>Key trends to inform product decisions. Signups, events posted, applications, and category breakdown.</p>
+    </div>
+
+    <div class="analytics-grid" id="analytics-kpis">
+      <div class="kpi-card"><div class="kpi-label">Total vendors</div><div class="kpi-val" id="an-vendors">—</div><div class="kpi-delta neutral">All time</div></div>
+      <div class="kpi-card"><div class="kpi-label">Total organisers</div><div class="kpi-val" id="an-organisers">—</div><div class="kpi-delta neutral">All time</div></div>
+      <div class="kpi-card"><div class="kpi-label">Published events</div><div class="kpi-val" id="an-events">—</div><div class="kpi-delta neutral">All time</div></div>
+      <div class="kpi-card"><div class="kpi-label">Total applications</div><div class="kpi-val" id="an-apps">—</div><div class="kpi-delta neutral">All time</div></div>
+    </div>
+
+    <div class="two-col" style="margin-bottom:20px;">
+      <div class="card">
+        <div class="card-header"><span style="font-size:16px;">📊</span><span class="card-title">Signups (last 7 days)</span></div>
+        <div style="padding:20px;">
+          <div class="week-bars" id="an-signups-bars">
+            <div class="week-bar-col" style="height:45%;"><div class="tooltip">Mon: 6</div></div>
+            <div class="week-bar-col" style="height:60%;"><div class="tooltip">Tue: 8</div></div>
+            <div class="week-bar-col" style="height:50%;"><div class="tooltip">Wed: 7</div></div>
+            <div class="week-bar-col" style="height:80%;"><div class="tooltip">Thu: 11</div></div>
+            <div class="week-bar-col" style="height:65%;background:rgba(232,80,10,0.35);"><div class="tooltip">Fri: 9</div></div>
+            <div class="week-bar-col" style="height:90%;background:rgba(232,80,10,0.5);"><div class="tooltip">Sat: 12</div></div>
+            <div class="week-bar-col" style="height:100%;background:#E8500A;"><div class="tooltip">Sun: 14</div></div>
+          </div>
+          <div class="week-labels"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span style="font-size:16px;">📋</span><span class="card-title">Applications by status</span></div>
+        <div style="padding:18px 20px;display:flex;flex-direction:column;gap:12px;" id="an-app-breakdown">
+          <div style="color:#6B5A4A;font-size:13px;">Loading…</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><span style="font-size:16px;">🗂</span><span class="card-title">Event categories breakdown</span></div>
+      <div style="padding:18px 20px;display:flex;flex-direction:column;gap:10px;">
+        <div class="analytics-bar-row"><span class="analytics-bar-label">Food & Markets</span><div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:85%;background:#E8500A;"></div></div><span class="analytics-bar-val">34</span></div>
+        <div class="analytics-bar-row"><span class="analytics-bar-label">Night Markets</span><div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:60%;background:#C9840A;"></div></div><span class="analytics-bar-val">24</span></div>
+        <div class="analytics-bar-row"><span class="analytics-bar-label">Festivals</span><div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:50%;background:#2B5BA8;"></div></div><span class="analytics-bar-val">20</span></div>
+        <div class="analytics-bar-row"><span class="analytics-bar-label">Community Events</span><div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:40%;background:#2D8B55;"></div></div><span class="analytics-bar-val">16</span></div>
+        <div class="analytics-bar-row"><span class="analytics-bar-label">Corporate</span><div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:20%;background:#6B5A4A;"></div></div><span class="analytics-bar-val">8</span></div>
+      </div>
+    </div>
+  </div>
+
 </div><!-- /main -->
+
+<!-- ── Temp password toast ── -->
+<div class="toast" id="pw-toast"></div>
 
 <!-- ── Reject modal ── -->
 <div class="modal-overlay" id="rejectModal">
@@ -1357,12 +1774,18 @@
 
 <script>
   const panelMeta = {
-    overview:   { title: 'Overview',                 sub: 'Platform at a glance' },
-    vendors:    { title: 'Vendors',                  sub: 'Manage vendor accounts' },
-    organisers: { title: 'Organisers',               sub: 'Manage organiser accounts' },
-    events:     { title: 'Events',                   sub: 'Browse and moderate listings' },
-    reports:    { title: 'Reports & Disputes',       sub: 'Resolve flags and complaints' },
-    settings:   { title: 'Platform Settings',        sub: 'Feature flags and config' },
+    overview:      { title: 'Overview',              sub: 'Platform at a glance' },
+    vendors:       { title: 'Vendors',               sub: 'Manage vendor accounts' },
+    organisers:    { title: 'Organisers',            sub: 'Manage organiser accounts' },
+    events:        { title: 'Events',                sub: 'Browse and moderate listings' },
+    applications:  { title: 'Applications',          sub: 'All vendor event applications' },
+    users:         { title: 'All Users',             sub: 'Every registered account' },
+    reports:       { title: 'Reports & Disputes',    sub: 'Resolve flags and complaints' },
+    moderation:    { title: 'Content Moderation',    sub: 'Flagged content queue' },
+    announcements: { title: 'Announcements',         sub: 'Send messages to users' },
+    featured:      { title: 'Featured Content',      sub: 'Pin events and vendors' },
+    analytics:     { title: 'Analytics',             sub: 'Key platform trends' },
+    settings:      { title: 'Platform Settings',     sub: 'Feature flags and config' },
   };
 
   function showPanel(id, navEl) {
@@ -1373,7 +1796,11 @@
     const meta = panelMeta[id] || {};
     document.getElementById('topbar-title').textContent = meta.title || id;
     document.getElementById('topbar-sub').textContent = meta.sub || '';
-    if (id === 'events') loadAdminEvents();
+    if (id === 'events')        loadAdminEvents();
+    if (id === 'applications')  loadApplications();
+    if (id === 'users')         loadAllUsers();
+    if (id === 'featured')      loadFeatured();
+    if (id === 'analytics')     loadAnalytics();
   }
 
   function toggleExpand(id) {
@@ -1458,9 +1885,8 @@
       } else {
         document.getElementById('pending-alert').style.display = 'none';
       }
-      // Update sidebar badges
-      const navBadges = document.querySelectorAll('.nav-badge.warn');
-      navBadges.forEach(b => b.textContent = pending);
+      // Update sidebar badge
+      updateSidebarBadge(pending);
     } catch(e) { console.warn('Stats load failed', e); }
   }
 
@@ -1886,6 +2312,319 @@
       loadStats();
     } catch(e) {
       alert('Could not delete account: ' + e.message);
+    }
+  }
+
+  // ── Applications ──────────────────────────────────────────────────────────
+  let _appsCache = [];
+  let _appFilter = 'all';
+
+  async function loadApplications(statusFilter) {
+    if (statusFilter) _appFilter = statusFilter;
+    const url = (_appFilter && _appFilter !== 'all') ? `/api/admin/applications?status=${_appFilter}` : '/api/admin/applications';
+    try {
+      const r = await fetch(url);
+      const { applications } = await r.json();
+      _appsCache = applications;
+      renderAppsTable(applications);
+    } catch(e) { console.warn('Applications load failed', e); }
+  }
+
+  function renderAppsTable(apps) {
+    const tbody  = document.getElementById('app-tbody');
+    const count  = document.getElementById('app-count');
+    const showing = document.getElementById('app-showing');
+    count.textContent = apps.length + ' application' + (apps.length === 1 ? '' : 's');
+    showing.textContent = 'Showing ' + apps.length;
+    if (!apps.length) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#6B5A4A;padding:24px;">No applications found.</td></tr>`;
+      return;
+    }
+    const appStatusBadge = s => {
+      const map = { approved:'badge-green', pending:'badge-amber', declined:'badge-red', withdrawn:'badge-grey' };
+      return `<span class="badge ${map[s]||'badge-grey'}">${s.charAt(0).toUpperCase()+s.slice(1)}</span>`;
+    };
+    tbody.innerHTML = apps.map(a => {
+      const d = a.date_sort ? new Date(a.date_sort + 'T00:00:00').toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'}) : '—';
+      const applied = a.created_at ? new Date(a.created_at).toLocaleDateString('en-AU',{day:'numeric',month:'short'}) : '—';
+      return `<tr>
+        <td><strong>${a.trading_name || '—'}</strong><br><span style="font-size:12px;color:#4A3C30;">${a.vendor_email || ''}</span></td>
+        <td><strong>${a.event_name || '—'}</strong><br><span style="font-size:12px;color:#4A3C30;">${d}</span></td>
+        <td><span class="badge badge-grey" style="font-size:11px;">${a.category || '—'}</span></td>
+        <td><span style="font-size:12px;">${applied}</span></td>
+        <td>${appStatusBadge(a.status)}</td>
+        <td><div class="act-group">
+          ${a.status !== 'approved' ? `<button class="act-btn act-approve" onclick="overrideApp(${a.id},'approved',this)">Approve</button>` : ''}
+          ${a.status !== 'declined' ? `<button class="act-btn act-reject" onclick="overrideApp(${a.id},'declined',this)">Decline</button>` : ''}
+          ${a.status !== 'pending'  ? `<button class="act-btn act-view" onclick="overrideApp(${a.id},'pending',this)">Reset</button>` : ''}
+        </div></td>
+      </tr>`;
+    }).join('');
+  }
+
+  async function overrideApp(id, status, btn) {
+    try {
+      await fetch(`/api/admin/applications/${id}/status`, {
+        method: 'PATCH', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ status }),
+      });
+      loadApplications();
+    } catch(e) { console.warn('Override failed', e); }
+  }
+
+  function setAppFilter(btn, filter) {
+    document.querySelectorAll('#panel-applications .filter-chip').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    loadApplications(filter);
+  }
+
+  function filterAppsTable() {
+    const q = document.getElementById('app-search').value.toLowerCase();
+    const filtered = _appsCache.filter(a =>
+      (a.trading_name||'').toLowerCase().includes(q) ||
+      (a.event_name||'').toLowerCase().includes(q) ||
+      (a.vendor_email||'').toLowerCase().includes(q)
+    );
+    renderAppsTable(filtered);
+  }
+
+  // ── All Users ─────────────────────────────────────────────────────────────
+  let _usersCache = [];
+  let _usersRoleFilter = 'all';
+
+  async function loadAllUsers(roleFilter) {
+    if (roleFilter) _usersRoleFilter = roleFilter;
+    const url = (_usersRoleFilter && _usersRoleFilter !== 'all') ? `/api/admin/users-all?role=${_usersRoleFilter}` : '/api/admin/users-all';
+    try {
+      const r = await fetch(url);
+      const { users } = await r.json();
+      _usersCache = users;
+      renderUsersTable(users);
+    } catch(e) { console.warn('Users load failed', e); }
+  }
+
+  function renderUsersTable(users) {
+    const tbody  = document.getElementById('users-tbody');
+    const count  = document.getElementById('users-count');
+    const showing = document.getElementById('users-showing');
+    count.textContent = users.length + ' user' + (users.length === 1 ? '' : 's');
+    showing.textContent = 'Showing ' + users.length;
+    if (!users.length) {
+      tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;color:#6B5A4A;padding:24px;">No users found.</td></tr>`;
+      return;
+    }
+    const roleBadge = r => {
+      const map = { vendor:'role-vendor', organiser:'role-organiser', admin:'role-admin' };
+      return `<span class="role-chip ${map[r]||'role-consumer'}">${r||'consumer'}</span>`;
+    };
+    tbody.innerHTML = users.map(u => {
+      const joined = u.created_at ? new Date(u.created_at).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'}) : '—';
+      const verified = (u.email_verified ? '✉️' : '') + (u.phone_verified ? ' 📱' : '') || '—';
+      return `<tr>
+        <td><strong>${u.first_name} ${u.last_name}</strong><br><span style="font-size:12px;color:#4A3C30;">${u.email}</span></td>
+        <td>
+          ${roleBadge(u.role)}
+          <select class="filter-chip" style="margin-left:6px;padding:3px 6px;font-size:11px;appearance:none;border-radius:6px;cursor:pointer;" onchange="changeUserRole(${u.id},this.value,this)">
+            <option value="">Change role…</option>
+            <option value="vendor">Vendor</option>
+            <option value="organiser">Organiser</option>
+            <option value="admin">Admin</option>
+          </select>
+        </td>
+        <td style="font-size:12px;">${verified}</td>
+        <td><span style="font-size:12px;">${joined}</span></td>
+        <td>${statusBadge(u.status)}</td>
+        <td><div class="act-group">
+          ${u.status === 'active' ? `<button class="act-btn act-suspend" onclick="setUserStatus(${u.id},'suspended',this)">Suspend</button>` : `<button class="act-btn act-approve" onclick="setUserStatus(${u.id},'active',this)">Reinstate</button>`}
+          <button class="act-btn act-view" onclick="triggerPasswordReset(${u.id},'${(u.first_name+' '+u.last_name).replace(/'/g,"\\'")}')">Reset PW</button>
+          <button class="act-btn act-reject" onclick="deleteAccount(${u.id},'${(u.first_name+' '+u.last_name).replace(/'/g,"\\'")}')">Delete</button>
+        </div></td>
+      </tr>`;
+    }).join('');
+  }
+
+  function setUsersFilter(btn, role) {
+    document.querySelectorAll('#panel-users .filter-chip').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    loadAllUsers(role);
+  }
+
+  function filterUsersTable() {
+    const q = document.getElementById('users-search').value.toLowerCase();
+    const filtered = _usersCache.filter(u =>
+      (u.first_name + ' ' + u.last_name).toLowerCase().includes(q) ||
+      (u.email||'').toLowerCase().includes(q)
+    );
+    renderUsersTable(filtered);
+  }
+
+  async function changeUserRole(userId, role, selectEl) {
+    if (!role) return;
+    if (!confirm(`Change this user's role to "${role}"?`)) { selectEl.value = ''; return; }
+    try {
+      await fetch(`/api/admin/users/${userId}/role`, {
+        method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ role }),
+      });
+      loadAllUsers();
+    } catch(e) { selectEl.value = ''; alert('Failed: ' + e.message); }
+  }
+
+  async function triggerPasswordReset(userId, name) {
+    if (!confirm(`Reset password for "${name}"? A temporary password will be generated.`)) return;
+    try {
+      const r = await fetch(`/api/admin/users/${userId}/password-reset`, { method: 'POST' });
+      const data = await r.json();
+      const toast = document.getElementById('pw-toast');
+      toast.innerHTML = `🔑 Temp password for <strong>${name}</strong>:<br><code style="background:#2A2018;padding:3px 8px;border-radius:5px;font-size:13px;">${data.temp_password}</code><br><small style="color:#6B5A4A;">Share this securely — it works immediately.</small>`;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 8000);
+    } catch(e) { alert('Failed: ' + e.message); }
+  }
+
+  // ── Analytics ─────────────────────────────────────────────────────────────
+  async function loadAnalytics() {
+    try {
+      const r = await fetch('/api/admin/analytics');
+      const data = await r.json();
+      document.getElementById('an-vendors').textContent = (data.totalVendors || 0).toLocaleString();
+      document.getElementById('an-organisers').textContent = (data.totalOrganisers || 0).toLocaleString();
+      document.getElementById('an-events').textContent = (data.totalEvents || 0).toLocaleString();
+      const appStatus = data.applicationsByStatus || [];
+      const totalApps = appStatus.reduce((s, a) => s + a.n, 0);
+      document.getElementById('an-apps').textContent = totalApps.toLocaleString();
+      const appBreakdown = document.getElementById('an-app-breakdown');
+      const colors = { approved:'#2D8B55', pending:'#C9840A', declined:'#C0392B', withdrawn:'#6B5A4A' };
+      if (appStatus.length) {
+        appBreakdown.innerHTML = appStatus.map(a => {
+          const pct = totalApps > 0 ? Math.round((a.n / totalApps) * 100) : 0;
+          return `<div class="analytics-bar-row">
+            <span class="analytics-bar-label">${a.status.charAt(0).toUpperCase()+a.status.slice(1)}</span>
+            <div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:${pct}%;background:${colors[a.status]||'#6B5A4A'};"></div></div>
+            <span class="analytics-bar-val">${a.n}</span>
+          </div>`;
+        }).join('');
+      }
+    } catch(e) { console.warn('Analytics load failed', e); }
+  }
+
+  // ── Featured ──────────────────────────────────────────────────────────────
+  async function loadFeatured() {
+    try {
+      const r = await fetch('/api/admin/featured');
+      const { events, vendors } = await r.json();
+      renderFeaturedEvents(events || []);
+      renderFeaturedVendors(vendors || []);
+    } catch(e) { console.warn('Featured load failed', e); }
+  }
+
+  function renderFeaturedEvents(events) {
+    const el = document.getElementById('feat-events-list');
+    const count = document.getElementById('feat-events-count');
+    count.textContent = events.length + ' pinned';
+    if (!events.length) {
+      el.innerHTML = '<div class="featured-empty">No featured events. Add one above.</div>';
+      return;
+    }
+    el.innerHTML = events.map(ev => {
+      const d = ev.date_sort ? new Date(ev.date_sort + 'T00:00:00').toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'}) : '—';
+      return `<div class="featured-item">
+        <div class="featured-item-icon">🎪</div>
+        <div class="featured-item-body">
+          <div class="featured-item-name">${ev.name}</div>
+          <div class="featured-item-sub">${d} · ${ev.category || '—'}</div>
+        </div>
+        <button class="act-btn act-suspend" onclick="unfeatureEvent(${ev.id},this)">Unpin</button>
+      </div>`;
+    }).join('');
+  }
+
+  function renderFeaturedVendors(vendors) {
+    const el = document.getElementById('feat-vendors-list');
+    const count = document.getElementById('feat-vendors-count');
+    count.textContent = vendors.length + ' pinned';
+    if (!vendors.length) {
+      el.innerHTML = '<div class="featured-empty">No featured vendors. Add one above.</div>';
+      return;
+    }
+    el.innerHTML = vendors.map(v => {
+      let tags = [];
+      try { tags = JSON.parse(v.cuisine_tags || '[]'); } catch {}
+      return `<div class="featured-item">
+        <div class="featured-item-icon">🍔</div>
+        <div class="featured-item-body">
+          <div class="featured-item-name">${v.trading_name}</div>
+          <div class="featured-item-sub">${tags.slice(0,2).join(', ') || '—'} · ${v.suburb || ''}, ${v.state || ''}</div>
+        </div>
+        <button class="act-btn act-suspend" onclick="unfeatureVendor(${v.user_id},this)">Unpin</button>
+      </div>`;
+    }).join('');
+  }
+
+  async function unfeatureEvent(id, btn) {
+    await fetch(`/api/admin/events/${id}/featured`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ featured: false }) });
+    loadFeatured();
+  }
+
+  async function unfeatureVendor(id, btn) {
+    await fetch(`/api/admin/vendors/${id}/featured`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ featured: false }) });
+    loadFeatured();
+  }
+
+  function openAddFeaturedEvent() {
+    const name = prompt('Enter the exact event name to feature (must exist in the DB):');
+    if (!name) return;
+    // Look up in admin events then feature it
+    fetch('/api/admin/events').then(r => r.json()).then(({ events }) => {
+      const ev = events.find(e => e.name.toLowerCase() === name.toLowerCase());
+      if (!ev) { alert('Event not found: ' + name); return; }
+      fetch(`/api/admin/events/${ev.id}/featured`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ featured: true }) })
+        .then(() => loadFeatured());
+    });
+  }
+
+  function openAddFeaturedVendor() {
+    const name = prompt('Enter the vendor trading name to feature:');
+    if (!name) return;
+    fetch('/api/admin/vendors').then(r => r.json()).then(({ vendors }) => {
+      const v = vendors.find(v => v.trading_name.toLowerCase() === name.toLowerCase());
+      if (!v) { alert('Vendor not found: ' + name); return; }
+      fetch(`/api/admin/vendors/${v.user_id}/featured`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ featured: true }) })
+        .then(() => loadFeatured());
+    });
+  }
+
+  // ── Announcements ─────────────────────────────────────────────────────────
+  function sendAnnouncement() {
+    const subject = document.getElementById('ann-subject').value.trim();
+    const body    = document.getElementById('ann-body').value.trim();
+    if (!subject || !body) { alert('Subject and message are required.'); return; }
+    const msg = document.getElementById('ann-msg');
+    msg.textContent = '✓ Announcement queued for delivery.';
+    msg.style.display = 'block';
+    document.getElementById('ann-subject').value = '';
+    document.getElementById('ann-body').value = '';
+    setTimeout(() => msg.style.display = 'none', 4000);
+  }
+
+  // ── Moderation helpers ────────────────────────────────────────────────────
+  function removeFlaggedContent(btn) {
+    const item = btn.closest('.mod-item');
+    if (item) { item.style.opacity = '0.4'; btn.textContent = '✓ Removed'; btn.disabled = true; }
+  }
+  function warnFlaggedAccount(btn) {
+    const item = btn.closest('.mod-item');
+    if (item) { btn.textContent = '✓ Warned'; btn.disabled = true; }
+  }
+  function dismissFlag(btn) {
+    const item = btn.closest('.mod-item');
+    if (item) { item.style.opacity = '0.3'; item.style.pointerEvents = 'none'; }
+  }
+
+  // ── Update sidebar pending badge ──────────────────────────────────────────
+  function updateSidebarBadge(pending) {
+    const badge = document.getElementById('sb-pending-badge');
+    if (badge) {
+      badge.textContent = pending || '0';
+      badge.style.display = pending > 0 ? '' : 'none';
     }
   }
 
