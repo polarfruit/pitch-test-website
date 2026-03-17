@@ -2451,26 +2451,13 @@
   // ── Topbar global search ──────────────────────────────────────────────────
   function adminGlobalSearch() {
     const q = document.getElementById('admin-global-search').value;
-    const active = document.querySelector('.panel.active');
-    if (!active) return;
-    const id = active.id.replace('panel-', '');
-    // Route query into the relevant per-panel search input + trigger filter
-    const routes = {
-      vendors:    { inputId: 'vendor-search',  fn: filterVendorsTable },
-      organisers: { inputId: 'org-search',     fn: filterOrgsTable    },
-      events:     { inputId: 'events-search',  fn: filterEventsTable  },
-    };
-    if (routes[id]) {
-      const el = document.getElementById(routes[id].inputId);
-      if (el) { el.value = q; routes[id].fn(); }
-    } else if (q.trim()) {
-      // For panels without per-panel search, jump to vendors and search there
-      showPanel('vendors', document.querySelectorAll('.nav-item')[1]);
-      setTimeout(() => {
-        const el = document.getElementById('vendor-search');
-        if (el) { el.value = q; filterVendorsTable(); }
-      }, 50);
-    }
+    // Mirror query into all three per-panel inputs and filter all simultaneously
+    const vsEl = document.getElementById('vendor-search');
+    const osEl = document.getElementById('org-search');
+    const esEl = document.getElementById('events-search');
+    if (vsEl) { vsEl.value = q; filterVendorsTable(); }
+    if (osEl) { osEl.value = q; filterOrgsTable(); }
+    if (esEl) { esEl.value = q; filterEventsTable(); }
   }
 
   // ── Admin notifications popup ─────────────────────────────────────────────
