@@ -544,6 +544,17 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
 
 <script src="/data.js"></script>
 <script>
+// Pre-fill search from ?q= URL param (from homepage hero search)
+(function() {
+  const q = new URLSearchParams(window.location.search).get('q');
+  if (q) {
+    window.addEventListener('DOMContentLoaded', () => {
+      const el = document.getElementById('f-search');
+      if (el) { el.value = q; }
+    });
+  }
+})();
+
 // ── DATA: loaded from API, filtered against data.js ───────────────────────────
 let EVENTS = [];
 
@@ -1046,6 +1057,10 @@ document.addEventListener('click', function(e) {
     }
   }
 });
+</script>
+<script src="/location-autocomplete.js"></script>
+<script>
+pitchLocAC('f-suburb', { suburbOnly: true, onSelect: () => applyFilters() });
 </script>
 </body>
 </html>

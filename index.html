@@ -850,7 +850,7 @@ footer {
 <div class="mobile-menu" id="mobile-menu">
   <a href="/events" onclick="closeMobileMenu()">Events</a>
   <a href="/vendors" onclick="closeMobileMenu()">Vendors</a>
-  <a href="/how-it-works">How It Works</a>
+  <a href="/how-it-works" onclick="closeMobileMenu()">How It Works</a>
   <div class="mobile-menu-actions">
     <a href="/login" class="btn-login" style="font-size:15px;">Log in</a>
     <a href="/signup" class="btn-get-started" style="font-size:15px;">Get Started</a>
@@ -878,11 +878,11 @@ footer {
       <a href="/signup/organiser" class="btn-organiser">I'm an organiser</a>
     </div>
 
-    <div class="hero-search">
+    <form class="hero-search" onsubmit="heroSearch(event)">
       <span class="hero-search-icon">🔍</span>
-      <input type="text" placeholder="Search events by suburb or name…" />
-      <button class="hero-search-btn">Search</button>
-    </div>
+      <input id="hero-search-input" type="text" placeholder="Search events by suburb or name…" />
+      <button type="submit" class="hero-search-btn">Search</button>
+    </form>
   </div>
 
   <!-- Right — stacked event card previews -->
@@ -935,15 +935,15 @@ footer {
     </div>
     <div class="stat-divider">
       <div class="stat-n" id="stat-events-count">—</div>
-      <div class="stat-l">Events</div>
+      <div class="stat-l">Markets listed</div>
     </div>
     <div class="stat-divider">
-      <div class="stat-n">18K+</div>
-      <div class="stat-l">Bookings</div>
+      <div class="stat-n" id="stat-apps-count">—</div>
+      <div class="stat-l">Applications placed</div>
     </div>
     <div>
-      <div class="stat-n">4.9★</div>
-      <div class="stat-l">Average Rating</div>
+      <div class="stat-n" id="stat-rating">—</div>
+      <div class="stat-l">Average rating</div>
     </div>
   </div>
 </div>
@@ -1390,13 +1390,44 @@ document.addEventListener('click', (e) => {
 // Demo: toggle auth state (remove in production)
 // To simulate logged-in: document.getElementById('nav-loggedout').style.display='none'; document.getElementById('nav-loggedin').style.display='flex';
 
-// Real stats
+// Smart stat formatter — rounds down to a "safe" floor + "+" to avoid showing exact numbers
+function fmtStat(n) {
+  if (!n || n <= 0) return '—';
+  if (n >= 10000) return Math.floor(n / 1000) + 'K+';
+  if (n >= 1000)  return (Math.floor(n / 100) / 10).toFixed(1).replace(/\.0$/, '') + 'K+';
+  if (n >= 100)   return (Math.floor(n / 50) * 50) + '+';
+  if (n >= 20)    return (Math.floor(n / 10) * 10) + '+';
+  if (n >= 5)     return (Math.floor(n / 5) * 5) + '+';
+  return String(n);
+}
+
+// Live stats from DB
 fetch('/api/stats').then(r => r.json()).then(d => {
-  const vc = document.getElementById('stat-vendors-count');
-  const ec = document.getElementById('stat-events-count');
-  if (vc) vc.textContent = d.vendors > 0 ? d.vendors : '—';
-  if (ec) ec.textContent = d.events  > 0 ? d.events  : '—';
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  set('stat-vendors-count', fmtStat(d.vendors));
+  set('stat-events-count',  fmtStat(d.events));
+  set('stat-apps-count',    fmtStat(d.applications));
+  if (d.rating) set('stat-rating', d.rating.toFixed(1) + '★');
+  else set('stat-rating', '—');
 }).catch(() => {});
+
+// Hero search — redirect to events page with query
+function heroSearch(e) {
+  e.preventDefault();
+  const q = document.getElementById('hero-search-input').value.trim();
+  if (q) window.location.href = '/events?q=' + encodeURIComponent(q);
+}
+</script>
+<script src="/location-autocomplete.js"></script>
+<script>
+// Hero search autocomplete — selecting a suburb redirects immediately
+pitchLocAC('hero-search-input', {
+  suburbOnly: false,
+  onSelect: function(r) {
+    const val = document.getElementById('hero-search-input').value.trim();
+    if (val) window.location.href = '/events?q=' + encodeURIComponent(val);
+  }
+});
 </script>
 
 </body>

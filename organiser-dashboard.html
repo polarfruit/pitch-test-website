@@ -2981,5 +2981,23 @@ function _orgFmtDate(iso) {
   catch { return iso; }
 }
 </script>
+<script src="/location-autocomplete.js"></script>
+<script>
+// Static new-event form inputs
+pitchLocAC('ne-suburb', { suburbOnly: true });
+pitchLocAC('ne-venue',  { suburbOnly: false });
+// Dynamic edit-event form: re-init after openEventMgmt renders the form
+(function() {
+  const _orig = window.openEventMgmt;
+  window.openEventMgmt = async function(id, name) {
+    await _orig.call(this, id, name);
+    // DOM is populated after await — init autocomplete on the edit fields
+    setTimeout(() => {
+      pitchLocAC('ed-suburb', { suburbOnly: true });
+      pitchLocAC('ed-venue',  { suburbOnly: false });
+    }, 50);
+  };
+})();
+</script>
 </body>
 </html>
