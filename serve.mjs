@@ -1252,13 +1252,13 @@ app.delete('/api/vendor/account', requireAuth, async (req, res) => {
 // ── Public stats ───────────────────────────────────────────────────────────
 app.get('/api/stats', async (req, res) => {
   try {
-    const db = await getDb();
-    const vendors      = (await stmts.countVendors.get()).n || 0;
-    const events       = (await stmts.countEvents.get()).n  || 0;
-    const appRow       = db.prepare(`SELECT COUNT(*) as n FROM applications`).get();
-    const applications = appRow ? Number(appRow.n) : 0;
-    const ratingRow    = db.prepare(`SELECT ROUND(AVG(rating),1) as avg FROM vendor_reviews`).get();
-    const rating       = ratingRow && ratingRow.avg ? Number(ratingRow.avg) : null;
+    const vendors      = Number((await stmts.countVendors.get()).n) || 0;
+    const events       = Number((await stmts.countEvents.get()).n)  || 0;
+    const appRow       = await stmts.countApplications.all();
+    const applications = appRow.reduce((s, r) => s + Number(r.n), 0);
+    const db           = await getDb();
+    const avgRow       = db.prepare(`SELECT ROUND(AVG(rating),1) as avg FROM vendor_reviews`).get();
+    const rating       = avgRow && avgRow.avg ? Number(avgRow.avg) : null;
     res.json({ vendors, events, applications, rating });
   } catch(e) {
     console.error('[api/stats]', e);
