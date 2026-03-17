@@ -1390,15 +1390,15 @@ document.addEventListener('click', (e) => {
 // Demo: toggle auth state (remove in production)
 // To simulate logged-in: document.getElementById('nav-loggedout').style.display='none'; document.getElementById('nav-loggedin').style.display='flex';
 
-// Smart stat formatter — rounds down to a "safe" floor + "+" to avoid showing exact numbers
+// Smart stat formatter — always shows "+" to signal growing numbers
 function fmtStat(n) {
-  if (!n || n <= 0) return '—';
+  if (!n || n <= 0) return '0+';
   if (n >= 10000) return Math.floor(n / 1000) + 'K+';
   if (n >= 1000)  return (Math.floor(n / 100) / 10).toFixed(1).replace(/\.0$/, '') + 'K+';
-  if (n >= 100)   return (Math.floor(n / 50) * 50) + '+';
-  if (n >= 20)    return (Math.floor(n / 10) * 10) + '+';
-  if (n >= 5)     return (Math.floor(n / 5) * 5) + '+';
-  return String(n);
+  if (n >= 200)   return (Math.floor(n / 50) * 50) + '+';
+  if (n >= 50)    return (Math.floor(n / 10) * 10) + '+';
+  if (n >= 10)    return (Math.floor(n / 5) * 5) + '+';
+  return n + '+';
 }
 
 // Live stats from DB
