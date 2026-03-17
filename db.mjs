@@ -259,6 +259,8 @@ await _safeExec(`ALTER TABLE events ADD COLUMN stall_fee_max INTEGER`);
 await _safeExec(`ALTER TABLE events ADD COLUMN deadline TEXT`);
 await _safeExec(`ALTER TABLE event_applications ADD COLUMN spot_number INTEGER`);
 await _safeExec(`ALTER TABLE event_applications ADD COLUMN approved_at DATETIME`);
+await _safeExec(`ALTER TABLE events ADD COLUMN featured INTEGER NOT NULL DEFAULT 0`);
+await _safeExec(`ALTER TABLE vendors ADD COLUMN featured INTEGER NOT NULL DEFAULT 0`);
 // Deduplicate organisers rows (caused by missing UNIQUE constraint on user_id)
 await _safeExec(`DELETE FROM organisers WHERE id NOT IN (SELECT MIN(id) FROM organisers GROUP BY user_id)`);
 // Add unique index so this can never happen again
@@ -427,6 +429,22 @@ export const stmts = {
   countVendors:    prepare(`SELECT COUNT(*) as n FROM users WHERE role='vendor'`),
   countOrganisers: prepare(`SELECT COUNT(*) as n FROM users WHERE role='organiser'`),
   countPending:    prepare(`SELECT COUNT(*) as n FROM users WHERE status='pending'`),
+  countApplications: prepare(`SELECT status, COUNT(*) as n FROM event_applications GROUP BY status`),
+
+  // all users (admin)
+  allUsers:    prepare(`SELECT id,email,first_name,last_name,role,status,email_verified,phone_verified,created_at FROM users ORDER BY created_at DESC`),
+  usersByRole: prepare(`SELECT id,email,first_name,last_name,role,status,email_verified,phone_verified,created_at FROM users WHERE role=? ORDER BY created_at DESC`),
+  updateUserRole: prepare(`UPDATE users SET role=? WHERE id=?`),
+
+  // all applications (admin)
+  allApplications:          prepare(`SELECT ea.id,ea.event_id,ea.vendor_user_id,ea.status,ea.message,ea.created_at,ea.spot_number,e.name as event_name,e.slug,e.category,e.date_sort,e.organiser_name,u.email as vendor_email,v.trading_name FROM event_applications ea JOIN events e ON ea.event_id=e.id JOIN users u ON ea.vendor_user_id=u.id JOIN vendors v ON v.user_id=u.id ORDER BY ea.created_at DESC`),
+  applicationsByStatus:     prepare(`SELECT ea.id,ea.event_id,ea.vendor_user_id,ea.status,ea.message,ea.created_at,ea.spot_number,e.name as event_name,e.slug,e.category,e.date_sort,e.organiser_name,u.email as vendor_email,v.trading_name FROM event_applications ea JOIN events e ON ea.event_id=e.id JOIN users u ON ea.vendor_user_id=u.id JOIN vendors v ON v.user_id=u.id WHERE ea.status=? ORDER BY ea.created_at DESC`),
+
+  // featured
+  featuredEvents:    prepare(`SELECT id,name,slug,category,suburb,state,date_sort,organiser_name,featured FROM events WHERE featured=1 ORDER BY date_sort ASC`),
+  featuredVendors:   prepare(`SELECT v.user_id,v.trading_name,v.cuisine_tags,v.suburb,v.state,v.featured FROM vendors v JOIN users u ON v.user_id=u.id WHERE v.featured=1 AND u.status='active' ORDER BY v.trading_name ASC`),
+  setEventFeatured:  prepare(`UPDATE events SET featured=? WHERE id=?`),
+  setVendorFeatured: prepare(`UPDATE vendors SET featured=? WHERE user_id=?`),
 
   // events
   allEvents:         prepare(`SELECT * FROM events WHERE status != 'deleted' ORDER BY date_sort ASC`),
