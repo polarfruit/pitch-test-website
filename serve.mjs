@@ -1427,6 +1427,12 @@ app.get('/admin/login',         page('admin-login.html'));
 app.get('/admin',               requireAdminPage, page('admin-dashboard.html'));
 app.get('/admin/*splat',        requireAdminPage, page('admin-dashboard.html'));
 
+// Block direct static access to sensitive dashboard HTML files
+app.get('/admin-dashboard.html',      requireAdminPage, (req, res) => res.redirect('/admin'));
+app.get('/admin-login.html',          (req, res) => res.redirect('/admin/login'));
+app.get('/vendor-dashboard.html',     (req, res) => res.redirect('/dashboard/vendor'));
+app.get('/organiser-dashboard.html',  (req, res) => res.redirect('/dashboard/organiser'));
+
 app.use(express.static(__dirname, { index: false }));
 
 // ── Start ──────────────────────────────────────────────────────────────────
