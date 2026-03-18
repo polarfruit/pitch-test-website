@@ -294,7 +294,7 @@ footer {
   <!-- PAGE HERO -->
   <div class="page-hero">
     <div class="sec-tag">DISCOVER</div>
-    <h1 class="page-title">Vendors on Pitch<span style="color:var(--ember)">.</span><span class="page-count" id="result-count">248 vendors</span></h1>
+    <h1 class="page-title">Vendors on Pitch<span style="color:var(--ember)">.</span><span class="page-count" id="result-count"></span></h1>
   </div>
 
   <!-- FILTER BAR -->
@@ -355,10 +355,10 @@ footer {
       <div class="footer-logo">Pitch<span class="dot">.</span></div>
       <p class="footer-desc">Australia's marketplace connecting food vendors with local events. Based in Adelaide, SA.</p>
       <div class="footer-socials">
-        <a href="#" class="fsoc">𝕏</a>
-        <a href="#" class="fsoc">in</a>
-        <a href="#" class="fsoc">ig</a>
-        <a href="#" class="fsoc">fb</a>
+        <a href="https://x.com/pitchmkts" class="fsoc" target="_blank" rel="noopener">𝕏</a>
+        <a href="https://linkedin.com/company/pitchmkts" class="fsoc" target="_blank" rel="noopener">in</a>
+        <a href="https://instagram.com/pitchmkts" class="fsoc" target="_blank" rel="noopener">◈</a>
+        <a href="https://facebook.com/pitchmkts" class="fsoc" target="_blank" rel="noopener">f</a>
       </div>
     </div>
     <div class="footer-col">
@@ -557,7 +557,7 @@ function clearFilters() {
 
 function renderGrid() {
   const filtered = getFiltered();
-  const total = filtered.length === VENDORS.length ? 248 : filtered.length;
+  const total = filtered.length;
   const start = (currentPage - 1) * PER_PAGE;
   const page  = filtered.slice(start, start + PER_PAGE);
 
@@ -591,7 +591,7 @@ function renderPagination(total) {
 
 function goPage(n) {
   const filtered = getFiltered();
-  const total = filtered.length === VENDORS.length ? 248 : filtered.length;
+  const total = filtered.length;
   const totalPages = Math.ceil(total / PER_PAGE);
   if (n < 1 || n > totalPages) return;
   currentPage = n;

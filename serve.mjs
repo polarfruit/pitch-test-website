@@ -1783,7 +1783,14 @@ app.get('/contact',             page('contact.html'));
 app.get('/terms',               page('terms.html'));
 app.get('/privacy',             page('privacy.html'));
 app.get('/blog',                page('blog.html'));
-app.get('/events/new',          (req, res) => res.redirect('/signup/organiser'));
+app.get('/forgot-password',     page('forgot-password.html'));
+app.get('/events/new',          (req, res) => {
+  const sess = req.session;
+  if (sess && sess.userId && sess.role === 'organiser') {
+    return res.redirect('/dashboard/organiser?panel=post-event');
+  }
+  return res.redirect('/signup/organiser');
+});
 app.get('/login',               page('login.html'));
 app.get('/signup',              page('signup.html'));
 app.get('/signup/vendor',       page('signup-vendor.html'));
