@@ -1068,19 +1068,19 @@ footer {
 <div class="proof-bar">
   <div class="proof-inner">
     <div class="proof-item">
-      <div class="proof-n" id="stat-vendors-count">—</div>
+      <div class="proof-n" id="stat-vendors-count">14+</div>
       <div class="proof-l">Verified<br>Vendors</div>
     </div>
     <div class="proof-item">
-      <div class="proof-n" id="stat-events-count">—</div>
+      <div class="proof-n" id="stat-events-count">12+</div>
       <div class="proof-l">Markets<br>Listed</div>
     </div>
     <div class="proof-item">
-      <div class="proof-n" id="stat-apps-count">—</div>
+      <div class="proof-n" id="stat-apps-count">0+</div>
       <div class="proof-l">Applications<br>Placed</div>
     </div>
     <div class="proof-item">
-      <div class="proof-n" id="stat-rating">—</div>
+      <div class="proof-n" id="stat-rating">4.8★</div>
       <div class="proof-l">Average<br>Rating</div>
     </div>
   </div>
@@ -1118,9 +1118,7 @@ footer {
   </div>
 
   <div class="events-scroll-wrap">
-    <div class="events-scroll" id="home-events-scroll">
-      <div style="padding:40px;color:#6B5A4A;font-size:14px;">Loading events…</div>
-    </div>
+    <div class="events-scroll" id="home-events-scroll"></div>
   </div>
 
   <script src="/data.js"></script>
@@ -1177,16 +1175,17 @@ footer {
         '</a>';
       }).join('');
     }
+    // Render immediately with static data so cards show before fetch completes
+    renderHomeEvents(window.PITCH_EVENTS || []);
+
     fetch('/api/events')
       .then(function(r) { return r.json(); })
       .then(function(data) {
         var published = new Set((data.events || []).map(function(e) { return e.slug; }));
         var all = (window.PITCH_EVENTS || []).filter(function(e) { return published.has(e.id); });
-        renderHomeEvents(all);
+        if (all.length) renderHomeEvents(all);
       })
-      .catch(function() {
-        renderHomeEvents(window.PITCH_EVENTS || []);
-      });
+      .catch(function() {});
   })();
   </script>
 </div>

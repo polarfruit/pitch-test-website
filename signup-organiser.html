@@ -645,14 +645,14 @@
               <div class="check-icon check-done">✓</div>
               <div>
                 <strong>Account created</strong>
-                <span>sarah@council.sa.gov.au is verified</span>
+                <span id="confirm-email-verified">Email address verified</span>
               </div>
             </li>
             <li>
               <div class="check-icon check-done">✓</div>
               <div>
                 <strong>Organisation registered</strong>
-                <span>Adelaide City Council Events · ABN verified</span>
+                <span id="confirm-org-display">Organisation registered</span>
               </div>
             </li>
             <li>
@@ -679,7 +679,7 @@
           </ul>
 
           <div class="info-notice">
-            Your account has been reviewed and approved instantly. A welcome email has been sent to <strong>sarah@council.sa.gov.au</strong>.
+            Your account has been reviewed and approved instantly. A welcome email has been sent to <strong id="confirm-email-display">your email address</strong>.
           </div>
 
           <div style="display:flex;flex-direction:column;gap:12px;">
@@ -940,6 +940,15 @@
         return;
       }
       document.getElementById('verifyOverlay').classList.remove('open');
+      // Populate confirmation screen with real user input
+      const realEmail = document.getElementById('o-email')?.value || '';
+      const realOrg   = document.getElementById('o-org-name')?.value || '';
+      document.querySelectorAll('#step-4 .checklist span').forEach((el, i) => {
+        if (i === 0 && realEmail) el.textContent = realEmail + ' is verified';
+        if (i === 1 && realOrg)   el.textContent = realOrg + ' · registered';
+      });
+      const confirmEmailEl = document.getElementById('confirm-email-display');
+      if (confirmEmailEl && realEmail) confirmEmailEl.textContent = realEmail;
       goStep(4);
       setTimeout(() => { window.location.href = data2.redirect; }, 2500);
     } catch (e) {
