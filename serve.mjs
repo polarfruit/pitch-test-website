@@ -987,7 +987,7 @@ app.post('/api/admin/announce', requireAdmin, async (req, res) => {
   const { subject, body, audience } = req.body;
   if (!subject || !body) return res.status(400).json({ error: 'Subject and body required' });
   try {
-    const r = await stmts.createAnnouncement.run({ subject, body, audience: audience || 'all', created_by: req.session.userId });
+    const r = await stmts.createAnnouncement.run({ subject, body, audience: audience || 'all', created_by: req.session.userId ?? null });
     const id = typeof r.lastInsertRowid !== 'undefined' ? Number(r.lastInsertRowid) : null;
     res.json({ ok: true, id });
   } catch (e) {
