@@ -1402,17 +1402,20 @@ body::before {
   </div>
 
   <nav class="sidebar-nav">
-    <div class="nav-section-label">Menu</div>
+    <div class="nav-section-label">Home</div>
     <button class="nav-link active" onclick="showPanel('overview', this)">
       <span class="nav-icon">⬡</span> Overview
     </button>
+
+    <div class="nav-section-label">Discover</div>
     <button class="nav-link" onclick="showPanel('browse', this)">
       <span class="nav-icon">🔍</span> Browse Events
     </button>
-    <button class="nav-link" onclick="showPanel('applications', this)">
-      <span class="nav-icon">📋</span> My Applications
-      <span class="nav-badge" id="apps-nav-badge" style="display:none">0</span>
+    <button class="nav-link" onclick="showPanel('calendar', this)">
+      <span class="nav-icon">📅</span> Calendar
     </button>
+
+    <div class="nav-section-label">Profile &amp; Docs</div>
     <button class="nav-link" onclick="showPanel('profile', this)">
       <span class="nav-icon">👤</span> My Profile
     </button>
@@ -1424,21 +1427,28 @@ body::before {
       <span class="nav-icon">🍽</span> Menu
       <span class="nav-badge" id="menu-count-badge" style="display:none;background:var(--smoke);color:var(--text-mid)">0</span>
     </button>
-    <button class="nav-link" onclick="showPanel('reviews', this)">
-      <span class="nav-icon">⭐</span> Reviews
-    </button>
-    <button class="nav-link" onclick="showPanel('payments', this)">
-      <span class="nav-icon">💳</span> Payments
-    </button>
-    <button class="nav-link" onclick="showPanel('calendar', this)">
-      <span class="nav-icon">📅</span> Calendar
+
+    <div class="nav-section-label">Activity</div>
+    <button class="nav-link" onclick="showPanel('applications', this)">
+      <span class="nav-icon">📋</span> Applications
+      <span class="nav-badge" id="apps-nav-badge" style="display:none">0</span>
     </button>
     <button class="nav-link" onclick="showPanel('history', this)">
       <span class="nav-icon">🗓</span> Market History
     </button>
+    <button class="nav-link" onclick="showPanel('reviews', this)">
+      <span class="nav-icon">⭐</span> Reviews
+    </button>
+
+    <div class="nav-section-label">Finance</div>
+    <button class="nav-link" onclick="showPanel('payments', this)">
+      <span class="nav-icon">💳</span> Payments
+    </button>
     <button class="nav-link" onclick="showPanel('earnings', this)">
       <span class="nav-icon">💰</span> Earnings
     </button>
+
+    <div class="nav-section-label">Account</div>
     <button class="nav-link" onclick="showPanel('messages', this)">
       <span class="nav-icon">💬</span> Messages
       <span class="nav-badge" id="msg-badge" style="display:none;">0</span>

@@ -916,15 +916,6 @@ if (/^\d+$/.test(window.location.pathname.replace(/^\/vendors\//, '').replace(/\
         <!-- Demo toggle to show/hide this section -->
       </div>
 
-      <!-- Demo: organiser view toggle -->
-      <div style="padding:12px 16px;background:var(--char);border:1px solid #ffffff09;border-radius:12px;">
-        <div style="font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-lo);margin-bottom:10px;">Demo: View as</div>
-        <div style="display:flex;gap:8px;">
-          <button onclick="setRole('consumer')" id="role-consumer" style="flex:1;padding:7px;border-radius:8px;font-family:var(--fb);font-size:12px;font-weight:600;cursor:pointer;background:var(--ember);border:none;color:#fff;">Consumer</button>
-          <button onclick="setRole('organiser')" id="role-organiser" style="flex:1;padding:7px;border-radius:8px;font-family:var(--fb);font-size:12px;font-weight:600;cursor:pointer;background:#ffffff0a;border:1px solid #ffffff10;color:var(--text-mid);">Organiser</button>
-        </div>
-      </div>
-
       <!-- Upcoming appearances -->
       <div class="sidebar-card" id="vd-appearances-card">
         <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-lo);margin-bottom:16px;">Upcoming Appearances</div>
@@ -1322,30 +1313,6 @@ function setSort(type, btn) {
   document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   // In a real app this would re-sort; for prototype, just visual feedback
-}
-
-/* ── Role switcher (consumer / organiser) ─────────────────────────────────── */
-function setRole(role) {
-  const inviteSection = document.getElementById('invite-section');
-  const consumerBtn = document.getElementById('role-consumer');
-  const organiserBtn = document.getElementById('role-organiser');
-  if (role === 'organiser') {
-    inviteSection.style.display = 'block';
-    organiserBtn.style.background = 'var(--ember)';
-    organiserBtn.style.color = '#fff';
-    organiserBtn.style.border = 'none';
-    consumerBtn.style.background = '#ffffff0a';
-    consumerBtn.style.color = 'var(--text-mid)';
-    consumerBtn.style.border = '1px solid #ffffff10';
-  } else {
-    inviteSection.style.display = 'none';
-    consumerBtn.style.background = 'var(--ember)';
-    consumerBtn.style.color = '#fff';
-    consumerBtn.style.border = 'none';
-    organiserBtn.style.background = '#ffffff0a';
-    organiserBtn.style.color = 'var(--text-mid)';
-    organiserBtn.style.border = '1px solid #ffffff10';
-  }
 }
 
 /* ── Invite dropdown ─────────────────────────────────────────────────────── */
