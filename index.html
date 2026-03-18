@@ -953,8 +953,7 @@ footer {
     <li><a href="/events">Events</a></li>
     <li><a href="/vendors">Vendors</a></li>
     <li><a href="/how-it-works">How It Works</a></li>
-    <li><a href="/signup/vendor" style="color:var(--ember);font-weight:700;">For Vendors</a></li>
-    <li><a href="/signup/organiser" style="font-weight:700;">For Organisers</a></li>
+    <li><a href="/pricing">Pricing</a></li>
   </ul>
 
   <!-- Logged-out state (default) -->
@@ -966,11 +965,11 @@ footer {
   <!-- Logged-in state (hidden by default, shown via JS) -->
   <div class="nav-user" id="nav-loggedin">
     <div class="nav-user-name" onclick="toggleDropdown()">
-      <span>Joe Smith</span>
+      <span id="nav-user-label">Account</span>
       <span class="nav-user-chevron">▾</span>
     </div>
     <div class="nav-dropdown" id="nav-dropdown">
-      <a href="/dashboard">Dashboard</a>
+      <a href="/dashboard/vendor" id="nav-dashboard-link">Dashboard</a>
       <div class="nav-dropdown-divider"></div>
       <a href="/logout" class="danger">Log out</a>
     </div>
@@ -1732,8 +1731,21 @@ document.addEventListener('click', (e) => {
   if (dd && !e.target.closest('.nav-user')) dd.style.display = 'none';
 });
 
-// Demo: toggle auth state (remove in production)
-// To simulate logged-in: document.getElementById('nav-loggedout').style.display='none'; document.getElementById('nav-loggedin').style.display='flex';
+// Auth-aware navbar
+fetch('/api/me').then(r => r.json()).then(d => {
+  if (!d.user) return;
+  const lo = document.getElementById('nav-loggedout');
+  const li = document.getElementById('nav-loggedin');
+  const lbl = document.getElementById('nav-user-label');
+  const dashLink = document.getElementById('nav-dashboard-link');
+  if (lo) lo.style.display = 'none';
+  if (li) li.style.display = 'flex';
+  if (lbl) {
+    const u = d.user;
+    lbl.textContent = (u.vendor && u.vendor.trading_name) || (u.organiser && u.organiser.org_name) || u.first_name || 'Account';
+  }
+  if (dashLink) dashLink.href = d.user.role === 'organiser' ? '/dashboard/organiser' : '/dashboard/vendor';
+}).catch(() => {});
 
 // Smart stat formatter — always shows "+" to signal growing numbers
 function fmtStat(n) {
