@@ -2205,6 +2205,47 @@ function openThread(threadKey) {
   document.querySelectorAll('.thread-item').forEach(t => t.classList.remove('active'));
   const el = document.querySelector(`.thread-item[data-key="${threadKey}"]`);
   if (el) el.classList.add('active');
+
+  // Announcement thread: render inline without API call
+  if (threadKey === '__announcements__') {
+    const t = _threadCache[threadKey];
+    const anns = (t && t.announcements) || [];
+    const c = document.getElementById('convo-messages');
+    const hdr = document.getElementById('convo-name');
+    if (hdr) hdr.textContent = '📢 Pitch. Announcements';
+    const sub = document.getElementById('convo-event');
+    if (sub) sub.textContent = 'Platform announcements from the Pitch. team';
+    const sendBar = document.getElementById('convo-send-bar');
+    if (sendBar) sendBar.style.display = 'none';
+    if (c) {
+      if (!anns.length) {
+        c.innerHTML = `<div style="text-align:center;padding:48px 24px;font-size:13px;color:var(--text-lo);">No announcements yet.</div>`;
+      } else {
+        c.innerHTML = anns.map(a => `
+          <div>
+            <div class="msg-bubble-wrap">
+              <div class="msg-avatar" style="background:linear-gradient(135deg,#3D1A06,#C9840A);font-size:16px;">📢</div>
+              <div class="msg-bubble theirs" style="max-width:85%;">
+                <strong style="display:block;margin-bottom:4px;color:var(--text-hi);">${a.subject}</strong>
+                <span style="color:var(--text-mid);">${a.body}</span>
+              </div>
+            </div>
+            <div class="msg-time">${_fmtTime(a.created_at)} · Pitch. Team</div>
+          </div>`).join('');
+        c.scrollTop = c.scrollHeight;
+      }
+    }
+    // Clear unread count for announcements thread
+    if (t) t.unreadCount = 0;
+    _refreshThreadList();
+    const layout = document.getElementById('messages-layout');
+    if (layout) layout.classList.add('convo-open');
+    return;
+  }
+
+  // Restore send bar if switching away from announcements
+  const sendBar = document.getElementById('convo-send-bar');
+  if (sendBar) sendBar.style.display = '';
   _loadConversation(threadKey).then(() => _refreshThreadList());
 }
 
@@ -2244,19 +2285,25 @@ function _refreshThreadList() {
   const list = document.getElementById('thread-list');
   if (!list) return;
   const keys = Object.keys(_threadCache);
+  const realKeys = keys.filter(k => k !== '__announcements__');
   if (!keys.length) {
     list.innerHTML = `<div style="padding:40px 20px;text-align:center;color:var(--text-lo);font-size:13px;line-height:1.7;">No messages yet.<br>Use the Message button on any event or application to start a conversation.</div>`;
     return;
   }
-  list.innerHTML = keys.map(key => {
+  // Announcements thread always first
+  const orderedKeys = ['__announcements__', ...realKeys].filter(k => _threadCache[k]);
+  list.innerHTML = orderedKeys.map(key => {
     const t = _threadCache[key];
     const msgs = t.messages || [];
     const last = msgs[msgs.length - 1];
     const preview = t.lastBody || (last ? last.body : '') || 'Start the conversation…';
     const isActive = _activeThread === key;
     const hasUnread = !isActive && (t.unreadCount || 0) > 0;
+    const avatar = t.isAnnouncement
+      ? `<div class="thread-avatar" style="background:linear-gradient(135deg,#3D1A06,#C9840A);font-size:16px;">📢</div>`
+      : `<div class="thread-avatar" style="background:linear-gradient(135deg,#2A1E14,#5C3A1A);">${(t.orgName || '?').charAt(0).toUpperCase()}</div>`;
     return `<div class="thread-item${isActive ? ' active' : ''}" data-key="${key}" onclick="openThread('${key}')">
-      <div class="thread-avatar" style="background:linear-gradient(135deg,#2A1E14,#5C3A1A);">${(t.orgName || '?').charAt(0).toUpperCase()}</div>
+      ${avatar}
       <div class="thread-body">
         <div class="thread-name">${t.orgName || '—'}</div>
         <div class="thread-preview">${preview}</div>
@@ -2293,18 +2340,44 @@ function handleMsgKey(e) {
 // ── Load all threads (badge + sidebar) ──────────────────────────────────
 async function loadAllThreads() {
   try {
-    const r = await pitchFetch('/api/messages');
-    if (!r.ok) return;
-    const { threads } = await r.json();
+    const [msgR, annR] = await Promise.all([
+      pitchFetch('/api/messages'),
+      pitchFetch('/api/announcements').catch(() => null),
+    ]);
+    if (!msgR.ok) return;
+    const { threads } = await msgR.json();
     let totalUnread = 0;
     (threads || []).forEach(t => {
       const key = t.thread_key;
       if (!_threadCache[key]) _threadCache[key] = { orgName: t.organiser_name || '', eventName: '', messages: [] };
-      _threadCache[key].orgName    = t.organiser_name || _threadCache[key].orgName;
+      _threadCache[key].orgName     = t.organiser_name || _threadCache[key].orgName;
       _threadCache[key].unreadCount = t.unread_count || 0;
       _threadCache[key].lastBody    = t.last_body || '';
       totalUnread += t.unread_count || 0;
     });
+
+    // Inject announcements as a special system thread
+    if (annR && annR.ok) {
+      const { announcements } = await annR.json();
+      if (announcements && announcements.length) {
+        const annKey = '__announcements__';
+        _threadCache[annKey] = {
+          orgName: '📢 Pitch. Team',
+          eventName: '',
+          isAnnouncement: true,
+          announcements,
+          lastBody: announcements[0].subject,
+          unreadCount: announcements.length,
+          messages: announcements.map(a => ({
+            body: `**${a.subject}**\n${a.body}`,
+            sender_role: 'admin',
+            created_at: a.created_at,
+          })),
+        };
+        totalUnread += announcements.length;
+      }
+    }
+
     _refreshThreadList();
     _syncBadge(totalUnread);
   } catch (e) { console.error('[loadAllThreads]', e); }

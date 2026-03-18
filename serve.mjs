@@ -943,6 +943,17 @@ app.get('/api/notifications', requireAuth, async (req, res) => {
       }
     }
 
+    // Prepend admin announcements targeted at this role
+    try {
+      const audience = role === 'vendor' ? 'vendors' : role === 'organiser' ? 'organisers' : 'all';
+      const announcements = await stmts.getRecentAnnouncements.all(audience);
+      for (const a of announcements) {
+        notifs.unshift({ id:`ann-${a.id}`, icon:'📢', iconCls:'gold',
+          title: a.subject, desc: a.body,
+          time: relTime(a.created_at), unread: true, isAnnouncement: true });
+      }
+    } catch (_) {}
+
     notifs.sort((a, b) => (b.unread ? 1 : 0) - (a.unread ? 1 : 0));
     res.json({ notifications: notifs, unreadCount: notifs.filter(n => n.unread).length });
   } catch (e) {
@@ -969,6 +980,38 @@ app.get('/api/admin/notifications', requireAdmin, async (req, res) => {
     }
     res.json({ notifications: notifs, unreadCount: notifs.filter(n=>n.unread).length });
   } catch(e) { console.error('[admin/notifications]', e); res.json({ notifications:[], unreadCount:0 }); }
+});
+
+// ── POST /api/admin/announce — save and broadcast an announcement ─────────────
+app.post('/api/admin/announce', requireAdmin, async (req, res) => {
+  const { subject, body, audience } = req.body;
+  if (!subject || !body) return res.status(400).json({ error: 'Subject and body required' });
+  try {
+    const r = await stmts.createAnnouncement.run({ subject, body, audience: audience || 'all', created_by: req.session.userId });
+    const id = typeof r.lastInsertRowid !== 'undefined' ? Number(r.lastInsertRowid) : null;
+    res.json({ ok: true, id });
+  } catch (e) {
+    console.error('[admin/announce]', e);
+    res.status(500).json({ error: 'Failed to save announcement' });
+  }
+});
+
+// ── GET /api/admin/announcements — list all announcements ────────────────────
+app.get('/api/admin/announcements', requireAdmin, async (req, res) => {
+  try {
+    const rows = await stmts.getAnnouncements.all();
+    res.json({ announcements: rows });
+  } catch (e) { res.json({ announcements: [] }); }
+});
+
+// ── GET /api/announcements — announcements for logged-in user's role ─────────
+app.get('/api/announcements', requireAuth, async (req, res) => {
+  try {
+    const { role } = req.session;
+    const audience = role === 'vendor' ? 'vendors' : role === 'organiser' ? 'organisers' : 'all';
+    const rows = await stmts.getRecentAnnouncements.all(audience);
+    res.json({ announcements: rows });
+  } catch (e) { res.json({ announcements: [] }); }
 });
 
 app.post('/api/events/:id/apply', requireAuth, async (req, res) => {
