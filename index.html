@@ -54,10 +54,17 @@ body::before {
   height: 66px;
   display: flex; align-items: center; justify-content: space-between;
   padding: 0 52px;
+  background: transparent;
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
+  border-bottom: 1px solid transparent;
+  transition: background 0.28s ease, backdrop-filter 0.28s ease, border-color 0.28s ease;
+}
+.navbar.scrolled {
   background: rgba(26,22,18,0.92);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid #ffffff07;
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-bottom: 1px solid #ffffff0a;
 }
 
 .nav-logo {
@@ -162,6 +169,132 @@ body::before {
 .mobile-menu a:hover { color: var(--ember); }
 .mobile-menu-actions {
   display: flex; gap: 12px; margin-top: 8px;
+}
+
+/* ── HERO CATEGORY CHIPS ─────────────────────────────────────────────────── */
+.hero-cat-chips {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px;
+}
+.hero-cat-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: var(--fb); font-size: 12px; font-weight: 600;
+  padding: 5px 14px; border-radius: 100px;
+  background: #ffffff0a; border: 1px solid #ffffff12;
+  color: var(--text-lo); cursor: pointer;
+  transition: background 0.14s, border-color 0.14s, color 0.14s;
+}
+.hero-cat-chip:hover, .hero-cat-chip.active {
+  background: var(--ember-bg); border-color: #E8500A30; color: var(--ember);
+}
+
+/* ── SOCIAL PROOF BAR (thin) ─────────────────────────────────────────────── */
+.proof-bar {
+  background: var(--parchment);
+  border-top: 1px solid var(--linen);
+  border-bottom: 1px solid var(--linen);
+  position: relative; z-index: 1;
+}
+.proof-inner {
+  max-width: 1320px; margin: 0 auto;
+  padding: 0 52px;
+  height: 68px;
+  display: flex; align-items: center;
+  justify-content: space-around;
+}
+.proof-item {
+  display: flex; align-items: center; gap: 10px;
+  flex: 1;
+}
+.proof-item + .proof-item { border-left: 1px solid var(--linen); padding-left: 32px; }
+.proof-n {
+  font-family: var(--fd); font-size: 22px; font-weight: 900;
+  letter-spacing: -0.03em; color: var(--coal); line-height: 1;
+}
+.proof-l {
+  font-size: 11px; font-weight: 600; color: #9A8870;
+  letter-spacing: 0.02em; line-height: 1.4;
+}
+
+/* ── THIS WEEKEND ────────────────────────────────────────────────────────── */
+.tw-section {
+  position: relative; z-index: 1;
+  padding: 56px 0 0;
+}
+.tw-inner {
+  max-width: 1320px; margin: 0 auto; padding: 0 52px;
+}
+.tw-header {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 20px;
+}
+.tw-live-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--ember);
+  box-shadow: 0 0 0 0 #E8500A40;
+  animation: tw-pulse 2s ease-out infinite;
+  flex-shrink: 0;
+}
+@keyframes tw-pulse {
+  0%   { box-shadow: 0 0 0 0 #E8500A60; }
+  70%  { box-shadow: 0 0 0 8px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+.tw-title {
+  font-family: var(--fd); font-size: 18px; font-weight: 900;
+  color: var(--text-hi); letter-spacing: -0.02em;
+}
+.tw-subtitle { font-size: 12px; color: var(--text-lo); margin-left: 4px; }
+.tw-scroll-wrap {
+  overflow-x: auto; margin: 0 -52px; padding: 0 52px 20px;
+  scrollbar-width: none;
+}
+.tw-scroll-wrap::-webkit-scrollbar { display: none; }
+.tw-scroll { display: flex; gap: 14px; width: max-content; }
+.tw-card {
+  width: 220px; flex-shrink: 0;
+  background: var(--char); border: 1px solid #ffffff0a;
+  border-radius: 14px; padding: 16px; cursor: pointer;
+  text-decoration: none; display: block;
+  transition: transform 0.14s, border-color 0.14s;
+}
+.tw-card:hover { transform: translateY(-3px); border-color: #E8500A30; }
+.tw-card-day {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--ember); margin-bottom: 6px;
+}
+.tw-card-name {
+  font-family: var(--fd); font-size: 14px; font-weight: 800;
+  color: var(--text-hi); line-height: 1.25; margin-bottom: 5px;
+}
+.tw-card-where { font-size: 11px; color: var(--text-lo); margin-bottom: 10px; }
+.tw-card-foot {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-top: 10px; border-top: 1px solid #ffffff07;
+}
+.tw-spots { font-size: 11px; color: var(--text-mid); }
+.tw-spots strong { color: var(--herb); }
+.tw-apply {
+  font-size: 11px; font-weight: 700; color: #fff;
+  background: var(--ember); padding: 4px 10px; border-radius: 6px;
+  transition: background 0.12s;
+}
+.tw-card:hover .tw-apply { background: var(--ember-glow); }
+.tw-empty { padding: 20px 0; font-size: 13px; color: var(--text-lo); }
+
+/* ── VENDOR MARQUEE ──────────────────────────────────────────────────────── */
+.marquee-wrap {
+  position: relative; overflow: hidden;
+  mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+}
+.marquee-track {
+  display: flex; gap: 18px;
+  animation: marquee-scroll 36s linear infinite;
+  width: max-content;
+}
+.marquee-track:hover { animation-play-state: paused; }
+@keyframes marquee-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
 }
 
 /* ── HERO ─────────────────────────────────────────────────────────────────── */
@@ -820,6 +953,8 @@ footer {
     <li><a href="/events">Events</a></li>
     <li><a href="/vendors">Vendors</a></li>
     <li><a href="/how-it-works">How It Works</a></li>
+    <li><a href="/signup/vendor" style="color:var(--ember);font-weight:700;">For Vendors</a></li>
+    <li><a href="/signup/organiser" style="font-weight:700;">For Organisers</a></li>
   </ul>
 
   <!-- Logged-out state (default) -->
@@ -873,16 +1008,19 @@ footer {
 
     <p class="hero-sub">Australia's marketplace connecting food vendors with local events — from night markets to national festivals.</p>
 
-    <div class="hero-ctas">
-      <a href="/signup/vendor" class="btn-vendor">I'm a vendor</a>
-      <a href="/signup/organiser" class="btn-organiser">I'm an organiser</a>
-    </div>
-
     <form class="hero-search" onsubmit="heroSearch(event)">
       <span class="hero-search-icon">🔍</span>
       <input id="hero-search-input" type="text" placeholder="Search events by suburb or name…" />
       <button type="submit" class="hero-search-btn">Search</button>
     </form>
+
+    <div class="hero-cat-chips">
+      <button class="hero-cat-chip" onclick="goCat('Night Market')">🌙 Night Markets</button>
+      <button class="hero-cat-chip" onclick="goCat('Farmers Market')">🌾 Farmers Markets</button>
+      <button class="hero-cat-chip" onclick="goCat('Festival')">🎪 Festivals</button>
+      <button class="hero-cat-chip" onclick="goCat('Twilight Market')">🌅 Twilight Markets</button>
+      <button class="hero-cat-chip" onclick="goCat('Pop-up')">⚡ Pop-ups</button>
+    </div>
   </div>
 
   <!-- Right — stacked event card previews -->
@@ -925,27 +1063,45 @@ footer {
 </section>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════
-     STATS BAR
+     SOCIAL PROOF BAR
 ═══════════════════════════════════════════════════════════════════════════ -->
-<div class="stats-bar">
-  <div class="stats-inner">
-    <div class="stat-divider">
-      <div class="stat-n" id="stat-vendors-count">—</div>
-      <div class="stat-l">Vendors</div>
+<div class="proof-bar">
+  <div class="proof-inner">
+    <div class="proof-item">
+      <div class="proof-n" id="stat-vendors-count">—</div>
+      <div class="proof-l">Verified<br>Vendors</div>
     </div>
-    <div class="stat-divider">
-      <div class="stat-n" id="stat-events-count">—</div>
-      <div class="stat-l">Markets listed</div>
+    <div class="proof-item">
+      <div class="proof-n" id="stat-events-count">—</div>
+      <div class="proof-l">Markets<br>Listed</div>
     </div>
-    <div class="stat-divider">
-      <div class="stat-n" id="stat-apps-count">—</div>
-      <div class="stat-l">Applications placed</div>
+    <div class="proof-item">
+      <div class="proof-n" id="stat-apps-count">—</div>
+      <div class="proof-l">Applications<br>Placed</div>
     </div>
-    <div>
-      <div class="stat-n" id="stat-rating">—</div>
-      <div class="stat-l">Average rating</div>
+    <div class="proof-item">
+      <div class="proof-n" id="stat-rating">—</div>
+      <div class="proof-l">Average<br>Rating</div>
     </div>
   </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     THIS WEEKEND
+═══════════════════════════════════════════════════════════════════════════ -->
+<div class="section-wrap" style="padding-top:56px;padding-bottom:8px;">
+<div class="tw-inner">
+  <div class="tw-header">
+    <div class="tw-live-dot"></div>
+    <div class="tw-title">This weekend</div>
+    <div class="tw-subtitle" id="tw-date-range"></div>
+  </div>
+  <div class="tw-scroll-wrap">
+    <div class="tw-scroll" id="tw-scroll">
+      <div class="tw-empty">Loading…</div>
+    </div>
+  </div>
+</div>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════
@@ -1049,104 +1205,219 @@ footer {
     <a href="/vendors" class="sec-link">Browse all vendors →</a>
   </div>
 
-  <div class="vendors-grid">
-
-    <a href="/vendors/smoky-joes-bbq" class="vendor-card">
-      <div class="vc-head">
-        <div class="vc-avatar av-a">SJ</div>
-        <div class="vc-info">
-          <div class="vc-name">Smoky Joe's BBQ <span class="vc-verified">✓</span></div>
-          <div class="vc-sub">Food Truck · Norwood, SA</div>
+  <div class="marquee-wrap">
+    <div class="marquee-track" id="vendor-marquee">
+      <!-- Set A -->
+      <a href="/vendors/smoky-joes-bbq" class="vendor-card">
+        <div class="vc-head">
+          <div class="vc-avatar av-a">SJ</div>
+          <div class="vc-info">
+            <div class="vc-name">Smoky Joe's BBQ <span class="vc-verified">✓</span></div>
+            <div class="vc-sub">Food Truck · Norwood, SA</div>
+          </div>
+          <span class="vc-plan-badge bdg-pro">⭐ Pro</span>
         </div>
-        <span class="vc-plan-badge bdg-pro">⭐ Pro</span>
-      </div>
-      <div class="vc-stars">★★★★★ <span>4.9 · 62 reviews</span></div>
-      <div class="vc-events">47 events completed</div>
-      <div class="vc-tags">
-        <span class="vc-tag">BBQ</span><span class="vc-tag">Ribs</span><span class="vc-tag">Brisket</span>
-      </div>
-    </a>
-
-    <a href="/vendors/taco-loco" class="vendor-card">
-      <div class="vc-head">
-        <div class="vc-avatar av-d">TL</div>
-        <div class="vc-info">
-          <div class="vc-name">Taco Loco <span class="vc-verified">✓</span></div>
-          <div class="vc-sub">Pop-up Stall · Glenelg, SA</div>
+        <div class="vc-stars">★★★★★ <span>4.9 · 62 reviews</span></div>
+        <div class="vc-events">47 events completed</div>
+        <div class="vc-tags"><span class="vc-tag">BBQ</span><span class="vc-tag">Ribs</span><span class="vc-tag">Brisket</span></div>
+      </a>
+      <a href="/vendors/taco-loco" class="vendor-card">
+        <div class="vc-head">
+          <div class="vc-avatar av-d">TL</div>
+          <div class="vc-info">
+            <div class="vc-name">Taco Loco <span class="vc-verified">✓</span></div>
+            <div class="vc-sub">Pop-up Stall · Glenelg, SA</div>
+          </div>
+          <span class="vc-plan-badge bdg-pro">⭐ Pro</span>
         </div>
-        <span class="vc-plan-badge bdg-pro">⭐ Pro</span>
-      </div>
-      <div class="vc-stars">★★★★★ <span>4.7 · 38 reviews</span></div>
-      <div class="vc-events">23 events completed</div>
-      <div class="vc-tags">
-        <span class="vc-tag">Mexican</span><span class="vc-tag">Tacos</span><span class="vc-tag">Burritos</span>
-      </div>
-    </a>
-
-    <a href="/vendors/wok-and-roll" class="vendor-card">
-      <div class="vc-head">
-        <div class="vc-avatar av-c">WR</div>
-        <div class="vc-info">
-          <div class="vc-name">Wok & Roll <span class="vc-verified">✓</span></div>
-          <div class="vc-sub">Food Truck · Adelaide CBD, SA</div>
+        <div class="vc-stars">★★★★★ <span>4.7 · 38 reviews</span></div>
+        <div class="vc-events">23 events completed</div>
+        <div class="vc-tags"><span class="vc-tag">Mexican</span><span class="vc-tag">Tacos</span><span class="vc-tag">Burritos</span></div>
+      </a>
+      <a href="/vendors/wok-and-roll" class="vendor-card">
+        <div class="vc-head">
+          <div class="vc-avatar av-c">WR</div>
+          <div class="vc-info">
+            <div class="vc-name">Wok &amp; Roll <span class="vc-verified">✓</span></div>
+            <div class="vc-sub">Food Truck · Adelaide CBD, SA</div>
+          </div>
+          <span class="vc-plan-badge bdg-pro">⭐ Pro</span>
         </div>
-        <span class="vc-plan-badge bdg-pro">⭐ Pro</span>
-      </div>
-      <div class="vc-stars">★★★★★ <span>4.8 · 51 reviews</span></div>
-      <div class="vc-events">31 events completed</div>
-      <div class="vc-tags">
-        <span class="vc-tag">Asian Fusion</span><span class="vc-tag">Noodles</span><span class="vc-tag">Bao</span>
-      </div>
-    </a>
-
-    <a href="/vendors/the-dessert-lab" class="vendor-card">
-      <div class="vc-head">
-        <div class="vc-avatar av-f">DL</div>
-        <div class="vc-info">
-          <div class="vc-name">The Dessert Lab <span class="vc-verified">✓</span></div>
-          <div class="vc-sub">Cart · North Adelaide, SA</div>
+        <div class="vc-stars">★★★★★ <span>4.8 · 51 reviews</span></div>
+        <div class="vc-events">31 events completed</div>
+        <div class="vc-tags"><span class="vc-tag">Asian Fusion</span><span class="vc-tag">Noodles</span><span class="vc-tag">Bao</span></div>
+      </a>
+      <a href="/vendors/the-dessert-lab" class="vendor-card">
+        <div class="vc-head">
+          <div class="vc-avatar av-f">DL</div>
+          <div class="vc-info">
+            <div class="vc-name">The Dessert Lab <span class="vc-verified">✓</span></div>
+            <div class="vc-sub">Cart · North Adelaide, SA</div>
+          </div>
+          <span class="vc-plan-badge bdg-pro">⭐ Pro</span>
         </div>
-        <span class="vc-plan-badge bdg-pro">⭐ Pro</span>
-      </div>
-      <div class="vc-stars">★★★★★ <span>4.9 · 44 reviews</span></div>
-      <div class="vc-events">28 events completed</div>
-      <div class="vc-tags">
-        <span class="vc-tag">Desserts</span><span class="vc-tag">Cheesecake</span><span class="vc-tag">Ice Cream</span>
-      </div>
-    </a>
-
-    <a href="/vendors/ocean-and-fire" class="vendor-card">
-      <div class="vc-head">
-        <div class="vc-avatar av-b">OF</div>
-        <div class="vc-info">
-          <div class="vc-name">Ocean & Fire <span class="vc-verified">✓</span></div>
-          <div class="vc-sub">Pop-up Stall · Glenelg, SA</div>
+        <div class="vc-stars">★★★★★ <span>4.9 · 44 reviews</span></div>
+        <div class="vc-events">28 events completed</div>
+        <div class="vc-tags"><span class="vc-tag">Desserts</span><span class="vc-tag">Cheesecake</span><span class="vc-tag">Ice Cream</span></div>
+      </a>
+      <a href="/vendors/ocean-and-fire" class="vendor-card">
+        <div class="vc-head">
+          <div class="vc-avatar av-b">OF</div>
+          <div class="vc-info">
+            <div class="vc-name">Ocean &amp; Fire <span class="vc-verified">✓</span></div>
+            <div class="vc-sub">Pop-up Stall · Glenelg, SA</div>
+          </div>
+          <span class="vc-plan-badge bdg-pro">⭐ Pro</span>
         </div>
-        <span class="vc-plan-badge bdg-pro">⭐ Pro</span>
-      </div>
-      <div class="vc-stars">★★★★★ <span>4.8 · 22 reviews</span></div>
-      <div class="vc-events">17 events completed</div>
-      <div class="vc-tags">
-        <span class="vc-tag">Seafood</span><span class="vc-tag">Prawns</span><span class="vc-tag">Oysters</span>
-      </div>
-    </a>
-
-    <a href="/vendors/beanery-coffee" class="vendor-card">
-      <div class="vc-head">
-        <div class="vc-avatar av-e">BC</div>
-        <div class="vc-info">
-          <div class="vc-name">Beanery Coffee Co.</div>
-          <div class="vc-sub">Cart · Unley, SA</div>
+        <div class="vc-stars">★★★★★ <span>4.8 · 22 reviews</span></div>
+        <div class="vc-events">17 events completed</div>
+        <div class="vc-tags"><span class="vc-tag">Seafood</span><span class="vc-tag">Prawns</span><span class="vc-tag">Oysters</span></div>
+      </a>
+      <a href="/vendors/beanery-coffee" class="vendor-card">
+        <div class="vc-head">
+          <div class="vc-avatar av-e">BC</div>
+          <div class="vc-info">
+            <div class="vc-name">Beanery Coffee Co.</div>
+            <div class="vc-sub">Cart · Unley, SA</div>
+          </div>
+          <span class="vc-plan-badge bdg-basic">Basic</span>
         </div>
-        <span class="vc-plan-badge bdg-basic">Basic</span>
-      </div>
-      <div class="vc-stars">★★★★★ <span>4.7 · 33 reviews</span></div>
-      <div class="vc-events">35 events completed</div>
-      <div class="vc-tags">
-        <span class="vc-tag">Coffee</span><span class="vc-tag">Cold Brew</span><span class="vc-tag">Matcha</span>
-      </div>
-    </a>
-
+        <div class="vc-stars">★★★★★ <span>4.7 · 33 reviews</span></div>
+        <div class="vc-events">35 events completed</div>
+        <div class="vc-tags"><span class="vc-tag">Coffee</span><span class="vc-tag">Cold Brew</span><span class="vc-tag">Matcha</span></div>
+      </a>
+      <a href="/vendors/brewski-burgers" class="vendor-card">
+        <div class="vc-head">
+          <div class="vc-avatar av-a">BB</div>
+          <div class="vc-info">
+            <div class="vc-name">Brewski Burgers</div>
+            <div class="vc-sub">Food Truck · Port Adelaide, SA</div>
+          </div>
+          <span class="vc-plan-badge bdg-basic">Basic</span>
+        </div>
+        <div class="vc-stars">★★★★☆ <span>4.5 · 19 reviews</span></div>
+        <div class="vc-events">12 events completed</div>
+        <div class="vc-tags"><span class="vc-tag">Burgers</span><span class="vc-tag">Smash</span><span class="vc-tag">SA Beef</span></div>
+      </a>
+      <a href="/vendors/punjab-palace" class="vendor-card">
+        <div class="vc-head">
+          <div class="vc-avatar av-d">PP</div>
+          <div class="vc-info">
+            <div class="vc-name">Punjab Palace</div>
+            <div class="vc-sub">Food Truck · Elizabeth, SA</div>
+          </div>
+          <span class="vc-plan-badge bdg-basic">Basic</span>
+        </div>
+        <div class="vc-stars">★★★★★ <span>4.6 · 27 reviews</span></div>
+        <div class="vc-events">22 events completed</div>
+        <div class="vc-tags"><span class="vc-tag">Indian</span><span class="vc-tag">Curry</span><span class="vc-tag">Biryani</span></div>
+      </a>
+      <!-- Set B (duplicate for seamless loop) -->
+      <a href="/vendors/smoky-joes-bbq" class="vendor-card">
+        <div class="vc-head">
+          <div class="vc-avatar av-a">SJ</div>
+          <div class="vc-info">
+            <div class="vc-name">Smoky Joe's BBQ <span class="vc-verified">✓</span></div>
+            <div class="vc-sub">Food Truck · Norwood, SA</div>
+          </div>
+          <span class="vc-plan-badge bdg-pro">⭐ Pro</span>
+        </div>
+        <div class="vc-stars">★★★★★ <span>4.9 · 62 reviews</span></div>
+        <div class="vc-events">47 events completed</div>
+        <div class="vc-tags"><span class="vc-tag">BBQ</span><span class="vc-tag">Ribs</span><span class="vc-tag">Brisket</span></div>
+      </a>
+      <a href="/vendors/taco-loco" class="vendor-card">
+        <div class="vc-head">
+          <div class="vc-avatar av-d">TL</div>
+          <div class="vc-info">
+            <div class="vc-name">Taco Loco <span class="vc-verified">✓</span></div>
+            <div class="vc-sub">Pop-up Stall · Glenelg, SA</div>
+          </div>
+          <span class="vc-plan-badge bdg-pro">⭐ Pro</span>
+        </div>
+        <div class="vc-stars">★★★★★ <span>4.7 · 38 reviews</span></div>
+        <div class="vc-events">23 events completed</div>
+        <div class="vc-tags"><span class="vc-tag">Mexican</span><span class="vc-tag">Tacos</span><span class="vc-tag">Burritos</span></div>
+      </a>
+      <a href="/vendors/wok-and-roll" class="vendor-card">
+        <div class="vc-head">
+          <div class="vc-avatar av-c">WR</div>
+          <div class="vc-info">
+            <div class="vc-name">Wok &amp; Roll <span class="vc-verified">✓</span></div>
+            <div class="vc-sub">Food Truck · Adelaide CBD, SA</div>
+          </div>
+          <span class="vc-plan-badge bdg-pro">⭐ Pro</span>
+        </div>
+        <div class="vc-stars">★★★★★ <span>4.8 · 51 reviews</span></div>
+        <div class="vc-events">31 events completed</div>
+        <div class="vc-tags"><span class="vc-tag">Asian Fusion</span><span class="vc-tag">Noodles</span><span class="vc-tag">Bao</span></div>
+      </a>
+      <a href="/vendors/the-dessert-lab" class="vendor-card">
+        <div class="vc-head">
+          <div class="vc-avatar av-f">DL</div>
+          <div class="vc-info">
+            <div class="vc-name">The Dessert Lab <span class="vc-verified">✓</span></div>
+            <div class="vc-sub">Cart · North Adelaide, SA</div>
+          </div>
+          <span class="vc-plan-badge bdg-pro">⭐ Pro</span>
+        </div>
+        <div class="vc-stars">★★★★★ <span>4.9 · 44 reviews</span></div>
+        <div class="vc-events">28 events completed</div>
+        <div class="vc-tags"><span class="vc-tag">Desserts</span><span class="vc-tag">Cheesecake</span><span class="vc-tag">Ice Cream</span></div>
+      </a>
+      <a href="/vendors/ocean-and-fire" class="vendor-card">
+        <div class="vc-head">
+          <div class="vc-avatar av-b">OF</div>
+          <div class="vc-info">
+            <div class="vc-name">Ocean &amp; Fire <span class="vc-verified">✓</span></div>
+            <div class="vc-sub">Pop-up Stall · Glenelg, SA</div>
+          </div>
+          <span class="vc-plan-badge bdg-pro">⭐ Pro</span>
+        </div>
+        <div class="vc-stars">★★★★★ <span>4.8 · 22 reviews</span></div>
+        <div class="vc-events">17 events completed</div>
+        <div class="vc-tags"><span class="vc-tag">Seafood</span><span class="vc-tag">Prawns</span><span class="vc-tag">Oysters</span></div>
+      </a>
+      <a href="/vendors/beanery-coffee" class="vendor-card">
+        <div class="vc-head">
+          <div class="vc-avatar av-e">BC</div>
+          <div class="vc-info">
+            <div class="vc-name">Beanery Coffee Co.</div>
+            <div class="vc-sub">Cart · Unley, SA</div>
+          </div>
+          <span class="vc-plan-badge bdg-basic">Basic</span>
+        </div>
+        <div class="vc-stars">★★★★★ <span>4.7 · 33 reviews</span></div>
+        <div class="vc-events">35 events completed</div>
+        <div class="vc-tags"><span class="vc-tag">Coffee</span><span class="vc-tag">Cold Brew</span><span class="vc-tag">Matcha</span></div>
+      </a>
+      <a href="/vendors/brewski-burgers" class="vendor-card">
+        <div class="vc-head">
+          <div class="vc-avatar av-a">BB</div>
+          <div class="vc-info">
+            <div class="vc-name">Brewski Burgers</div>
+            <div class="vc-sub">Food Truck · Port Adelaide, SA</div>
+          </div>
+          <span class="vc-plan-badge bdg-basic">Basic</span>
+        </div>
+        <div class="vc-stars">★★★★☆ <span>4.5 · 19 reviews</span></div>
+        <div class="vc-events">12 events completed</div>
+        <div class="vc-tags"><span class="vc-tag">Burgers</span><span class="vc-tag">Smash</span><span class="vc-tag">SA Beef</span></div>
+      </a>
+      <a href="/vendors/punjab-palace" class="vendor-card">
+        <div class="vc-head">
+          <div class="vc-avatar av-d">PP</div>
+          <div class="vc-info">
+            <div class="vc-name">Punjab Palace</div>
+            <div class="vc-sub">Food Truck · Elizabeth, SA</div>
+          </div>
+          <span class="vc-plan-badge bdg-basic">Basic</span>
+        </div>
+        <div class="vc-stars">★★★★★ <span>4.6 · 27 reviews</span></div>
+        <div class="vc-events">22 events completed</div>
+        <div class="vc-tags"><span class="vc-tag">Indian</span><span class="vc-tag">Curry</span><span class="vc-tag">Biryani</span></div>
+      </a>
+    </div>
   </div>
 </div>
 </div>
@@ -1368,6 +1639,81 @@ footer {
      SCRIPTS
 ═══════════════════════════════════════════════════════════════════════════ -->
 <script>
+// ── Navbar scroll behaviour ───────────────────────────────────────────────
+(function() {
+  const nav = document.querySelector('.navbar');
+  function updateNav() {
+    nav.classList.toggle('scrolled', window.scrollY > 20);
+  }
+  updateNav();
+  window.addEventListener('scroll', updateNav, { passive: true });
+})();
+
+// ── Category chips — redirect to events with filter ───────────────────────
+function goCat(cat) {
+  window.location.href = '/events?category=' + encodeURIComponent(cat);
+}
+
+// ── This Weekend urgency feed ─────────────────────────────────────────────
+(function() {
+  const CAT_EMOJI = {
+    'Night Market':'🌙','Farmers Market':'🌾','Festival':'🎪',
+    'Twilight Market':'🌅','Pop-up':'⚡','Corporate':'🏢'
+  };
+  const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const MONTH_NAMES = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+  function fmt(d) { return DAY_NAMES[d.getDay()] + ' ' + d.getDate() + ' ' + MONTH_NAMES[d.getMonth()]; }
+
+  const now   = new Date();
+  const day   = now.getDay();          // 0=Sun
+  const toFri = (day === 0) ? 5 : (5 - day + 7) % 7;   // days to next Friday (or this Fri)
+  const toSun = (day === 0) ? 0 : (7 - day);
+  const fri   = new Date(now); fri.setDate(now.getDate() + (day > 5 ? (12-day) : toFri)); fri.setHours(0,0,0,0);
+  const sun   = new Date(fri); sun.setDate(fri.getDate() + 2); sun.setHours(23,59,59,999);
+  const friStr = fri.toISOString().slice(0,10);
+  const sunStr = sun.toISOString().slice(0,10);
+
+  const dateEl = document.getElementById('tw-date-range');
+  if (dateEl) dateEl.textContent = '· ' + fmt(fri) + ' – ' + fmt(sun);
+
+  fetch('/api/events').then(r => r.json()).then(data => {
+    const events = (data.events || []).filter(e => {
+      if (!e.date_sort) return false;
+      return e.date_sort >= friStr && e.date_sort <= sunStr;
+    });
+    const el = document.getElementById('tw-scroll');
+    if (!el) return;
+    if (!events.length) {
+      el.innerHTML = '<div class="tw-empty">No markets this weekend — <a href="/events" style="color:var(--ember);">browse all upcoming →</a></div>';
+      return;
+    }
+    const allEvents = window.PITCH_EVENTS || [];
+    const evMap = {};
+    allEvents.forEach(e => { evMap[e.id] = e; });
+    el.innerHTML = events.map(ev => {
+      const demo = evMap[ev.slug] || {};
+      const emoji = CAT_EMOJI[ev.category] || '📍';
+      const total = ev.stalls_available || demo.total || 20;
+      const filled = demo.filled || 0;
+      const spots  = Math.max(0, total - filled);
+      const dayLabel = ev.date_sort ? fmt(new Date(ev.date_sort + 'T00:00:00')) : '—';
+      return `<a href="/events/${ev.slug}" class="tw-card">
+        <div class="tw-card-day">${emoji} ${dayLabel}</div>
+        <div class="tw-card-name">${ev.name}</div>
+        <div class="tw-card-where">📍 ${ev.suburb || '—'}${ev.state ? ', '+ev.state : ''}</div>
+        <div class="tw-card-foot">
+          <div class="tw-spots">${spots > 0 ? '<strong>'+spots+'</strong> spots left' : 'Full'}</div>
+          <span class="tw-apply">Apply →</span>
+        </div>
+      </a>`;
+    }).join('');
+  }).catch(() => {
+    const el = document.getElementById('tw-scroll');
+    if (el) el.innerHTML = '<div class="tw-empty"><a href="/events" style="color:var(--ember);">Browse all upcoming events →</a></div>';
+  });
+})();
+
 // Mobile menu toggle
 function toggleMobileMenu() {
   const menu = document.getElementById('mobile-menu');
