@@ -480,8 +480,8 @@ export const stmts = {
       @cuisine_tags,@setup_type,@stall_w,@stall_d,@power,@water,@price_range,@instagram,@plan)
   `),
   getVendorByUserId: prepare(`SELECT * FROM vendors WHERE user_id = ?`),
-  allVendors: prepare(`SELECT v.*,u.email,u.first_name,u.last_name,u.status,u.created_at as joined FROM vendors v JOIN users u ON v.user_id=u.id ORDER BY v.created_at DESC`),
-  vendorsByStatus: prepare(`SELECT v.*,u.email,u.first_name,u.last_name,u.status,u.created_at as joined FROM vendors v JOIN users u ON v.user_id=u.id WHERE u.status=? ORDER BY v.created_at DESC`),
+  allVendors: prepare(`SELECT v.*,u.email,u.first_name,u.last_name,u.status,u.created_at as joined FROM vendors v JOIN users u ON v.user_id=u.id WHERE v.id IN (SELECT MIN(id) FROM vendors GROUP BY user_id) ORDER BY v.created_at DESC`),
+  vendorsByStatus: prepare(`SELECT v.*,u.email,u.first_name,u.last_name,u.status,u.created_at as joined FROM vendors v JOIN users u ON v.user_id=u.id WHERE v.id IN (SELECT MIN(id) FROM vendors GROUP BY user_id) AND u.status=? ORDER BY v.created_at DESC`),
 
   // organisers
   createOrganiser: prepare(`
@@ -492,8 +492,8 @@ export const stmts = {
   `),
   getOrganiserByUserId: prepare(`SELECT * FROM organisers WHERE user_id = ?`),
   getOrganiserByName:   prepare(`SELECT * FROM organisers WHERE org_name = ? LIMIT 1`),
-  allOrganisers: prepare(`SELECT o.*,u.email,u.first_name,u.last_name,u.status,u.created_at as joined FROM organisers o JOIN users u ON o.user_id=u.id ORDER BY o.created_at DESC`),
-  organisersByStatus: prepare(`SELECT o.*,u.email,u.first_name,u.last_name,u.status,u.created_at as joined FROM organisers o JOIN users u ON o.user_id=u.id WHERE u.status=? ORDER BY o.created_at DESC`),
+  allOrganisers: prepare(`SELECT o.*,u.email,u.first_name,u.last_name,u.status,u.created_at as joined FROM organisers o JOIN users u ON o.user_id=u.id WHERE o.id IN (SELECT MIN(id) FROM organisers GROUP BY user_id) ORDER BY o.created_at DESC`),
+  organisersByStatus: prepare(`SELECT o.*,u.email,u.first_name,u.last_name,u.status,u.created_at as joined FROM organisers o JOIN users u ON o.user_id=u.id WHERE o.id IN (SELECT MIN(id) FROM organisers GROUP BY user_id) AND u.status=? ORDER BY o.created_at DESC`),
 
   // admin actions
   updateUserAvatar:                prepare(`UPDATE users SET avatar_url=? WHERE id=?`),
