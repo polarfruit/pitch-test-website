@@ -80,6 +80,12 @@ body::before {
   position: relative; display: flex; align-items: center; justify-content: center;
   font-size: 80px; margin-bottom: 32px;
   background: linear-gradient(135deg, #1A1612 0%, #321A0A 55%, #1A1612 100%);
+  background-size: cover; background-position: center;
+}
+.detail-hero-emoji-wrap {
+  position: relative; z-index: 1;
+  text-align: center;
+  filter: drop-shadow(0 8px 32px rgba(0,0,0,0.6));
 }
 .detail-hero-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(26,22,18,0.7) 0%, rgba(26,22,18,0.1) 60%, transparent 100%); }
 .detail-hero-badge {
@@ -180,18 +186,20 @@ body::before {
 .vendor-lineup-scroll { display: flex; gap: 12px; flex-wrap: wrap; }
 .vendor-mini {
   background: var(--parchment); border: 1px solid var(--linen);
-  border-radius: 14px; padding: 14px 16px;
+  border-radius: 14px; padding: 12px 16px 12px 12px;
   display: flex; align-items: center; gap: 12px;
   color: var(--coal); text-decoration: none;
   transition: transform 0.16s, box-shadow 0.16s;
-  min-width: 180px;
+  min-width: 190px;
 }
 .vendor-mini:hover { transform: translateY(-2px); box-shadow: 0 8px 24px #00000018; }
 .vm-avatar {
-  width: 40px; height: 40px; border-radius: 50%;
+  width: 44px; height: 44px; border-radius: 12px;
   display: flex; align-items: center; justify-content: center;
-  font-family: var(--fd); font-size: 14px; font-weight: 900; flex-shrink: 0;
+  font-family: var(--fd); font-size: 16px; font-weight: 900; flex-shrink: 0;
+  overflow: hidden;
 }
+.vm-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
 .vm-name { font-family: var(--fd); font-size: 13px; font-weight: 800; color: var(--coal); margin-bottom: 2px; }
 .vm-type { font-size: 11px; color: #9A8870; }
 .lineup-empty {
@@ -566,7 +574,7 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
 
     <!-- Hero image -->
     <div class="detail-hero" id="ev-hero">
-      <span id="ev-emoji">🌃</span>
+      <div class="detail-hero-emoji-wrap"><span id="ev-emoji">🌃</span></div>
       <div class="detail-hero-overlay"></div>
       <span class="detail-hero-badge" id="ev-hero-category">Night Market</span>
       <div class="detail-hero-meta">
@@ -982,6 +990,33 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
 var slug = window.location.pathname.replace(/^\/events\//, '').replace(/\/$/, '');
 var ev   = (window.PITCH_EVENTS || []).find(function(e){ return e.id === slug; });
 
+// ── Event hero gradients by category ──────────────────────────────────────────
+var CAT_HERO_GRADIENT = {
+  'Night Market':    'linear-gradient(135deg, #1A0805 0%, #4A1A06 25%, #2A0E02 55%, #080614 100%)',
+  'Festival':        'linear-gradient(135deg, #18060C 0%, #3C0A20 30%, #200814 60%, #100818 100%)',
+  'Farmers Market':  'linear-gradient(135deg, #061206 0%, #143C0A 30%, #0A2808 60%, #040C04 100%)',
+  'Twilight Market': 'linear-gradient(135deg, #04080E 0%, #0C2040 30%, #081830 60%, #020408 100%)',
+  'Corporate':       'linear-gradient(135deg, #060A10 0%, #10203A 30%, #0C1A30 60%, #040812 100%)',
+  'Pop-up':          'linear-gradient(135deg, #100818 0%, #2C1040 30%, #1C0C30 60%, #08040E 100%)',
+};
+var EV_SLUG_GRADIENT = {
+  'rundle-mall-night-eats':             'linear-gradient(135deg, #1A0A02 0%, #4A1A06 22%, #C9840A18 45%, #2E0E04 65%, #0A0A14 100%)',
+  'adelaide-showground-harvest-fair':   'linear-gradient(135deg, #061208 0%, #143C0A 25%, #2D8B5518 50%, #0A2A08 75%, #040808 100%)',
+  'fringe-food-village-2026':           'linear-gradient(135deg, #1A0614 0%, #3C0828 22%, #E8500A14 45%, #200812 70%, #0E0410 100%)',
+  'barossa-valley-food-and-wine':       'linear-gradient(135deg, #1C0808 0%, #4A1010 25%, #C0392B14 50%, #2E0A08 70%, #100404 100%)',
+  'glenelg-twilight-market':            'linear-gradient(135deg, #040C1A 0%, #0A2040 25%, #2B5BA818 50%, #081830 75%, #020408 100%)',
+  'port-adelaide-night-market':         'linear-gradient(135deg, #04080E 0%, #0C1C40 25%, #2B5BA814 50%, #081830 75%, #020408 100%)',
+  'westpac-corporate-food-day':         'linear-gradient(135deg, #080C12 0%, #10203C 25%, #2B5BA818 50%, #0C1A30 75%, #040810 100%)',
+  'henley-beach-sunset-market':         'linear-gradient(135deg, #040A18 0%, #083060 25%, #2B5BA820 50%, #0A2040 75%, #020610 100%)',
+};
+
+function applyEventHero(heroEl, category, slug) {
+  var gradient = EV_SLUG_GRADIENT[slug] || CAT_HERO_GRADIENT[category] ||
+    'linear-gradient(135deg, #1A0E06 0%, #3D1A08 30%, #1A1009 65%, #080812 100%)';
+  heroEl.style.background = gradient;
+  heroEl.classList.add('has-photo');
+}
+
 // ── DB event (injected server-side for real organiser events) ────────────────
 if (window.__PITCH_DB_EVENT__) {
   var db = window.__PITCH_DB_EVENT__;
@@ -991,6 +1026,15 @@ if (window.__PITCH_DB_EVENT__) {
   document.title = db.name + ' — Pitch.';
   set('ev-breadcrumb', db.name);
   set('ev-emoji', '🎪');
+  // Apply hero (banner_url from DB, otherwise use gradient)
+  var heroEl = document.getElementById('ev-hero');
+  if (db.banner_url) {
+    heroEl.style.backgroundImage = 'url(' + db.banner_url + ')';
+    heroEl.style.backgroundSize = 'cover';
+    heroEl.classList.add('has-photo');
+  } else {
+    applyEventHero(heroEl, db.category, db.slug || slug);
+  }
   set('ev-hero-category', db.category || '');
   set('ev-hero-loc', '📍 ' + (db.suburb||'') + (db.state?', '+db.state:''));
   set('ev-hero-date', '📅 ' + fmtD(db.date_sort) + (db.date_end ? ' → ' + fmtD(db.date_end) : ''));
@@ -1091,6 +1135,8 @@ if (ev && !window.__PITCH_DB_EVENT__) {
   document.getElementById('ev-hero-date').textContent = '\uD83D\uDCC5 ' + ev.dateLabel;
   document.getElementById('ev-hero-time').textContent = '\uD83D\uDD54 ' + ev.time;
   document.getElementById('ev-name').textContent = ev.name;
+  // Apply hero gradient
+  applyEventHero(document.getElementById('ev-hero'), ev.category, slug);
   document.getElementById('ev-meta-row').innerHTML =
     '<span class="meta-badge" style="background:#2B5BA812;color:#2B5BA8;border-color:#2B5BA820;">' + ev.category + '</span>' +
     '<span class="meta-badge">\uD83D\uDCCD ' + ev.location + '</span>' +
@@ -1290,22 +1336,40 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal()
 // ── SAVE ──────────────────────────────────────────────────────────────────────
 var _saved = false;
 function saveEvent() {
-  _saved = !_saved;
-  const btn = document.getElementById('save-btn');
-  btn.innerHTML = _saved ? '🔖 Saved!' : '🔖 Save this event';
-  btn.classList.toggle('saved', _saved);
-  if (_saved) {
-    // Prompt sign-up for logged-out users (prototype: check for session cookie)
-    setTimeout(function() {
-      // In a real app: check auth state; for prototype, show a hint via toast
-      const toast = document.getElementById('share-toast');
-      if (!toast) return;
-      const prevText = toast.textContent;
-      toast.textContent = '🔖 Saved to your list';
+  // Check auth state before saving
+  fetch('/api/me').then(function(r) {
+    if (!r.ok) {
+      // Not logged in — prompt signup
+      var toast = document.getElementById('share-toast');
+      if (toast) {
+        var prev = toast.textContent;
+        toast.textContent = '🔖 Sign in to save events';
+        toast.classList.add('show');
+        setTimeout(function() {
+          toast.classList.remove('show');
+          toast.textContent = prev;
+        }, 3000);
+      }
+      return;
+    }
+    _saved = !_saved;
+    var btn = document.getElementById('save-btn');
+    btn.innerHTML = _saved ? '🔖 Saved!' : '🔖 Save this event';
+    btn.classList.toggle('saved', _saved);
+    var toast = document.getElementById('share-toast');
+    if (toast) {
+      var prev = toast.textContent;
+      toast.textContent = _saved ? '🔖 Saved to your list' : '🔖 Removed from saved';
       toast.classList.add('show');
-      setTimeout(() => { toast.classList.remove('show'); toast.textContent = prevText; }, 2600);
-    }, 100);
-  }
+      setTimeout(function() { toast.classList.remove('show'); toast.textContent = prev; }, 2600);
+    }
+  }).catch(function() {
+    // Offline — allow toggle anyway
+    _saved = !_saved;
+    var btn = document.getElementById('save-btn');
+    btn.innerHTML = _saved ? '🔖 Saved!' : '🔖 Save this event';
+    btn.classList.toggle('saved', _saved);
+  });
 }
 
 // ── STATUS DETECTION ──────────────────────────────────────────────────────────
