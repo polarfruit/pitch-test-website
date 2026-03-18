@@ -573,10 +573,12 @@ if (/^\d+$/.test(window.location.pathname.replace(/^\/vendors\//, '').replace(/\
     <li><a href="/vendors" class="active">Vendors</a></li>
     <li><a href="/#how-it-works">How it Works</a></li>
   </ul>
-  <div class="nav-actions">
-    <!-- Demo toggle: change data-role="organiser" to show invite button -->
+  <div class="nav-actions" id="nav-loggedout">
     <a href="/login" class="btn-login">Log In</a>
     <a href="/signup" class="btn-get-started">Get Started</a>
+  </div>
+  <div id="nav-loggedin" style="display:none;align-items:center;gap:8px;position:relative;">
+    <a href="/dashboard/vendor" id="nav-dashboard-link" style="font-family:var(--fb);font-size:13px;font-weight:600;color:var(--text-mid);text-decoration:none;padding:9px 16px;border-radius:8px;transition:color 0.14s;"><span id="nav-user-label">Account</span> ▾</a>
   </div>
   <button class="nav-hamburger"><span></span><span></span><span></span></button>
 </nav>
@@ -757,6 +759,16 @@ if (/^\d+$/.test(window.location.pathname.replace(/^\/vendors\//, '').replace(/\
           </div>
         </div>
         <button class="load-more-btn" id="load-more-btn" onclick="loadMoreReviews()">Load more reviews (59 total)</button>
+      </div>
+
+      <!-- Consumer Reviews -->
+      <div class="section-block" id="consumer-reviews-section" style="display:none;">
+        <h2 class="section-heading">Customer reviews</h2>
+        <p style="font-size:13px;color:var(--text-lo);margin-bottom:20px;">Reviews from people who've visited this vendor at markets.</p>
+        <div class="review-list" id="consumer-review-list"></div>
+        <p style="font-size:12px;color:var(--text-lo);margin-top:16px;">
+          Visited this vendor? <a href="/login?redirect=/vendors" style="color:var(--ember);text-decoration:none;font-weight:600;">Sign in to leave a review →</a>
+        </p>
       </div>
 
     </div><!-- /left-col -->
@@ -1209,6 +1221,30 @@ if (isNumericId) {
     var lmBtn = document.getElementById('load-more-btn');
     if(lmBtn) lmBtn.style.display = 'none';
 
+    // Consumer reviews for demo vendors
+    var CONSUMER_REVIEWS = {
+      'smoky-joes-bbq': [
+        { name: 'Jessica T.', event: 'Rundle Mall Night Eats', rating: 5, text: 'The brisket roll was insane — smoky, tender, and the queue was totally worth it. We went back twice in one night.' },
+        { name: 'Marcus O.', event: 'Adelaide Fringe Food Village', rating: 5, text: 'Best BBQ I\'ve had at any SA market. Pulled pork was fall-apart perfect and the portion size was huge for the price.' },
+        { name: 'Priya L.', event: 'Glenelg Twilight Market', rating: 4, text: 'Really flavourful, the ribs were excellent. Only reason it\'s not 5 stars is the wait was about 20 minutes but completely understandable given the crowd.' },
+      ],
+      'taco-loco': [
+        { name: 'Ben W.', event: 'Adelaide Fringe Food Village', rating: 5, text: 'Hand-pressed tortillas make all the difference. The al pastor was the highlight of the whole night market.' },
+        { name: 'Sophie C.', event: 'Port Adelaide Night Market', rating: 5, text: 'Absolutely authentic. The family behind this stall are lovely and the fish tacos deserve their own awards.' },
+        { name: 'Raj M.', event: 'Rundle Mall Night Eats', rating: 4, text: 'Great flavours, fresh ingredients. The salsa verde was the standout — ask for extra.' },
+      ],
+    };
+    var consumerRevs = CONSUMER_REVIEWS[vpath];
+    if (consumerRevs && consumerRevs.length) {
+      var cSection = document.getElementById('consumer-reviews-section');
+      var cList = document.getElementById('consumer-review-list');
+      if (cSection) cSection.style.display = '';
+      if (cList) cList.innerHTML = consumerRevs.map(function(r){
+        var stars = '\u2605'.repeat(r.rating) + '\u2606'.repeat(5 - r.rating);
+        return '<div class="review-card"><div class="review-header"><div class="review-org"><div class="review-org-name">' + r.name + '</div><div class="review-event-name">' + r.event + '</div></div><div class="review-meta"><span class="review-stars">' + stars + '</span></div></div><p class="review-text">' + r.text + '</p></div>';
+      }).join('');
+    }
+
     document.getElementById('vd-rating-num').textContent = vendor.rating.toFixed(1);
     document.getElementById('vd-review-count').textContent = vendor.reviews + ' organiser reviews';
     document.getElementById('vd-events-count').textContent = vendor.events;
@@ -1504,6 +1540,21 @@ function filterPublicMenu(cat) {
   _pubMenuActiveFilter = cat;
   renderPublicMenu();
 }
+</script>
+<script>
+(function() {
+  fetch('/api/me').then(r => r.json()).then(d => {
+    if (!d.user) return;
+    const lo = document.getElementById('nav-loggedout');
+    const li = document.getElementById('nav-loggedin');
+    if (lo) lo.style.display = 'none';
+    if (li) li.style.display = 'flex';
+    const lbl = document.getElementById('nav-user-label');
+    if (lbl) lbl.textContent = (d.user.vendor && d.user.vendor.trading_name) || (d.user.organiser && d.user.organiser.org_name) || d.user.first_name || 'Account';
+    const dl = document.getElementById('nav-dashboard-link');
+    if (dl) dl.href = d.user.role === 'organiser' ? '/dashboard/organiser' : '/dashboard/vendor';
+  }).catch(() => {});
+})();
 </script>
 </body>
 </html>

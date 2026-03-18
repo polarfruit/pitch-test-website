@@ -116,7 +116,10 @@ function serveDashboard(file, expectedRole, getInitData) {
       if (BYPASS_AUTH) {
         // Use first real user with this role so API calls & init data work correctly
         const bypassUser = await stmts.usersByRole.get(expectedRole);
-        user = bypassUser || { id: 0, role: expectedRole, email: 'preview@pitch.com', first_name: 'Preview', last_name: 'User', status: 'active', avatar_url: null };
+        const demoDefaults = expectedRole === 'organiser'
+          ? { id: 0, role: 'organiser', email: 'demo.organiser@pitch.com.au', first_name: 'Sam', last_name: 'Nguyen', status: 'active', avatar_url: null }
+          : { id: 0, role: 'vendor', email: 'demo.vendor@pitch.com.au', first_name: 'Alex', last_name: 'Chen', status: 'active', avatar_url: null };
+        user = bypassUser || demoDefaults;
         req.session = { userId: user.id, role: user.role };
       } else {
         user = await stmts.getUserById.get(req.session.userId);

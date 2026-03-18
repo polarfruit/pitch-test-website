@@ -537,9 +537,12 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
     <li><a href="/vendors">Vendors</a></li>
     <li><a href="/#how-it-works">How It Works</a></li>
   </ul>
-  <div class="nav-actions">
+  <div class="nav-actions" id="nav-loggedout">
     <a href="/login" class="btn-login">Log in</a>
     <a href="/signup" class="btn-get-started">Get Started</a>
+  </div>
+  <div id="nav-loggedin" style="display:none;align-items:center;gap:8px;position:relative;">
+    <a href="/dashboard/vendor" id="nav-dashboard-link" style="font-family:var(--fb);font-size:13px;font-weight:600;color:var(--text-mid);text-decoration:none;padding:9px 16px;border-radius:8px;transition:color 0.14s;"><span id="nav-user-label">Account</span> ▾</a>
   </div>
   <button class="nav-hamburger" aria-label="Menu">
     <span></span><span></span><span></span>
@@ -1419,42 +1422,76 @@ function detectEventStatus(evData, dbData) {
 if (ev) detectEventStatus(ev, null);
 
 // ── MAP ────────────────────────────────────────────────────────────────────────
+// Known SA location coordinates — used for instant map rendering without API round-trip
+var KNOWN_COORDS = {
+  'rundle mall':         [-34.9217, 138.6010],
+  'rundle park':         [-34.9238, 138.6090],
+  'adelaide showground': [-34.9520, 138.6070],
+  'wayville':            [-34.9520, 138.6070],
+  'glenelg':             [-34.9828, 138.5161],
+  'henley beach':        [-34.9217, 138.5014],
+  'port adelaide':       [-34.8476, 138.5082],
+  'norwood':             [-34.9260, 138.6325],
+  'prospect':            [-34.9041, 138.5996],
+  'victor harbor':       [-35.5517, 138.6216],
+  'barossa':             [-34.5379, 138.9483],
+  'tanunda':             [-34.5237, 138.9571],
+  'marion':              [-35.0020, 138.5700],
+  'adelaide cbd':        [-34.9285, 138.5999],
+};
+
+function findCoords(locationStr) {
+  if (!locationStr) return null;
+  var lower = locationStr.toLowerCase();
+  for (var key in KNOWN_COORDS) {
+    if (lower.indexOf(key) >= 0) return KNOWN_COORDS[key];
+  }
+  return null;
+}
+
+function renderMap(lat, lon) {
+  var d = 0.012;
+  var bbox = [lon - d, lat - d * 0.7, lon + d, lat + d * 0.7].join('%2C');
+  var src = 'https://www.openstreetmap.org/export/embed.html?bbox=' + bbox + '&layer=mapnik&marker=' + lat + '%2C' + lon;
+  var mapEl = document.getElementById('ev-map');
+  var ph = document.getElementById('ev-map-placeholder');
+  if (ph) ph.style.display = 'none';
+  if (mapEl) {
+    var iframe = document.createElement('iframe');
+    iframe.src = src;
+    mapEl.appendChild(iframe);
+  }
+}
+
 async function initMap(locationStr) {
   if (!locationStr) return;
-  const addrLine = document.getElementById('ev-address-line');
+  var addrLine = document.getElementById('ev-address-line');
   if (addrLine) addrLine.textContent = locationStr;
-  const encoded = encodeURIComponent(locationStr + ', Australia');
-  const gmLink = document.getElementById('ev-gmaps-link');
-  const apLink = document.getElementById('ev-apmaps-link');
+  var encoded = encodeURIComponent(locationStr + ', Australia');
+  var gmLink = document.getElementById('ev-gmaps-link');
+  var apLink = document.getElementById('ev-apmaps-link');
   if (gmLink) gmLink.href = 'https://www.google.com/maps/search/' + encoded;
   if (apLink) apLink.href = 'https://maps.apple.com/?q=' + encoded;
 
+  // Try known coords first — instant, no API call
+  var coords = findCoords(locationStr);
+  if (coords) { renderMap(coords[0], coords[1]); return; }
+
+  // Fallback: Nominatim geocoding
   try {
-    const r = await fetch(
+    var r = await fetch(
       'https://nominatim.openstreetmap.org/search?format=json&countrycodes=au&limit=1&q=' + encodeURIComponent(locationStr),
       { headers: { 'Accept-Language': 'en', 'User-Agent': 'Pitch.au/1.0' } }
     );
-    const data = await r.json();
+    var data = await r.json();
     if (data && data[0]) {
-      const lat = parseFloat(data[0].lat), lon = parseFloat(data[0].lon);
-      const d = 0.012;
-      const bbox = [lon - d, lat - d * 0.7, lon + d, lat + d * 0.7].join('%2C');
-      const src = 'https://www.openstreetmap.org/export/embed.html?bbox=' + bbox + '&layer=mapnik&marker=' + lat + '%2C' + lon;
-      const mapEl = document.getElementById('ev-map');
-      const ph = document.getElementById('ev-map-placeholder');
-      if (ph) ph.style.display = 'none';
-      if (mapEl) {
-        const iframe = document.createElement('iframe');
-        iframe.src = src;
-        iframe.setAttribute('loading', 'lazy');
-        mapEl.appendChild(iframe);
-      }
+      renderMap(parseFloat(data[0].lat), parseFloat(data[0].lon));
     } else {
-      const txt = document.getElementById('ev-map-placeholder-text');
+      var txt = document.getElementById('ev-map-placeholder-text');
       if (txt) txt.textContent = locationStr;
     }
   } catch (e) {
-    const txt = document.getElementById('ev-map-placeholder-text');
+    var txt = document.getElementById('ev-map-placeholder-text');
     if (txt) txt.textContent = locationStr;
   }
 }
@@ -1492,6 +1529,21 @@ var SIMILAR_DEMOS = [
       '<span class="similar-badge" style="background:' + m.bc + '18;color:' + m.bc + ';border:1px solid ' + m.bc + '22;">' + m.badge + '</span>' +
       '</a>';
   }).join('');
+})();
+</script>
+<script>
+(function() {
+  fetch('/api/me').then(r => r.json()).then(d => {
+    if (!d.user) return;
+    const lo = document.getElementById('nav-loggedout');
+    const li = document.getElementById('nav-loggedin');
+    if (lo) lo.style.display = 'none';
+    if (li) li.style.display = 'flex';
+    const lbl = document.getElementById('nav-user-label');
+    if (lbl) lbl.textContent = (d.user.vendor && d.user.vendor.trading_name) || (d.user.organiser && d.user.organiser.org_name) || d.user.first_name || 'Account';
+    const dl = document.getElementById('nav-dashboard-link');
+    if (dl) dl.href = d.user.role === 'organiser' ? '/dashboard/organiser' : '/dashboard/vendor';
+  }).catch(() => {});
 })();
 </script>
 </body>

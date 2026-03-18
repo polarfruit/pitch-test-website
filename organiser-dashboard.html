@@ -716,7 +716,9 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
           <button class="app-filter-btn" onclick="filterMgmtApps('rejected',this)">Rejected <span class="mgmt-filter-count" id="fc-rejected" style="opacity:0.6;"></span></button>
         </div>
         <div class="app-cards-grid" id="mgmt-app-cards">
-          <div style="color:var(--text-lo);font-size:13px;padding:24px 0;">Select an event from My Events to view its applications.</div>
+          <div style="color:var(--text-lo);font-size:13px;padding:32px 0;text-align:center;">
+            No event selected. <button onclick="showPanel('events',null)" style="background:none;border:none;color:var(--ember);cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;">Go to My Events →</button>
+          </div>
         </div>
       </div>
 
@@ -749,12 +751,12 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 
       <!-- Details tab -->
       <div class="tab-content" id="tab-details">
-        <div id="tab-details-content" style="color:var(--text-lo);font-size:13px;padding:24px 0;">Select an event from My Events to edit its details.</div>
+        <div id="tab-details-content" style="color:var(--text-lo);font-size:13px;padding:32px 0;text-align:center;">No event selected. <button onclick="showPanel('events',null)" style="background:none;border:none;color:var(--ember);cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;">Go to My Events →</button></div>
       </div>
 
       <!-- Analytics tab -->
       <div class="tab-content" id="tab-analytics">
-        <div id="tab-analytics-content" style="color:var(--text-lo);font-size:13px;padding:24px 0;">Select an event from My Events to view analytics.</div>
+        <div id="tab-analytics-content" style="color:var(--text-lo);font-size:13px;padding:32px 0;text-align:center;">No event selected. <button onclick="showPanel('events',null)" style="background:none;border:none;color:var(--ember);cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;">Go to My Events →</button></div>
       </div>
     </div>
 

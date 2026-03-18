@@ -423,9 +423,12 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
     <li><a href="/vendors">Vendors</a></li>
     <li><a href="/#how-it-works">How It Works</a></li>
   </ul>
-  <div class="nav-actions">
+  <div class="nav-actions" id="nav-loggedout">
     <a href="/login" class="btn-login">Log in</a>
     <a href="/signup" class="btn-get-started">Get Started</a>
+  </div>
+  <div id="nav-loggedin" style="display:none;align-items:center;gap:8px;position:relative;">
+    <a href="/dashboard/vendor" id="nav-dashboard-link" style="font-family:var(--fb);font-size:13px;font-weight:600;color:var(--text-mid);text-decoration:none;padding:9px 16px;border-radius:8px;background:transparent;transition:color 0.14s;"><span id="nav-user-label">Account</span> ▾</a>
   </div>
   <button class="nav-hamburger" aria-label="Menu">
     <span></span><span></span><span></span>
@@ -1259,6 +1262,21 @@ document.addEventListener('click', function(e) {
 <script src="/location-autocomplete.js"></script>
 <script>
 pitchLocAC('f-suburb', { suburbOnly: true, onSelect: () => applyFilters() });
+</script>
+<script>
+(function() {
+  fetch('/api/me').then(r => r.json()).then(d => {
+    if (!d.user) return;
+    const lo = document.getElementById('nav-loggedout');
+    const li = document.getElementById('nav-loggedin');
+    if (lo) lo.style.display = 'none';
+    if (li) li.style.display = 'flex';
+    const lbl = document.getElementById('nav-user-label');
+    if (lbl) lbl.textContent = (d.user.vendor && d.user.vendor.trading_name) || (d.user.organiser && d.user.organiser.org_name) || d.user.first_name || 'Account';
+    const dl = document.getElementById('nav-dashboard-link');
+    if (dl) dl.href = d.user.role === 'organiser' ? '/dashboard/organiser' : '/dashboard/vendor';
+  }).catch(() => {});
+})();
 </script>
 </body>
 </html>
