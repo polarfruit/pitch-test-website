@@ -574,15 +574,21 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
     </div>
   </div>
   <nav class="sidebar-nav">
-    <div class="nav-section-label">Menu</div>
+    <div class="nav-section-label">Home</div>
     <button class="nav-link active" onclick="showPanel('overview',this)"><span class="nav-icon">⬡</span>Overview</button>
+
+    <div class="nav-section-label">Events</div>
     <button class="nav-link" onclick="showPanel('events',this)"><span class="nav-icon">📅</span>My Events</button>
     <button class="nav-link" onclick="showPanel('new-event',this)"><span class="nav-icon">＋</span>Post an Event</button>
     <button class="nav-link" onclick="showPanel('inbox',this)"><span class="nav-icon">📥</span>Applications<span class="nav-badge" id="inbox-badge" style="display:none;">0</span></button>
     <button class="nav-link" onclick="showPanel('calendar',this)"><span class="nav-icon">🗓</span>Calendar</button>
+
+    <div class="nav-section-label">Insights</div>
     <button class="nav-link" onclick="showPanel('analytics',this)"><span class="nav-icon">📊</span>Analytics</button>
     <button class="nav-link" onclick="showPanel('ratings',this)"><span class="nav-icon">⭐</span>Vendor Ratings</button>
     <button class="nav-link" onclick="showPanel('reviews',this)"><span class="nav-icon">💬</span>My Reviews</button>
+
+    <div class="nav-section-label">Account</div>
     <button class="nav-link" onclick="showPanel('messages',this)"><span class="nav-icon">✉️</span>Messages<span class="nav-badge" id="org-msg-badge" style="display:none;">0</span></button>
     <button class="nav-link" onclick="showPanel('settings',this)"><span class="nav-icon">⚙️</span>Settings</button>
   </nav>
