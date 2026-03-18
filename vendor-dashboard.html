@@ -966,6 +966,14 @@ body::before {
 }
 .mobile-tab.active { color: var(--ember); }
 .mobile-tab-icon { font-size: 18px; }
+.mobile-drawer-item {
+  display: flex; align-items: center; gap: 12px; width: 100%;
+  padding: 13px 12px; border-radius: 12px; border: none;
+  background: transparent; color: var(--text-hi); font-family: var(--fb);
+  font-size: 14px; font-weight: 600; cursor: pointer; text-align: left;
+  transition: background 0.12s;
+}
+.mobile-drawer-item:hover { background: #ffffff0a; }
 
 @media (max-width: 768px) {
   .sidebar { display: none; }
@@ -2202,8 +2210,29 @@ body::before {
     <button class="mobile-tab" onclick="showPanel('applications', this)"><span class="mobile-tab-icon">📋</span>Apply</button>
     <button class="mobile-tab" onclick="showPanel('profile', this)"><span class="mobile-tab-icon">👤</span>Profile</button>
     <button class="mobile-tab" onclick="showPanel('messages', this)"><span class="mobile-tab-icon">💬</span>Messages</button>
-    <button class="mobile-tab" onclick="showPanel('settings', this)"><span class="mobile-tab-icon">⚙️</span>More</button>
+    <button class="mobile-tab" id="mobile-more-btn" onclick="openMoreDrawer()"><span class="mobile-tab-icon">⚙️</span>More</button>
   </div>
+</div>
+
+<!-- MOBILE MORE DRAWER -->
+<div id="mobile-more-overlay" onclick="closeMoreDrawer()" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(26,22,18,0.7);backdrop-filter:blur(4px);"></div>
+<div id="mobile-more-drawer" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:301;background:var(--char);border-top:1px solid #ffffff10;border-radius:20px 20px 0 0;padding:12px 16px calc(20px + env(safe-area-inset-bottom));max-height:80vh;overflow-y:auto;">
+  <div style="width:36px;height:4px;border-radius:2px;background:#ffffff18;margin:0 auto 20px;"></div>
+  <div style="font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-lo);padding:0 4px 8px;">Discover</div>
+  <button class="mobile-drawer-item" onclick="closeMoreDrawer();showPanel('browse',null)"><span>🔍</span> Browse Events</button>
+  <button class="mobile-drawer-item" onclick="closeMoreDrawer();showPanel('calendar',null)"><span>📅</span> Calendar</button>
+  <div style="font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-lo);padding:12px 4px 8px;">Profile &amp; Docs</div>
+  <button class="mobile-drawer-item" onclick="closeMoreDrawer();showPanel('documents',null)"><span>📄</span> Documents</button>
+  <button class="mobile-drawer-item" onclick="closeMoreDrawer();showPanel('menu',null)"><span>🍽</span> Menu</button>
+  <div style="font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-lo);padding:12px 4px 8px;">Activity</div>
+  <button class="mobile-drawer-item" onclick="closeMoreDrawer();showPanel('history',null)"><span>🗓</span> Market History</button>
+  <button class="mobile-drawer-item" onclick="closeMoreDrawer();showPanel('reviews',null)"><span>⭐</span> Reviews</button>
+  <div style="font-size:9px;font-weight:700;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-lo);padding:12px 4px 8px;">Finance</div>
+  <button class="mobile-drawer-item" onclick="closeMoreDrawer();showPanel('payments',null)"><span>💳</span> Payments</button>
+  <button class="mobile-drawer-item" onclick="closeMoreDrawer();showPanel('earnings',null)"><span>💰</span> Earnings</button>
+  <div style="height:1px;background:#ffffff08;margin:12px 0;"></div>
+  <button class="mobile-drawer-item" onclick="closeMoreDrawer();showPanel('settings',null)"><span>⚙️</span> Settings</button>
+  <button class="mobile-drawer-item" style="color:var(--terra);" onclick="pitchLogout()"><span>🚪</span> Log out</button>
 </div>
 
 <!-- DELETE CONFIRMATION MODAL -->
@@ -2921,6 +2950,10 @@ async function initDashboard() {
 
   // Pre-populate notification dot
   loadNotifications();
+
+  // Eager non-blocking loads so stats + events populate even if init data was empty
+  loadApplications().catch(() => {});
+  loadEvents().catch(() => {});
 }
 
 async function loadEvents() {
@@ -3069,11 +3102,11 @@ async function loadBrowseEvents() {
   if (_eventsCache.length) renderBrowseGrid(_eventsCache);
   try {
     const r = await pitchFetch('/api/vendor/events');
-    if (!r.ok) { console.error('[loadBrowseEvents] status', r.status); return; }
+    if (!r.ok) { renderBrowseGrid([]); return; }
     const { events } = await r.json();
     _eventsCache = events;
     renderBrowseGrid(events);
-  } catch (e) { console.error('[loadBrowseEvents]', e); }
+  } catch (e) { console.error('[loadBrowseEvents]', e); renderBrowseGrid([]); }
 }
 
 function openEventDetail(eventId) {
@@ -3831,7 +3864,7 @@ function renderNotifList() {
   const list = document.getElementById('notif-list');
   if (!list) return;
   if (!_notifs.length) {
-    list.innerHTML = '<div class="notif-empty">No notifications yet</div>';
+    list.innerHTML = '<div class="notif-empty">✓ You\'re all caught up</div>';
     return;
   }
   list.innerHTML = _notifs.map(n => `
@@ -3861,6 +3894,17 @@ function toggleNotifPopup(e) {
     btn.classList.add('active');
     loadNotifications().then(() => renderNotifList());
   }
+}
+
+function openMoreDrawer() {
+  document.getElementById('mobile-more-overlay').style.display = 'block';
+  document.getElementById('mobile-more-drawer').style.display = 'block';
+  document.getElementById('mobile-more-btn').classList.add('active');
+}
+function closeMoreDrawer() {
+  document.getElementById('mobile-more-overlay').style.display = 'none';
+  document.getElementById('mobile-more-drawer').style.display = 'none';
+  document.getElementById('mobile-more-btn').classList.remove('active');
 }
 
 function markAllNotifRead(e) {
@@ -4210,7 +4254,11 @@ async function loadMarketHistory() {
         ${reviewsHtml}
       </div>`;
     }).join('');
-  } catch(e) { console.error('[history]', e); }
+  } catch(e) {
+    console.error('[history]', e);
+    const list = document.getElementById('history-list');
+    if (list) list.innerHTML = '<div style="text-align:center;padding:48px 20px;color:var(--text-lo);font-size:13px;">Could not load market history.</div>';
+  }
 }
 
 // ── SETTINGS ────────────────────────────────────────────────────────────────

@@ -110,20 +110,22 @@ function verifyPageToken(token) {
 // This eliminates the need for a /api/me call from the client entirely.
 function serveDashboard(file, expectedRole, getInitData) {
   return async (req, res) => {
-    if (BYPASS_AUTH) {
-      // Inject a mock session so the dashboard renders without login
-      req.session = { userId: null, role: expectedRole, name: 'Preview User', isAdmin: false };
-    }
     if (!BYPASS_AUTH && !req.session.userId) return res.redirect('/login');
     try {
-      const user = BYPASS_AUTH
-        ? { id: null, role: expectedRole, email: 'preview@pitch.com', first_name: 'Preview', last_name: 'User', status: 'active', avatar_url: null }
-        : await stmts.getUserById.get(req.session.userId);
+      let user;
+      if (BYPASS_AUTH) {
+        // Use first real user with this role so API calls & init data work correctly
+        const bypassUser = await stmts.usersByRole.get(expectedRole);
+        user = bypassUser || { id: 0, role: expectedRole, email: 'preview@pitch.com', first_name: 'Preview', last_name: 'User', status: 'active', avatar_url: null };
+        req.session = { userId: user.id, role: user.role };
+      } else {
+        user = await stmts.getUserById.get(req.session.userId);
+      }
       if (!BYPASS_AUTH && (!user || user.role !== expectedRole)) return res.redirect('/login');
 
-      const profile = BYPASS_AUTH ? null : (expectedRole === 'vendor'
+      const profile = expectedRole === 'vendor'
         ? await stmts.getVendorByUserId.get(user.id)
-        : await stmts.getOrganiserByUserId.get(user.id));
+        : await stmts.getOrganiserByUserId.get(user.id);
 
       const token = makePageToken(user.id, user.role);
       const { password_hash, ...userSafe } = user;
