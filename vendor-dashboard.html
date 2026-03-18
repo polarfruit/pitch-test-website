@@ -1211,10 +1211,182 @@ body::before {
 .btn-pause { font-family:var(--fb); font-size:13px; font-weight:700; padding:10px 22px; border-radius:10px; cursor:pointer; transition:all 0.14s; border:1.5px solid #ffffff20; color:var(--text-mid); background:#ffffff08; }
 .btn-pause.active { border-color:#C9840A50; color:var(--gold); background:#C9840A10; }
 .btn-pause:hover { background:#ffffff14; color:var(--text-hi); }
+
+/* ── MENU PANEL ──────────────────────────────────────────────────────────── */
+.menu-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; flex-wrap:wrap; gap:12px; }
+.menu-header-left { display:flex; flex-direction:column; gap:4px; }
+.menu-header-title { font-family:var(--fd); font-size:22px; font-weight:900; color:var(--text-hi); letter-spacing:-0.03em; }
+.menu-header-sub { font-size:12px; color:var(--text-lo); }
+.btn-add-item { display:flex; align-items:center; gap:8px; background:var(--ember); color:#fff; border:none; font-family:var(--fb); font-size:13px; font-weight:700; padding:10px 18px; border-radius:12px; cursor:pointer; transition:background 0.14s; }
+.btn-add-item:hover { background:var(--ember-glow); }
+.menu-completeness { display:flex; align-items:center; gap:10px; background:#C9840A12; border:1px solid #C9840A30; border-radius:12px; padding:12px 16px; margin-bottom:20px; font-size:13px; color:var(--gold); }
+.menu-completeness .mc-icon { font-size:16px; flex-shrink:0; }
+.menu-completeness .mc-msg { line-height:1.5; }
+.menu-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:16px; }
+.menu-item-card {
+  background:var(--char); border:1px solid #ffffff0a; border-radius:16px; overflow:hidden;
+  transition:border-color 0.14s, transform 0.14s;
+  cursor:grab; position:relative;
+}
+.menu-item-card:hover { border-color:#ffffff18; transform:translateY(-2px); }
+.menu-item-card.is-signature { border-color:#E8500A40; }
+.menu-item-card.dragging { opacity:0.4; cursor:grabbing; }
+.menu-item-card.drag-over { border-color:var(--ember); border-style:dashed; }
+.menu-item-photo { width:100%; height:140px; object-fit:cover; background:var(--ash); display:block; }
+.menu-item-no-photo { width:100%; height:100px; background:var(--ash); display:flex; align-items:center; justify-content:center; font-size:28px; color:var(--smoke); }
+.menu-item-body { padding:12px 14px 14px; }
+.menu-item-top { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:6px; }
+.menu-item-name { font-size:14px; font-weight:700; color:var(--text-hi); line-height:1.3; flex:1; }
+.menu-item-price { font-size:13px; font-weight:700; color:var(--ember); flex-shrink:0; }
+.menu-item-desc { font-size:12px; color:var(--text-lo); line-height:1.55; margin-bottom:10px; min-height:16px; }
+.menu-item-tags { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:10px; }
+.menu-tag { font-size:11px; font-weight:600; padding:2px 8px; border-radius:100px; }
+.menu-tag.sig { background:#E8500A20; color:var(--ember); }
+.menu-tag.seasonal { background:#2D8B5520; color:var(--herb); }
+.menu-tag.unavail { background:#ffffff0a; color:var(--text-lo); text-decoration:line-through; }
+.menu-tag.cat { background:#ffffff0a; color:var(--text-mid); }
+.menu-item-actions { display:flex; gap:6px; }
+.menu-item-btn { flex:1; border:none; border-radius:9px; font-family:var(--fb); font-size:12px; font-weight:600; padding:7px 0; cursor:pointer; transition:background 0.14s; }
+.menu-item-btn.edit { background:#ffffff0a; color:var(--text-mid); }
+.menu-item-btn.edit:hover { background:#ffffff14; color:var(--text-hi); }
+.menu-item-btn.del { background:#C0392B18; color:var(--terra); }
+.menu-item-btn.del:hover { background:#C0392B30; }
+.menu-empty { text-align:center; padding:60px 20px; }
+.menu-empty-icon { font-size:44px; margin-bottom:16px; }
+.menu-empty-title { font-family:var(--fd); font-size:18px; font-weight:900; color:var(--text-hi); margin-bottom:8px; }
+.menu-empty-desc { font-size:13px; color:var(--text-lo); line-height:1.6; max-width:340px; margin:0 auto 24px; }
+.menu-order-bar { display:flex; align-items:center; justify-content:space-between; background:#ffffff07; border:1px solid #ffffff0a; border-radius:12px; padding:10px 16px; margin-bottom:20px; font-size:13px; color:var(--text-lo); }
+.btn-save-order { background:var(--ember); color:#fff; border:none; font-family:var(--fb); font-size:13px; font-weight:700; padding:7px 16px; border-radius:9px; cursor:pointer; transition:background 0.14s; }
+.btn-save-order:hover { background:var(--ember-glow); }
+.drag-hint { font-size:12px; color:var(--text-lo); display:flex; align-items:center; gap:5px; }
+
+/* ── MENU ITEM MODAL ─────────────────────────────────────────────────────── */
+.menu-modal-overlay {
+  position:fixed; inset:0; background:#00000090; backdrop-filter:blur(6px);
+  z-index:900; display:flex; align-items:center; justify-content:center;
+  opacity:0; pointer-events:none; transition:opacity 0.18s;
+}
+.menu-modal-overlay.open { opacity:1; pointer-events:all; }
+.menu-modal {
+  background:var(--char); border:1px solid #ffffff0d; border-radius:20px;
+  width:520px; max-width:calc(100vw - 32px); max-height:88vh; overflow-y:auto;
+  padding:28px; position:relative;
+}
+.menu-modal-title { font-family:var(--fd); font-size:20px; font-weight:900; color:var(--text-hi); letter-spacing:-0.03em; margin-bottom:22px; }
+.menu-modal-close { position:absolute; top:18px; right:18px; background:#ffffff10; border:none; color:var(--text-mid); width:32px; height:32px; border-radius:50%; cursor:pointer; font-size:14px; transition:background 0.14s; }
+.menu-modal-close:hover { background:#ffffff1c; color:var(--text-hi); }
+.menu-field { margin-bottom:16px; }
+.menu-label { font-size:12px; font-weight:600; color:var(--text-lo); text-transform:uppercase; letter-spacing:0.07em; display:block; margin-bottom:6px; }
+.menu-input, .menu-textarea, .menu-select { width:100%; background:#ffffff07; border:1px solid #ffffff10; border-radius:10px; color:var(--text-hi); font-family:var(--fb); font-size:13px; padding:10px 12px; outline:none; transition:border-color 0.14s; }
+.menu-input:focus, .menu-textarea:focus, .menu-select:focus { border-color:#E8500A50; }
+.menu-textarea { resize:vertical; min-height:72px; line-height:1.55; }
+.menu-select option { background:var(--char); }
+.menu-char-hint { font-size:11px; color:var(--text-lo); text-align:right; margin-top:3px; }
+.menu-price-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
+.menu-modal-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.menu-photo-preview { width:100%; height:140px; border-radius:12px; object-fit:cover; margin-top:10px; border:1px solid #ffffff10; }
+.menu-toggle-row { display:flex; align-items:center; justify-content:space-between; padding:12px 0; border-bottom:1px solid #ffffff07; }
+.menu-toggle-label { font-size:13px; font-weight:600; color:var(--text-hi); }
+.menu-toggle-sub { font-size:12px; color:var(--text-lo); margin-top:2px; }
+.menu-modal-actions { display:flex; gap:10px; margin-top:22px; }
+.btn-modal-save { flex:1; background:var(--ember); color:#fff; border:none; font-family:var(--fb); font-size:14px; font-weight:700; padding:13px; border-radius:12px; cursor:pointer; transition:background 0.14s; }
+.btn-modal-save:hover { background:var(--ember-glow); }
+.btn-modal-cancel { background:#ffffff0a; color:var(--text-mid); border:none; font-family:var(--fb); font-size:14px; font-weight:700; padding:13px 22px; border-radius:12px; cursor:pointer; transition:background 0.14s; }
+.btn-modal-cancel:hover { background:#ffffff14; color:var(--text-hi); }
+.menu-delete-confirm { display:none; background:#C0392B14; border:1px solid #C0392B30; border-radius:12px; padding:14px 16px; margin-top:14px; }
+.menu-delete-confirm.open { display:block; }
+.btn-confirm-del { background:var(--terra); color:#fff; border:none; font-family:var(--fb); font-size:13px; font-weight:700; padding:8px 18px; border-radius:9px; cursor:pointer; }
 </style>
 </head>
 <body>
 <div id="global-err-toast" style="display:none;position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#C0392B;color:#fff;font-size:12px;font-family:monospace;padding:10px 16px;border-radius:8px;z-index:9999;max-width:90vw;word-break:break-all;"></div>
+
+<!-- MENU ITEM MODAL -->
+<div class="menu-modal-overlay" id="menu-modal-overlay" onclick="if(event.target===this)closeMenuModal()">
+  <div class="menu-modal">
+    <div class="menu-modal-title" id="menu-modal-title">Add item</div>
+    <button class="menu-modal-close" onclick="closeMenuModal()">✕</button>
+    <input type="hidden" id="menu-item-id" value="" />
+
+    <!-- Photo -->
+    <div class="menu-field">
+      <label class="menu-label">Photo (URL)</label>
+      <input class="menu-input" id="mi-photo" type="url" placeholder="https://…" oninput="previewMenuPhoto()" />
+      <img class="menu-photo-preview" id="mi-photo-preview" style="display:none;" alt="preview" />
+    </div>
+
+    <!-- Name -->
+    <div class="menu-field">
+      <label class="menu-label">Item name <span style="color:var(--ember)">*</span></label>
+      <input class="menu-input" id="mi-name" type="text" maxlength="60" placeholder="e.g. Spiced Lamb Flatbread" oninput="updateMenuCharCount('mi-name','mi-name-count',60)" />
+      <div class="menu-char-hint"><span id="mi-name-count">60</span> chars left</div>
+    </div>
+
+    <!-- Description -->
+    <div class="menu-field">
+      <label class="menu-label">Description</label>
+      <textarea class="menu-textarea" id="mi-desc" maxlength="200" placeholder="What makes it special? Ingredients, flavours…" oninput="updateMenuCharCount('mi-desc','mi-desc-count',200)"></textarea>
+      <div class="menu-char-hint"><span id="mi-desc-count">200</span> chars left</div>
+    </div>
+
+    <!-- Price -->
+    <div class="menu-field">
+      <label class="menu-label">Price</label>
+      <div class="menu-price-row">
+        <select class="menu-select" id="mi-price-type" onchange="updatePriceFields()">
+          <option value="exact">Exact price</option>
+          <option value="range">Price range</option>
+          <option value="varies">Varies / ask</option>
+        </select>
+        <input class="menu-input" id="mi-price-min" type="number" min="0" step="0.5" placeholder="$0.00" />
+        <input class="menu-input" id="mi-price-max" type="number" min="0" step="0.5" placeholder="Max $" style="display:none;" id="mi-price-max" />
+      </div>
+    </div>
+
+    <!-- Category -->
+    <div class="menu-field">
+      <label class="menu-label">Category</label>
+      <input class="menu-input" id="mi-category" type="text" placeholder="e.g. Mains, Drinks, Desserts, Snacks" />
+    </div>
+
+    <!-- Toggles -->
+    <div class="menu-toggle-row">
+      <div>
+        <div class="menu-toggle-label">Available now</div>
+        <div class="menu-toggle-sub">Uncheck to grey this item out on your profile</div>
+      </div>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+        <input type="checkbox" id="mi-available" checked style="width:18px;height:18px;accent-color:var(--ember);" />
+        <span style="font-size:12px;color:var(--text-lo);" id="mi-avail-label">Yes</span>
+      </label>
+    </div>
+    <div class="menu-toggle-row">
+      <div>
+        <div class="menu-toggle-label">Seasonal item</div>
+        <div class="menu-toggle-sub">Shown with a seasonal badge</div>
+      </div>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+        <input type="checkbox" id="mi-seasonal" style="width:18px;height:18px;accent-color:var(--herb);" />
+        <span style="font-size:12px;color:var(--text-lo);">Seasonal</span>
+      </label>
+    </div>
+    <div class="menu-toggle-row" style="border-bottom:none;">
+      <div>
+        <div class="menu-toggle-label">⭐ Signature item</div>
+        <div class="menu-toggle-sub">Pin this item first — only one at a time</div>
+      </div>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+        <input type="checkbox" id="mi-signature" style="width:18px;height:18px;accent-color:var(--ember);" />
+        <span style="font-size:12px;color:var(--text-lo);">Make signature</span>
+      </label>
+    </div>
+
+    <div class="menu-modal-actions">
+      <button class="btn-modal-cancel" onclick="closeMenuModal()">Cancel</button>
+      <button class="btn-modal-save" onclick="saveMenuItem()">Save item</button>
+    </div>
+  </div>
+</div>
 
 <!-- SIDEBAR -->
 <aside class="sidebar">
@@ -1247,6 +1419,10 @@ body::before {
     <button class="nav-link" onclick="showPanel('documents', this)">
       <span class="nav-icon">📄</span> Documents
       <span class="nav-badge" style="background:var(--gold);">!</span>
+    </button>
+    <button class="nav-link" onclick="showPanel('menu', this)">
+      <span class="nav-icon">🍽</span> Menu
+      <span class="nav-badge" id="menu-count-badge" style="display:none;background:var(--smoke);color:var(--text-mid)">0</span>
     </button>
     <button class="nav-link" onclick="showPanel('reviews', this)">
       <span class="nav-icon">⭐</span> Reviews
@@ -1780,6 +1956,42 @@ body::before {
     </div>
 
     <!-- ── PANEL: REVIEWS ───────────────────────────────────────────────── -->
+    <!-- ── PANEL: MENU ────────────────────────────────────────────────────── -->
+    <div class="panel" id="panel-menu">
+      <div style="max-width:860px;">
+        <!-- header -->
+        <div class="menu-header">
+          <div class="menu-header-left">
+            <div class="menu-header-title">My Menu</div>
+            <div class="menu-header-sub" id="menu-item-count">Loading…</div>
+          </div>
+          <button class="btn-add-item" onclick="openMenuModal()">
+            <span style="font-size:16px;">+</span> Add item
+          </button>
+        </div>
+        <!-- completeness prompt -->
+        <div class="menu-completeness" id="menu-completeness" style="display:none;">
+          <span class="mc-icon">💡</span>
+          <span class="mc-msg">Add at least 3 items with photos to complete your menu and stand out to organisers.</span>
+        </div>
+        <!-- drag reorder bar -->
+        <div class="menu-order-bar" id="menu-order-bar" style="display:none;">
+          <span class="drag-hint">⠿ Drag cards to reorder · Signature item is always pinned first</span>
+          <button class="btn-save-order" onclick="saveMenuOrder()">Save order</button>
+        </div>
+        <!-- grid -->
+        <div class="menu-grid" id="menu-grid"></div>
+        <!-- empty state -->
+        <div class="menu-empty" id="menu-empty" style="display:none;">
+          <div class="menu-empty-icon">🍽</div>
+          <div class="menu-empty-title">No menu items yet</div>
+          <div class="menu-empty-desc">Add your dishes, snacks, drinks or products. Organisers browse menus when selecting vendors — a complete menu makes your profile stand out.</div>
+          <button class="btn-add-item" onclick="openMenuModal()"><span style="font-size:16px;">+</span> Add your first item</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PANEL: REVIEWS ────────────────────────────────────────────────── -->
     <div class="panel" id="panel-reviews">
       <div style="max-width:700px;">
         <div class="rating-hero" id="rating-hero">
@@ -2020,6 +2232,7 @@ const PANEL_TITLES = {
   applications:   'My Applications',
   profile:        'My Profile',
   documents:      'Documents',
+  menu:           'My Menu',
   reviews:        'Reviews & Ratings',
   payments:       'Stall Fees & Payments',
   calendar:       'Calendar',
@@ -2035,6 +2248,7 @@ const PANEL_PATHS = {
   applications: '/dashboard/vendor/applications',
   profile:      '/dashboard/vendor/profile',
   documents:    '/dashboard/vendor/documents',
+  menu:         '/dashboard/vendor/menu',
   reviews:      '/dashboard/vendor/reviews',
   payments:     '/dashboard/vendor/payments',
   calendar:     '/dashboard/vendor/calendar',
@@ -2082,6 +2296,7 @@ function showPanel(name, clickedEl, pushHistory = true) {
 
   if (name === 'browse') loadBrowseEvents();
   if (name === 'applications') loadApplications();
+  if (name === 'menu')     loadMenu();
   if (name === 'reviews')  loadReviews();
   if (name === 'payments') loadStallFees();
   if (name === 'calendar') loadCalendar();
@@ -4061,6 +4276,205 @@ async function saveNotifSettings() {
       notif_payments: document.getElementById('notif-payments')?.checked ?? true,
     }),
   });
+}
+
+// ── MENU ─────────────────────────────────────────────────────────────────────
+let _menuItems   = [];
+let _menuDragSrc = null;
+
+async function loadMenu() {
+  try {
+    const r = await pitchFetch('/api/vendor/menu');
+    _menuItems = await r.json();
+  } catch(_) { _menuItems = []; }
+  renderMenuGrid();
+}
+
+function renderMenuGrid() {
+  const count = _menuItems.length;
+  // count badge
+  const badge = document.getElementById('menu-count-badge');
+  if (badge) { badge.textContent = count; badge.style.display = count ? 'inline-flex' : 'none'; }
+  // subtitle
+  const sub = document.getElementById('menu-item-count');
+  if (sub) sub.textContent = count === 0 ? 'No items yet' : count + ' item' + (count===1?'':'s');
+  // completeness
+  const comp = document.getElementById('menu-completeness');
+  const withPhotos = _menuItems.filter(i => i.photo_url).length;
+  if (comp) comp.style.display = (count < 3 || withPhotos < 3) ? 'flex' : 'none';
+  // order bar
+  const orderBar = document.getElementById('menu-order-bar');
+  if (orderBar) orderBar.style.display = count > 1 ? 'flex' : 'none';
+  // empty
+  const empty = document.getElementById('menu-empty');
+  const grid  = document.getElementById('menu-grid');
+  if (!count) {
+    if (empty) empty.style.display = 'block';
+    if (grid)  grid.innerHTML = '';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+  if (!grid) return;
+  grid.innerHTML = _menuItems.map((item, idx) => {
+    const price = formatMenuPrice(item);
+    return `<div class="menu-item-card${item.is_signature?' is-signature':''}"
+      data-idx="${idx}" draggable="true"
+      ondragstart="menuDragStart(event,${idx})" ondragover="menuDragOver(event)"
+      ondrop="menuDrop(event,${idx})" ondragend="menuDragEnd(event)">
+      ${item.photo_url
+        ? `<img class="menu-item-photo" src="${item.photo_url}" alt="${esc(item.name)}" onerror="this.style.display='none'" />`
+        : `<div class="menu-item-no-photo">🍽</div>`}
+      <div class="menu-item-body">
+        <div class="menu-item-top">
+          <div class="menu-item-name">${esc(item.name)}</div>
+          ${price ? `<div class="menu-item-price">${price}</div>` : ''}
+        </div>
+        <div class="menu-item-desc">${esc(item.description||'')}</div>
+        <div class="menu-item-tags">
+          ${item.is_signature ? '<span class="menu-tag sig">⭐ Signature</span>' : ''}
+          ${item.seasonal     ? '<span class="menu-tag seasonal">🌿 Seasonal</span>' : ''}
+          ${!item.available   ? '<span class="menu-tag unavail">Unavailable</span>' : ''}
+          ${item.category     ? `<span class="menu-tag cat">${esc(item.category)}</span>` : ''}
+        </div>
+        <div class="menu-item-actions">
+          <button class="menu-item-btn edit" onclick="editMenuItem(${idx})">Edit</button>
+          <button class="menu-item-btn del"  onclick="deleteMenuItem(${idx})">Delete</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function formatMenuPrice(item) {
+  if (!item.price_type || item.price_type === 'varies') return 'Varies';
+  if (item.price_type === 'range' && item.price_min != null && item.price_max != null)
+    return '$' + Number(item.price_min).toFixed(2) + ' – $' + Number(item.price_max).toFixed(2);
+  if (item.price_min != null) return '$' + Number(item.price_min).toFixed(2);
+  return '';
+}
+
+function esc(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function openMenuModal(editIdx) {
+  const overlay = document.getElementById('menu-modal-overlay');
+  const item = editIdx != null ? _menuItems[editIdx] : null;
+  document.getElementById('menu-modal-title').textContent = item ? 'Edit item' : 'Add item';
+  document.getElementById('menu-item-id').value  = item ? item.id : '';
+  document.getElementById('mi-photo').value      = item?.photo_url || '';
+  document.getElementById('mi-name').value       = item?.name || '';
+  document.getElementById('mi-desc').value       = item?.description || '';
+  document.getElementById('mi-price-type').value = item?.price_type || 'exact';
+  document.getElementById('mi-price-min').value  = item?.price_min ?? '';
+  document.getElementById('mi-price-max').value  = item?.price_max ?? '';
+  document.getElementById('mi-category').value   = item?.category || '';
+  document.getElementById('mi-available').checked  = item ? !!item.available : true;
+  document.getElementById('mi-seasonal').checked   = item ? !!item.seasonal : false;
+  document.getElementById('mi-signature').checked  = item ? !!item.is_signature : false;
+  updateMenuCharCount('mi-name','mi-name-count',60);
+  updateMenuCharCount('mi-desc','mi-desc-count',200);
+  updatePriceFields();
+  previewMenuPhoto();
+  overlay.classList.add('open');
+}
+
+function closeMenuModal() {
+  document.getElementById('menu-modal-overlay').classList.remove('open');
+}
+
+function editMenuItem(idx) { openMenuModal(idx); }
+
+async function deleteMenuItem(idx) {
+  const item = _menuItems[idx];
+  if (!item) return;
+  if (!confirm(`Delete "${item.name}"?`)) return;
+  try {
+    await pitchFetch('/api/vendor/menu/'+item.id, { method:'DELETE' });
+    _menuItems.splice(idx,1);
+    renderMenuGrid();
+  } catch(e) { alert('Could not delete item.'); }
+}
+
+async function saveMenuItem() {
+  const id   = document.getElementById('menu-item-id').value;
+  const name = document.getElementById('mi-name').value.trim();
+  if (!name) { alert('Item name is required.'); return; }
+  const body = {
+    name,
+    description: document.getElementById('mi-desc').value.trim() || null,
+    price_type:  document.getElementById('mi-price-type').value,
+    price_min:   parseFloat(document.getElementById('mi-price-min').value) || null,
+    price_max:   parseFloat(document.getElementById('mi-price-max').value) || null,
+    category:    document.getElementById('mi-category').value.trim() || null,
+    photo_url:   document.getElementById('mi-photo').value.trim() || null,
+    available:   document.getElementById('mi-available').checked,
+    seasonal:    document.getElementById('mi-seasonal').checked,
+    is_signature:document.getElementById('mi-signature').checked,
+  };
+  try {
+    const r = await pitchFetch(id ? '/api/vendor/menu/'+id : '/api/vendor/menu', {
+      method: id ? 'PUT' : 'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(body),
+    });
+    if (!r.ok) { alert('Save failed.'); return; }
+    closeMenuModal();
+    await loadMenu();
+  } catch(e) { alert('Error saving item: ' + e.message); }
+}
+
+function updateMenuCharCount(inputId, countId, max) {
+  const len = (document.getElementById(inputId)?.value||'').length;
+  const el  = document.getElementById(countId);
+  if (el) el.textContent = max - len;
+}
+
+function updatePriceFields() {
+  const type = document.getElementById('mi-price-type').value;
+  const maxEl = document.getElementById('mi-price-max');
+  if (maxEl) maxEl.style.display = type === 'range' ? 'block' : 'none';
+  const minEl = document.getElementById('mi-price-min');
+  if (minEl) {
+    minEl.placeholder = type === 'varies' ? '—' : (type === 'range' ? 'Min $' : '$0.00');
+    minEl.disabled    = type === 'varies';
+  }
+}
+
+function previewMenuPhoto() {
+  const url = document.getElementById('mi-photo')?.value.trim();
+  const img = document.getElementById('mi-photo-preview');
+  if (!img) return;
+  if (url) { img.src = url; img.style.display = 'block'; } else { img.style.display = 'none'; }
+}
+
+// Drag-to-reorder
+function menuDragStart(e, idx) {
+  _menuDragSrc = idx;
+  e.currentTarget.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+}
+function menuDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect='move'; e.currentTarget.classList.add('drag-over'); }
+function menuDragEnd(e)  { e.currentTarget.classList.remove('dragging','drag-over'); document.querySelectorAll('.menu-item-card').forEach(c=>c.classList.remove('drag-over')); }
+function menuDrop(e, toIdx) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  if (_menuDragSrc === null || _menuDragSrc === toIdx) return;
+  const from = _menuDragSrc;
+  const moved = _menuItems.splice(from, 1)[0];
+  _menuItems.splice(toIdx, 0, moved);
+  _menuDragSrc = null;
+  renderMenuGrid();
+}
+async function saveMenuOrder() {
+  const order = _menuItems.map(i => i.id);
+  try {
+    await pitchFetch('/api/vendor/menu/reorder', {
+      method:'PUT',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ order }),
+    });
+    const btn = document.querySelector('.btn-save-order');
+    if (btn) { const orig = btn.textContent; btn.textContent = 'Saved ✓'; btn.style.background='var(--herb)'; setTimeout(()=>{btn.textContent=orig;btn.style.background='';},1800); }
+  } catch(e) { alert('Could not save order.'); }
 }
 
 async function togglePause() {

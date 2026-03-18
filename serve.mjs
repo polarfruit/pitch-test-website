@@ -1672,6 +1672,87 @@ app.patch('/api/admin/vendors/:id/featured', requireAdmin, async (req, res) => {
   res.json({ ok: true });
 });
 
+// ── Vendor menu endpoints ───────────────────────────────────────────────────
+
+// GET /api/vendor/menu — list own menu items
+app.get('/api/vendor/menu', requireAuth, async (req, res) => {
+  if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Vendor only' });
+  const items = await stmts.getMenuItems.all(req.session.userId);
+  res.json(items);
+});
+
+// POST /api/vendor/menu — create item
+app.post('/api/vendor/menu', requireAuth, async (req, res) => {
+  if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Vendor only' });
+  const { name, description, price_type, price_min, price_max, category, photo_url, available, seasonal, is_signature } = req.body;
+  if (!name || !name.trim()) return res.status(400).json({ error: 'Name required' });
+  // if setting signature, clear previous
+  if (is_signature) await stmts.clearSignature.run(req.session.userId);
+  const result = await stmts.createMenuItem.run({
+    vendor_user_id: req.session.userId,
+    name: name.trim().slice(0, 60),
+    description: description ? description.trim().slice(0, 200) : null,
+    price_type: price_type || 'exact',
+    price_min: price_min ?? null,
+    price_max: price_max ?? null,
+    category: category || null,
+    photo_url: photo_url || null,
+    available: available ? 1 : 0,
+    seasonal: seasonal ? 1 : 0,
+    is_signature: is_signature ? 1 : 0,
+  });
+  const item = await stmts.getMenuItemById.get(result.lastInsertRowid ?? result.insertId, req.session.userId);
+  res.json(item);
+});
+
+// PUT /api/vendor/menu/:id — update item
+app.put('/api/vendor/menu/:id', requireAuth, async (req, res) => {
+  if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Vendor only' });
+  const { name, description, price_type, price_min, price_max, category, photo_url, available, seasonal, is_signature } = req.body;
+  if (!name || !name.trim()) return res.status(400).json({ error: 'Name required' });
+  if (is_signature) await stmts.clearSignature.run(req.session.userId);
+  await stmts.updateMenuItem.run({
+    id: req.params.id,
+    vendor_user_id: req.session.userId,
+    name: name.trim().slice(0, 60),
+    description: description ? description.trim().slice(0, 200) : null,
+    price_type: price_type || 'exact',
+    price_min: price_min ?? null,
+    price_max: price_max ?? null,
+    category: category || null,
+    photo_url: photo_url || null,
+    available: available ? 1 : 0,
+    seasonal: seasonal ? 1 : 0,
+    is_signature: is_signature ? 1 : 0,
+  });
+  const item = await stmts.getMenuItemById.get(req.params.id, req.session.userId);
+  res.json(item);
+});
+
+// DELETE /api/vendor/menu/:id — delete item
+app.delete('/api/vendor/menu/:id', requireAuth, async (req, res) => {
+  if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Vendor only' });
+  await stmts.deleteMenuItem.run(req.params.id, req.session.userId);
+  res.json({ ok: true });
+});
+
+// PUT /api/vendor/menu/reorder — save drag order
+app.put('/api/vendor/menu/reorder', requireAuth, async (req, res) => {
+  if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Vendor only' });
+  const { order } = req.body; // array of ids in new order
+  if (!Array.isArray(order)) return res.status(400).json({ error: 'order must be array' });
+  for (let i = 0; i < order.length; i++) {
+    await stmts.updateMenuOrder.run({ id: order[i], vendor_user_id: req.session.userId, sort_order: i });
+  }
+  res.json({ ok: true });
+});
+
+// GET /api/vendors/:id/menu — public menu for a vendor (by user_id)
+app.get('/api/vendors/:id/menu', async (req, res) => {
+  const items = await stmts.publicMenuItems.all(req.params.id);
+  res.json(items);
+});
+
 // ── Static page routes ─────────────────────────────────────────────────────
 function page(file) {
   return (req, res) => {

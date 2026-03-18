@@ -382,6 +382,27 @@ await _safeExec(`
 `);
 await _safeExec(`CREATE INDEX IF NOT EXISTS idx_msg_thread ON messages(thread_key, id)`);
 
+// ── Vendor menu items ─────────────────────────────────────────────────────────
+await _safeExec(`
+  CREATE TABLE IF NOT EXISTS menu_items (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    vendor_user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    name           TEXT NOT NULL,
+    description    TEXT,
+    price_type     TEXT NOT NULL DEFAULT 'exact' CHECK(price_type IN ('exact','range','varies')),
+    price_min      REAL,
+    price_max      REAL,
+    category       TEXT,
+    photo_url      TEXT,
+    available      INTEGER NOT NULL DEFAULT 1,
+    seasonal       INTEGER NOT NULL DEFAULT 0,
+    is_signature   INTEGER NOT NULL DEFAULT 0,
+    sort_order     INTEGER NOT NULL DEFAULT 0,
+    created_at     DATETIME DEFAULT (datetime('now'))
+  )
+`);
+await _safeExec(`CREATE INDEX IF NOT EXISTS idx_menu_vendor ON menu_items(vendor_user_id, sort_order)`);
+
 if (_needsSeed) {
   const _ins = prepare(`INSERT OR IGNORE INTO events (slug,name,category,suburb,state,date_sort,organiser_name) VALUES (@slug,@name,@category,@suburb,@state,@date_sort,@organiser_name)`);
   for (const ev of [
@@ -690,6 +711,16 @@ export const stmts = {
   getAnnouncements:     prepare(`SELECT * FROM announcements ORDER BY created_at DESC LIMIT 50`),
   getAnnouncementsFor:  prepare(`SELECT * FROM announcements WHERE audience='all' OR audience=? ORDER BY created_at DESC LIMIT 20`),
   getRecentAnnouncements: prepare(`SELECT * FROM announcements WHERE (audience='all' OR audience=?) AND created_at > datetime('now','-30 days') ORDER BY created_at DESC`),
+
+  // menu items
+  getMenuItems:       prepare(`SELECT * FROM menu_items WHERE vendor_user_id=? ORDER BY is_signature DESC, sort_order ASC, id ASC`),
+  getMenuItemById:    prepare(`SELECT * FROM menu_items WHERE id=? AND vendor_user_id=?`),
+  createMenuItem:     prepare(`INSERT INTO menu_items (vendor_user_id,name,description,price_type,price_min,price_max,category,photo_url,available,seasonal,is_signature,sort_order) VALUES (@vendor_user_id,@name,@description,@price_type,@price_min,@price_max,@category,@photo_url,@available,@seasonal,@is_signature,(SELECT COALESCE(MAX(sort_order),0)+1 FROM menu_items WHERE vendor_user_id=@vendor_user_id))`),
+  updateMenuItem:     prepare(`UPDATE menu_items SET name=@name,description=@description,price_type=@price_type,price_min=@price_min,price_max=@price_max,category=@category,photo_url=@photo_url,available=@available,seasonal=@seasonal,is_signature=@is_signature WHERE id=@id AND vendor_user_id=@vendor_user_id`),
+  deleteMenuItem:     prepare(`DELETE FROM menu_items WHERE id=? AND vendor_user_id=?`),
+  clearSignature:     prepare(`UPDATE menu_items SET is_signature=0 WHERE vendor_user_id=?`),
+  updateMenuOrder:    prepare(`UPDATE menu_items SET sort_order=@sort_order WHERE id=@id AND vendor_user_id=@vendor_user_id`),
+  publicMenuItems:    prepare(`SELECT * FROM menu_items WHERE vendor_user_id=? ORDER BY is_signature DESC, sort_order ASC, id ASC`),
 
   // public vendors
   publicVendors: prepare(`
