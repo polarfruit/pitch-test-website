@@ -378,17 +378,17 @@
     .feat-add-body { padding: 16px 22px 22px; }
     .feat-add-input {
       width: 100%; background: #2A2018; border: 1px solid #3A2E26;
-      border-radius: 10px; padding: 11px 14px 11px 36px;
+      border-radius: 10px; padding: 11px 38px 11px 14px;
       font-family: var(--fb); font-size: 14px; color: #FDF4E7; outline: none;
       transition: border-color 0.14s;
     }
     .feat-add-input:focus { border-color: #E8500A55; }
     .feat-add-input::placeholder { color: #4A3C30; }
-    .feat-search-wrap { position: relative; margin-bottom: 12px; }
-    .feat-search-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); font-size: 14px; pointer-events: none; }
+    .feat-search-wrap { position: relative; margin-bottom: 14px; }
+    .feat-search-icon { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); font-size: 14px; pointer-events: none; opacity: 0.6; }
     .feat-suggestions {
-      background: #2A2018; border: 1px solid #3A2E26; border-radius: 12px;
-      overflow: hidden; max-height: 260px; overflow-y: auto;
+      background: #1E1916; border: 1px solid #2A2018; border-radius: 12px;
+      overflow: hidden; max-height: 240px; overflow-y: auto;
     }
     .feat-sugg-item {
       display: flex; align-items: center; gap: 12px; padding: 11px 14px;
@@ -2468,45 +2468,69 @@
   }
 
   // ── Feature-add popup (with autocomplete) ────────────────────────────────
-  let _featAddMode  = 'vendor'; // 'vendor' | 'event'
-  let _featAddItems = [];       // full list for current mode
-  let _featSelected = null;     // { id, name }
-  let _featKbdIdx   = -1;
+  let _featAddMode     = 'vendor'; // 'vendor' | 'event'
+  let _featAddItems    = [];       // full list for current mode
+  let _featAllEvents   = [];       // pre-loaded
+  let _featAllVendors  = [];       // pre-loaded
+  let _featSelected    = null;     // { id, name }
+  let _featKbdIdx      = -1;
 
-  async function openAddFeaturedEvent() {
-    _featAddMode = 'event';
+  // Pre-load both lists as soon as page is ready
+  (async function prefetchFeatLists() {
+    try {
+      const [re, rv] = await Promise.all([fetch('/api/admin/events'), fetch('/api/admin/vendors')]);
+      const { events } = await re.json();
+      const { vendors } = await rv.json();
+      _featAllEvents  = (events  || []).map(e => ({ id: e.id,      name: e.name,         sub: (e.suburb||'') + (e.state?', '+e.state:'') + (e.date_sort?' · '+e.date_sort.slice(0,10):''), icon:'🎪' }));
+      _featAllVendors = (vendors || []).map(v => ({ id: v.user_id, name: v.trading_name, sub: (v.suburb||'') + (v.state?', '+v.state:''), icon:'🍔' }));
+    } catch(_) {}
+  })();
+
+  function _openFeatPopup() {
     _featSelected = null;
     _featKbdIdx = -1;
-    document.getElementById('feat-add-title').textContent = '+ Feature an event';
-    document.getElementById('feat-add-input').value = '';
+    const inp = document.getElementById('feat-add-input');
+    inp.value = '';
     document.getElementById('feat-add-confirm').classList.remove('show');
-    document.getElementById('feat-suggestions').innerHTML = '<div class="feat-sugg-empty">Type to search…</div>';
-    // Pre-load events list
-    try {
-      const r = await fetch('/api/admin/events');
-      const { events } = await r.json();
-      _featAddItems = (events || []).map(e => ({ id: e.id, name: e.name, sub: (e.suburb || '') + (e.state ? ', '+e.state : '') + (e.date_sort ? ' · ' + e.date_sort.slice(0,10) : ''), icon: '🎪' }));
-    } catch (e) { _featAddItems = []; }
+    _renderFeatSuggestions('');
     document.getElementById('feat-add-overlay').classList.add('open');
-    setTimeout(() => document.getElementById('feat-add-input').focus(), 80);
+    setTimeout(() => inp.focus(), 60);
   }
 
-  async function openAddFeaturedVendor() {
+  function openAddFeaturedEvent() {
+    _featAddMode = 'event';
+    _featAddItems = _featAllEvents;
+    document.getElementById('feat-add-title').textContent = '+ Feature an event';
+    _openFeatPopup();
+  }
+
+  function openAddFeaturedVendor() {
     _featAddMode = 'vendor';
-    _featSelected = null;
-    _featKbdIdx = -1;
+    _featAddItems = _featAllVendors;
     document.getElementById('feat-add-title').textContent = '+ Feature a vendor';
-    document.getElementById('feat-add-input').value = '';
-    document.getElementById('feat-add-confirm').classList.remove('show');
-    document.getElementById('feat-suggestions').innerHTML = '<div class="feat-sugg-empty">Type to search…</div>';
-    // Pre-load vendors list
-    try {
-      const r = await fetch('/api/admin/vendors');
-      const { vendors } = await r.json();
-      _featAddItems = (vendors || []).map(v => ({ id: v.user_id, name: v.trading_name, sub: (v.suburb || '') + (v.state ? ', '+v.state : ''), icon: '🍔' }));
-    } catch (e) { _featAddItems = []; }
-    document.getElementById('feat-add-overlay').classList.add('open');
-    setTimeout(() => document.getElementById('feat-add-input').focus(), 80);
+    _openFeatPopup();
+  }
+
+  function _renderFeatSuggestions(q) {
+    const el = document.getElementById('feat-suggestions');
+    const matches = q
+      ? _featAddItems.filter(i => i.name.toLowerCase().includes(q)).slice(0, 8)
+      : _featAddItems.slice(0, 10);
+    if (!matches.length) {
+      el.innerHTML = '<div class="feat-sugg-empty">' + (q ? 'No results for "'+q+'"' : 'No items available') + '</div>';
+      el._matches = [];
+      return;
+    }
+    const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+    el.innerHTML = matches.map((item, idx) => `
+      <div class="feat-sugg-item" data-idx="${idx}" onclick="featAddSelect(${idx})">
+        <div class="feat-sugg-icon">${item.icon}</div>
+        <div>
+          <div class="feat-sugg-name">${q ? item.name.replace(new RegExp('('+esc(q)+')', 'gi'), '<strong>$1</strong>') : item.name}</div>
+          ${item.sub ? `<div class="feat-sugg-sub">${item.sub}</div>` : ''}
+        </div>
+      </div>`).join('');
+    el._matches = matches;
   }
 
   function closeFeatAddPopup() {
@@ -2519,20 +2543,7 @@
     _featSelected = null;
     _featKbdIdx = -1;
     document.getElementById('feat-add-confirm').classList.remove('show');
-    const el = document.getElementById('feat-suggestions');
-    if (!q) { el.innerHTML = '<div class="feat-sugg-empty">Type to search…</div>'; return; }
-    const matches = _featAddItems.filter(i => i.name.toLowerCase().includes(q)).slice(0, 8);
-    if (!matches.length) { el.innerHTML = '<div class="feat-sugg-empty">No results found for "' + q + '"</div>'; return; }
-    el.innerHTML = matches.map((item, idx) => `
-      <div class="feat-sugg-item" data-idx="${idx}" onclick="featAddSelect(${idx})">
-        <div class="feat-sugg-icon">${item.icon}</div>
-        <div>
-          <div class="feat-sugg-name">${item.name.replace(new RegExp('('+q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+')', 'gi'), '<strong>$1</strong>')}</div>
-          ${item.sub ? `<div class="feat-sugg-sub">${item.sub}</div>` : ''}
-        </div>
-      </div>`).join('');
-    // Store visible matches for keyboard nav
-    el._matches = matches;
+    _renderFeatSuggestions(q);
   }
 
   function featAddSelect(idx) {

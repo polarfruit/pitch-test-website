@@ -494,6 +494,38 @@ footer {
 }
 .sell-price-note { font-size: 12px; color: var(--text-lo); margin-top: 8px; display: flex; align-items: center; gap: 6px; }
 
+/* ── PUBLIC MENU ─────────────────────────────────────────────────────────── */
+.pub-menu-filter { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+.pub-menu-pill {
+  font-size: 12px; font-weight: 600; padding: 5px 14px; border-radius: 100px;
+  background: var(--char); border: 1px solid #ffffff0a; color: var(--text-lo);
+  cursor: pointer; transition: all 0.14s;
+}
+.pub-menu-pill.active, .pub-menu-pill:hover { background: var(--ember-bg); border-color: #E8500A30; color: var(--ember); }
+.pub-menu-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
+.pub-menu-card {
+  background: var(--char); border: 1px solid #ffffff0a; border-radius: 14px; overflow: hidden;
+  transition: transform 0.14s, border-color 0.14s;
+}
+.pub-menu-card:hover { transform: translateY(-2px); border-color: #ffffff18; }
+.pub-menu-card.is-sig { border-color: #E8500A40; grid-column: 1 / -1; display: flex; gap: 0; }
+.pub-menu-card.is-sig .pub-menu-photo { width: 200px; height: auto; flex-shrink: 0; }
+.pub-menu-card.is-sig .pub-menu-body { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 20px; }
+.pub-menu-card.unavail { opacity: 0.45; }
+.pub-menu-photo { width: 100%; height: 120px; object-fit: cover; background: var(--ash); display: block; }
+.pub-menu-no-photo { width: 100%; height: 72px; background: var(--ash); display: flex; align-items: center; justify-content: center; font-size: 22px; color: var(--smoke); }
+.pub-menu-body { padding: 11px 13px 13px; }
+.pub-menu-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 6px; margin-bottom: 4px; }
+.pub-menu-name { font-size: 14px; font-weight: 700; color: var(--text-hi); line-height: 1.3; flex: 1; }
+.pub-menu-price { font-size: 12px; font-weight: 700; color: var(--ember); flex-shrink: 0; }
+.pub-menu-desc { font-size: 12px; color: var(--text-lo); line-height: 1.55; margin-bottom: 8px; }
+.pub-menu-badges { display: flex; flex-wrap: wrap; gap: 4px; }
+.pub-menu-badge { font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 100px; }
+.pmb-sig  { background: #E8500A15; color: var(--ember); }
+.pmb-seas { background: #2D8B5515; color: var(--herb); }
+.pmb-off  { background: #ffffff08; color: var(--text-lo); }
+@media (max-width: 600px) { .pub-menu-card.is-sig { flex-direction: column; } .pub-menu-card.is-sig .pub-menu-photo { width: 100%; height: 140px; } }
+
 /* ── APPLY TO SAME MARKETS ───────────────────────────────────────────────── */
 .same-market-list { display: flex; flex-direction: column; gap: 8px; }
 .same-market-chip {
@@ -595,6 +627,18 @@ if (/^\d+$/.test(window.location.pathname.replace(/^\/vendors\//, '').replace(/\
         <div class="sell-price-note" id="vd-price-note" style="display:none;">
           <span>💲</span><span id="vd-price-label"></span>
         </div>
+      </div>
+
+      <!-- Menu -->
+      <div class="section-block" id="vd-menu-section" style="display:none;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+          <h2 class="section-heading" style="margin-bottom:0;">Menu</h2>
+          <div id="vd-menu-own-edit" style="display:none;">
+            <a href="/dashboard/vendor/menu" style="font-size:12px;font-weight:700;color:var(--ember);text-decoration:none;padding:5px 12px;background:var(--ember-bg);border:1px solid #E8500A25;border-radius:8px;">✏ Edit menu</a>
+          </div>
+        </div>
+        <div class="pub-menu-filter" id="vd-menu-filter"></div>
+        <div class="pub-menu-grid" id="vd-menu-grid"></div>
       </div>
 
       <!-- Past Events -->
@@ -1110,6 +1154,9 @@ function applyAndReveal(v) {
   // What they sell — use cuisine_tags from DB vendor
   renderWhatTheySell(cuisines, db.price_range || null, []);
 
+  // Menu — fetch and render
+  loadPublicMenu(db.user_id);
+
   document.documentElement.classList.remove('vd-loading');
 }
 
@@ -1411,6 +1458,85 @@ if (!isNumericId && typeof vendor !== 'undefined' && vendor) {
     if (s) s.style.display = '';
   }
 })();
+
+/* ── Public menu ─────────────────────────────────────────────────────────── */
+var _pubMenuItems = [];
+var _pubMenuActiveFilter = 'All';
+
+async function loadPublicMenu(vendorUserId) {
+  if (!vendorUserId) return;
+  try {
+    const r = await fetch('/api/vendors/' + vendorUserId + '/menu');
+    if (!r.ok) return;
+    _pubMenuItems = await r.json();
+  } catch(_) { return; }
+  if (!_pubMenuItems.length) return;
+  const section = document.getElementById('vd-menu-section');
+  if (section) section.style.display = '';
+  // Own-profile edit shortcut — check if logged-in user is this vendor
+  try {
+    const me = await fetch('/api/me');
+    if (me.ok) {
+      const { user } = await me.json();
+      if (user && user.id === vendorUserId) {
+        const editBtn = document.getElementById('vd-menu-own-edit');
+        if (editBtn) editBtn.style.display = '';
+      }
+    }
+  } catch(_) {}
+  renderPublicMenu();
+}
+
+function renderPublicMenu() {
+  const filterEl = document.getElementById('vd-menu-filter');
+  const gridEl   = document.getElementById('vd-menu-grid');
+  if (!filterEl || !gridEl) return;
+
+  // Build category list
+  const cats = ['All', ...new Set(_pubMenuItems.map(i => i.category).filter(Boolean))];
+  filterEl.innerHTML = cats.map(c => `<button class="pub-menu-pill${c===_pubMenuActiveFilter?' active':''}" onclick="filterPublicMenu('${c}')">${c}</button>`).join('');
+
+  // Filter
+  const items = _pubMenuActiveFilter === 'All'
+    ? _pubMenuItems
+    : _pubMenuItems.filter(i => i.category === _pubMenuActiveFilter);
+
+  function fmtPrice(item) {
+    if (!item.price_type || item.price_type === 'varies') return 'Varies';
+    if (item.price_type === 'range' && item.price_min != null && item.price_max != null)
+      return '$' + (+item.price_min).toFixed(2) + '–$' + (+item.price_max).toFixed(2);
+    if (item.price_min != null) return '$' + (+item.price_min).toFixed(2);
+    return '';
+  }
+  function escH(s) { return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+  gridEl.innerHTML = items.map(item => {
+    const isSig = !!item.is_signature;
+    const price = fmtPrice(item);
+    return `<div class="pub-menu-card${isSig?' is-sig':''}${!item.available?' unavail':''}">
+      ${item.photo_url
+        ? `<img class="pub-menu-photo" src="${escH(item.photo_url)}" alt="${escH(item.name)}" onerror="this.style.display='none'" />`
+        : `<div class="pub-menu-no-photo">🍽</div>`}
+      <div class="pub-menu-body">
+        <div class="pub-menu-top">
+          <div class="pub-menu-name">${escH(item.name)}</div>
+          ${price ? `<div class="pub-menu-price">${price}</div>` : ''}
+        </div>
+        ${item.description ? `<div class="pub-menu-desc">${escH(item.description)}</div>` : ''}
+        <div class="pub-menu-badges">
+          ${isSig         ? '<span class="pub-menu-badge pmb-sig">⭐ Signature</span>' : ''}
+          ${item.seasonal ? '<span class="pub-menu-badge pmb-seas">🌿 Seasonal</span>' : ''}
+          ${!item.available ? '<span class="pub-menu-badge pmb-off">Not available today</span>' : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterPublicMenu(cat) {
+  _pubMenuActiveFilter = cat;
+  renderPublicMenu();
+}
 </script>
 </body>
 </html>
