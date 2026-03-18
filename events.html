@@ -533,7 +533,7 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
 
   <!-- Results meta -->
   <div class="results-meta">
-    <div class="results-count" id="results-count">Showing <strong>12</strong> events</div>
+    <div class="results-count" id="results-count"></div>
     <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
       <div class="active-filters" id="active-filters"></div>
       <div class="view-toggle">
@@ -618,12 +618,13 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
 })();
 
 // ── DATA: loaded from API, filtered against data.js ───────────────────────────
-let EVENTS = [];
+// Seed immediately from static data so cards show before API fetch completes
+let EVENTS = (window.PITCH_EVENTS || []).slice();
 
 const TOTAL_EVENTS = 124;
 const PER_PAGE = 12;
 let currentPage = 1;
-let filtered = [];
+let filtered = [...EVENTS];
 let currentView = 'list';
 let _map = null, _mapMarkers = [];
 const _geoCache = {};
@@ -997,6 +998,9 @@ async function renderMap() {
     if (sel) sel.value = cat;
   }
 })();
+
+// Render immediately with static data (updates again after fetch)
+applyFilters();
 
 fetch('/api/events')
   .then(function(r) { return r.json(); })
