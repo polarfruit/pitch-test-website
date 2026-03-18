@@ -276,6 +276,17 @@ await _safeExec(`ALTER TABLE organisers ADD COLUMN notif_new_apps INTEGER NOT NU
 await _safeExec(`ALTER TABLE organisers ADD COLUMN notif_deadlines INTEGER NOT NULL DEFAULT 1`);
 await _safeExec(`ALTER TABLE organisers ADD COLUMN notif_messages INTEGER NOT NULL DEFAULT 0`);
 await _safeExec(`ALTER TABLE organisers ADD COLUMN notif_payments INTEGER NOT NULL DEFAULT 1`);
+await _safeExec(`
+  CREATE TABLE IF NOT EXISTS announcements (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    subject    TEXT NOT NULL,
+    body       TEXT NOT NULL,
+    audience   TEXT NOT NULL DEFAULT 'all',
+    created_by INTEGER,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  )
+`);
+
 await _safeExec(`ALTER TABLE events ADD COLUMN cancelled_at DATETIME`);
 await _safeExec(`ALTER TABLE events ADD COLUMN cancel_reason TEXT`);
 await _safeExec(`ALTER TABLE events ADD COLUMN is_recurring INTEGER NOT NULL DEFAULT 0`);
@@ -673,6 +684,12 @@ export const stmts = {
   // vendor settings
   updateVendorSettings: prepare(`UPDATE vendors SET notif_apps=@notif_apps,notif_docs=@notif_docs,notif_reviews=@notif_reviews,notif_payments=@notif_payments WHERE user_id=@user_id`),
   pauseVendor:          prepare(`UPDATE vendors SET paused=? WHERE user_id=?`),
+
+  // announcements
+  createAnnouncement:   prepare(`INSERT INTO announcements (subject,body,audience,created_by) VALUES (@subject,@body,@audience,@created_by)`),
+  getAnnouncements:     prepare(`SELECT * FROM announcements ORDER BY created_at DESC LIMIT 50`),
+  getAnnouncementsFor:  prepare(`SELECT * FROM announcements WHERE audience='all' OR audience=? ORDER BY created_at DESC LIMIT 20`),
+  getRecentAnnouncements: prepare(`SELECT * FROM announcements WHERE (audience='all' OR audience=?) AND created_at > datetime('now','-30 days') ORDER BY created_at DESC`),
 
   // public vendors
   publicVendors: prepare(`

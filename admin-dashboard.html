@@ -233,8 +233,10 @@
     .toggle-thumb {
       position: absolute; top: 3px; left: 3px; width: 16px; height: 16px;
       border-radius: 50%; background: #fff; transition: transform 0.2s; pointer-events: none;
+      z-index: 2; box-shadow: 0 1px 4px rgba(0,0,0,0.35);
     }
     .toggle input:checked ~ .toggle-thumb { transform: translateX(18px); }
+    .toggle-track { z-index: 1; }
 
     /* ── Modal ─────────────────────────────────── */
     .modal-overlay {
@@ -454,6 +456,9 @@
         <span>Super admin</span>
       </div>
     </div>
+    <button onclick="adminLogout()" style="width:100%;margin-top:10px;padding:9px 12px;background:transparent;border:1px solid #ffffff12;border-radius:8px;font-family:var(--fb);font-size:12px;font-weight:600;color:var(--text-lo);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:all 0.14s;" onmouseover="this.style.background='#ffffff08';this.style.color='#FDF4E7'" onmouseout="this.style.background='transparent';this.style.color='var(--text-lo)'">
+      <span>🚪</span> Log out
+    </button>
   </div>
 </nav>
 
@@ -1538,11 +1543,12 @@
     const meta = panelMeta[id] || {};
     document.getElementById('topbar-title').textContent = meta.title || id;
     document.getElementById('topbar-sub').textContent = meta.sub || '';
-    if (id === 'events')        loadAdminEvents();
-    if (id === 'applications')  loadApplications();
-    if (id === 'users')         loadAllUsers();
-    if (id === 'featured')      loadFeatured();
-    if (id === 'analytics')     loadAnalytics();
+    if (id === 'events')         loadAdminEvents();
+    if (id === 'applications')   loadApplications();
+    if (id === 'users')          loadAllUsers();
+    if (id === 'featured')       loadFeatured();
+    if (id === 'analytics')      loadAnalytics();
+    if (id === 'announcements')  loadAnnouncementHistory();
   }
 
   function toggleExpand(id) {
@@ -2413,16 +2419,56 @@
   }
 
   // ── Announcements ─────────────────────────────────────────────────────────
-  function sendAnnouncement() {
-    const subject = document.getElementById('ann-subject').value.trim();
-    const body    = document.getElementById('ann-body').value.trim();
-    if (!subject || !body) { alert('Subject and message are required.'); return; }
+  async function sendAnnouncement() {
+    const subject  = document.getElementById('ann-subject').value.trim();
+    const body     = document.getElementById('ann-body').value.trim();
+    const audience = document.getElementById('ann-audience').value;
     const msg = document.getElementById('ann-msg');
-    msg.textContent = '✓ Announcement queued for delivery.';
-    msg.style.display = 'block';
-    document.getElementById('ann-subject').value = '';
-    document.getElementById('ann-body').value = '';
-    setTimeout(() => msg.style.display = 'none', 4000);
+    if (!subject || !body) { msg.textContent = '⚠ Subject and message are required.'; msg.style.color = '#C9840A'; msg.style.display = 'block'; return; }
+    try {
+      const r = await fetch('/api/admin/announce', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subject, body, audience })
+      });
+      if (!r.ok) throw new Error('Failed');
+      msg.textContent = '✓ Announcement sent — all targeted users will see it in their notification bell and message inbox.';
+      msg.style.color = '#2D8B55';
+      msg.style.display = 'block';
+      document.getElementById('ann-subject').value = '';
+      document.getElementById('ann-body').value = '';
+      setTimeout(() => msg.style.display = 'none', 5000);
+      loadAnnouncementHistory();
+    } catch (e) {
+      msg.textContent = '✗ Failed to send announcement. Please try again.';
+      msg.style.color = '#C0392B';
+      msg.style.display = 'block';
+    }
+  }
+
+  async function loadAnnouncementHistory() {
+    try {
+      const r = await fetch('/api/admin/announcements');
+      if (!r.ok) return;
+      const { announcements } = await r.json();
+      const container = document.querySelector('.announce-history');
+      if (!container) return;
+      if (!announcements.length) {
+        container.innerHTML = '<div style="padding:20px;text-align:center;font-size:13px;color:#6B5A4A;">No announcements sent yet.</div>';
+        return;
+      }
+      const audienceLabel = { all:'All users', vendors:'Vendors only', organisers:'Organisers only', pro:'Pro vendors only' };
+      const fmtDate = d => d ? new Date(d).toLocaleDateString('en-AU', { day:'numeric', month:'short', year:'numeric' }) : '';
+      container.innerHTML = announcements.map(a => `
+        <div class="announce-item">
+          <div class="announce-icon">📢</div>
+          <div class="announce-body">
+            <div class="announce-title">${a.subject}</div>
+            <div class="announce-meta">Sent to: ${audienceLabel[a.audience] || a.audience} · In-app · ${fmtDate(a.created_at)}</div>
+            <div style="font-size:12px;color:#6B5A4A;margin-top:4px;line-height:1.5;">${a.body}</div>
+          </div>
+        </div>`).join('');
+    } catch (e) { console.warn('[announcements]', e); }
   }
 
   // ── Moderation helpers ────────────────────────────────────────────────────
@@ -2437,6 +2483,12 @@
   function dismissFlag(btn) {
     const item = btn.closest('.mod-item');
     if (item) { item.style.opacity = '0.3'; item.style.pointerEvents = 'none'; }
+  }
+
+  // ── Logout ────────────────────────────────────────────────────────────────
+  async function adminLogout() {
+    try { await fetch('/api/logout', { method: 'POST' }); } catch (e) {}
+    window.location.href = '/login';
   }
 
   // ── Update sidebar pending badge ──────────────────────────────────────────
