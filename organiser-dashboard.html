@@ -1875,6 +1875,10 @@ async function initDashboard() {
 
   // Init expanded settings panel
   initOrgSettingsPanel(user, profile);
+
+  // Eager non-blocking loads so stats + events populate even if init data was empty
+  loadOrgOverview().catch(() => {});
+  loadOrgEvents().catch(() => {});
 }
 
 const EMOJI_POOL = ['🍽','🎪','🌟','🎉','🍴','🥘','🎊','🌮','🎶','🍻'];
@@ -2651,7 +2655,7 @@ function renderNotifList() {
   const list = document.getElementById('notif-list');
   if (!list) return;
   if (!_notifs.length) {
-    list.innerHTML = '<div class="notif-empty">No notifications yet</div>';
+    list.innerHTML = '<div class="notif-empty">✓ You\'re all caught up</div>';
     return;
   }
   list.innerHTML = _notifs.map(n => `
@@ -2759,7 +2763,11 @@ let _inboxCache = [];
 async function loadOrgInbox() {
   try {
     const r = await pitchFetch('/api/organiser/applications');
-    if (!r.ok) return;
+    if (!r.ok) {
+      const list = document.getElementById('inbox-list');
+      if (list) list.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-lo);font-size:13px;">No applications yet.</div>';
+      return;
+    }
     const { applications } = await r.json();
     _inboxCache = applications;
     renderInbox(applications);
@@ -2921,7 +2929,11 @@ let _rateVendorPunctual = 3, _rateVendorPresentation = 3, _rateVendorRebook = tr
 async function loadOrgRatings() {
   try {
     const r = await pitchFetch('/api/organiser/vendor-ratings');
-    if (!r.ok) return;
+    if (!r.ok) {
+      const el = document.getElementById('ratings-list');
+      if (el) el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-lo);font-size:13px;">No vendor ratings yet. After a market, rate the vendors who attended.</div>';
+      return;
+    }
     const { ratings } = await r.json();
     const el = document.getElementById('ratings-list');
     if (!ratings.length) {
