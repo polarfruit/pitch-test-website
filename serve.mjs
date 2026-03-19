@@ -651,6 +651,7 @@ app.post('/api/profile/plan', requireAuth, async (req, res) => {
     const vendor = db.prepare('SELECT id FROM vendors WHERE user_id = ?').get(req.session.userId);
     if (!vendor) return res.status(403).json({ error: 'Not a vendor account' });
     db.prepare('UPDATE vendors SET plan = ? WHERE user_id = ?').run(plan, req.session.userId);
+    _apiCache.delete('vendors'); _apiCache.delete('stats');
     res.json({ ok: true, plan });
   } catch (e) {
     console.error('[plan]', e);
@@ -746,9 +747,30 @@ app.post('/api/admin/logout', (req, res) => {
 
 // ── API: Public events ─────────────────────────────────────────────────────
 
-app.get('/api/events', async (req, res) => {
-  res.json({ events: await stmts.publishedEvents.all() });
-});
+// ── In-memory API cache (public endpoints, 60-second TTL) ──────────────────
+const _apiCache = new Map();
+function apiCached(key, ttlMs, fn) {
+  return async (req, res) => {
+    const hit = _apiCache.get(key);
+    if (hit && Date.now() - hit.ts < ttlMs) {
+      res.setHeader('Cache-Control', 'public, max-age=60');
+      return res.json(hit.data);
+    }
+    try {
+      const data = await fn();
+      _apiCache.set(key, { data, ts: Date.now() });
+      res.setHeader('Cache-Control', 'public, max-age=60');
+      res.json(data);
+    } catch(e) {
+      console.error('[apiCached]', key, e);
+      res.status(500).json({ error: 'Server error' });
+    }
+  };
+}
+
+app.get('/api/events', apiCached('events', 60000, async () => ({
+  events: await stmts.publishedEvents.all(),
+})));
 
 app.get('/api/events/:slug', async (req, res) => {
   const ev = await stmts.getEventBySlug.get(req.params.slug);
@@ -758,14 +780,13 @@ app.get('/api/events/:slug', async (req, res) => {
 
 // ── API: Public vendors ────────────────────────────────────────────────────
 
-app.get('/api/vendors', async (req, res) => {
+app.get('/api/vendors', apiCached('vendors', 60000, async () => {
   const rows = await stmts.publicVendors.all();
-  const vendors = rows.map(v => ({
+  return { vendors: rows.map(v => ({
     ...v,
     cuisine_tags: (() => { try { return JSON.parse(v.cuisine_tags || '[]'); } catch { return []; } })(),
-  }));
-  res.json({ vendors });
-});
+  })) };
+}));
 
 app.get('/api/vendors/:userId', async (req, res) => {
   const row = await stmts.publicVendorById.get(req.params.userId);
@@ -945,6 +966,7 @@ app.put('/api/vendor/profile', requireAuth, async (req, res) => {
       cuisine_tags: typeof cuisine_tags === 'string' ? cuisine_tags : JSON.stringify(cuisine_tags || []),
       user_id:      req.session.userId,
     });
+    _apiCache.delete('vendors');
     res.json({ ok: true });
   } catch (e) {
     console.error('[vendor/profile PUT]', e);
@@ -1403,24 +1425,20 @@ app.delete('/api/vendor/account', requireAuth, async (req, res) => {
 });
 
 // ── Public stats ───────────────────────────────────────────────────────────
-app.get('/api/stats', async (req, res) => {
-  try {
-    const [vRow, eRow, aRow, rRow] = await Promise.all([
-      stmts.countVendors.get(),
-      stmts.countEvents.get(),
-      stmts.countAllApplications.get(),
-      stmts.getGlobalReviewAvg.get(),
-    ]);
-    const vendors      = Number(vRow?.n) || 0;
-    const events       = Number(eRow?.n) || 0;
-    const applications = Number(aRow?.n) || 0;
-    const rating       = rRow?.avg ? Number(rRow.avg) : null;
-    res.json({ vendors, events, applications, rating });
-  } catch(e) {
-    console.error('[api/stats]', e);
-    res.json({ vendors: 0, events: 0, applications: 0, rating: null });
-  }
-});
+app.get('/api/stats', apiCached('stats', 120000, async () => {
+  const [vRow, eRow, aRow, rRow] = await Promise.all([
+    stmts.countVendors.get(),
+    stmts.countEvents.get(),
+    stmts.countAllApplications.get(),
+    stmts.getGlobalReviewAvg.get(),
+  ]);
+  return {
+    vendors:      Number(vRow?.n) || 0,
+    events:       Number(eRow?.n) || 0,
+    applications: Number(aRow?.n) || 0,
+    rating:       rRow?.avg ? Number(rRow.avg) : null,
+  };
+}));
 
 // ── API: Organiser dashboard ───────────────────────────────────────────────
 
@@ -1991,7 +2009,19 @@ app.get('/admin-login.html',          (req, res) => res.redirect('/admin/login')
 app.get('/vendor-dashboard.html',     (req, res) => res.redirect('/dashboard/vendor'));
 app.get('/organiser-dashboard.html',  (req, res) => res.redirect('/dashboard/organiser'));
 
-app.use(express.static(__dirname, { index: false }));
+// Static assets — long cache for fonts/JS/images, short for HTML
+app.use(express.static(__dirname, {
+  index: false,
+  setHeaders(res, filePath) {
+    if (/\.(woff2?|ttf|otf|eot)$/i.test(filePath)) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    } else if (/\.(js|css)$/i.test(filePath)) {
+      res.setHeader('Cache-Control', 'public, max-age=86400');
+    } else if (/\.(png|jpg|jpeg|gif|svg|webp|ico)$/i.test(filePath)) {
+      res.setHeader('Cache-Control', 'public, max-age=86400');
+    }
+  },
+}));
 
 // ── Start ──────────────────────────────────────────────────────────────────
 export default app;
