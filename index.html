@@ -384,34 +384,37 @@ body::before {
 .btn-organiser:hover { border-color: #ffffff44; background: #ffffff08; transform: translateY(-1px); }
 
 .hero-search {
-  display: flex; align-items: center;
+  display: flex; align-items: stretch;
   background: #ffffff09; border: 1px solid #ffffff12;
-  border-radius: 12px; padding: 0 5px 0 16px;
-  max-width: 460px;
+  border-radius: 12px; overflow: hidden;
+  width: 100%; max-width: 460px;
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 .hero-search:focus-within { border-color: #E8500A40; box-shadow: 0 0 0 3px #E8500A14; }
-.hero-search-icon { font-size: 16px; color: var(--text-lo); flex-shrink: 0; }
+.hero-search-icon {
+  font-size: 16px; color: var(--text-lo); flex-shrink: 0;
+  display: flex; align-items: center; padding-left: 16px;
+}
 .hero-search input {
-  flex: 1; padding: 13px 10px;
+  flex: 1; padding: 14px 10px;
   background: transparent; border: none; outline: none;
   color: var(--text-hi); font-family: var(--fb);
   font-size: 14px; min-width: 0;
 }
 .hero-search input::placeholder { color: var(--text-lo); }
 .hero-search-sep {
-  width: 1px; height: 20px; background: #ffffff14;
-  flex-shrink: 0; margin: 0 2px;
+  width: 1px; background: #ffffff14;
+  flex-shrink: 0; align-self: center; height: 20px;
 }
 .hero-search-btn {
   font-family: var(--fb); font-size: 13px; font-weight: 700;
   color: #fff; background: var(--ember);
-  border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer;
-  flex-shrink: 0; transition: background 0.14s, transform 0.14s;
-  margin: 5px 0;
+  border: none; padding: 0 22px; cursor: pointer;
+  flex-shrink: 0; align-self: stretch;
+  transition: background 0.14s;
 }
-.hero-search-btn:hover { background: var(--ember-glow); transform: translateY(-1px); }
-.hero-search-btn:active { transform: translateY(0); }
+.hero-search-btn:hover { background: var(--ember-glow); }
+.hero-search-btn:active { opacity: 0.9; }
 
 /* Hero right — stacked preview cards */
 .hero-right {
