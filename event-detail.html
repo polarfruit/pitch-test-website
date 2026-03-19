@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Rundle Mall Night Eats — Pitch.</title>
+<title>Event — Pitch.</title>
 <link rel="stylesheet" href="/fonts/fonts.css">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -556,7 +556,7 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
     <span class="breadcrumb-sep">›</span>
     <a href="/events">Events</a>
     <span class="breadcrumb-sep">›</span>
-    <span id="ev-breadcrumb">Rundle Mall Night Eats</span>
+    <span id="ev-breadcrumb">Loading…</span>
   </nav>
 </div>
 
@@ -588,21 +588,16 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
     </div>
 
     <!-- Event name -->
-    <h1 class="detail-event-name" id="ev-name">Rundle Mall Night Eats</h1>
+    <h1 class="detail-event-name" id="ev-name"></h1>
 
     <!-- Meta badges -->
-    <div class="detail-meta-row" id="ev-meta-row">
-      <span class="meta-badge" style="background:#2B5BA812;color:#2B5BA8;border-color:#2B5BA820;">Night Market</span>
-      <span class="meta-badge">📍 Rundle Mall, Adelaide CBD</span>
-      <span class="meta-badge">📅 Saturday 12 April 2026</span>
-      <span class="meta-badge">🕔 5:00pm – 10:00pm</span>
-    </div>
+    <div class="detail-meta-row" id="ev-meta-row"></div>
 
     <div class="section-divider"></div>
 
     <!-- About -->
     <div class="subsec-title">About this event</div>
-    <p class="about-text" id="ev-about">Rundle Mall Night Eats is Adelaide's premier weekly night market, drawing 5,000+ visitors each Saturday evening to the heart of the CBD. Now in its 4th year, the event has become a fixture for foodies, families, and Adelaide's vibrant street food culture. Vendors operate from dedicated 3×3m booths along the pedestrianised mall, with high foot traffic from 5pm through to closing. The event is professionally run by Adelaide City Council Events with full security, waste management, and crowd facilitation provided.</p>
+    <p class="about-text" id="ev-about"></p>
 
     <div class="section-divider"></div>
 
@@ -619,7 +614,7 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
       </div>
       <div class="spec-item">
         <span class="spec-icon">📍</span>
-        <div><div class="spec-label">Location</div><div class="spec-value" id="sv-location">Rundle Mall, Adelaide CBD SA 5000</div></div>
+        <div><div class="spec-label">Location</div><div class="spec-value" id="sv-location"></div></div>
       </div>
       <div class="spec-item">
         <span class="spec-icon">👥</span>
@@ -673,7 +668,7 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
 
     <!-- Location & Map -->
     <div class="subsec-title" style="margin-bottom:8px;">Location</div>
-    <p class="about-text" style="font-size:13px;margin-bottom:0;" id="ev-address-line">Rundle Mall, Adelaide CBD SA 5000</p>
+    <p class="about-text" style="font-size:13px;margin-bottom:0;" id="ev-address-line"></p>
     <div class="ev-map" id="ev-map">
       <div class="ev-map-placeholder" id="ev-map-placeholder">
         <div class="ev-map-placeholder-icon">📍</div>
@@ -783,7 +778,7 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
       <div class="deadline-row">
         <div>
           <div class="deadline-label">Application deadline</div>
-          <div class="deadline-val" id="ev-deadline-val">5 April 2026</div>
+          <div class="deadline-val" id="ev-deadline-val">—</div>
           <div id="countdown-badge"></div>
         </div>
       </div>
@@ -970,7 +965,7 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
         <div class="modal-success">
           <div class="success-icon">🎉</div>
           <div class="success-title">Application submitted!</div>
-          <p class="success-desc">Your application for <strong>Rundle Mall Night Eats</strong> has been sent to Adelaide City Council Events. They typically respond within 48 hours. You'll receive an email and an in-app notification when they review your application.</p>
+          <p class="success-desc">Your application for <strong id="success-ev-name">this event</strong> has been submitted. The organiser will typically respond within 48 hours. You'll receive an email and an in-app notification when they review your application.</p>
         </div>
       </div>
 
@@ -1187,7 +1182,7 @@ if (ev && !window.__PITCH_DB_EVENT__) {
 }
 
 // ── COUNTDOWN ────────────────────────────────────────────────────────────────
-var DEMO_DEADLINE = ev ? new Date(ev.deadline + 'T23:59:59') : new Date('2026-04-05T23:59:59');
+var DEMO_DEADLINE = ev ? new Date(ev.deadline + 'T23:59:59') : new Date('2026-06-30T23:59:59');
 
 function renderCountdown() {
   const badge = document.getElementById('countdown-badge');
@@ -1318,6 +1313,15 @@ function updateTermsBtn() {
 function submitApplication() {
   currentStep = 'success';
   renderStep();
+  // Populate success message with current event name
+  var nameEl = document.getElementById('success-ev-name');
+  if (nameEl) {
+    var evName = (window.__PITCH_DB_EVENT__ && window.__PITCH_DB_EVENT__.name)
+      || (typeof ev !== 'undefined' && ev && ev.name)
+      || document.getElementById('ev-name').textContent
+      || 'this event';
+    nameEl.textContent = evName;
+  }
   // Update sidebar CTA
   const btn = document.getElementById('apply-btn');
   btn.textContent  = '✓ Application submitted';

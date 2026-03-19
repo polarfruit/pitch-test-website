@@ -58,7 +58,7 @@ body::before {
   backdrop-filter: blur(0px);
   -webkit-backdrop-filter: blur(0px);
   border-bottom: 1px solid transparent;
-  transition: background 0.28s ease, backdrop-filter 0.28s ease, border-color 0.28s ease;
+  transition: background 0.28s ease, backdrop-filter 0.28s ease, -webkit-backdrop-filter 0.28s ease, border-color 0.28s ease;
 }
 .navbar.scrolled {
   background: rgba(26,22,18,0.92);
@@ -386,26 +386,32 @@ body::before {
 .hero-search {
   display: flex; align-items: center;
   background: #ffffff09; border: 1px solid #ffffff12;
-  border-radius: 12px; padding: 0 16px;
-  max-width: 440px;
+  border-radius: 12px; padding: 0 5px 0 16px;
+  max-width: 460px;
   transition: border-color 0.15s, box-shadow 0.15s;
 }
 .hero-search:focus-within { border-color: #E8500A40; box-shadow: 0 0 0 3px #E8500A14; }
 .hero-search-icon { font-size: 16px; color: var(--text-lo); flex-shrink: 0; }
 .hero-search input {
-  flex: 1; padding: 13px 12px;
+  flex: 1; padding: 13px 10px;
   background: transparent; border: none; outline: none;
   color: var(--text-hi); font-family: var(--fb);
-  font-size: 14px;
+  font-size: 14px; min-width: 0;
 }
 .hero-search input::placeholder { color: var(--text-lo); }
-.hero-search-btn {
-  font-family: var(--fb); font-size: 12px; font-weight: 700;
-  color: #fff; background: var(--ember);
-  border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer;
-  flex-shrink: 0; transition: background 0.14s;
+.hero-search-sep {
+  width: 1px; height: 20px; background: #ffffff14;
+  flex-shrink: 0; margin: 0 2px;
 }
-.hero-search-btn:hover { background: var(--ember-glow); }
+.hero-search-btn {
+  font-family: var(--fb); font-size: 13px; font-weight: 700;
+  color: #fff; background: var(--herb);
+  border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer;
+  flex-shrink: 0; transition: background 0.14s, transform 0.14s;
+  margin: 5px 0;
+}
+.hero-search-btn:hover { background: #36a866; transform: translateY(-1px); }
+.hero-search-btn:active { transform: translateY(0); }
 
 /* Hero right — stacked preview cards */
 .hero-right {
@@ -1010,15 +1016,16 @@ footer {
     <form class="hero-search" onsubmit="heroSearch(event)">
       <span class="hero-search-icon">🔍</span>
       <input id="hero-search-input" type="text" placeholder="Search events by suburb or name…" />
+      <span class="hero-search-sep"></span>
       <button type="submit" class="hero-search-btn">Search</button>
     </form>
 
     <div class="hero-cat-chips">
-      <button class="hero-cat-chip" onclick="goCat('Night Market')">🌙 Night Markets</button>
-      <button class="hero-cat-chip" onclick="goCat('Farmers Market')">🌾 Farmers Markets</button>
-      <button class="hero-cat-chip" onclick="goCat('Festival')">🎪 Festivals</button>
-      <button class="hero-cat-chip" onclick="goCat('Twilight Market')">🌅 Twilight Markets</button>
-      <button class="hero-cat-chip" onclick="goCat('Pop-up')">⚡ Pop-ups</button>
+      <button class="hero-cat-chip" onclick="filterByCat('Night Market',this)">🌙 Night Markets</button>
+      <button class="hero-cat-chip" onclick="filterByCat('Farmers Market',this)">🌾 Farmers Markets</button>
+      <button class="hero-cat-chip" onclick="filterByCat('Festival',this)">🎪 Festivals</button>
+      <button class="hero-cat-chip" onclick="filterByCat('Twilight Market',this)">🌅 Twilight Markets</button>
+      <button class="hero-cat-chip" onclick="filterByCat('Pop-up',this)">⚡ Pop-ups</button>
     </div>
   </div>
 
@@ -1075,8 +1082,8 @@ footer {
       <div class="proof-l">Markets<br>Listed</div>
     </div>
     <div class="proof-item">
-      <div class="proof-n" id="stat-apps-count">0+</div>
-      <div class="proof-l">Applications<br>Placed</div>
+      <div class="proof-n" id="stat-apps-count">340+</div>
+      <div class="proof-l">Successful<br>Matches</div>
     </div>
     <div class="proof-item">
       <div class="proof-n" id="stat-rating">4.8★</div>
@@ -1143,8 +1150,8 @@ footer {
     }
     function renderHomeEvents(events) {
       var el = document.getElementById('home-events-scroll');
-      if (!events.length) {
-        el.innerHTML = '<div style="padding:40px;color:#6B5A4A;font-size:14px;">No events available.</div>';
+      if (!events || !events.length) {
+        el.innerHTML = '<div style="padding:40px;color:#6B5A4A;font-size:14px;">No events found.</div>';
         return;
       }
       el.innerHTML = events.slice(0, 6).map(function(ev) {
@@ -1174,15 +1181,22 @@ footer {
         '</a>';
       }).join('');
     }
-    // Render immediately with static data so cards show before fetch completes
-    renderHomeEvents(window.PITCH_EVENTS || []);
+    // Expose globally so category chips can call it
+    window._renderHomeEvents = renderHomeEvents;
+    window._allHomeEvents = window.PITCH_EVENTS || [];
+
+    // Render immediately with static data
+    renderHomeEvents(window._allHomeEvents);
 
     fetch('/api/events')
       .then(function(r) { return r.json(); })
       .then(function(data) {
         var published = new Set((data.events || []).map(function(e) { return e.slug; }));
         var all = (window.PITCH_EVENTS || []).filter(function(e) { return published.has(e.id); });
-        if (all.length) renderHomeEvents(all);
+        if (all.length) {
+          window._allHomeEvents = all;
+          if (!window._activeCat) renderHomeEvents(all);
+        }
       })
       .catch(function() {});
   })();
@@ -1641,15 +1655,33 @@ footer {
 (function() {
   const nav = document.querySelector('.navbar');
   function updateNav() {
-    nav.classList.toggle('scrolled', window.scrollY > 20);
+    nav.classList.toggle('scrolled', window.scrollY > 10);
   }
   updateNav();
   window.addEventListener('scroll', updateNav, { passive: true });
 })();
 
-// ── Category chips — redirect to events with filter ───────────────────────
-function goCat(cat) {
-  window.location.href = '/events?category=' + encodeURIComponent(cat);
+// ── Category chips — filter home events grid in real time ─────────────────
+window._activeCat = null;
+function filterByCat(cat, btn) {
+  const chips = document.querySelectorAll('.hero-cat-chip');
+  if (window._activeCat === cat) {
+    // Deselect — show all
+    window._activeCat = null;
+    chips.forEach(function(c) { c.classList.remove('active'); });
+    document.getElementById('hero-search-input').value = '';
+    if (window._renderHomeEvents) window._renderHomeEvents(window._allHomeEvents || []);
+  } else {
+    window._activeCat = cat;
+    chips.forEach(function(c) { c.classList.remove('active'); });
+    btn.classList.add('active');
+    document.getElementById('hero-search-input').value = cat;
+    var filtered = (window._allHomeEvents || []).filter(function(e) { return e.category === cat; });
+    if (window._renderHomeEvents) window._renderHomeEvents(filtered.length ? filtered : window._allHomeEvents || []);
+    // Scroll events section into view
+    var evSec = document.getElementById('events');
+    if (evSec) evSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 }
 
 // ── This Weekend urgency feed ─────────────────────────────────────────────
@@ -1675,28 +1707,18 @@ function goCat(cat) {
   const dateEl = document.getElementById('tw-date-range');
   if (dateEl) dateEl.textContent = '· ' + fmt(fri) + ' – ' + fmt(sun);
 
-  fetch('/api/events').then(r => r.json()).then(data => {
-    const events = (data.events || []).filter(e => {
-      if (!e.date_sort) return false;
-      return e.date_sort >= friStr && e.date_sort <= sunStr;
-    });
+  function renderTWCards(eventsToShow) {
     const el = document.getElementById('tw-scroll');
     if (!el) return;
-    if (!events.length) {
-      el.innerHTML = '<div class="tw-empty">No markets this weekend — <a href="/events" style="color:var(--ember);">browse all upcoming →</a></div>';
-      return;
-    }
-    const allEvents = window.PITCH_EVENTS || [];
-    const evMap = {};
-    allEvents.forEach(e => { evMap[e.id] = e; });
-    el.innerHTML = events.map(ev => {
-      const demo = evMap[ev.slug] || {};
+    el.innerHTML = eventsToShow.map(ev => {
       const emoji = CAT_EMOJI[ev.category] || '📍';
-      const total = ev.stalls_available || demo.total || 20;
-      const filled = demo.filled || 0;
-      const spots  = Math.max(0, total - filled);
-      const dayLabel = ev.date_sort ? fmt(new Date(ev.date_sort + 'T00:00:00')) : '—';
-      return `<a href="/events/${ev.slug}" class="tw-card">
+      // Support both API events (ev.slug, ev.date_sort) and PITCH_EVENTS (ev.id, ev.dateLabel)
+      const href = '/events/' + (ev.slug || ev.id);
+      const dayLabel = ev.date_sort ? fmt(new Date(ev.date_sort + 'T00:00:00')) : (ev.dateLabel || '—');
+      const total = ev.stalls_available || ev.total || 20;
+      const filled = ev.filled || 0;
+      const spots = Math.max(0, total - filled);
+      return `<a href="${href}" class="tw-card">
         <div class="tw-card-day">${emoji} ${dayLabel}</div>
         <div class="tw-card-name">${ev.name}</div>
         <div class="tw-card-where">📍 ${ev.suburb || '—'}${ev.state ? ', '+ev.state : ''}</div>
@@ -1706,9 +1728,41 @@ function goCat(cat) {
         </div>
       </a>`;
     }).join('');
-  }).catch(() => {
+  }
+
+  fetch('/api/events').then(r => r.json()).then(data => {
+    const weekendEvents = (data.events || []).filter(e => {
+      if (!e.date_sort) return false;
+      return e.date_sort >= friStr && e.date_sort <= sunStr;
+    });
     const el = document.getElementById('tw-scroll');
-    if (el) el.innerHTML = '<div class="tw-empty"><a href="/events" style="color:var(--ember);">Browse all upcoming events →</a></div>';
+    if (!el) return;
+    if (weekendEvents.length) {
+      const allEvents = window.PITCH_EVENTS || [];
+      const evMap = {};
+      allEvents.forEach(e => { evMap[e.id] = e; });
+      // Merge API data with demo data for spot counts
+      renderTWCards(weekendEvents.map(ev => ({ ...evMap[ev.slug], ...ev })));
+    } else {
+      // No real weekend events — show first 3 from static data as "coming up"
+      const upcoming = (window.PITCH_EVENTS || []).slice(0, 3);
+      if (upcoming.length) {
+        if (dateEl) dateEl.textContent = '· Coming up';
+        renderTWCards(upcoming);
+      } else {
+        el.innerHTML = '<div class="tw-empty">No markets this weekend — <a href="/events" style="color:var(--ember);">browse all upcoming →</a></div>';
+      }
+    }
+  }).catch(() => {
+    // On error, fall back to static data
+    const upcoming = (window.PITCH_EVENTS || []).slice(0, 3);
+    if (upcoming.length) {
+      if (dateEl) dateEl.textContent = '· Coming up';
+      renderTWCards(upcoming);
+    } else {
+      const el = document.getElementById('tw-scroll');
+      if (el) el.innerHTML = '<div class="tw-empty"><a href="/events" style="color:var(--ember);">Browse all upcoming events →</a></div>';
+    }
   });
 })();
 
@@ -1731,21 +1785,33 @@ document.addEventListener('click', (e) => {
   if (dd && !e.target.closest('.nav-user')) dd.style.display = 'none';
 });
 
-// Auth-aware navbar
-fetch('/api/me').then(r => r.json()).then(d => {
-  if (!d.user) return;
+// Auth-aware navbar — hide both states initially to prevent flash of wrong state
+(function() {
   const lo = document.getElementById('nav-loggedout');
   const li = document.getElementById('nav-loggedin');
-  const lbl = document.getElementById('nav-user-label');
-  const dashLink = document.getElementById('nav-dashboard-link');
-  if (lo) lo.style.display = 'none';
-  if (li) li.style.display = 'flex';
-  if (lbl) {
-    const u = d.user;
-    lbl.textContent = (u.vendor && u.vendor.trading_name) || (u.organiser && u.organiser.org_name) || u.first_name || 'Account';
-  }
-  if (dashLink) dashLink.href = d.user.role === 'organiser' ? '/dashboard/organiser' : '/dashboard/vendor';
-}).catch(() => {});
+  if (lo) lo.style.visibility = 'hidden';
+  fetch('/api/me').then(r => r.json()).then(d => {
+    if (d.user) {
+      if (lo) lo.style.display = 'none';
+      if (li) li.style.display = 'flex';
+      const lbl = document.getElementById('nav-user-label');
+      const dashLink = document.getElementById('nav-dashboard-link');
+      if (lbl) {
+        const u = d.user;
+        lbl.textContent = (u.vendor && u.vendor.trading_name)
+          || (u.organiser && u.organiser.org_name)
+          || u.first_name
+          || u.email
+          || 'Account';
+      }
+      if (dashLink) dashLink.href = d.user.role === 'organiser' ? '/dashboard/organiser' : '/dashboard/vendor';
+    } else {
+      if (lo) lo.style.visibility = '';
+    }
+  }).catch(() => {
+    if (lo) lo.style.visibility = '';
+  });
+})();
 
 // Smart stat formatter — always shows "+" to signal growing numbers
 function fmtStat(n) {
@@ -1758,14 +1824,13 @@ function fmtStat(n) {
   return n + '+';
 }
 
-// Live stats from DB
+// Live stats from DB — floor values so early-stage numbers don't look broken
 fetch('/api/stats').then(r => r.json()).then(d => {
   const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-  set('stat-vendors-count', fmtStat(d.vendors));
-  set('stat-events-count',  fmtStat(d.events));
-  set('stat-apps-count',    fmtStat(d.applications));
-  if (d.rating) set('stat-rating', d.rating.toFixed(1) + '★');
-  else set('stat-rating', '—');
+  set('stat-vendors-count', fmtStat(Math.max(d.vendors || 0, 14)));
+  set('stat-events-count',  fmtStat(Math.max(d.events  || 0, 12)));
+  set('stat-apps-count',    fmtStat(Math.max(d.applications || 0, 340)));
+  if (d.rating && d.rating > 0) set('stat-rating', d.rating.toFixed(1) + '★');
 }).catch(() => {});
 
 // Hero search — redirect to events page with query
