@@ -7,105 +7,342 @@
   <link rel="stylesheet" href="/fonts/fonts.css">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root { --ember:#E8500A;--ember-glow:#FF6B2B;--ember-bg:#E8500A12;--coal:#1A1612;--char:#231E19;--ash:#2E2720;--smoke:#4A3F36;--parchment:#FDF4E7;--herb:#2D8B55;--gold:#C9840A;--terra:#C0392B;--slate:#2B5BA8;--text-hi:#FDF4E7;--text-mid:#A89880;--text-lo:#6B5A4A;--fd:'Fraunces',Georgia,serif;--fb:'Instrument Sans','Helvetica Neue',sans-serif; }
+    :root {
+      --ember:#E8500A; --ember-glow:#FF6B2B; --ember-bg:#E8500A12;
+      --coal:#1A1612; --char:#231E19; --ash:#2E2720; --smoke:#4A3F36;
+      --parchment:#FDF4E7; --herb:#2D8B55; --gold:#C9840A; --terra:#C0392B; --slate:#2B5BA8;
+      --text-hi:#FDF4E7; --text-mid:#A89880; --text-lo:#6B5A4A;
+      --fd:'Fraunces',Georgia,serif; --fb:'Instrument Sans','Helvetica Neue',sans-serif;
+    }
     html { scroll-behavior: smooth; }
-    body { background:var(--coal);color:var(--text-hi);font-family:var(--fb);line-height:1.5;overflow-x:hidden; }
-    body::before { content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:0.45; }
-    .navbar { position:fixed;top:0;left:0;right:0;z-index:200;height:66px;display:flex;align-items:center;justify-content:space-between;padding:0 52px;background:rgba(26,22,18,0.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid #ffffff07; }
-    .nav-logo { font-family:var(--fd);font-size:26px;font-weight:900;letter-spacing:-0.04em;color:var(--text-hi);text-decoration:none;flex-shrink:0; }
+    body { background:var(--coal); color:var(--text-hi); font-family:var(--fb); line-height:1.5; overflow-x:hidden; }
+    body::before {
+      content:''; position:fixed; inset:0;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events:none; z-index:0; opacity:0.45;
+    }
+
+    /* ─── Navbar ─── */
+    .navbar {
+      position:fixed; top:0; left:0; right:0; z-index:200; height:66px;
+      display:flex; align-items:center; justify-content:space-between; padding:0 52px;
+      background:rgba(26,22,18,0.92); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+      border-bottom:1px solid #ffffff07;
+    }
+    .nav-logo { font-family:var(--fd); font-size:26px; font-weight:900; letter-spacing:-0.04em; color:var(--text-hi); text-decoration:none; flex-shrink:0; }
     .nav-logo .dot { color:var(--ember); }
-    .nav-links { display:flex;align-items:center;gap:32px;list-style:none; }
-    .nav-links a { font-size:14px;font-weight:500;color:var(--text-mid);text-decoration:none;transition:color 0.14s;letter-spacing:0.01em; }
+    .nav-links { display:flex; align-items:center; gap:32px; list-style:none; }
+    .nav-links a { font-size:14px; font-weight:500; color:var(--text-mid); text-decoration:none; transition:color 0.14s; letter-spacing:0.01em; }
     .nav-links a:hover, .nav-links a.active { color:var(--text-hi); }
-    .nav-actions { display:flex;align-items:center;gap:10px; }
-    .btn-login { font-family:var(--fb);font-size:13px;font-weight:600;color:var(--text-mid);background:transparent;border:none;padding:9px 16px;border-radius:8px;cursor:pointer;transition:color 0.14s,background 0.14s;text-decoration:none; }
-    .btn-login:hover { color:var(--text-hi);background:#ffffff09; }
-    .btn-get-started { font-family:var(--fb);font-size:13px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:10px 22px;border-radius:9px;cursor:pointer;text-decoration:none;transition:background 0.14s,transform 0.1s;box-shadow:0 4px 16px rgba(232,80,10,0.35); }
+    .nav-actions { display:flex; align-items:center; gap:10px; }
+    .btn-login {
+      font-family:var(--fb); font-size:13px; font-weight:600; color:var(--text-mid);
+      background:transparent; border:none; padding:9px 16px; border-radius:8px;
+      cursor:pointer; transition:color 0.14s,background 0.14s; text-decoration:none;
+    }
+    .btn-login:hover { color:var(--text-hi); background:#ffffff09; }
+    .btn-get-started {
+      font-family:var(--fb); font-size:13px; font-weight:700; color:#fff;
+      background:var(--ember); border:none; padding:10px 22px; border-radius:9px;
+      cursor:pointer; text-decoration:none; transition:background 0.14s,transform 0.1s;
+      box-shadow:0 4px 16px rgba(232,80,10,0.35);
+    }
     .btn-get-started:hover { background:var(--ember-glow); }
+    /* logged-in nav state */
+    .nav-user { display:none; align-items:center; gap:10px; }
+    .nav-user-name { font-size:13px; font-weight:600; color:var(--text-mid); }
+    .nav-dashboard {
+      font-family:var(--fb); font-size:13px; font-weight:700; color:#fff;
+      background:var(--ember); padding:10px 20px; border-radius:9px;
+      text-decoration:none; transition:background 0.14s;
+    }
+    .nav-dashboard:hover { background:var(--ember-glow); }
 
-    main { position:relative;z-index:1; }
+    main { position:relative; z-index:1; }
 
-    /* Hero */
-    .hero { padding:140px 52px 72px;text-align:center;max-width:680px;margin:0 auto; }
-    .hero h1 { font-family:var(--fd);font-size:clamp(42px,6vw,64px);font-weight:900;letter-spacing:-0.03em;line-height:1.05;color:var(--text-hi);margin-bottom:16px; }
-    .hero p { font-size:18px;color:var(--text-mid);line-height:1.65;max-width:480px;margin:0 auto; }
+    /* ─── Hero ─── */
+    .hero {
+      padding:148px 52px 80px; text-align:center; max-width:740px; margin:0 auto;
+    }
+    .hero-eyebrow {
+      display:inline-block; font-size:11px; font-weight:700; letter-spacing:0.12em;
+      text-transform:uppercase; color:var(--ember);
+      background:var(--ember-bg); border:1px solid rgba(232,80,10,0.2);
+      padding:5px 14px; border-radius:20px; margin-bottom:20px;
+    }
+    .hero h1 {
+      font-family:var(--fd); font-size:clamp(44px,6.5vw,68px); font-weight:900;
+      letter-spacing:-0.03em; line-height:1.04; color:var(--text-hi); margin-bottom:18px;
+    }
+    .hero p { font-size:18px; color:var(--text-mid); line-height:1.7; max-width:500px; margin:0 auto; }
 
-    /* Toggle tabs */
-    .toggle-wrap { display:flex;justify-content:center;margin:48px 0 0;gap:0; }
-    .toggle-btn { font-family:var(--fb);font-size:14px;font-weight:600;padding:10px 28px;cursor:pointer;border:1px solid #ffffff10;background:transparent;color:var(--text-mid);transition:all 0.14s;letter-spacing:0.02em; }
-    .toggle-btn:first-child { border-radius:9px 0 0 9px; }
-    .toggle-btn:last-child { border-radius:0 9px 9px 0; }
-    .toggle-btn.active { background:var(--ember-bg);border-color:var(--ember);color:var(--ember); }
+    /* ─── Tier Cards ─── */
+    .tiers-section { padding:0 52px 80px; max-width:1160px; margin:0 auto; }
+    .tiers-grid {
+      display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; align-items:start;
+    }
+    @media(max-width:900px) { .tiers-grid { grid-template-columns:1fr; } }
 
-    /* Pricing section */
-    .pricing-section { padding:64px 52px 80px;max-width:1100px;margin:0 auto; }
-    .section-label { font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--ember);margin-bottom:12px; }
-    .pricing-grid { display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:40px; }
-    @media(max-width:720px){.pricing-grid{grid-template-columns:1fr;}}
+    .plan-card {
+      background:var(--char); border:1.5px solid #ffffff09; border-radius:20px;
+      padding:36px 32px 32px; position:relative; overflow:hidden;
+      transition:border-color 0.2s, transform 0.15s;
+    }
+    .plan-card:hover { transform:translateY(-2px); border-color:#ffffff18; }
+    .plan-card.featured {
+      border-color:var(--ember);
+      box-shadow:0 0 0 1px rgba(232,80,10,0.08), 0 24px 64px rgba(232,80,10,0.14);
+    }
+    .plan-card.featured:hover { transform:translateY(-3px); }
+    .plan-badge {
+      position:absolute; top:18px; right:18px;
+      font-size:10px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase;
+      color:var(--ember); background:var(--ember-bg);
+      border:1px solid rgba(232,80,10,0.3); padding:4px 11px; border-radius:20px;
+    }
+    .plan-name {
+      font-family:var(--fd); font-size:19px; font-weight:900; letter-spacing:-0.02em;
+      color:var(--text-hi); margin-bottom:4px;
+    }
+    .plan-tagline { font-size:13px; color:var(--text-lo); margin-bottom:20px; }
+    .plan-price { display:flex; align-items:flex-end; gap:4px; margin-bottom:6px; }
+    .plan-price .amount {
+      font-family:var(--fd); font-size:50px; font-weight:900;
+      letter-spacing:-0.04em; color:var(--text-hi); line-height:1;
+    }
+    .plan-price .period { font-size:14px; color:var(--text-mid); margin-bottom:9px; }
+    .plan-price .free-amount {
+      font-family:var(--fd); font-size:44px; font-weight:900;
+      letter-spacing:-0.04em; color:var(--text-hi); line-height:1;
+    }
+    .plan-billing-note { font-size:12px; color:var(--text-lo); margin-bottom:24px; }
+    .plan-desc {
+      font-size:13.5px; color:var(--text-mid); line-height:1.65;
+      padding-bottom:22px; border-bottom:1px solid #ffffff08; margin-bottom:22px;
+    }
 
-    .plan-card { background:var(--char);border:1px solid #ffffff09;border-radius:18px;padding:40px;transition:border-color 0.2s,transform 0.15s;position:relative;overflow:hidden; }
-    .plan-card:hover { border-color:#ffffff18;transform:translateY(-2px); }
-    .plan-card.featured { border-color:var(--ember);box-shadow:0 0 48px rgba(232,80,10,0.12); }
-    .plan-card.featured::before { content:'Most Popular';position:absolute;top:20px;right:20px;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--ember);background:var(--ember-bg);border:1px solid rgba(232,80,10,0.25);padding:4px 12px;border-radius:20px; }
+    .plan-cta {
+      display:block; text-align:center; font-family:var(--fb); font-size:14px;
+      font-weight:700; padding:13px 20px; border-radius:11px;
+      cursor:pointer; text-decoration:none; transition:background 0.14s, transform 0.1s;
+      margin-bottom:24px;
+    }
+    .plan-cta.cta-primary {
+      background:var(--ember); color:#fff;
+      box-shadow:0 4px 20px rgba(232,80,10,0.38);
+    }
+    .plan-cta.cta-primary:hover { background:var(--ember-glow); transform:translateY(-1px); }
+    .plan-cta.cta-secondary {
+      background:#ffffff0a; color:var(--text-hi);
+      border:1.5px solid #ffffff14;
+    }
+    .plan-cta.cta-secondary:hover { background:#ffffff14; }
 
-    .plan-name { font-family:var(--fd);font-size:20px;font-weight:900;color:var(--text-hi);letter-spacing:-0.02em;margin-bottom:8px; }
-    .plan-price { display:flex;align-items:flex-end;gap:4px;margin:16px 0; }
-    .plan-price .amount { font-family:var(--fd);font-size:48px;font-weight:900;letter-spacing:-0.04em;color:var(--text-hi);line-height:1; }
-    .plan-price .period { font-size:14px;color:var(--text-mid);margin-bottom:8px; }
-    .plan-price .free-label { font-family:var(--fd);font-size:40px;font-weight:900;letter-spacing:-0.04em;color:var(--text-hi);line-height:1; }
+    .plan-features { list-style:none; display:flex; flex-direction:column; gap:11px; }
+    .plan-features li {
+      display:flex; align-items:flex-start; gap:10px;
+      font-size:13.5px; color:var(--text-mid); line-height:1.5;
+    }
+    .feat-icon {
+      flex-shrink:0; width:16px; height:16px; margin-top:2px;
+      border-radius:50%; display:inline-flex; align-items:center; justify-content:center;
+    }
+    .feat-icon.check {
+      background:var(--ember);
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 8l3.5 3.5 6.5-7' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E");
+    }
+    .feat-icon.growth {
+      background:#C9840A18;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 8l3.5 3.5 6.5-7' stroke='%23C9840A' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E");
+    }
 
-    .plan-desc { font-size:14px;color:var(--text-mid);line-height:1.6;margin-bottom:28px;padding-bottom:28px;border-bottom:1px solid #ffffff08; }
-    .plan-features { list-style:none;display:flex;flex-direction:column;gap:12px;margin-bottom:32px; }
-    .plan-features li { display:flex;align-items:flex-start;gap:12px;font-size:14px;color:var(--text-mid);line-height:1.5; }
-    .plan-features li::before { content:'';flex-shrink:0;width:16px;height:16px;margin-top:2px;background:var(--ember);border-radius:50%;display:inline-block;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 8l3.5 3.5 6.5-7' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E"); }
-    .plan-features li.muted { color:var(--text-lo); }
-    .plan-features li.muted::before { background:#ffffff15;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 8h8' stroke='%236B5A4A' stroke-width='1.8' stroke-linecap='round' fill='none'/%3E%3C/svg%3E"); }
+    /* Growth card subtle warm tint */
+    .plan-card.growth-card { border-color:#C9840A22; }
+    .plan-card.growth-card:hover { border-color:#C9840A44; }
 
-    .plan-cta { display:block;text-align:center;font-family:var(--fb);font-size:14px;font-weight:700;padding:13px 24px;border-radius:10px;cursor:pointer;text-decoration:none;transition:background 0.14s,transform 0.1s; }
-    .plan-cta.primary { background:var(--ember);color:#fff;box-shadow:0 4px 20px rgba(232,80,10,0.35); }
-    .plan-cta.primary:hover { background:var(--ember-glow); }
-    .plan-cta.secondary { background:#ffffff0a;color:var(--text-hi);border:1px solid #ffffff15; }
-    .plan-cta.secondary:hover { background:#ffffff14; }
+    /* Organiser note */
+    .org-note {
+      text-align:center; margin-top:28px; font-size:13px; color:var(--text-lo);
+    }
+    .org-note a { color:var(--text-mid); text-decoration:none; font-weight:600; }
+    .org-note a:hover { color:var(--text-hi); text-decoration:underline; }
 
-    /* Organiser section */
-    .org-section { padding:0 52px 80px;max-width:1100px;margin:0 auto; }
-    .org-card { background:var(--char);border:1px solid #ffffff09;border-radius:18px;padding:52px;display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center; }
-    @media(max-width:860px){.org-card{grid-template-columns:1fr;gap:32px;}}
-    .org-card h3 { font-family:var(--fd);font-size:32px;font-weight:900;letter-spacing:-0.03em;margin-bottom:12px; }
-    .org-card p { font-size:15px;color:var(--text-mid);line-height:1.7;margin-bottom:20px; }
-    .fee-highlight { display:inline-flex;align-items:center;gap:10px;background:var(--ember-bg);border:1px solid rgba(232,80,10,0.2);border-radius:12px;padding:14px 20px;margin-bottom:24px; }
-    .fee-highlight .pct { font-family:var(--fd);font-size:28px;font-weight:900;color:var(--ember); }
-    .fee-highlight .fee-desc { font-size:13px;color:var(--text-mid);line-height:1.4; }
-    .free-tag { display:inline-block;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--herb);background:rgba(45,139,85,0.12);border:1px solid rgba(45,139,85,0.2);padding:4px 10px;border-radius:20px;margin-bottom:24px; }
-    .org-features { list-style:none;display:flex;flex-direction:column;gap:10px; }
-    .org-features li { display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--text-mid); }
-    .org-features li::before { content:'';flex-shrink:0;width:16px;height:16px;margin-top:2px;background:var(--herb);border-radius:50%;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 8l3.5 3.5 6.5-7' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E"); }
-    .org-visual { background:var(--ash);border-radius:14px;padding:32px;text-align:center; }
-    .org-visual .big-free { font-family:var(--fd);font-size:80px;font-weight:900;letter-spacing:-0.05em;color:var(--herb);line-height:1; }
-    .org-visual .sub { font-size:14px;color:var(--text-mid);margin-top:8px; }
-    .org-visual .note { font-size:12px;color:var(--text-lo);margin-top:16px;padding-top:16px;border-top:1px solid #ffffff08; }
+    /* ─── Comparison Table ─── */
+    .compare-section { padding:0 52px 96px; max-width:1160px; margin:0 auto; }
+    .compare-header { text-align:center; margin-bottom:56px; }
+    .compare-header h2 {
+      font-family:var(--fd); font-size:clamp(32px,4vw,44px); font-weight:900;
+      letter-spacing:-0.03em; margin-bottom:12px;
+    }
+    .compare-header p { font-size:15px; color:var(--text-mid); }
 
-    /* FAQ */
-    .faq-section { padding:0 52px 80px;max-width:760px;margin:0 auto; }
-    .faq-section h2 { font-family:var(--fd);font-size:34px;font-weight:900;letter-spacing:-0.03em;margin-bottom:40px; }
-    .faq-item { border-top:1px solid #ffffff08;padding:24px 0; }
+    .table-scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; border-radius:18px; }
+    .compare-table {
+      width:100%; min-width:640px; border-collapse:collapse;
+      background:var(--char); border:1.5px solid #ffffff08; border-radius:18px;
+      overflow:hidden;
+    }
+
+    /* Column headers */
+    .compare-table thead tr { position:sticky; top:66px; z-index:10; }
+    .compare-table thead th {
+      padding:22px 20px; font-size:13px; font-weight:700;
+      background:var(--ash); border-bottom:1.5px solid #ffffff08;
+      text-align:center; vertical-align:bottom;
+    }
+    .compare-table thead th:first-child {
+      text-align:left; width:36%; position:sticky; left:0;
+      background:var(--ash); z-index:11;
+    }
+    .th-plan-name {
+      font-family:var(--fd); font-size:17px; font-weight:900;
+      letter-spacing:-0.02em; color:var(--text-hi); display:block; margin-bottom:2px;
+    }
+    .th-plan-price { font-size:12px; color:var(--text-mid); font-weight:400; }
+    .th-badge {
+      display:inline-block; font-size:9px; font-weight:700; letter-spacing:0.1em;
+      text-transform:uppercase; color:var(--ember); background:var(--ember-bg);
+      border:1px solid rgba(232,80,10,0.25); padding:3px 8px; border-radius:10px;
+      margin-top:4px;
+    }
+
+    /* Pro column accent */
+    .compare-table thead th.col-pro {
+      background:#E8500A0A;
+      border-left:1.5px solid rgba(232,80,10,0.25);
+      border-right:1.5px solid rgba(232,80,10,0.25);
+    }
+    .compare-table tbody td.col-pro {
+      background:#E8500A05;
+      border-left:1.5px solid rgba(232,80,10,0.12);
+      border-right:1.5px solid rgba(232,80,10,0.12);
+    }
+
+    /* Section headers */
+    .section-row td {
+      padding:14px 20px 8px;
+      font-size:10px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase;
+      color:var(--ember); background:rgba(232,80,10,0.04);
+      border-top:1.5px solid #ffffff08;
+    }
+    .section-row td:first-child { position:sticky; left:0; background:rgba(232,80,10,0.04); z-index:5; }
+
+    /* Feature rows */
+    .compare-table tbody tr:not(.section-row) td {
+      padding:13px 20px; font-size:13.5px; border-bottom:1px solid #ffffff06;
+      vertical-align:middle;
+    }
+    .compare-table tbody tr:not(.section-row):last-child td { border-bottom:none; }
+    .compare-table tbody tr:not(.section-row):hover td { background:#ffffff04; }
+    .compare-table tbody tr:not(.section-row):hover td.col-pro { background:#E8500A09; }
+
+    .feat-col {
+      color:var(--text-mid); text-align:left;
+      position:sticky; left:0; background:var(--char); z-index:5;
+    }
+    .compare-table tbody tr:not(.section-row):hover .feat-col { background:#ffffff04; }
+    .val-col { text-align:center; font-size:13px; color:var(--text-mid); }
+    .val-col.has-value { color:var(--text-hi); font-weight:500; }
+
+    .icon-yes {
+      display:inline-flex; width:20px; height:20px; border-radius:50%;
+      align-items:center; justify-content:center;
+      background:var(--ember);
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 8l3.5 3.5 6.5-7' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E");
+    }
+    .icon-no {
+      display:inline-flex; width:20px; height:20px; border-radius:50%;
+      align-items:center; justify-content:center;
+      background:#ffffff0A;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 8h8' stroke='%236B5A4A' stroke-width='1.8' stroke-linecap='round' fill='none'/%3E%3C/svg%3E");
+    }
+    .icon-growth {
+      display:inline-flex; width:20px; height:20px; border-radius:50%;
+      align-items:center; justify-content:center;
+      background:#C9840A18;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M3 8l3.5 3.5 6.5-7' stroke='%23C9840A' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E");
+    }
+
+    /* ─── FAQ ─── */
+    .faq-section { padding:0 52px 96px; max-width:780px; margin:0 auto; }
+    .faq-header { text-align:center; margin-bottom:48px; }
+    .faq-header h2 { font-family:var(--fd); font-size:clamp(30px,3.5vw,40px); font-weight:900; letter-spacing:-0.03em; }
+    .faq-item { border-top:1px solid #ffffff08; }
     .faq-item:last-child { border-bottom:1px solid #ffffff08; }
-    .faq-q { font-size:16px;font-weight:600;color:var(--text-hi);cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:16px; }
-    .faq-q .icon { flex-shrink:0;width:22px;height:22px;border:1px solid #ffffff15;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--text-mid);transition:transform 0.2s; }
-    .faq-item.open .faq-q .icon { transform:rotate(45deg);color:var(--ember);border-color:var(--ember); }
-    .faq-a { font-size:14px;color:var(--text-mid);line-height:1.75;margin-top:16px;display:none; }
+    .faq-q {
+      font-size:15.5px; font-weight:600; color:var(--text-hi);
+      cursor:pointer; display:flex; justify-content:space-between; align-items:center;
+      gap:16px; padding:22px 0; user-select:none;
+    }
+    .faq-q:hover { color:var(--parchment); }
+    .faq-icon {
+      flex-shrink:0; width:24px; height:24px; border:1.5px solid #ffffff15;
+      border-radius:50%; display:flex; align-items:center; justify-content:center;
+      font-size:16px; color:var(--text-lo); transition:transform 0.22s, border-color 0.2s, color 0.2s;
+      line-height:1;
+    }
+    .faq-item.open .faq-icon { transform:rotate(45deg); color:var(--ember); border-color:var(--ember); }
+    .faq-a {
+      font-size:14px; color:var(--text-mid); line-height:1.8;
+      display:none; padding-bottom:22px;
+    }
     .faq-item.open .faq-a { display:block; }
 
-    /* CTA Banner */
-    .cta-banner { margin:0 52px 80px;border-radius:20px;background:linear-gradient(135deg,var(--char) 0%,#2A1F18 100%);border:1px solid #ffffff08;padding:64px;text-align:center;position:relative;overflow:hidden; }
-    .cta-banner::before { content:'';position:absolute;top:-60px;left:50%;transform:translateX(-50%);width:400px;height:400px;background:radial-gradient(circle,rgba(232,80,10,0.12) 0%,transparent 70%);pointer-events:none; }
-    .cta-banner h2 { font-family:var(--fd);font-size:clamp(32px,4vw,48px);font-weight:900;letter-spacing:-0.03em;margin-bottom:12px;position:relative; }
-    .cta-banner p { font-size:16px;color:var(--text-mid);margin-bottom:36px;position:relative; }
-    .cta-buttons { display:flex;gap:12px;justify-content:center;flex-wrap:wrap;position:relative; }
-    .cta-primary { font-family:var(--fb);font-size:15px;font-weight:700;color:#fff;background:var(--ember);padding:14px 32px;border-radius:10px;text-decoration:none;transition:background 0.14s,transform 0.1s;box-shadow:0 4px 24px rgba(232,80,10,0.4); }
-    .cta-primary:hover { background:var(--ember-glow);transform:translateY(-1px); }
-    .cta-secondary { font-family:var(--fb);font-size:15px;font-weight:600;color:var(--text-hi);background:#ffffff0a;padding:14px 32px;border-radius:10px;text-decoration:none;border:1px solid #ffffff15;transition:background 0.14s; }
-    .cta-secondary:hover { background:#ffffff14; }
+    /* ─── CTA Banner ─── */
+    .cta-banner {
+      margin:0 52px 80px; border-radius:22px;
+      background:linear-gradient(135deg, var(--char) 0%, #2A1F18 100%);
+      border:1.5px solid #ffffff08; padding:72px 52px;
+      text-align:center; position:relative; overflow:hidden;
+    }
+    .cta-banner::before {
+      content:''; position:absolute; top:-80px; left:50%; transform:translateX(-50%);
+      width:480px; height:480px;
+      background:radial-gradient(circle, rgba(232,80,10,0.13) 0%, transparent 70%);
+      pointer-events:none;
+    }
+    .cta-banner h2 {
+      font-family:var(--fd); font-size:clamp(34px,4.5vw,52px); font-weight:900;
+      letter-spacing:-0.03em; margin-bottom:14px; position:relative;
+    }
+    .cta-banner p { font-size:16px; color:var(--text-mid); margin-bottom:40px; position:relative; }
+    .cta-buttons { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; position:relative; }
+    .cta-primary-btn {
+      font-family:var(--fb); font-size:15px; font-weight:700; color:#fff;
+      background:var(--ember); padding:14px 36px; border-radius:11px;
+      text-decoration:none; transition:background 0.14s, transform 0.1s;
+      box-shadow:0 4px 28px rgba(232,80,10,0.42);
+    }
+    .cta-primary-btn:hover { background:var(--ember-glow); transform:translateY(-1px); }
+    .cta-secondary-btn {
+      font-family:var(--fb); font-size:15px; font-weight:600; color:var(--text-hi);
+      background:#ffffff0a; padding:14px 36px; border-radius:11px;
+      text-decoration:none; border:1.5px solid #ffffff15; transition:background 0.14s;
+    }
+    .cta-secondary-btn:hover { background:#ffffff14; }
+
+    /* ─── Footer ─── */
+    footer {
+      background:#161210; border-top:1px solid #ffffff06;
+      padding:40px 52px; display:flex; justify-content:space-between;
+      align-items:center; flex-wrap:wrap; gap:16px; position:relative; z-index:1;
+    }
+    .footer-logo { font-family:'Fraunces',serif; font-size:22px; font-weight:900; color:#FDF4E7; text-decoration:none; letter-spacing:-0.04em; }
+    .footer-logo span { color:#E8500A; }
+    .footer-links { display:flex; gap:24px; flex-wrap:wrap; }
+    .footer-links a { font-size:13px; color:#6B5A4A; text-decoration:none; transition:color 0.14s; }
+    .footer-links a:hover { color:#A89880; }
+    .footer-copy { font-size:12px; color:#4A3C30; }
+
+    /* ─── Responsive ─── */
+    @media(max-width:768px) {
+      .navbar { padding:0 20px; }
+      .nav-links { display:none; }
+      .hero { padding:120px 24px 64px; }
+      .tiers-section, .compare-section, .faq-section { padding-left:20px; padding-right:20px; }
+      .cta-banner { margin:0 20px 64px; padding:52px 28px; }
+      footer { padding:32px 20px; flex-direction:column; align-items:flex-start; gap:20px; }
+    }
   </style>
 </head>
 <body>
@@ -115,158 +352,487 @@
       <li><a href="/events">Events</a></li>
       <li><a href="/vendors">Vendors</a></li>
       <li><a href="/how-it-works">How It Works</a></li>
+      <li><a href="/pricing" class="active">Pricing</a></li>
     </ul>
-    <div class="nav-actions">
+    <div class="nav-actions" id="nav-actions">
       <a href="/login" class="btn-login">Log in</a>
       <a href="/signup" class="btn-get-started">Get Started</a>
+    </div>
+    <div class="nav-user" id="nav-user">
+      <span class="nav-user-name" id="nav-user-name"></span>
+      <a href="/dashboard/vendor" class="nav-dashboard" id="nav-dashboard-link">Dashboard</a>
     </div>
   </nav>
 
   <main>
+    <!-- ─── Hero ─── -->
     <div class="hero">
-      <h1>Simple, transparent pricing.</h1>
-      <p>Apply to events for free. Upgrade when you're ready to grow.</p>
+      <div class="hero-eyebrow">Vendor Pricing</div>
+      <h1>Grow at your<br>own pace.</h1>
+      <p>Start free and upgrade when you're ready. No lock-in, no hidden fees — just the tools you need to land more events.</p>
     </div>
 
-    <!-- Vendor Pricing -->
-    <section class="pricing-section">
-      <div class="section-label">For Vendors</div>
-      <h2 style="font-family:var(--fd);font-size:28px;font-weight:900;letter-spacing:-0.03em;">Choose your vendor plan</h2>
-      <div class="pricing-grid">
+    <!-- ─── Tier Cards ─── -->
+    <section class="tiers-section">
+      <div class="tiers-grid">
+
+        <!-- Starter -->
         <div class="plan-card">
-          <div class="plan-name">Free</div>
-          <div class="plan-price"><span class="free-label">$0</span><span class="period">/month</span></div>
-          <p class="plan-desc">Everything you need to get started. Apply to events and build your presence on Pitch.</p>
+          <div class="plan-name">Starter</div>
+          <div class="plan-tagline">For vendors just getting started</div>
+          <div class="plan-price">
+            <span class="free-amount">Free</span>
+          </div>
+          <div class="plan-billing-note">Forever — no credit card needed</div>
+          <p class="plan-desc">Everything you need to get on the map. Apply to events, build your profile, and start collecting reviews.</p>
+          <a href="/signup/vendor" class="plan-cta cta-secondary" id="cta-starter">Get started free</a>
           <ul class="plan-features">
-            <li>Basic vendor profile with photos & menu</li>
-            <li>Unlimited event applications</li>
-            <li>Standard listing visibility in search</li>
-            <li>Email notifications for new events</li>
-            <li>Vendor messaging with organisers</li>
-            <li class="muted">Priority placement in search</li>
-            <li class="muted">Featured Pro badge</li>
-            <li class="muted">Application analytics</li>
+            <li><span class="feat-icon check"></span>Full vendor profile with photos &amp; menu</li>
+            <li><span class="feat-icon check"></span>Unlimited event applications</li>
+            <li><span class="feat-icon check"></span>Up to 4 photos on your profile</li>
+            <li><span class="feat-icon check"></span>Message organisers you've applied to</li>
+            <li><span class="feat-icon check"></span>Standard placement in search</li>
+            <li><span class="feat-icon check"></span>Calendar view of your events</li>
           </ul>
-          <a href="/signup" class="plan-cta secondary">Get started free</a>
         </div>
 
+        <!-- Pro (featured) -->
         <div class="plan-card featured">
+          <div class="plan-badge">Most popular</div>
           <div class="plan-name">Pro</div>
-          <div class="plan-price"><span class="amount">$29</span><span class="period">/month</span></div>
-          <p class="plan-desc">For vendors serious about growth. Stand out in search results and understand what's working.</p>
+          <div class="plan-tagline">For vendors serious about growth</div>
+          <div class="plan-price">
+            <span class="amount">$29</span><span class="period">/month</span>
+          </div>
+          <div class="plan-billing-note">Billed monthly · cancel anytime</div>
+          <p class="plan-desc">Priority placement, early event access, and analytics that show what's working — and what isn't.</p>
+          <a href="/signup/vendor?plan=pro" class="plan-cta cta-primary" id="cta-pro">Start Pro — 14 days free</a>
           <ul class="plan-features">
-            <li>Everything in Free</li>
-            <li>Priority placement in search results</li>
-            <li>Featured Pro badge on your profile</li>
-            <li>Application analytics — views, shortlist rate, acceptance trends</li>
-            <li>Dedicated vendor support via email</li>
-            <li>Early access to new events before public listing</li>
-            <li>Profile highlighted in organiser searches</li>
-          </ul>
-          <a href="/signup" class="plan-cta primary">Start Pro trial — 14 days free</a>
-        </div>
-      </div>
-    </section>
-
-    <!-- Organiser Pricing -->
-    <section class="org-section">
-      <div class="section-label">For Organisers</div>
-      <div class="org-card">
-        <div>
-          <div class="free-tag">Free to list events</div>
-          <h3>Organise events at no upfront cost.</h3>
-          <p>List unlimited events, manage applications, message vendors, and collect stall fees — all for free. We only take a cut when you process payments through Pitch.</p>
-          <div class="fee-highlight">
-            <span class="pct">3%</span>
-            <div class="fee-desc">platform fee on payments<br>processed through Pitch.<br><span style="color:var(--text-lo);font-size:11px;">Only applies to Pitch-facilitated transactions</span></div>
-          </div>
-          <ul class="org-features">
-            <li>Unlimited event listings</li>
-            <li>Full application management dashboard</li>
-            <li>Direct messaging with all applicants</li>
-            <li>Collect stall fees directly (zero fee)</li>
-            <li>First 3 events processed through Pitch. — fee-free</li>
-            <li>Vendor profile access & shortlisting tools</li>
+            <li><span class="feat-icon check"></span>Everything in Starter</li>
+            <li><span class="feat-icon check"></span>Priority placement in organiser search</li>
+            <li><span class="feat-icon check"></span>Pro badge on your profile</li>
+            <li><span class="feat-icon check"></span>Up to 10 photos on your profile</li>
+            <li><span class="feat-icon check"></span>New event alerts within 2 hours</li>
+            <li><span class="feat-icon check"></span>Late application window (12 hrs)</li>
+            <li><span class="feat-icon check"></span>Application templates</li>
+            <li><span class="feat-icon check"></span>Profile view analytics (30-day)</li>
+            <li><span class="feat-icon check"></span>iCal export</li>
+            <li><span class="feat-icon check"></span>Document expiry reminders</li>
           </ul>
         </div>
-        <div>
-          <div class="org-visual">
-            <div class="big-free">Free</div>
-            <div class="sub">to list & manage events</div>
-            <div class="note">
-              The 3% fee only applies when you use Pitch. as your payment processor. Collect stall fees directly via bank transfer with zero platform fee — always.
-            </div>
+
+        <!-- Growth -->
+        <div class="plan-card growth-card">
+          <div class="plan-name">Growth</div>
+          <div class="plan-tagline">For vendors ready to dominate</div>
+          <div class="plan-price">
+            <span class="amount">$79</span><span class="period">/month</span>
           </div>
-          <a href="/signup" class="plan-cta primary" style="margin-top:16px;display:block;">List your first event</a>
+          <div class="plan-billing-note">Billed monthly · cancel anytime</div>
+          <p class="plan-desc">Top placement, 24-hour early event access, competitor insights, and team access — for vendors who treat this as a business.</p>
+          <a href="/signup/vendor?plan=growth" class="plan-cta cta-secondary" id="cta-growth">Start Growth — 14 days free</a>
+          <ul class="plan-features">
+            <li><span class="feat-icon growth"></span>Everything in Pro</li>
+            <li><span class="feat-icon growth"></span>Top placement in organiser search</li>
+            <li><span class="feat-icon growth"></span>Growth badge on your profile</li>
+            <li><span class="feat-icon growth"></span>Up to 20 photos in named galleries</li>
+            <li><span class="feat-icon growth"></span>24-hour early event access</li>
+            <li><span class="feat-icon growth"></span>Late application window (48 hrs)</li>
+            <li><span class="feat-icon growth"></span>Cold-contact any organiser on Pitch</li>
+            <li><span class="feat-icon growth"></span>Signature showcase item on profile</li>
+            <li><span class="feat-icon growth"></span>Custom vanity URL</li>
+            <li><span class="feat-icon growth"></span>Competitor count insights</li>
+            <li><span class="feat-icon growth"></span>Shortlist tracking ("Close calls")</li>
+            <li><span class="feat-icon growth"></span>Bookkeeping summary export</li>
+            <li><span class="feat-icon growth"></span>Second account user (team access)</li>
+          </ul>
         </div>
-      </div>
+
+      </div><!-- /tiers-grid -->
+
+      <p class="org-note">
+        Organising an event? Listing on Pitch is always free for organisers. <a href="/signup/organiser">List your event →</a>
+      </p>
     </section>
 
-    <!-- FAQ -->
+    <!-- ─── Comparison Table ─── -->
+    <section class="compare-section" id="compare">
+      <div class="compare-header">
+        <h2>Compare all features</h2>
+        <p>Every feature, every plan — side by side.</p>
+      </div>
+
+      <div class="table-scroll">
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th></th>
+              <th>
+                <span class="th-plan-name">Starter</span>
+                <span class="th-plan-price">Free forever</span>
+              </th>
+              <th class="col-pro">
+                <span class="th-plan-name">Pro</span>
+                <span class="th-plan-price">$29/month</span>
+                <span class="th-badge">Most popular</span>
+              </th>
+              <th>
+                <span class="th-plan-name">Growth</span>
+                <span class="th-plan-price">$79/month</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+
+            <!-- Applications -->
+            <tr class="section-row"><td colspan="4">Applications</td></tr>
+            <tr>
+              <td class="feat-col">Applications per month</td>
+              <td class="val-col has-value">Unlimited</td>
+              <td class="val-col col-pro has-value">Unlimited</td>
+              <td class="val-col has-value">Unlimited</td>
+            </tr>
+            <tr>
+              <td class="feat-col">Late application window after deadline</td>
+              <td class="val-col"><span class="icon-no"></span></td>
+              <td class="val-col col-pro has-value">12 hours</td>
+              <td class="val-col has-value">48 hours</td>
+            </tr>
+            <tr>
+              <td class="feat-col">Waitlist position</td>
+              <td class="val-col has-value">Standard</td>
+              <td class="val-col col-pro has-value">Elevated</td>
+              <td class="val-col has-value">Top of list</td>
+            </tr>
+            <tr>
+              <td class="feat-col">Withdraw &amp; reapply</td>
+              <td class="val-col"><span class="icon-no"></span></td>
+              <td class="val-col col-pro has-value">Up to 2 times</td>
+              <td class="val-col has-value">Unlimited</td>
+            </tr>
+            <tr>
+              <td class="feat-col">Application note templates</td>
+              <td class="val-col"><span class="icon-no"></span></td>
+              <td class="val-col col-pro"><span class="icon-yes"></span></td>
+              <td class="val-col"><span class="icon-yes"></span></td>
+            </tr>
+
+            <!-- Messaging -->
+            <tr class="section-row"><td colspan="4">Messaging</td></tr>
+            <tr>
+              <td class="feat-col">Message organisers you've applied to</td>
+              <td class="val-col"><span class="icon-yes"></span></td>
+              <td class="val-col col-pro"><span class="icon-yes"></span></td>
+              <td class="val-col"><span class="icon-yes"></span></td>
+            </tr>
+            <tr>
+              <td class="feat-col">Message organisers from past applications</td>
+              <td class="val-col"><span class="icon-no"></span></td>
+              <td class="val-col col-pro"><span class="icon-yes"></span></td>
+              <td class="val-col"><span class="icon-yes"></span></td>
+            </tr>
+            <tr>
+              <td class="feat-col">Cold-contact any organiser on Pitch</td>
+              <td class="val-col"><span class="icon-no"></span></td>
+              <td class="val-col col-pro"><span class="icon-no"></span></td>
+              <td class="val-col"><span class="icon-growth"></span></td>
+            </tr>
+
+            <!-- Profile Visibility -->
+            <tr class="section-row"><td colspan="4">Profile visibility</td></tr>
+            <tr>
+              <td class="feat-col">Default search placement</td>
+              <td class="val-col has-value">Standard</td>
+              <td class="val-col col-pro has-value">Priority</td>
+              <td class="val-col has-value">Top placement</td>
+            </tr>
+            <tr>
+              <td class="feat-col">Tier badge on profile &amp; search cards</td>
+              <td class="val-col"><span class="icon-no"></span></td>
+              <td class="val-col col-pro has-value">Pro badge</td>
+              <td class="val-col has-value">Growth badge</td>
+            </tr>
+            <tr>
+              <td class="feat-col">Custom vanity URL</td>
+              <td class="val-col"><span class="icon-no"></span></td>
+              <td class="val-col col-pro"><span class="icon-no"></span></td>
+              <td class="val-col"><span class="icon-growth"></span></td>
+            </tr>
+            <tr>
+              <td class="feat-col">Signature showcase item on profile</td>
+              <td class="val-col"><span class="icon-no"></span></td>
+              <td class="val-col col-pro"><span class="icon-no"></span></td>
+              <td class="val-col"><span class="icon-growth"></span></td>
+            </tr>
+
+            <!-- Profile Content -->
+            <tr class="section-row"><td colspan="4">Profile content</td></tr>
+            <tr>
+              <td class="feat-col">Photo uploads</td>
+              <td class="val-col has-value">Up to 4</td>
+              <td class="val-col col-pro has-value">Up to 10</td>
+              <td class="val-col has-value">Up to 20</td>
+            </tr>
+            <tr>
+              <td class="feat-col">Named photo galleries</td>
+              <td class="val-col"><span class="icon-no"></span></td>
+              <td class="val-col col-pro"><span class="icon-no"></span></td>
+              <td class="val-col"><span class="icon-growth"></span></td>
+            </tr>
+            <tr>
+              <td class="feat-col">Full menu editor (unlimited items)</td>
+              <td class="val-col"><span class="icon-yes"></span></td>
+              <td class="val-col col-pro"><span class="icon-yes"></span></td>
+              <td class="val-col"><span class="icon-yes"></span></td>
+            </tr>
+            <tr>
+              <td class="feat-col">Second account user (team access)</td>
+              <td class="val-col"><span class="icon-no"></span></td>
+              <td class="val-col col-pro"><span class="icon-no"></span></td>
+              <td class="val-col"><span class="icon-growth"></span></td>
+            </tr>
+
+            <!-- Discovery & Notifications -->
+            <tr class="section-row"><td colspan="4">Discovery &amp; notifications</td></tr>
+            <tr>
+              <td class="feat-col">New event alerts</td>
+              <td class="val-col"><span class="icon-no"></span></td>
+              <td class="val-col col-pro has-value">Within 2 hours</td>
+              <td class="val-col has-value">24-hr early access</td>
+            </tr>
+            <tr>
+              <td class="feat-col">Early event access window</td>
+              <td class="val-col"><span class="icon-no"></span></td>
+              <td class="val-col col-pro"><span class="icon-no"></span></td>
+              <td class="val-col has-value">24 hours before others</td>
+            </tr>
+            <tr>
+              <td class="feat-col">Organiser invitation priority</td>
+              <td class="val-col has-value">Standard</td>
+              <td class="val-col col-pro has-value">After Growth window</td>
+              <td class="val-col has-value">Instant (48-hr head start)</td>
+            </tr>
+            <tr>
+              <td class="feat-col">Shortlist notifications</td>
+              <td class="val-col"><span class="icon-no"></span></td>
+              <td class="val-col col-pro"><span class="icon-no"></span></td>
+              <td class="val-col"><span class="icon-growth"></span></td>
+            </tr>
+            <tr>
+              <td class="feat-col">Document expiry reminders</td>
+              <td class="val-col"><span class="icon-no"></span></td>
+              <td class="val-col col-pro"><span class="icon-yes"></span></td>
+              <td class="val-col"><span class="icon-yes"></span></td>
+            </tr>
+
+            <!-- Analytics -->
+            <tr class="section-row"><td colspan="4">Analytics</td></tr>
+            <tr>
+              <td class="feat-col">Profile view tracking</td>
+              <td class="val-col"><span class="icon-no"></span></td>
+              <td class="val-col col-pro has-value">30-day total</td>
+              <td class="val-col has-value">Trend + source breakdown</td>
+            </tr>
+            <tr>
+              <td class="feat-col">Application acceptance rate</td>
+              <td class="val-col"><span class="icon-no"></span></td>
+              <td class="val-col col-pro has-value">Overall %</td>
+              <td class="val-col has-value">Full breakdown by type</td>
+            </tr>
+            <tr>
+              <td class="feat-col">Application count on event cards</td>
+              <td class="val-col"><span class="icon-no"></span></td>
+              <td class="val-col col-pro has-value">Total count</td>
+              <td class="val-col has-value">+ Cuisine breakdown</td>
+            </tr>
+            <tr>
+              <td class="feat-col">Competitor count insights</td>
+              <td class="val-col"><span class="icon-no"></span></td>
+              <td class="val-col col-pro"><span class="icon-no"></span></td>
+              <td class="val-col"><span class="icon-growth"></span></td>
+            </tr>
+            <tr>
+              <td class="feat-col">Shortlist tracking ("Close calls")</td>
+              <td class="val-col"><span class="icon-no"></span></td>
+              <td class="val-col col-pro"><span class="icon-no"></span></td>
+              <td class="val-col"><span class="icon-growth"></span></td>
+            </tr>
+            <tr>
+              <td class="feat-col">iCal calendar export</td>
+              <td class="val-col"><span class="icon-no"></span></td>
+              <td class="val-col col-pro"><span class="icon-yes"></span></td>
+              <td class="val-col"><span class="icon-yes"></span></td>
+            </tr>
+
+            <!-- Operations & Admin -->
+            <tr class="section-row"><td colspan="4">Operations &amp; admin</td></tr>
+            <tr>
+              <td class="feat-col">Download payment history PDF</td>
+              <td class="val-col"><span class="icon-no"></span></td>
+              <td class="val-col col-pro"><span class="icon-yes"></span></td>
+              <td class="val-col"><span class="icon-yes"></span></td>
+            </tr>
+            <tr>
+              <td class="feat-col">Bookkeeping summary export</td>
+              <td class="val-col"><span class="icon-no"></span></td>
+              <td class="val-col col-pro"><span class="icon-no"></span></td>
+              <td class="val-col"><span class="icon-growth"></span></td>
+            </tr>
+            <tr>
+              <td class="feat-col">14-day free trial</td>
+              <td class="val-col"><span class="icon-no"></span></td>
+              <td class="val-col col-pro"><span class="icon-yes"></span></td>
+              <td class="val-col"><span class="icon-yes"></span></td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div><!-- /table-scroll -->
+    </section>
+
+    <!-- ─── FAQ ─── -->
     <section class="faq-section">
-      <h2>Common questions</h2>
-
-      <div class="faq-item">
-        <div class="faq-q" onclick="toggleFaq(this)">
-          Can I cancel my Pro plan anytime?
-          <span class="icon">+</span>
-        </div>
-        <div class="faq-a">Yes — you can cancel your Pro subscription at any time from your account settings. You'll retain Pro access until the end of your current billing period. No cancellation fees, no questions asked.</div>
+      <div class="faq-header">
+        <h2>Common questions</h2>
       </div>
 
       <div class="faq-item">
         <div class="faq-q" onclick="toggleFaq(this)">
-          What counts as a "processed" payment for the 3% fee?
-          <span class="icon">+</span>
+          Can I cancel or change my plan at any time?
+          <span class="faq-icon">+</span>
         </div>
-        <div class="faq-a">The 3% fee applies only when a vendor pays their stall fee through the Pitch. platform using our integrated payment processor (powered by Stripe). If you agree payment terms directly with vendors and collect payment outside of Pitch. — via bank transfer, cash, or any other method — no fee applies.</div>
+        <div class="faq-a">Yes — you can upgrade, downgrade, or cancel your subscription at any time from your account settings. If you cancel or downgrade, you keep your current plan's features until the end of your billing cycle. No cancellation fees, no lock-in periods.</div>
       </div>
 
       <div class="faq-item">
         <div class="faq-q" onclick="toggleFaq(this)">
-          Do I need a credit card to sign up?
-          <span class="icon">+</span>
+          Does the free trial require a credit card?
+          <span class="faq-icon">+</span>
         </div>
-        <div class="faq-a">No credit card is required to create a free account — for vendors or organisers. You only need to add payment details if you're upgrading to Vendor Pro, or if you're an organiser wanting to enable Pitch. payment processing for your events.</div>
+        <div class="faq-a">No. Both Pro and Growth trials start without a credit card. You get 14 days of full access to every feature on your chosen plan. On day 10, we'll remind you to add a payment method if you'd like to keep your features. If you don't, the account automatically drops to Starter at the end of day 14 — no charge, no friction.</div>
       </div>
 
       <div class="faq-item">
         <div class="faq-q" onclick="toggleFaq(this)">
-          Is there a limit on event applications?
-          <span class="icon">+</span>
+          What happens to my photos and data if I downgrade?
+          <span class="faq-icon">+</span>
         </div>
-        <div class="faq-a">No. Both Free and Pro vendors can apply to an unlimited number of events. There's no cap, no credits system, and no hidden limits. Apply to as many markets, festivals, and pop-ups as you like.</div>
+        <div class="faq-a">Nothing is deleted. If you downgrade and have more photos than your new plan allows, the most recently uploaded photos are hidden from your public profile — but they are safely stored and will reappear immediately if you upgrade again. All your application history, payment records, and documents are preserved regardless of plan.</div>
       </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          Can a Starter vendor apply to every event?
+          <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-a">Yes — Starter vendors can apply to any open event with no limit on the number of applications. What Starter vendors don't get is early event access, late application windows after the deadline, or the ability to reapply after withdrawing. But if the event is open and you're in time, you can always apply.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          How does the 24-hour early access work for Growth vendors?
+          <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-a">When an organiser posts a new event, Growth vendors are notified immediately and can apply for the first 24 hours exclusively. Pro vendors are notified within 2 hours of that 24-hour window closing. Starter vendors see the event when it appears in the general listing. This gives Growth vendors a genuine head start on competitive events with limited spots.</div>
+      </div>
+
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          Can I trial both Pro and Growth before committing?
+          <span class="faq-icon">+</span>
+        </div>
+        <div class="faq-a">You can trial each plan once. If you've previously trialled Pro, you can still start a fresh 14-day Growth trial. Once you've completed a trial for a plan, you'd need to subscribe to use it again — the trial is a one-time offer per plan. This is enforced at the account level, not per device.</div>
+      </div>
+
     </section>
 
-    <!-- CTA Banner -->
+    <!-- ─── CTA Banner ─── -->
     <div class="cta-banner">
       <h2>Ready to find your pitch?</h2>
-      <p>Join hundreds of vendors and organisers building Australia's best food markets.</p>
+      <p>Join hundreds of vendors building Australia's best food markets.</p>
       <div class="cta-buttons">
-        <a href="/signup" class="cta-primary">Get started free</a>
-        <a href="/how-it-works" class="cta-secondary">See how it works</a>
+        <a href="/signup/vendor" class="cta-primary-btn" id="cta-banner-primary">Get started free</a>
+        <a href="#compare" class="cta-secondary-btn">Compare all features</a>
       </div>
     </div>
   </main>
 
-  <footer style="background:#161210;border-top:1px solid #ffffff06;padding:40px 52px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;position:relative;z-index:1;">
-    <a href="/" style="font-family:'Fraunces',serif;font-size:22px;font-weight:900;color:#FDF4E7;text-decoration:none;letter-spacing:-0.04em;">Pitch<span style="color:#E8500A;">.</span></a>
-    <div style="display:flex;gap:24px;flex-wrap:wrap;">
-      <a href="/about" style="font-size:13px;color:#6B5A4A;text-decoration:none;transition:color 0.14s;">About</a>
-      <a href="/pricing" style="font-size:13px;color:#6B5A4A;text-decoration:none;transition:color 0.14s;">Pricing</a>
-      <a href="/contact" style="font-size:13px;color:#6B5A4A;text-decoration:none;transition:color 0.14s;">Contact</a>
-      <a href="/terms" style="font-size:13px;color:#6B5A4A;text-decoration:none;transition:color 0.14s;">Terms</a>
-      <a href="/privacy" style="font-size:13px;color:#6B5A4A;text-decoration:none;transition:color 0.14s;">Privacy</a>
+  <footer>
+    <a href="/" class="footer-logo">Pitch<span>.</span></a>
+    <div class="footer-links">
+      <a href="/about">About</a>
+      <a href="/pricing">Pricing</a>
+      <a href="/contact">Contact</a>
+      <a href="/terms">Terms</a>
+      <a href="/privacy">Privacy</a>
     </div>
-    <span style="font-size:12px;color:#4A3C30;">© 2026 Pitch. Adelaide, Australia.</span>
+    <span class="footer-copy">© 2026 Pitch. Adelaide, Australia.</span>
   </footer>
 
   <script>
     function toggleFaq(el) {
-      const item = el.closest('.faq-item');
-      item.classList.toggle('open');
+      el.closest('.faq-item').classList.toggle('open');
     }
+
+    // Auth-aware CTAs
+    (async function() {
+      try {
+        const res = await fetch('/api/me', { credentials: 'include' });
+        if (!res.ok) return;
+        const { user } = await res.json();
+        if (!user || user.role !== 'vendor') return;
+
+        // Show user in nav
+        document.getElementById('nav-actions').style.display = 'none';
+        const navUser = document.getElementById('nav-user');
+        navUser.style.display = 'flex';
+        document.getElementById('nav-user-name').textContent = user.first_name;
+
+        const sub = user.vendor?.subscription_tier || 'starter';
+
+        // Adapt CTAs based on current plan
+        const ctaStarter = document.getElementById('cta-starter');
+        const ctaPro = document.getElementById('cta-pro');
+        const ctaGrowth = document.getElementById('cta-growth');
+        const ctaBanner = document.getElementById('cta-banner-primary');
+
+        const billingUrl = '/dashboard/vendor#billing';
+
+        if (sub === 'starter') {
+          ctaStarter.textContent = 'Current plan';
+          ctaStarter.style.opacity = '0.5';
+          ctaStarter.style.pointerEvents = 'none';
+          ctaPro.textContent = 'Upgrade to Pro';
+          ctaPro.href = billingUrl + '?plan=pro';
+          ctaGrowth.textContent = 'Upgrade to Growth';
+          ctaGrowth.href = billingUrl + '?plan=growth';
+          ctaBanner.textContent = 'Upgrade to Pro';
+          ctaBanner.href = billingUrl + '?plan=pro';
+        } else if (sub === 'pro') {
+          ctaStarter.textContent = 'Downgrade';
+          ctaStarter.href = billingUrl;
+          ctaPro.textContent = 'Current plan';
+          ctaPro.style.opacity = '0.6';
+          ctaPro.style.pointerEvents = 'none';
+          ctaGrowth.textContent = 'Upgrade to Growth';
+          ctaGrowth.href = billingUrl + '?plan=growth';
+          ctaGrowth.classList.remove('cta-secondary');
+          ctaGrowth.classList.add('cta-primary');
+          ctaBanner.textContent = 'Upgrade to Growth';
+          ctaBanner.href = billingUrl + '?plan=growth';
+        } else if (sub === 'growth') {
+          ctaStarter.textContent = 'Downgrade';
+          ctaStarter.href = billingUrl;
+          ctaPro.textContent = 'Downgrade to Pro';
+          ctaPro.href = billingUrl;
+          ctaGrowth.textContent = 'Current plan';
+          ctaGrowth.style.opacity = '0.5';
+          ctaGrowth.style.pointerEvents = 'none';
+          ctaBanner.textContent = 'Manage subscription';
+          ctaBanner.href = billingUrl;
+        }
+      } catch {}
+    })();
   </script>
 </body>
 </html>

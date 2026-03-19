@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Events — Pitch.</title>
 <link rel="stylesheet" href="/fonts/fonts.css">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link href="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.4.0/mapbox-gl.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -367,24 +367,88 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
   display: none; border-radius: 18px; overflow: hidden; margin-bottom: 48px;
   height: 580px; border: 1px solid #ffffff0A;
   box-shadow: 0 8px 40px rgba(0,0,0,0.4);
+  position: relative;
 }
 #map-view.active { display: block; }
-.leaflet-container { background: #1A1612 !important; }
-.leaflet-popup-content-wrapper {
-  background: #231E19 !important; border: 1px solid rgba(255,255,255,0.1) !important;
-  border-radius: 12px !important; box-shadow: 0 12px 40px rgba(0,0,0,0.6) !important;
+
+/* Mapbox canvas fills container */
+#map-canvas { width: 100%; height: 100%; }
+
+/* No-token overlay */
+.map-no-token {
+  position: absolute; inset: 0; z-index: 10;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: var(--char); color: var(--text-lo); gap: 10px;
+  border-radius: 18px;
 }
-.leaflet-popup-content { color: #FDF4E7 !important; font-family: 'Instrument Sans', sans-serif !important; margin: 12px 16px !important; }
-.leaflet-popup-tip-container { display: none; }
-.leaflet-popup-close-button { color: #6B5A4A !important; font-size: 18px !important; top: 8px !important; right: 8px !important; }
-.map-popup-name { font-weight: 700; font-size: 13px; margin-bottom: 4px; color: #FDF4E7; }
-.map-popup-meta { font-size: 11px; color: #A89880; margin-bottom: 3px; }
-.map-popup-spots { font-size: 11px; font-weight: 600; margin-bottom: 8px; }
-.map-popup-link { font-size: 12px; font-weight: 700; color: #E8500A; text-decoration: none; display: inline-block; }
+.map-no-token strong { color: var(--text-mid); font-size: 15px; }
+.map-no-token code { background: #1A1612; padding: 4px 10px; border-radius: 6px; font-size: 12px; color: var(--ember); }
+
+/* Custom Mapbox popup */
+.mapboxgl-popup-content {
+  background: #231E19 !important; border: 1px solid rgba(255,255,255,0.1) !important;
+  border-radius: 14px !important; padding: 16px 18px !important;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.7) !important;
+  font-family: 'Instrument Sans', sans-serif !important;
+  min-width: 220px;
+}
+.mapboxgl-popup-tip { display: none !important; }
+.mapboxgl-popup-close-button {
+  color: #6B5A4A !important; font-size: 20px !important;
+  top: 8px !important; right: 10px !important; background: none !important;
+  padding: 0 !important; width: auto !important; height: auto !important;
+}
+.mapboxgl-popup-close-button:hover { color: #A89880 !important; background: none !important; }
+.map-popup-name { font-weight: 700; font-size: 14px; margin-bottom: 6px; color: #FDF4E7; line-height: 1.3; }
+.map-popup-meta { font-size: 12px; color: #A89880; margin-bottom: 3px; }
+.map-popup-cat {
+  display: inline-block; font-size: 10px; font-weight: 700;
+  padding: 2px 8px; border-radius: 100px; margin-bottom: 8px;
+  letter-spacing: 0.06em;
+}
+.map-popup-fee { font-size: 12px; color: #A89880; margin-bottom: 10px; }
+.map-popup-fee strong { color: #FDF4E7; }
+.map-popup-link {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 13px; font-weight: 700; color: #E8500A; text-decoration: none;
+  transition: color 0.14s;
+}
 .map-popup-link:hover { color: #FF6B2B; }
-.map-pin-loading {
-  display: flex; align-items: center; justify-content: center; height: 100%;
-  color: var(--text-lo); font-size: 14px; flex-direction: column; gap: 12px;
+
+/* Mobile bottom drawer */
+.map-drawer {
+  display: none;
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 9000;
+  background: #231E19; border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px 20px 0 0;
+  padding: 20px 24px 32px;
+  box-shadow: 0 -16px 48px rgba(0,0,0,0.7);
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+}
+.map-drawer.open { transform: translateY(0); }
+.map-drawer-handle {
+  width: 36px; height: 4px; background: #ffffff20; border-radius: 2px;
+  margin: 0 auto 16px;
+}
+.map-drawer-close {
+  position: absolute; top: 16px; right: 16px;
+  background: none; border: none; color: #6B5A4A; font-size: 22px;
+  cursor: pointer; padding: 4px; line-height: 1;
+  transition: color 0.14s;
+}
+.map-drawer-close:hover { color: #A89880; }
+.map-drawer-content { }
+
+/* Cluster circle */
+.map-cluster-circle {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--ember); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Instrument Sans', sans-serif; font-size: 12px; font-weight: 700;
+  border: 2px solid rgba(255,255,255,0.3);
+  box-shadow: 0 2px 8px rgba(232,80,10,0.4);
+  cursor: pointer;
 }
 
 /* ── SCROLLBAR ─────────────────────────────────────────────────────────────── */
@@ -556,7 +620,16 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
   <div class="events-grid" id="events-grid"></div>
 
   <!-- Map view -->
-  <div id="map-view"></div>
+  <div id="map-view">
+    <div id="map-canvas"></div>
+  </div>
+
+  <!-- Mobile pin drawer -->
+  <div class="map-drawer" id="map-drawer">
+    <div class="map-drawer-handle"></div>
+    <button class="map-drawer-close" onclick="closeDrawer()">×</button>
+    <div class="map-drawer-content" id="map-drawer-content"></div>
+  </div>
 
   <!-- Pagination -->
   <div class="pagination" id="pagination"></div>
@@ -629,8 +702,12 @@ const PER_PAGE = 12;
 let currentPage = 1;
 let filtered = [...EVENTS];
 let currentView = 'list';
-let _map = null, _mapMarkers = [];
-const _geoCache = {};
+let _map = null, _mapReady = false, _currentPopup = null;
+
+// Pre-rendered map event data injected by server (includes lat/lng)
+const MAP_EVENTS = window.__PITCH_MAP_EVENTS__ || [];
+const MAP_EVENTS_BY_SLUG = {};
+for (const e of MAP_EVENTS) MAP_EVENTS_BY_SLUG[e.slug] = e;
 
 // Category badge styles
 const CAT_STYLE = {
@@ -727,7 +804,7 @@ function applyFilters() {
   renderGrid();
   renderMeta();
   renderPagination();
-  if (currentView === 'map') renderMap();
+  if (currentView === 'map') updateMapSource();
 }
 
 function clearFilters() {
@@ -892,109 +969,266 @@ function setView(v) {
   const mapEl = document.getElementById('map-view');
   if (v === 'map') {
     mapEl.classList.add('active');
-    renderMap();
+    // Update URL state
+    const url = new URL(window.location);
+    url.searchParams.set('view', 'map');
+    history.replaceState(null, '', url);
+    initMap();
   } else {
     mapEl.classList.remove('active');
+    closeDrawer();
+    const url = new URL(window.location);
+    url.searchParams.delete('view');
+    history.replaceState(null, '', url);
   }
 }
 
-// ── MAP RENDERING ─────────────────────────────────────────────────────────────
-async function geocodeSuburb(suburb, state) {
-  const key = suburb + '|' + (state || 'SA');
-  if (_geoCache[key] !== undefined) return _geoCache[key];
-  try {
-    const q = encodeURIComponent(suburb + ', ' + (state || 'SA') + ', Australia');
-    const r = await fetch('https://nominatim.openstreetmap.org/search?q=' + q + '&format=json&limit=1', {
-      headers: { 'Accept-Language': 'en' }
-    });
-    const d = await r.json();
-    if (d && d[0]) {
-      _geoCache[key] = [parseFloat(d[0].lat), parseFloat(d[0].lon)];
-    } else {
-      _geoCache[key] = null;
-    }
-  } catch(e) {
-    _geoCache[key] = null;
-  }
-  return _geoCache[key];
+// ── MAP RENDERING (Mapbox GL JS) ───────────────────────────────────────────────
+const CAT_STYLE_MAP = {
+  'Night Market':   '#2B5BA8',
+  'Festival':       '#E8500A',
+  'Farmers Market': '#2D8B55',
+  'Corporate':      '#2B5BA8',
+  'Pop-up':         '#C9840A',
+  'Twilight Market':'#2D8B55',
+};
+
+function getFilteredMapEvents() {
+  // Build filtered set of slugs from the current filtered EVENTS array
+  const filteredSlugs = new Set(filtered.map(e => e.id));
+  const today = new Date().toISOString().slice(0, 10);
+  return MAP_EVENTS.filter(e => filteredSlugs.has(e.slug) && e.lat && e.lng && e.date >= today);
 }
 
-async function renderMap() {
-  const mapEl = document.getElementById('map-view');
+function buildGeoJSON(mapEvents) {
+  return {
+    type: 'FeatureCollection',
+    features: mapEvents.map(e => ({
+      type: 'Feature',
+      geometry: { type: 'Point', coordinates: [e.lng, e.lat] },
+      properties: {
+        slug: e.slug,
+        name: e.name,
+        date: e.date,
+        category: e.category,
+        suburb: e.suburb,
+        state: e.state,
+        stalls_available: e.stalls_available,
+        stall_fee_min: e.stall_fee_min,
+        stall_fee_max: e.stall_fee_max,
+        color: CAT_STYLE_MAP[e.category] || '#E8500A',
+      }
+    }))
+  };
+}
+
+function popupHTML(props) {
+  const cs = CAT_STYLE[props.category] || { bg:'#ffffff12', color:'#FDF4E7', border:'#ffffff20' };
+  const dateStr = props.date ? new Date(props.date).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'}) : 'TBC';
+  const fee = props.stall_fee_min > 0 ? `$${props.stall_fee_min}–$${props.stall_fee_max}` : 'Contact organiser';
+  return `
+    <div class="map-popup-name">${props.name}</div>
+    <span class="map-popup-cat" style="background:${cs.bg};color:${cs.color};border:1px solid ${cs.border};">${props.category}</span>
+    <div class="map-popup-meta">📍 ${props.suburb}, ${props.state || 'SA'}</div>
+    <div class="map-popup-meta">📅 ${dateStr}</div>
+    <div class="map-popup-fee">Booth fee: <strong>${fee}</strong></div>
+    <a href="/events/${props.slug}" class="map-popup-link">View event →</a>
+  `;
+}
+
+function isMobile() { return window.innerWidth < 768; }
+function closeDrawer() {
+  const d = document.getElementById('map-drawer');
+  d.classList.remove('open');
+  setTimeout(() => { d.style.display = 'none'; }, 300);
+}
+
+function showPinDetail(props) {
+  if (isMobile()) {
+    const d = document.getElementById('map-drawer');
+    document.getElementById('map-drawer-content').innerHTML = popupHTML(props);
+    d.style.display = 'block';
+    requestAnimationFrame(() => d.classList.add('open'));
+    if (_currentPopup) { _currentPopup.remove(); _currentPopup = null; }
+  } else {
+    if (_currentPopup) _currentPopup.remove();
+    _currentPopup = new mapboxgl.Popup({ closeButton: true, closeOnClick: false, maxWidth: '260px' })
+      .setLngLat([props._lng, props._lat])
+      .setHTML(popupHTML(props))
+      .addTo(_map);
+  }
+}
+
+function initMap() {
+  const token = window.__MAPBOX_TOKEN__ || '';
+
+  // No token — show placeholder
+  if (!token) {
+    const mapEl = document.getElementById('map-view');
+    mapEl.innerHTML = `<div class="map-no-token">
+      <div style="font-size:32px;">🗺️</div>
+      <strong>Map view requires a Mapbox token</strong>
+      <div style="font-size:13px;color:#6B5A4A;">Add to your <code>.env</code> file:</div>
+      <code>MAPBOX_TOKEN=pk.eyJ1IjoieW91...</code>
+    </div>`;
+    return;
+  }
 
   if (!_map) {
-    mapEl.innerHTML = '';
-    _map = L.map(mapEl, { zoomControl: true }).setView([-34.9285, 138.6007], 10);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© <a href="https://openstreetmap.org/copyright">OpenStreetMap</a>',
-      maxZoom: 18,
-    }).addTo(_map);
-  } else {
-    _mapMarkers.forEach(m => _map.removeLayer(m));
-    _mapMarkers = [];
+    mapboxgl.accessToken = token;
+    _map = new mapboxgl.Map({
+      container: 'map-canvas',
+      style: 'mapbox://styles/mapbox/dark-v11',
+      center: [138.6007, -34.9285],
+      zoom: 9,
+      attributionControl: false,
+      maxTileCacheSize: 100,
+    });
+    _map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), 'top-right');
+    _map.addControl(new mapboxgl.AttributionControl({ compact: true }), 'bottom-right');
+
+    _map.on('load', () => {
+      _mapReady = true;
+      // GeoJSON source with clustering
+      _map.addSource('events', {
+        type: 'geojson',
+        data: buildGeoJSON(getFilteredMapEvents()),
+        cluster: true,
+        clusterMaxZoom: 13,
+        clusterRadius: 40,
+      });
+
+      // Cluster circles
+      _map.addLayer({
+        id: 'clusters',
+        type: 'circle',
+        source: 'events',
+        filter: ['has', 'point_count'],
+        paint: {
+          'circle-color': '#E8500A',
+          'circle-radius': ['step', ['get', 'point_count'], 20, 5, 26, 10, 32],
+          'circle-stroke-width': 2,
+          'circle-stroke-color': 'rgba(255,255,255,0.3)',
+          'circle-opacity': 0.92,
+        }
+      });
+
+      // Cluster count labels
+      _map.addLayer({
+        id: 'cluster-count',
+        type: 'symbol',
+        source: 'events',
+        filter: ['has', 'point_count'],
+        layout: {
+          'text-field': '{point_count_abbreviated}',
+          'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+          'text-size': 13,
+        },
+        paint: { 'text-color': '#ffffff' }
+      });
+
+      // Individual pins — filled circle
+      _map.addLayer({
+        id: 'unclustered-point',
+        type: 'circle',
+        source: 'events',
+        filter: ['!', ['has', 'point_count']],
+        paint: {
+          'circle-color': ['get', 'color'],
+          'circle-radius': 16,
+          'circle-stroke-width': 2,
+          'circle-stroke-color': 'rgba(255,255,255,0.3)',
+          'circle-opacity': 0.95,
+        }
+      });
+
+      // Pin inner dot
+      _map.addLayer({
+        id: 'unclustered-dot',
+        type: 'circle',
+        source: 'events',
+        filter: ['!', ['has', 'point_count']],
+        paint: {
+          'circle-color': 'rgba(255,255,255,0.85)',
+          'circle-radius': 5,
+          'circle-stroke-width': 0,
+        }
+      });
+
+      // Click cluster → zoom in
+      _map.on('click', 'clusters', (e) => {
+        const features = _map.queryRenderedFeatures(e.point, { layers: ['clusters'] });
+        const clusterId = features[0].properties.cluster_id;
+        _map.getSource('events').getClusterExpansionZoom(clusterId, (err, zoom) => {
+          if (err) return;
+          _map.easeTo({ center: features[0].geometry.coordinates, zoom });
+        });
+      });
+
+      // Click individual pin → popup or drawer
+      _map.on('click', 'unclustered-point', (e) => {
+        const coords = e.features[0].geometry.coordinates.slice();
+        const props = { ...e.features[0].properties, _lng: coords[0], _lat: coords[1] };
+        showPinDetail(props);
+      });
+
+      // Pointer cursor on hover
+      _map.on('mouseenter', 'clusters', () => { _map.getCanvas().style.cursor = 'pointer'; });
+      _map.on('mouseleave', 'clusters', () => { _map.getCanvas().style.cursor = ''; });
+      _map.on('mouseenter', 'unclustered-point', () => { _map.getCanvas().style.cursor = 'pointer'; });
+      _map.on('mouseleave', 'unclustered-point', () => { _map.getCanvas().style.cursor = ''; });
+
+      // Close popup on map click
+      _map.on('click', (e) => {
+        const f = _map.queryRenderedFeatures(e.point, { layers: ['unclustered-point', 'clusters'] });
+        if (!f.length && _currentPopup) { _currentPopup.remove(); _currentPopup = null; }
+      });
+
+      fitMapToEvents(getFilteredMapEvents());
+    });
+  } else if (_mapReady) {
+    updateMapSource();
   }
-
-  setTimeout(() => _map.invalidateSize(), 50);
-
-  // Custom ember pin icon
-  const pinIcon = L.divIcon({
-    html: '<svg width="26" height="34" viewBox="0 0 26 34" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M13 0C5.82 0 0 5.82 0 13C0 22.75 13 34 13 34C13 34 26 22.75 26 13C26 5.82 20.18 0 13 0Z" fill="#E8500A"/><circle cx="13" cy="13" r="5" fill="white" opacity="0.95"/></svg>',
-    className: '',
-    iconSize: [26, 34],
-    iconAnchor: [13, 34],
-    popupAnchor: [0, -36],
-  });
-
-  const eventsToMap = filtered.slice(0, 60);
-  const bounds = [];
-
-  // Show loading indicator
-  if (eventsToMap.length > 0 && !eventsToMap.every(ev => _geoCache[ev.suburb + '|' + (ev.state||'SA')] !== undefined)) {
-    mapEl.style.position = 'relative';
-    const loadOverlay = document.createElement('div');
-    loadOverlay.id = 'map-load-overlay';
-    loadOverlay.style.cssText = 'position:absolute;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(26,22,18,0.75);border-radius:18px;color:#A89880;font-size:13px;font-family:var(--fb);gap:8px;pointer-events:none;';
-    loadOverlay.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="#E8500A" stroke-width="2" stroke-dasharray="20" stroke-dashoffset="10"><animateTransform attributeName="transform" type="rotate" from="0 8 8" to="360 8 8" dur="0.8s" repeatCount="indefinite"/></circle></svg> Placing pins…';
-    mapEl.appendChild(loadOverlay);
-  }
-
-  for (const ev of eventsToMap) {
-    const latlng = await geocodeSuburb(ev.suburb, ev.state || 'SA');
-    if (!latlng) continue;
-
-    // Small random jitter so overlapping events are visible
-    const jLat = latlng[0] + (Math.random() - 0.5) * 0.004;
-    const jLng = latlng[1] + (Math.random() - 0.5) * 0.004;
-
-    const sp = spotsInfo(ev.total, ev.filled);
-    const marker = L.marker([jLat, jLng], { icon: pinIcon });
-    marker.bindPopup(
-      '<div class="map-popup-name">' + ev.name + '</div>' +
-      '<div class="map-popup-meta">📍 ' + ev.suburb + ', ' + (ev.state||'SA') + ' · 📅 ' + ev.dateLabel + '</div>' +
-      '<div class="map-popup-spots" style="color:' + sp.color + ';">' + sp.text + '</div>' +
-      '<a href="/events/' + ev.id + '" class="map-popup-link">View event →</a>',
-      { maxWidth: 220 }
-    );
-    marker.addTo(_map);
-    _mapMarkers.push(marker);
-    bounds.push([jLat, jLng]);
-  }
-
-  // Remove loading overlay
-  const overlay = document.getElementById('map-load-overlay');
-  if (overlay) overlay.remove();
-
-  if (bounds.length > 1) {
-    _map.fitBounds(bounds, { padding: [48, 48] });
-  } else if (bounds.length === 1) {
-    _map.setView(bounds[0], 13);
-  }
-  setTimeout(() => _map.invalidateSize(), 100);
 }
 
-// Init — apply URL category param, then fetch published events from DB
+function updateMapSource() {
+  if (!_map || !_mapReady) return;
+  const src = _map.getSource('events');
+  if (!src) return;
+  src.setData(buildGeoJSON(getFilteredMapEvents()));
+  fitMapToEvents(getFilteredMapEvents());
+  if (_currentPopup) { _currentPopup.remove(); _currentPopup = null; }
+}
+
+function fitMapToEvents(mapEvents) {
+  if (!_map || !mapEvents.length) return;
+  if (mapEvents.length === 1) {
+    _map.flyTo({ center: [mapEvents[0].lng, mapEvents[0].lat], zoom: 13, duration: 800 });
+    return;
+  }
+  const lngs = mapEvents.map(e => e.lng);
+  const lats = mapEvents.map(e => e.lat);
+  const bounds = [
+    [Math.min(...lngs), Math.min(...lats)],
+    [Math.max(...lngs), Math.max(...lats)],
+  ];
+  _map.fitBounds(bounds, { padding: 64, duration: 800, maxZoom: 14 });
+}
+
+// Eagerly load Mapbox SDK when page loads (before user clicks Map)
+// so the map is ready instantly when they switch views.
+if (window.__MAPBOX_TOKEN__) {
+  mapboxgl.accessToken = window.__MAPBOX_TOKEN__;
+  // Prime the SDK — actual init happens on first setView('map') call
+}
+
+// Init — apply URL params, then fetch published events from DB
 (function() {
   const params = new URLSearchParams(window.location.search);
+  // Restore map view from URL
+  if (params.get('view') === 'map') {
+    window.addEventListener('DOMContentLoaded', () => setView('map'));
+  }
   const cat = params.get('category');
   if (cat) {
     const sel = document.getElementById('f-category');
@@ -1274,7 +1508,11 @@ pitchLocAC('f-suburb', { suburbOnly: true, onSelect: () => applyFilters() });
     const lbl = document.getElementById('nav-user-label');
     if (lbl) lbl.textContent = (d.user.vendor && d.user.vendor.trading_name) || (d.user.organiser && d.user.organiser.org_name) || d.user.first_name || 'Account';
     const dl = document.getElementById('nav-dashboard-link');
-    if (dl) dl.href = d.user.role === 'organiser' ? '/dashboard/organiser' : '/dashboard/vendor';
+    if (dl) {
+      if (d.user.role === 'organiser') dl.href = '/dashboard/organiser';
+      else if (d.user.role === 'foodie') dl.href = '/discover';
+      else dl.href = '/dashboard/vendor';
+    }
   }).catch(() => {});
 })();
 </script>

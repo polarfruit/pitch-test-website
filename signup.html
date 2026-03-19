@@ -78,9 +78,15 @@ h1 {
 
 .cards {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  grid-template-columns: 1fr;
+  gap: 14px;
   margin-bottom: 32px;
+}
+
+.cards-business {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
 }
 
 .role-card {
@@ -131,6 +137,26 @@ h1 {
 .rc-cta svg { transition: transform 0.14s; }
 .role-card:hover .rc-cta svg { transform: translateX(3px); }
 
+/* Foodie card accent — primary/ember, full-width, extra prominent */
+.role-card.foodie {
+  border-color: #E8500A30;
+  flex-direction: row; align-items: center; gap: 24px; padding: 28px 32px;
+  background: linear-gradient(135deg, var(--char) 0%, #2A1C12 100%);
+}
+.role-card.foodie:hover { border-color: #E8500A80; box-shadow: 0 16px 48px #E8500A28, 0 2px 8px #00000050; }
+.role-card.foodie .rc-emoji { font-size: 44px; flex-shrink: 0; }
+.role-card.foodie .rc-content { text-align: left; flex: 1; }
+.role-card.foodie .rc-label { font-size: 24px; }
+.role-card.foodie .rc-cta { color: var(--ember); }
+.role-card.foodie .rc-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: #E8500A14; border: 1px solid #E8500A28;
+  border-radius: 100px; padding: 2px 10px;
+  font-size: 10px; font-weight: 700; color: var(--ember);
+  letter-spacing: 0.06em; text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
 /* Vendor card accent */
 .role-card.vendor { border-color: #E8500A20; }
 .role-card.vendor:hover { border-color: #E8500A70; box-shadow: 0 12px 40px #E8500A22, 0 2px 8px #00000040; }
@@ -140,6 +166,11 @@ h1 {
 .role-card.organiser:hover { border-color: #2D8B5570; box-shadow: 0 12px 40px #2D8B5518, 0 2px 8px #00000040; }
 .role-card.organiser .rc-cta { color: var(--herb); }
 
+@media (max-width: 520px) {
+  .role-card.foodie { flex-direction: column; padding: 28px; }
+  .role-card.foodie .rc-content { text-align: center; }
+}
+
 .login-link {
   font-size: 14px; color: var(--text-mid);
 }
@@ -147,7 +178,7 @@ h1 {
 .login-link a:hover { border-color: var(--ember); color: var(--ember); }
 
 @media (max-width: 520px) {
-  .cards { grid-template-columns: 1fr; }
+  .cards-business { grid-template-columns: 1fr; }
 }
 </style>
 </head>
@@ -159,25 +190,42 @@ h1 {
   <p class="subtitle">Choose your role to get started. You can always create a second account later.</p>
 
   <div class="cards">
-    <a href="/signup/vendor" class="role-card vendor">
-      <div class="rc-emoji">🚚</div>
-      <div class="rc-label">I'm a Vendor</div>
-      <p class="rc-desc">List your food business, get discovered by event organisers, and manage bookings in one place.</p>
-      <span class="rc-cta">
-        Create vendor account
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7 3l4 4-4 4" stroke="#E8500A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </span>
+    <!-- Foodie — first and most prominent -->
+    <a href="/signup/foodie" class="role-card foodie">
+      <div class="rc-emoji">🍜</div>
+      <div class="rc-content">
+        <div class="rc-badge">Most popular</div>
+        <div class="rc-label">I'm a Foodie</div>
+        <p class="rc-desc">Discover markets, follow vendors, and never miss what's on near you.</p>
+        <span class="rc-cta">
+          Create free account
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7 3l4 4-4 4" stroke="#E8500A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+      </div>
     </a>
 
-    <a href="/signup/organiser" class="role-card organiser">
-      <div class="rc-emoji">🎪</div>
-      <div class="rc-label">I'm an Organiser</div>
-      <p class="rc-desc">Post events, browse verified food vendors, and build the perfect market or festival lineup.</p>
-      <span class="rc-cta" style="color:var(--herb);">
-        Create organiser account
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7 3l4 4-4 4" stroke="#2D8B55" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </span>
-    </a>
+    <!-- Business accounts -->
+    <div class="cards-business">
+      <a href="/signup/vendor" class="role-card vendor">
+        <div class="rc-emoji">🚚</div>
+        <div class="rc-label">I'm a Vendor</div>
+        <p class="rc-desc">List your food business, get discovered by event organisers, and manage bookings in one place.</p>
+        <span class="rc-cta">
+          Create vendor account
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7 3l4 4-4 4" stroke="#E8500A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+      </a>
+
+      <a href="/signup/organiser" class="role-card organiser">
+        <div class="rc-emoji">🎪</div>
+        <div class="rc-label">I'm an Organiser</div>
+        <p class="rc-desc">Post events, browse verified food vendors, and build the perfect market or festival lineup.</p>
+        <span class="rc-cta" style="color:var(--herb);">
+          Create organiser account
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7 3l4 4-4 4" stroke="#2D8B55" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+      </a>
+    </div>
   </div>
 
   <p class="login-link">Already have an account? <a href="/login">Sign in</a></p>

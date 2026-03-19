@@ -5,7 +5,7 @@ import fs from 'fs';
 import bcrypt from 'bcryptjs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import db, { stmts, txSignupVendor, txSignupOrganiser } from './db.mjs';
+import db, { stmts, txSignupVendor, txSignupOrganiser, txSignupFoodie } from './db.mjs';
 import { sendVerificationEmail, sendVerificationSMS } from './mailer.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -418,6 +418,29 @@ app.post('/api/signup/organiser', async (req, res) => {
   }
 });
 
+// POST /api/signup/foodie
+app.post('/api/signup/foodie', async (req, res) => {
+  const { first_name, last_name, email, password } = req.body;
+  if (!email || !password || !first_name) {
+    return res.status(400).json({ error: 'First name, email, and password are required' });
+  }
+  const existing = await stmts.getUserByEmail.get(email);
+  if (existing) return res.status(409).json({ error: 'An account with that email already exists' });
+  try {
+    const password_hash = await bcrypt.hash(password, 10);
+    const userId = await txSignupFoodie(
+      { email, password_hash, first_name, last_name: last_name || '', role: 'foodie' }
+    );
+    await stmts.setUserStatus.run('active', userId);
+    await stmts.setEmailVerified.run(userId);
+    sessWrite(res, { userId, role: 'foodie', name: `${first_name} ${last_name || ''}`.trim() });
+    res.json({ ok: true, redirect: '/discover' });
+  } catch (err) {
+    console.error('Signup foodie error:', err);
+    res.status(500).json({ error: 'Server error during signup' });
+  }
+});
+
 // ── API: Post-signup verification ──────────────────────────────────────────
 
 // GET /api/verify/status
@@ -526,6 +549,7 @@ app.post('/api/login', async (req, res) => {
   let redirect = '/';
   if (user.role === 'vendor')         redirect = '/dashboard/vendor';
   else if (user.role === 'organiser') redirect = '/dashboard/organiser';
+  else if (user.role === 'foodie')    redirect = '/discover';
   else if (user.role === 'admin')     redirect = '/admin';
 
   res.json({ ok: true, redirect });
@@ -617,6 +641,23 @@ app.post('/api/profile/avatar', requireAuth, async (req, res) => {
   }
 });
 
+// POST /api/profile/plan — update vendor subscription plan
+app.post('/api/profile/plan', requireAuth, async (req, res) => {
+  try {
+    const { plan } = req.body;
+    if (!['free', 'pro', 'growth'].includes(plan)) {
+      return res.status(400).json({ error: 'Invalid plan' });
+    }
+    const vendor = db.prepare('SELECT id FROM vendors WHERE user_id = ?').get(req.session.userId);
+    if (!vendor) return res.status(403).json({ error: 'Not a vendor account' });
+    db.prepare('UPDATE vendors SET plan = ? WHERE user_id = ?').run(plan, req.session.userId);
+    res.json({ ok: true, plan });
+  } catch (e) {
+    console.error('[plan]', e);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // GET /api/me
 app.get('/api/me', async (req, res) => {
   if (!req.session.userId) return res.json({ user: null });
@@ -628,8 +669,62 @@ app.get('/api/me', async (req, res) => {
     safe.vendor = await stmts.getVendorByUserId.get(user.id) || null;
   } else if (user.role === 'organiser') {
     safe.organiser = await stmts.getOrganiserByUserId.get(user.id) || null;
+  } else if (user.role === 'foodie') {
+    safe.foodie = await stmts.getFoodieByUserId.get(user.id) || null;
   }
   res.json({ user: safe });
+});
+
+// ── API: Foodie ────────────────────────────────────────────────────────────
+
+// POST /api/foodie/save/:slug
+app.post('/api/foodie/save/:slug', requireAuth, async (req, res) => {
+  if (req.session.role !== 'foodie') return res.status(403).json({ error: 'Foodies only' });
+  await stmts.saveEvent.run(req.session.userId, req.params.slug);
+  res.json({ ok: true, saved: true });
+});
+
+// DELETE /api/foodie/save/:slug
+app.delete('/api/foodie/save/:slug', requireAuth, async (req, res) => {
+  if (req.session.role !== 'foodie') return res.status(403).json({ error: 'Foodies only' });
+  await stmts.unsaveEvent.run(req.session.userId, req.params.slug);
+  res.json({ ok: true, saved: false });
+});
+
+// GET /api/foodie/saved
+app.get('/api/foodie/saved', requireAuth, async (req, res) => {
+  if (req.session.role !== 'foodie') return res.status(403).json({ error: 'Foodies only' });
+  const saved = await stmts.getSavedEvents.all(req.session.userId);
+  res.json({ saved });
+});
+
+// POST /api/foodie/follow/:vendorId
+app.post('/api/foodie/follow/:vendorId', requireAuth, async (req, res) => {
+  if (req.session.role !== 'foodie') return res.status(403).json({ error: 'Foodies only' });
+  await stmts.followVendor.run(req.session.userId, Number(req.params.vendorId));
+  res.json({ ok: true, following: true });
+});
+
+// DELETE /api/foodie/follow/:vendorId
+app.delete('/api/foodie/follow/:vendorId', requireAuth, async (req, res) => {
+  if (req.session.role !== 'foodie') return res.status(403).json({ error: 'Foodies only' });
+  await stmts.unfollowVendor.run(req.session.userId, Number(req.params.vendorId));
+  res.json({ ok: true, following: false });
+});
+
+// GET /api/foodie/following
+app.get('/api/foodie/following', requireAuth, async (req, res) => {
+  if (req.session.role !== 'foodie') return res.status(403).json({ error: 'Foodies only' });
+  const following = await stmts.getFollowedVendors.all(req.session.userId);
+  res.json({ following });
+});
+
+// GET /api/foodie/feed — upcoming events, optionally personalised
+app.get('/api/foodie/feed', async (req, res) => {
+  const events = await stmts.publishedEvents.all();
+  const today = new Date().toISOString().slice(0, 10);
+  const upcoming = events.filter(e => (e.date_sort || '') >= today);
+  res.json({ events: upcoming });
 });
 
 // ── API: Admin auth ────────────────────────────────────────────────────────
@@ -1778,7 +1873,38 @@ function page(file) {
 
 app.get('/',                    page('index.html'));
 app.get('/how-it-works',        page('how-it-works.html'));
-app.get('/events',              page('events.html'));
+app.get('/events', async (req, res) => {
+  try {
+    const events = await stmts.publishedEvents.all();
+    const today = new Date().toISOString().slice(0, 10);
+    const mapData = events
+      .filter(e => e.lat && e.lng && (e.date_sort || '') >= today)
+      .map(e => ({
+        slug: e.slug,
+        name: e.name,
+        lat: e.lat,
+        lng: e.lng,
+        date: e.date_sort || '',
+        category: e.category || '',
+        stalls_available: e.stalls_available || 0,
+        stall_fee_min: e.stall_fee_min || 0,
+        stall_fee_max: e.stall_fee_max || 0,
+        suburb: e.suburb || '',
+        state: e.state || 'SA',
+        venue_name: e.venue_name || '',
+      }));
+    const token = process.env.MAPBOX_TOKEN || '';
+    let html = readHtml('events.html');
+    html = html.replace('</head>', `<script>
+window.__PITCH_MAP_EVENTS__ = ${JSON.stringify(mapData)};
+window.__MAPBOX_TOKEN__ = ${JSON.stringify(token)};
+</script></head>`);
+    res.send(html);
+  } catch (e) {
+    console.error('[events page]', e);
+    res.send(readHtml('events.html'));
+  }
+});
 app.get('/vendors',             page('vendors.html'));
 app.get('/pricing',             page('pricing.html'));
 app.get('/about',               page('about.html'));
@@ -1798,6 +1924,8 @@ app.get('/login',               page('login.html'));
 app.get('/signup',              page('signup.html'));
 app.get('/signup/vendor',       page('signup-vendor.html'));
 app.get('/signup/organiser',    page('signup-organiser.html'));
+app.get('/signup/foodie',       page('signup-foodie.html'));
+app.get('/discover',            page('foodie-feed.html'));
 app.get('/verify/email',        page('verify-email.html'));
 app.get('/verify/phone',        page('verify-phone.html'));
 app.get('/events/*splat', async (req, res) => {

@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Join as a Foodie — Pitch.</title>
+<link rel="stylesheet" href="/fonts/fonts.css">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --ember: #E8500A; --ember-glow: #FF6B2B;
+  --coal: #1A1612; --char: #231E19; --ash: #2E2720;
+  --parchment: #FDF4E7; --herb: #2D8B55;
+  --text-hi: #FDF4E7; --text-mid: #A89880; --text-lo: #6B5A4A;
+  --fd: 'Fraunces', Georgia, serif; --fb: 'Instrument Sans', 'Helvetica Neue', sans-serif;
+}
+
+body {
+  background: var(--coal); color: var(--text-hi);
+  font-family: var(--fb); min-height: 100vh;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  overflow-x: hidden; padding: 24px;
+}
+
+body::before {
+  content: ''; position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 0; opacity: 0.45;
+}
+body::after {
+  content: ''; position: fixed;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, #E8500A14 0%, transparent 70%);
+  top: 50%; left: 50%; transform: translate(-50%, -60%);
+  pointer-events: none; z-index: 0;
+}
+
+.wrap { position: relative; z-index: 1; width: 100%; max-width: 440px; }
+
+.logo {
+  font-family: var(--fd); font-size: 28px; font-weight: 900;
+  letter-spacing: -0.04em; color: var(--text-hi);
+  text-decoration: none; display: inline-block; margin-bottom: 36px;
+}
+.logo .dot { color: var(--ember); }
+
+.card {
+  background: var(--char); border: 1px solid #ffffff0A;
+  border-radius: 22px; padding: 40px;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03);
+}
+
+.card-header { margin-bottom: 32px; }
+.card-emoji { font-size: 40px; margin-bottom: 12px; }
+h1 { font-family: var(--fd); font-size: 26px; font-weight: 900; letter-spacing: -0.02em; color: var(--text-hi); margin-bottom: 6px; }
+.card-sub { font-size: 14px; color: var(--text-mid); line-height: 1.6; }
+
+/* Social auth buttons */
+.social-btns { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+.social-btn {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; padding: 12px 16px; border-radius: 11px;
+  font-family: var(--fb); font-size: 14px; font-weight: 600;
+  cursor: pointer; transition: background 0.14s, border-color 0.14s;
+  border: 1.5px solid #ffffff10; background: #ffffff06; color: var(--text-hi);
+  text-decoration: none;
+}
+.social-btn:hover { background: #ffffff0E; border-color: #ffffff20; }
+.social-btn svg { flex-shrink: 0; }
+
+.divider {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 24px; color: var(--text-lo); font-size: 12px; font-weight: 600;
+}
+.divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: #ffffff0C; }
+
+/* Fields */
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.field-group { margin-bottom: 16px; }
+.field-label {
+  display: block; font-size: 11px; font-weight: 700;
+  color: var(--text-mid); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 6px;
+}
+.field-input {
+  width: 100%; background: #1A1612; border: 1.5px solid #2A2018;
+  border-radius: 10px; color: var(--text-hi);
+  font-family: var(--fb); font-size: 15px;
+  padding: 12px 16px; outline: none; transition: border-color 0.2s;
+}
+.field-input:focus { border-color: var(--ember); }
+.field-input::placeholder { color: var(--text-lo); }
+.field-input.error { border-color: #C0392B80; }
+
+.pw-wrap { position: relative; }
+.pw-toggle {
+  position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; cursor: pointer; color: var(--text-lo);
+  font-size: 12px; font-weight: 600; font-family: var(--fb);
+  transition: color 0.14s; padding: 4px;
+}
+.pw-toggle:hover { color: var(--text-mid); }
+
+.error-box {
+  display: none; background: rgba(192,57,43,0.1); border: 1px solid rgba(192,57,43,0.3);
+  border-radius: 10px; padding: 12px 14px; font-size: 13px; color: #C0392B;
+  margin-bottom: 14px; line-height: 1.5;
+}
+.error-box.show { display: block; }
+
+.btn-submit {
+  width: 100%; background: var(--ember); color: #fff; border: none;
+  border-radius: 11px; font-family: var(--fb); font-size: 15px; font-weight: 700;
+  padding: 14px; cursor: pointer; margin-top: 6px;
+  transition: background 0.18s, transform 0.12s;
+  box-shadow: 0 4px 20px #E8500A28;
+}
+.btn-submit:hover { background: var(--ember-glow); }
+.btn-submit:active { transform: scale(0.98); }
+.btn-submit:disabled { background: #4A3C30; cursor: not-allowed; box-shadow: none; }
+
+.terms-note { font-size: 12px; color: var(--text-lo); margin-top: 14px; text-align: center; line-height: 1.6; }
+.terms-note a { color: var(--text-mid); text-decoration: none; }
+.terms-note a:hover { color: var(--text-hi); }
+
+.footer-links { text-align: center; font-size: 13px; color: var(--text-lo); margin-top: 24px; }
+.footer-links a { color: var(--ember); text-decoration: none; font-weight: 600; }
+.footer-links a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="/" class="logo">Pitch<span class="dot">.</span></a>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-emoji">🍜</div>
+      <h1>Join as a Foodie</h1>
+      <p class="card-sub">Discover markets, follow vendors, and save events near you — completely free.</p>
+    </div>
+
+    <!-- Social sign-in (UI only for now) -->
+    <div class="social-btns">
+      <button class="social-btn" onclick="showSocialMsg()">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M17.64 9.205c0-.639-.057-1.252-.164-1.841H9v3.481h4.844a4.14 4.14 0 01-1.796 2.716v2.259h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
+          <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z" fill="#34A853"/>
+          <path d="M3.964 10.71A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+          <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
+        </svg>
+        Continue with Google
+      </button>
+      <button class="social-btn" onclick="showSocialMsg()">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <path d="M15.769 9.516c-.023-2.878 2.352-4.276 2.458-4.339-1.34-1.959-3.42-2.228-4.163-2.254-1.774-.181-3.468 1.044-4.37 1.044-.898 0-2.293-1.02-3.771-.993-1.94.028-3.73 1.127-4.731 2.857-2.013 3.494-.517 8.676 1.45 11.514.963 1.391 2.113 2.955 3.622 2.897 1.456-.059 2.003-.934 3.757-.934s2.247.934 3.784.905c1.563-.027 2.556-1.415 3.51-2.812.113-.161.217-.327.312-.497a7.61 7.61 0 01-4.858-7.388z" fill="white"/>
+          <path d="M13.1 2.116C13.89 1.143 14.416.02 14.266-1.12c-1.08.053-2.39.725-3.16 1.68-.702.87-1.317 2.053-1.148 3.16 1.188.09 2.402-.594 3.141-1.605z" fill="white"/>
+        </svg>
+        Continue with Apple
+      </button>
+    </div>
+
+    <div class="divider">or sign up with email</div>
+
+    <div id="error-box" class="error-box"></div>
+
+    <div class="field-row">
+      <div class="field-group">
+        <label class="field-label">First name</label>
+        <input class="field-input" type="text" id="first_name" placeholder="Alex" autocomplete="given-name" />
+      </div>
+      <div class="field-group">
+        <label class="field-label">Last name <span style="color:var(--text-lo);font-weight:400;text-transform:none;">(optional)</span></label>
+        <input class="field-input" type="text" id="last_name" placeholder="Chen" autocomplete="family-name" />
+      </div>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Email address</label>
+      <input class="field-input" type="email" id="email" placeholder="you@example.com" autocomplete="email" />
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Password</label>
+      <div class="pw-wrap">
+        <input class="field-input" type="password" id="password" placeholder="Min. 8 characters" autocomplete="new-password" style="padding-right:52px;" />
+        <button class="pw-toggle" type="button" onclick="togglePw()">Show</button>
+      </div>
+    </div>
+
+    <button class="btn-submit" id="submit-btn" onclick="doSignup()">Create free account →</button>
+
+    <p class="terms-note">By creating an account you agree to our <a href="/terms">Terms</a> and <a href="/privacy">Privacy Policy</a>.</p>
+  </div>
+
+  <p class="footer-links" style="margin-top:20px;">Already have an account? <a href="/login">Sign in</a></p>
+  <p style="text-align:center;margin-top:10px;"><a href="/signup" style="font-size:13px;color:var(--text-lo);text-decoration:none;">← Back to role selection</a></p>
+</div>
+
+<script>
+function togglePw() {
+  const inp = document.getElementById('password');
+  const btn = inp.nextElementSibling;
+  if (inp.type === 'password') { inp.type = 'text'; btn.textContent = 'Hide'; }
+  else { inp.type = 'password'; btn.textContent = 'Show'; }
+}
+
+function showSocialMsg() {
+  showError('Google and Apple sign-in are coming soon. Please use email for now.');
+}
+
+function showError(msg) {
+  const el = document.getElementById('error-box');
+  el.textContent = msg;
+  el.classList.add('show');
+}
+
+async function doSignup() {
+  const errEl = document.getElementById('error-box');
+  errEl.classList.remove('show');
+
+  const first_name = document.getElementById('first_name').value.trim();
+  const last_name  = document.getElementById('last_name').value.trim();
+  const email      = document.getElementById('email').value.trim();
+  const password   = document.getElementById('password').value;
+
+  if (!first_name) { showError('Please enter your first name.'); return; }
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showError('Please enter a valid email address.'); return; }
+  if (!password || password.length < 8) { showError('Password must be at least 8 characters.'); return; }
+
+  const btn = document.getElementById('submit-btn');
+  btn.textContent = 'Creating account…';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch('/api/signup/foodie', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ first_name, last_name, email, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) { showError(data.error || 'Signup failed.'); btn.textContent = 'Create free account →'; btn.disabled = false; return; }
+    window.location.href = data.redirect || '/discover';
+  } catch {
+    showError('Network error — please check your connection.');
+    btn.textContent = 'Create free account →'; btn.disabled = false;
+  }
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Enter') doSignup(); });
+</script>
+</body>
+</html>

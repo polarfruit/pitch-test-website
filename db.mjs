@@ -16,6 +16,7 @@ let _safeExec;   // runs a single DDL statement, silently ignores errors (migrat
 let _execSchema; // runs a multi-statement schema block
 let _txSignupVendor;
 let _txSignupOrganiser;
+let _txSignupFoodie;
 let _client; // libsql client (Vercel path only)
 let _localDb; // better-sqlite3 instance (local path only)
 
@@ -71,6 +72,17 @@ if (process.env.TURSO_DATABASE_URL) {
     } catch (e) { await tx.rollback(); throw e; }
   };
 
+  _txSignupFoodie = async (userData) => {
+    const tx = await _client.transaction('write');
+    try {
+      const r = await tx.execute({ sql: `INSERT INTO users (email,password_hash,first_name,last_name,role) VALUES (@email,@password_hash,@first_name,@last_name,@role)`, args: userData });
+      const userId = Number(r.lastInsertRowid);
+      await tx.execute({ sql: `INSERT INTO foodies (user_id) VALUES (?)`, args: [userId] });
+      await tx.commit();
+      return userId;
+    } catch (e) { await tx.rollback(); throw e; }
+  };
+
 } else {
   // ── Local / better-sqlite3 ───────────────────────────────────────────────
   // Synchronous, in-process SQLite. Queries complete in microseconds.
@@ -112,6 +124,16 @@ if (process.env.TURSO_DATABASE_URL) {
       const r = _localDb.prepare(`INSERT INTO users (email,password_hash,first_name,last_name,role) VALUES (@email,@password_hash,@first_name,@last_name,@role)`).run(userData);
       const userId = r.lastInsertRowid;
       _localDb.prepare(`INSERT INTO organisers (user_id,org_name,abn,abn_verified,website,state,suburb,phone,bio,event_types,event_scale,stall_range,referral) VALUES (@user_id,@org_name,@abn,@abn_verified,@website,@state,@suburb,@phone,@bio,@event_types,@event_scale,@stall_range,@referral)`).run({ ...organiserData, user_id: userId });
+      return userId;
+    });
+    return Promise.resolve(fn());
+  };
+
+  _txSignupFoodie = (userData) => {
+    const fn = _localDb.transaction(() => {
+      const r = _localDb.prepare(`INSERT INTO users (email,password_hash,first_name,last_name,role) VALUES (@email,@password_hash,@first_name,@last_name,@role)`).run(userData);
+      const userId = r.lastInsertRowid;
+      _localDb.prepare(`INSERT INTO foodies (user_id) VALUES (?)`).run(userId);
       return userId;
     });
     return Promise.resolve(fn());
@@ -329,6 +351,70 @@ await _safeExec(`ALTER TABLE vendors ADD COLUMN notif_docs INTEGER NOT NULL DEFA
 await _safeExec(`ALTER TABLE vendors ADD COLUMN notif_reviews INTEGER NOT NULL DEFAULT 0`);
 await _safeExec(`ALTER TABLE vendors ADD COLUMN notif_payments INTEGER NOT NULL DEFAULT 1`);
 
+// ── Vendors: add 'growth' to plan CHECK constraint ───────────────────────────
+{
+  let vendorSchema = '';
+  try {
+    if (process.env.TURSO_DATABASE_URL) {
+      const r = await _client.execute(`SELECT sql FROM sqlite_master WHERE type='table' AND name='vendors'`);
+      vendorSchema = (r.rows[0]?.sql) || '';
+    } else {
+      const row = _localDb.prepare(`SELECT sql FROM sqlite_master WHERE type='table' AND name='vendors'`).get();
+      vendorSchema = (row?.sql) || '';
+    }
+  } catch {}
+  if (vendorSchema && !vendorSchema.includes("'growth'")) {
+    const migSQL = `
+      ALTER TABLE vendors RENAME TO _vendors_old;
+      CREATE TABLE vendors (
+        id           INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id      INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        trading_name TEXT    NOT NULL,
+        abn          TEXT,
+        abn_verified INTEGER DEFAULT 0,
+        mobile       TEXT,
+        state        TEXT,
+        suburb       TEXT,
+        bio          TEXT,
+        cuisine_tags TEXT    DEFAULT '[]',
+        setup_type   TEXT,
+        stall_w      REAL,
+        stall_d      REAL,
+        power        INTEGER DEFAULT 0,
+        water        INTEGER DEFAULT 0,
+        price_range  TEXT,
+        instagram    TEXT,
+        plan         TEXT    NOT NULL DEFAULT 'free' CHECK(plan IN ('free','pro','growth')),
+        photos            TEXT    DEFAULT '[]',
+        food_safety_url   TEXT,
+        pli_url           TEXT,
+        council_url       TEXT,
+        paused            INTEGER NOT NULL DEFAULT 0,
+        notif_apps        INTEGER NOT NULL DEFAULT 1,
+        notif_docs        INTEGER NOT NULL DEFAULT 1,
+        notif_reviews     INTEGER NOT NULL DEFAULT 0,
+        notif_payments    INTEGER NOT NULL DEFAULT 1,
+        featured          INTEGER NOT NULL DEFAULT 0,
+        created_at   DATETIME DEFAULT (datetime('now'))
+      );
+      INSERT INTO vendors SELECT * FROM _vendors_old;
+      DROP TABLE _vendors_old;
+    `;
+    try {
+      if (process.env.TURSO_DATABASE_URL) {
+        await _client.execute('PRAGMA foreign_keys=OFF');
+        await _client.executeMultiple(migSQL);
+        await _client.execute('PRAGMA foreign_keys=ON');
+      } else {
+        _localDb.pragma('foreign_keys=OFF');
+        _localDb.exec(migSQL);
+        _localDb.pragma('foreign_keys=ON');
+      }
+    } catch (e) { console.error('[db] Growth plan migration failed:', e); }
+  }
+}
+await _safeExec('DROP TABLE IF EXISTS _vendors_old');
+
 await _safeExec(`
   CREATE TABLE IF NOT EXISTS vendor_reviews (
     id             INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -381,6 +467,131 @@ await _safeExec(`
   )
 `);
 await _safeExec(`CREATE INDEX IF NOT EXISTS idx_msg_thread ON messages(thread_key, id)`);
+
+// ── Foodie role migration (users.role CHECK must include 'foodie') ────────────
+{
+  let existingSchema = '';
+  try {
+    if (process.env.TURSO_DATABASE_URL) {
+      const r = await _client.execute(`SELECT sql FROM sqlite_master WHERE type='table' AND name='users'`);
+      existingSchema = (r.rows[0]?.sql) || '';
+    } else {
+      const row = _localDb.prepare(`SELECT sql FROM sqlite_master WHERE type='table' AND name='users'`).get();
+      existingSchema = (row?.sql) || '';
+    }
+  } catch {}
+  if (existingSchema && !existingSchema.includes("'foodie'")) {
+    const migSQL = `
+      ALTER TABLE users RENAME TO _users_old;
+      CREATE TABLE users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        email TEXT UNIQUE NOT NULL,
+        password_hash TEXT NOT NULL,
+        first_name TEXT NOT NULL,
+        last_name TEXT NOT NULL,
+        role TEXT NOT NULL CHECK(role IN ('vendor','organiser','admin','foodie')),
+        status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','active','suspended','banned')),
+        email_verified INTEGER NOT NULL DEFAULT 0,
+        phone_verified INTEGER NOT NULL DEFAULT 0,
+        created_at DATETIME DEFAULT (datetime('now')),
+        avatar_url TEXT
+      );
+      INSERT INTO users SELECT * FROM _users_old;
+      DROP TABLE _users_old;
+    `;
+    try {
+      if (process.env.TURSO_DATABASE_URL) {
+        await _client.execute('PRAGMA foreign_keys=OFF');
+        await _client.executeMultiple(migSQL);
+        await _client.execute('PRAGMA foreign_keys=ON');
+      } else {
+        _localDb.pragma('foreign_keys=OFF');
+        _localDb.exec(migSQL);
+        _localDb.pragma('foreign_keys=ON');
+      }
+    } catch (e) { console.error('[db] Foodie role migration failed:', e); }
+  }
+}
+
+// Clean up backup table if migration left it behind
+await _safeExec(`DROP TABLE IF EXISTS _users_old`);
+
+// ── Fix broken FK references left by users rename migration (Turso/local) ────
+// When SQLite renames a table, child FK refs are updated. If the backup was
+// later dropped, child tables are left referencing a non-existent "_users_old".
+// Heal by patching sqlite_master via writable_schema if needed.
+if (!process.env.TURSO_DATABASE_URL) {
+  try {
+    const brokenCount = _localDb.prepare(
+      `SELECT COUNT(*) as n FROM sqlite_master WHERE sql LIKE '%"_users_old"%'`
+    ).get()?.n || 0;
+    if (brokenCount > 0) {
+      _localDb.pragma('writable_schema=1');
+      _localDb.prepare(
+        `UPDATE sqlite_master SET sql=REPLACE(sql,'"_users_old"','"users"') WHERE sql LIKE '%"_users_old"%'`
+      ).run();
+      _localDb.pragma('writable_schema=0');
+      console.log('[db] Healed FK references from _users_old → users');
+    }
+  } catch (e) { console.error('[db] FK heal failed:', e.message); }
+}
+
+// ── Foodie tables ─────────────────────────────────────────────────────────────
+await _safeExec(`
+  CREATE TABLE IF NOT EXISTS foodies (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    suburb      TEXT,
+    radius_km   INTEGER DEFAULT 25,
+    notif_area  INTEGER DEFAULT 1,
+    notif_cat   TEXT DEFAULT '[]',
+    created_at  DATETIME DEFAULT (datetime('now')),
+    UNIQUE(user_id)
+  )
+`);
+await _safeExec(`
+  CREATE TABLE IF NOT EXISTS saved_events (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    event_slug TEXT NOT NULL,
+    created_at DATETIME DEFAULT (datetime('now')),
+    UNIQUE(user_id, event_slug)
+  )
+`);
+await _safeExec(`
+  CREATE TABLE IF NOT EXISTS followed_vendors (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    vendor_user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at DATETIME DEFAULT (datetime('now')),
+    UNIQUE(user_id, vendor_user_id)
+  )
+`);
+await _safeExec(`CREATE INDEX IF NOT EXISTS idx_saved_events_user ON saved_events(user_id)`);
+await _safeExec(`CREATE INDEX IF NOT EXISTS idx_followed_vendors_user ON followed_vendors(user_id)`);
+
+// ── Event coordinates (for map view) ─────────────────────────────────────────
+await _safeExec(`ALTER TABLE events ADD COLUMN lat REAL`);
+await _safeExec(`ALTER TABLE events ADD COLUMN lng REAL`);
+
+// Seed coordinates for known SA events
+const _EVENT_COORDS = {
+  'rundle-mall-night-eats':     [-34.9218, 138.5998],
+  'showground-harvest-fair':    [-34.9520, 138.6070],
+  'fringe-food-village':        [-34.9238, 138.6090],
+  'barossa-food-wine':          [-34.5237, 138.9571],
+  'glenelg-twilight':           [-34.9828, 138.5161],
+  'port-adelaide-night-market': [-34.8476, 138.5082],
+  'norwood-food-bazaar':        [-34.9260, 138.6325],
+  'victor-harbor-summer-fair':  [-35.5517, 138.6216],
+  'prospect-farmers-market':    [-34.9041, 138.5996],
+  'westpac-corporate-day':      [-34.9285, 138.5999],
+  'henley-sunset-market':       [-34.9217, 138.5014],
+  'marion-popup':               [-35.0020, 138.5700],
+};
+for (const [slug, [lat, lng]] of Object.entries(_EVENT_COORDS)) {
+  await _safeExec(`UPDATE events SET lat=${lat},lng=${lng} WHERE slug='${slug}' AND (lat IS NULL OR lat=0)`);
+}
 
 // ── Vendor menu items ─────────────────────────────────────────────────────────
 await _safeExec(`
@@ -722,13 +933,27 @@ export const stmts = {
   updateMenuOrder:    prepare(`UPDATE menu_items SET sort_order=@sort_order WHERE id=@id AND vendor_user_id=@vendor_user_id`),
   publicMenuItems:    prepare(`SELECT * FROM menu_items WHERE vendor_user_id=? ORDER BY is_signature DESC, sort_order ASC, id ASC`),
 
+  // foodies
+  getFoodieByUserId:   prepare(`SELECT * FROM foodies WHERE user_id=?`),
+  getSavedEvents:      prepare(`SELECT event_slug,created_at FROM saved_events WHERE user_id=? ORDER BY created_at DESC`),
+  saveEvent:           prepare(`INSERT OR IGNORE INTO saved_events (user_id,event_slug) VALUES (?,?)`),
+  unsaveEvent:         prepare(`DELETE FROM saved_events WHERE user_id=? AND event_slug=?`),
+  isEventSaved:        prepare(`SELECT 1 FROM saved_events WHERE user_id=? AND event_slug=?`),
+  getFollowedVendors:  prepare(`SELECT fv.*,v.trading_name,v.cuisine_tags,v.suburb,v.state FROM followed_vendors fv JOIN vendors v ON v.user_id=fv.vendor_user_id WHERE fv.user_id=? ORDER BY fv.created_at DESC`),
+  followVendor:        prepare(`INSERT OR IGNORE INTO followed_vendors (user_id,vendor_user_id) VALUES (?,?)`),
+  unfollowVendor:      prepare(`DELETE FROM followed_vendors WHERE user_id=? AND vendor_user_id=?`),
+  isVendorFollowed:    prepare(`SELECT 1 FROM followed_vendors WHERE user_id=? AND vendor_user_id=?`),
+  countFollowers:      prepare(`SELECT COUNT(*) as n FROM followed_vendors WHERE vendor_user_id=?`),
+
   // public vendors
   publicVendors: prepare(`
     SELECT v.user_id,v.trading_name,v.suburb,v.state,v.bio,v.cuisine_tags,
            v.setup_type,v.stall_w,v.stall_d,v.power,v.water,v.price_range,
            v.instagram,v.plan,u.status,u.avatar_url
     FROM vendors v JOIN users u ON v.user_id=u.id
-    WHERE u.status='active' ORDER BY v.plan DESC,v.created_at ASC
+    WHERE u.status='active' ORDER BY
+      CASE v.plan WHEN 'growth' THEN 0 WHEN 'pro' THEN 1 ELSE 2 END ASC,
+      v.created_at ASC
   `),
   publicVendorById: prepare(`
     SELECT v.*,u.status,u.first_name,u.last_name,u.avatar_url
@@ -740,5 +965,6 @@ export const stmts = {
 // ── Transactions ─────────────────────────────────────────────────────────────
 export const txSignupVendor    = _txSignupVendor;
 export const txSignupOrganiser = _txSignupOrganiser;
+export const txSignupFoodie    = _txSignupFoodie;
 
 export default _client ?? _localDb;
