@@ -3143,6 +3143,12 @@ function pitchFetch(url, opts = {}) {
 
 /* ── Real data init ──────────────────────────────────────────────────────── */
 async function initDashboard() {
+  // Handle #menu hash — open menu panel
+  if (window.location.hash === '#menu') {
+    setTimeout(() => { showPanel('menu', null); }, 400);
+    history.replaceState(null, '', window.location.pathname);
+  }
+
   // Handle #billing hash — open settings panel and scroll to plan card
   if (window.location.hash === '#billing') {
     setTimeout(() => {

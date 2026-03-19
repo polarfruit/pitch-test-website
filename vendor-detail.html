@@ -636,7 +636,7 @@ if (/^\d+$/.test(window.location.pathname.replace(/^\/vendors\//, '').replace(/\
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
           <h2 class="section-heading" style="margin-bottom:0;">Menu</h2>
           <div id="vd-menu-own-edit" style="display:none;">
-            <a href="/dashboard/vendor/menu" style="font-size:12px;font-weight:700;color:var(--ember);text-decoration:none;padding:5px 12px;background:var(--ember-bg);border:1px solid #E8500A25;border-radius:8px;">✏ Edit menu</a>
+            <a href="/dashboard/vendor#menu" style="font-size:12px;font-weight:700;color:var(--ember);text-decoration:none;padding:5px 12px;background:var(--ember-bg);border:1px solid #E8500A25;border-radius:8px;">✏ Edit menu</a>
           </div>
         </div>
         <div class="pub-menu-filter" id="vd-menu-filter"></div>
@@ -1418,23 +1418,27 @@ function showVendorToast(msg) {
 
 /* ── Populate "What they sell" ─────────────────────────────────────────────── */
 function renderWhatTheySell(cuisines, priceRange, menuItems) {
-  const tagsEl = document.getElementById('vd-sell-tags');
+  const tagsEl  = document.getElementById('vd-sell-tags');
   const priceEl = document.getElementById('vd-price-note');
   const priceLbl = document.getElementById('vd-price-label');
+  const section = document.getElementById('vd-sell-section');
   if (!tagsEl) return;
 
   var tags = [];
-  // Category tags (orange)
   (cuisines || []).forEach(function(c) {
     tags.push('<span class="sell-category">' + c + '</span>');
   });
-  // Specific menu items (if provided)
   (menuItems || []).forEach(function(item) {
     tags.push('<span class="sell-item">' + item + '</span>');
   });
+
+  if (!tags.length) {
+    // No tags — hide section so it doesn't show as blank
+    if (section) section.style.display = 'none';
+    return;
+  }
   tagsEl.innerHTML = tags.join('');
 
-  // Price range note
   const priceMap = { '$':'Under $15 per serve', '$$':'$15–$25 per serve', '$$$':'$25+ per serve' };
   if (priceRange && priceMap[priceRange.trim()] && priceEl && priceLbl) {
     priceLbl.textContent = priceMap[priceRange.trim()];

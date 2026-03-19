@@ -408,7 +408,7 @@ footer {
 let VENDORS = (window.PITCH_VENDORS || []).map(function(v){ return Object.assign({}, v); });
 
 let currentPage = 1;
-const PER_PAGE = 12;
+const PER_PAGE = 9;
 
 // Fetch DB vendors and overlay/add real registered vendors
 fetch('/api/vendors').then(function(r){ return r.json(); }).then(function(data) {
@@ -428,7 +428,8 @@ fetch('/api/vendors').then(function(r){ return r.json(); }).then(function(data) 
       bio:        db.bio          || v.bio,
       cuisines:   (db.cuisine_tags && db.cuisine_tags.length) ? db.cuisine_tags : v.cuisines,
       setup:      db.setup_type   || v.setup,
-      isPro:      db.plan === 'pro',
+      isPro:      db.plan === 'pro' || db.plan === 'growth',
+      isGrowth:   db.plan === 'growth',
       avatar_url: db.avatar_url   || null,
       _dbUserId:  db.user_id,
     });
@@ -450,7 +451,8 @@ fetch('/api/vendors').then(function(r){ return r.json(); }).then(function(data) 
       rating:     0,
       reviews:    0,
       events:     0,
-      isPro:      db.plan === 'pro',
+      isPro:      db.plan === 'pro' || db.plan === 'growth',
+      isGrowth:   db.plan === 'growth',
       emoji:      '🍽',
       bg:         'linear-gradient(135deg,#1A1612,#2A1A0A)',
       avatar_url: db.avatar_url || null,
@@ -521,7 +523,11 @@ function getFiltered() {
     return true;
   });
 
-  if (proFirst) list = [...list.filter(v => v.isPro), ...list.filter(v => !v.isPro)];
+  // Always sort Growth > Pro > Free; secondary sort by proFirst checkbox
+  list.sort((a, b) => {
+    const rank = v => v.isGrowth ? 0 : v.isPro ? 1 : 2;
+    return rank(a) - rank(b);
+  });
   return list;
 }
 
