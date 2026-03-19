@@ -196,7 +196,8 @@ body { background:var(--coal); color:var(--text-hi); font-family:var(--fb); line
 .doc-remove:hover { color:var(--terra); }
 
 /* Plan cards */
-.plan-cards { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+.plan-cards { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
+@media (max-width:700px) { .plan-cards { grid-template-columns:1fr; } }
 .plan-card { border:2px solid #ffffff10; border-radius:16px; padding:24px 20px; cursor:pointer; transition:all 0.18s; position:relative; }
 .plan-card:hover { border-color:#ffffff20; background:#ffffff04; }
 .plan-card.selected { border-color:var(--ember); background:var(--ember-bg); }
@@ -612,8 +613,8 @@ body { background:var(--coal); color:var(--text-hi); font-family:var(--fb); line
             <div class="plan-feat"><span class="plan-feat-check">✓</span>Document uploads</div>
             <div class="plan-feat"><span class="plan-feat-check">✓</span>Application tracking</div>
             <div class="plan-feat"><span class="plan-feat-x">—</span><span style="color:var(--text-lo);">Priority placement in search</span></div>
-            <div class="plan-feat"><span class="plan-feat-x">—</span><span style="color:var(--text-lo);">Pro badge on profile</span></div>
-            <div class="plan-feat"><span class="plan-feat-x">—</span><span style="color:var(--text-lo);">Priority placement in search</span></div>
+            <div class="plan-feat"><span class="plan-feat-x">—</span><span style="color:var(--text-lo);">Pro or Growth badge</span></div>
+            <div class="plan-feat"><span class="plan-feat-x">—</span><span style="color:var(--text-lo);">Analytics dashboard</span></div>
           </div>
         </div>
         <div class="plan-card featured selected" id="plan-pro" onclick="selectPlan('pro')">
@@ -629,6 +630,20 @@ body { background:var(--coal); color:var(--text-hi); font-family:var(--fb); line
             <div class="plan-feat"><span class="plan-feat-check">✓</span>Unlimited applications</div>
             <div class="plan-feat"><span class="plan-feat-check">✓</span>Analytics dashboard</div>
             <div class="plan-feat"><span class="plan-feat-check">✓</span>Direct organiser messaging</div>
+          </div>
+        </div>
+        <div class="plan-card" id="plan-growth" onclick="selectPlan('growth')" style="border-color:#C9840A22;">
+          <div class="plan-name" style="color:var(--gold);">Growth</div>
+          <div class="plan-price" style="color:var(--gold);">$79<span>/mo</span></div>
+          <div class="plan-price-desc">Billed monthly · Cancel anytime</div>
+          <div class="plan-divider"></div>
+          <div class="plan-features">
+            <div class="plan-feat"><span class="plan-feat-check">✓</span>Everything in Pro</div>
+            <div class="plan-feat"><span class="plan-feat-check">✓</span><strong style="color:var(--text-hi);">Top placement</strong> in search</div>
+            <div class="plan-feat"><span class="plan-feat-check">✓</span><strong style="color:var(--text-hi);">🚀 Growth badge</strong> on profile</div>
+            <div class="plan-feat"><span class="plan-feat-check">✓</span>24-hour early event access</div>
+            <div class="plan-feat"><span class="plan-feat-check">✓</span>Competitor insights</div>
+            <div class="plan-feat"><span class="plan-feat-check">✓</span>Up to 20 photos in galleries</div>
           </div>
         </div>
       </div>
@@ -760,6 +775,7 @@ function removeDoc(type) {
 function selectPlan(plan) {
   document.getElementById('plan-free').classList.toggle('selected', plan === 'free');
   document.getElementById('plan-pro').classList.toggle('selected', plan === 'pro');
+  document.getElementById('plan-growth').classList.toggle('selected', plan === 'growth');
 }
 
 let selectedPlan = 'pro';
