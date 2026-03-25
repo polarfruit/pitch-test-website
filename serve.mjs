@@ -2066,15 +2066,18 @@ app.get('/events/*splat', async (req, res) => {
   try {
     const ev = await stmts.getEventBySlug.get(slug);
     if (ev) {
-      const [approvedVendors, approvedCount, orgEventRow] = await Promise.all([
+      const [approvedVendors, approvedCount, orgEventRow, orgExtRow] = await Promise.all([
         stmts.getApprovedVendorsByEvent.all(ev.id).catch(() => []),
         stmts.countApprovedByEvent.get(ev.id).catch(() => ({ n: 0 })),
         ev.organiser_user_id ? stmts.countOrgEvents.get(ev.organiser_user_id).catch(() => ({ n: 0 })) : Promise.resolve({ n: 0 }),
+        ev.organiser_user_id ? stmts.getOrgWithAvatar.get(ev.organiser_user_id).catch(() => null) : Promise.resolve(null),
       ]);
       const pageData = {
         ...ev,
         approved_count: Number(approvedCount?.n ?? 0),
         org_event_count: Number(orgEventRow?.n ?? 0),
+        organiser_verified: orgExtRow?.abn_verified ? true : false,
+        organiser_avatar_url: orgExtRow?.avatar_url || null,
         approved_vendors: approvedVendors.map(v => ({
           user_id: v.user_id,
           trading_name: v.trading_name,
