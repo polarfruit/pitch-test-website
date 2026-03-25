@@ -68,17 +68,18 @@ html.vd-loading footer { visibility: hidden; }
 
 .vendor-hero {
   position: relative; width: 100%; height: 320px;
-  background: linear-gradient(135deg, #2D1A0A 0%, #5C2A08 40%, #3D1A06 70%, #1A0E04 100%);
+  background: linear-gradient(135deg, #231E19 0%, #1A1612 100%);
   overflow: hidden; margin-top: 66px;
 }
 .vendor-hero::before {
   content: ''; position: absolute; inset: 0;
-  background: radial-gradient(ellipse 60% 80% at 30% 50%, #E8500A18 0%, transparent 70%),
-              radial-gradient(ellipse 40% 60% at 70% 30%, #C9840A10 0%, transparent 60%);
+  background: radial-gradient(ellipse 60% 80% at 30% 50%, #E8500A0E 0%, transparent 70%),
+              radial-gradient(ellipse 40% 60% at 70% 30%, #C9840A08 0%, transparent 60%);
 }
-.vendor-hero-emoji {
+.vendor-hero-initials {
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-  font-size: 120px; opacity: 0.18; user-select: none;
+  font-family: var(--fd); font-size: 140px; font-weight: 900; letter-spacing: -0.04em;
+  color: rgba(253,244,231,0.10); user-select: none; pointer-events: none;
 }
 .vendor-hero-avatar {
   position: absolute; bottom: -36px; left: 52px; z-index: 3;
@@ -295,7 +296,7 @@ html.vd-loading footer { visibility: hidden; }
 .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .stat-item { display: flex; flex-direction: column; gap: 3px; }
 .stat-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-lo); }
-.stat-value { font-family: var(--fd); font-size: 22px; font-weight: 900; letter-spacing: -0.02em; color: var(--text-hi); }
+.stat-value { font-family: var(--fd); font-size: 20px; font-weight: 900; letter-spacing: -0.02em; color: var(--text-hi); }
 .stat-sub { font-size: 11px; color: var(--text-lo); }
 
 /* Plan badge */
@@ -316,9 +317,9 @@ html.vd-loading footer { visibility: hidden; }
   font-size: 13px; font-weight: 500; color: var(--text-mid);
 }
 .doc-check {
-  width: 22px; height: 22px; border-radius: 50%;
-  background: #2D8B5520; border: 1px solid #2D8B5530;
-  color: #2D8B55; font-size: 11px; font-weight: 700;
+  width: 30px; height: 30px; border-radius: 50%;
+  background: #2D8B5520; border: 1.5px solid #2D8B5540;
+  color: #2D8B55; font-size: 14px; font-weight: 700;
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
 
@@ -425,6 +426,17 @@ footer {
 .field-input:focus, .field-textarea-vd:focus { border-color: #E8500A40; box-shadow: 0 0 0 3px #E8500A12; }
 .field-input::placeholder, .field-textarea-vd::placeholder { color: var(--text-lo); }
 .field-textarea-vd { resize: vertical; min-height: 110px; line-height: 1.6; }
+
+/* ── ALT SECTION BACKGROUND ──────────────────────────────────────────────── */
+.section-alt-bg {
+  background: #231E19; border-radius: 16px; padding: 28px;
+}
+.section-alt-bg.section-block + .section-block { border-top: none; padding-top: 40px; }
+.section-alt-bg.section-block { margin-bottom: 40px; }
+
+/* ── REVIEW CARD VARIANTS ────────────────────────────────────────────────── */
+.review-card.org-review { border: 1px solid #2B5BA822; }
+.review-card.cust-review { border: 1px solid #E8500A22; }
 
 /* ── FOLLOW BUTTON ───────────────────────────────────────────────────────── */
 .btn-follow {
@@ -579,7 +591,6 @@ if (/^\d+$/.test(window.location.pathname.replace(/^\/vendors\//, '').replace(/\
     <li><a href="/events">Events</a></li>
     <li><a href="/vendors" class="active">Vendors</a></li>
     <li><a href="/how-it-works">How it Works</a></li>
-    <li><a href="/pricing">Pricing</a></li>
   </ul>
   <div class="nav-actions" id="nav-loggedout">
     <a href="/login" class="btn-login">Log In</a>
@@ -593,7 +604,7 @@ if (/^\d+$/.test(window.location.pathname.replace(/^\/vendors\//, '').replace(/\
 
 <!-- HERO BANNER -->
 <div class="vendor-hero" id="vd-hero">
-  <div class="vendor-hero-emoji" id="vd-hero-emoji"></div>
+  <div class="vendor-hero-initials" id="vd-hero-initials"></div>
   <div class="vendor-hero-overlay"></div>
   <div class="vendor-hero-avatar" id="vd-hero-avatar"></div>
   <div class="hero-breadcrumb">
@@ -635,7 +646,7 @@ if (/^\d+$/.test(window.location.pathname.replace(/^\/vendors\//, '').replace(/\
       </div>
 
       <!-- Photo Gallery -->
-      <div class="section-block">
+      <div class="section-block section-alt-bg">
         <h2 class="section-heading">Photos</h2>
         <div class="gallery-grid" id="vd-gallery"></div>
       </div>
@@ -738,7 +749,7 @@ if (/^\d+$/.test(window.location.pathname.replace(/^\/vendors\//, '').replace(/\
           <button class="sort-btn" onclick="setSort('rating', this)">Highest rated</button>
         </div>
         <div class="review-list" id="review-list">
-          <div class="review-card">
+          <div class="review-card org-review">
             <div class="review-header">
               <div class="review-org">
                 <div class="review-org-name">Adelaide City Council Events</div>
@@ -751,7 +762,7 @@ if (/^\d+$/.test(window.location.pathname.replace(/^\/vendors\//, '').replace(/\
             </div>
             <p class="review-text">Smoky Joe's were absolutely outstanding — arrived early, set up efficiently with zero fuss, and the queue at their stall was consistently the longest all night. Food quality was exceptional and they were professional throughout pack-down. Already confirmed for our next three events.</p>
           </div>
-          <div class="review-card">
+          <div class="review-card org-review">
             <div class="review-header">
               <div class="review-org">
                 <div class="review-org-name">Glenelg Foreshore Markets</div>
@@ -764,7 +775,7 @@ if (/^\d+$/.test(window.location.pathname.replace(/^\/vendors\//, '').replace(/\
             </div>
             <p class="review-text">Third time we've had Joe's at our markets and they never disappoint. The brisket rolls sell out every single time. Communication before the event was great — they flagged a minor equipment issue a week out and had it sorted with plenty of time. True professionals.</p>
           </div>
-          <div class="review-card">
+          <div class="review-card org-review">
             <div class="review-header">
               <div class="review-org">
                 <div class="review-org-name">Adelaide Fringe Festival</div>
@@ -782,8 +793,8 @@ if (/^\d+$/.test(window.location.pathname.replace(/^\/vendors\//, '').replace(/\
       </div>
 
       <!-- Consumer Reviews -->
-      <div class="section-block" id="consumer-reviews-section" style="display:none;">
-        <h2 class="section-heading">Customer reviews</h2>
+      <div class="section-block section-alt-bg" id="consumer-reviews-section" style="display:none;">
+        <h2 class="section-heading">What customers are saying.</h2>
         <p style="font-size:13px;color:var(--text-lo);margin-bottom:20px;">Reviews from people who've visited this vendor at markets.</p>
         <div class="review-list" id="consumer-review-list"></div>
         <p style="font-size:12px;color:var(--text-lo);margin-top:16px;">
@@ -796,13 +807,8 @@ if (/^\d+$/.test(window.location.pathname.replace(/^\/vendors\//, '').replace(/\
     <!-- ── RIGHT SIDEBAR ─────────────────────────────────────────────── -->
     <aside class="sidebar">
 
-      <!-- Follow & Contact actions -->
-      <button class="btn-follow" id="follow-btn" onclick="toggleFollow()">
-        ❤️ Follow vendor
-      </button>
-      <div class="follow-count" id="follow-count">248 followers</div>
-
-      <button class="btn-contact" onclick="openContactModal()">
+      <!-- Contact action (organiser only) -->
+      <button class="btn-contact" id="contact-btn" style="display:none;" onclick="openContactModal()">
         💬 Contact vendor
       </button>
 
@@ -878,7 +884,7 @@ if (/^\d+$/.test(window.location.pathname.replace(/^\/vendors\//, '').replace(/\
           </div>
           <div class="stat-item">
             <div class="stat-label">Member since</div>
-            <div class="stat-value" style="font-size:17px;margin-top:4px;">Mar 2023</div>
+            <div class="stat-value">Mar 2023</div>
           </div>
           <div class="stat-item">
             <div class="stat-label">Response rate</div>
@@ -887,7 +893,7 @@ if (/^\d+$/.test(window.location.pathname.replace(/^\/vendors\//, '').replace(/\
           </div>
           <div class="stat-item">
             <div class="stat-label">Avg. setup</div>
-            <div class="stat-value" style="font-size:17px;margin-top:4px;">45 min</div>
+            <div class="stat-value">45 min</div>
           </div>
         </div>
       </div>
@@ -904,7 +910,7 @@ if (/^\d+$/.test(window.location.pathname.replace(/^\/vendors\//, '').replace(/\
       </div>
 
       <!-- Document trust -->
-      <div class="sidebar-card" id="vd-doc-trust">
+      <div class="sidebar-card" id="vd-doc-trust" style="background:linear-gradient(135deg,#2D8B5508,#23231910);border-color:#2D8B5514;">
         <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-lo);margin-bottom:16px;">Documents</div>
         <div class="doc-list" id="vd-doc-list">
           <div class="doc-item">
@@ -1168,6 +1174,11 @@ function applyDbVendor(db) {
 function applyAndReveal(v) {
   applyDbVendor(v);
 
+  // Hero initials
+  var _heroInitials = (v.trading_name || '?').split(' ').map(function(w){return w.charAt(0).toUpperCase();}).join('').slice(0,2);
+  var heroInitialsEl = document.getElementById('vd-hero-initials');
+  if (heroInitialsEl) heroInitialsEl.textContent = _heroInitials;
+
   // Avatar + banner
   var heroAvatar = document.getElementById('vd-hero-avatar');
   var hero = document.getElementById('vd-hero');
@@ -1234,6 +1245,14 @@ function applyAndReveal(v) {
       : '<div style="font-size:12px;color:var(--text-lo);">No documents uploaded yet.</div>';
   }
 
+  // Show contact button for logged-in organisers
+  fetch('/api/me').then(function(r){ return r.ok ? r.json() : null; }).then(function(d){
+    if (d && d.user && d.user.role === 'organiser') {
+      var c = document.getElementById('contact-btn');
+      if (c) c.style.display = '';
+    }
+  }).catch(function(){});
+
   // What they sell — use cuisine_tags from DB vendor
   renderWhatTheySell(cuisines, db.price_range || null, []);
 
@@ -1271,9 +1290,8 @@ if (isNumericId) {
   if (vendor) {
     document.title = vendor.name + ' \u2014 Pitch.';
     document.getElementById('vd-breadcrumb').textContent = vendor.name;
-    document.getElementById('vd-hero-emoji').textContent = vendor.emoji;
-    document.getElementById('vd-hero-emoji').style.background = vendor.bg;
-    document.getElementById('vd-hero').style.background = vendor.bg;
+    var _initials = vendor.name.split(' ').map(function(w){return w.charAt(0).toUpperCase();}).join('').slice(0,2);
+    document.getElementById('vd-hero-initials').textContent = _initials;
     document.getElementById('vd-name').textContent = vendor.name;
     document.getElementById('vd-pro-badge').style.display = (vendor.isPro && !vendor.isGrowth) ? '' : 'none';
     document.getElementById('vd-growth-badge').style.display = vendor.isGrowth ? '' : 'none';
@@ -1288,7 +1306,7 @@ if (isNumericId) {
     document.getElementById('vd-bio').textContent = vendor.bio;
 
     document.getElementById('vd-gallery').innerHTML = vendor.gallery.map(function(g, i){
-      return '<div class="gallery-item" onclick="openLightbox(' + i + ')"><div class="gallery-img" style="background:' + g.bg + ';">' + g.emoji + '</div><div class="gallery-overlay">\uD83D\uDD0D</div></div>';
+      return '<div class="gallery-item" onclick="openLightbox(' + i + ')"><div class="gallery-img" style="background:linear-gradient(135deg,#2E2720,#1A1612);"></div><div class="gallery-overlay">\uD83D\uDD0D</div></div>';
     }).join('');
 
     document.getElementById('past-events-list').innerHTML = vendor.pastEvents.map(function(pe){
@@ -1299,7 +1317,7 @@ if (isNumericId) {
 
     document.getElementById('review-list').innerHTML = vendor.reviewsList.map(function(r){
       var stars = '\u2605'.repeat(r.rating) + '\u2606'.repeat(5 - r.rating);
-      return '<div class="review-card"><div class="review-header"><div class="review-org"><div class="review-org-name">' + r.org + '</div><div class="review-event-name">' + r.event + '</div></div><div class="review-meta"><span class="review-stars">' + stars + '</span></div></div><p class="review-text">' + r.text + '</p></div>';
+      return '<div class="review-card org-review"><div class="review-header"><div class="review-org"><div class="review-org-name">' + r.org + '</div><div class="review-event-name">' + r.event + '</div></div><div class="review-meta"><span class="review-stars">' + stars + '</span></div></div><p class="review-text">' + r.text + '</p></div>';
     }).join('');
     var lmBtn = document.getElementById('load-more-btn');
     if(lmBtn) lmBtn.style.display = 'none';
@@ -1324,7 +1342,7 @@ if (isNumericId) {
       if (cSection) cSection.style.display = '';
       if (cList) cList.innerHTML = consumerRevs.map(function(r){
         var stars = '\u2605'.repeat(r.rating) + '\u2606'.repeat(5 - r.rating);
-        return '<div class="review-card"><div class="review-header"><div class="review-org"><div class="review-org-name">' + r.name + '</div><div class="review-event-name">' + r.event + '</div></div><div class="review-meta"><span class="review-stars">' + stars + '</span></div></div><p class="review-text">' + r.text + '</p></div>';
+        return '<div class="review-card cust-review"><div class="review-header"><div class="review-org"><div class="review-org-name">' + r.name + '</div><div class="review-event-name">' + r.event + '</div></div><div class="review-meta"><span class="review-stars">' + stars + '</span></div></div><p class="review-text">' + r.text + '</p></div>';
       }).join('');
     }
 
@@ -1355,21 +1373,23 @@ if (isNumericId) {
       planIconEl2.textContent = '📋';
     }
 
-    window.addEventListener('load', function(){
-      setTimeout(function(){
-        var total = vendor.reviews;
-        var five = Math.round(total * 0.82);
-        var four = Math.round(total * 0.12);
-        var three = Math.round(total * 0.04);
-        var two = 0, one = total - five - four - three - two;
-        var data = {5: five, 4: four, 3: three, 2: two, 1: Math.max(0,one)};
-        [5,4,3,2,1].forEach(function(s){
-          var pct = Math.round((data[s] / total) * 100);
-          var el = document.getElementById('rb' + s);
-          if(el) el.style.width = pct + '%';
-        });
-      }, 300);
-    });
+    setTimeout(function(){
+      var total = vendor.reviews;
+      var five = Math.round(total * 0.87);
+      var four = Math.round(total * 0.10);
+      var three = Math.round(total * 0.03);
+      var two = 0, one = Math.max(0, total - five - four - three - two);
+      var data = {5: five, 4: four, 3: three, 2: two, 1: one};
+      [5,4,3,2,1].forEach(function(s){
+        var pct = Math.round((data[s] / total) * 100);
+        var el = document.getElementById('rb' + s);
+        if(el) el.style.width = pct + '%';
+      });
+      // Update count labels too
+      var counts = document.querySelectorAll('.rb-count');
+      var vals = [five, four, three, two, one];
+      counts.forEach(function(el, i){ el.textContent = vals[i]; });
+    }, 200);
 
     // Overlay live DB data on top of static data
     fetch('/api/vendors').then(function(r){ return r.json(); }).then(function(data) {
@@ -1417,7 +1437,7 @@ function togglePastEvents() {
 /* ── Load more reviews ───────────────────────────────────────────────────── */
 function loadMoreReviews() {
   const extra = `
-    <div class="review-card">
+    <div class="review-card org-review">
       <div class="review-header">
         <div class="review-org">
           <div class="review-org-name">Barossa Valley Wine &amp; Food Festival</div>
@@ -1430,7 +1450,7 @@ function loadMoreReviews() {
       </div>
       <p class="review-text">We've had over 200 food vendors at our festival over the years and Smoky Joe's is one of the few we'd call back without hesitation. Their product is genuinely excellent and their professionalism is top-tier. The brisket sold out by 4pm on both days.</p>
     </div>
-    <div class="review-card">
+    <div class="review-card org-review">
       <div class="review-header">
         <div class="review-org">
           <div class="review-org-name">Port Adelaide Community Events</div>
@@ -1562,12 +1582,16 @@ if (!isNumericId && typeof vendor !== 'undefined' && vendor) {
   renderWhatTheySell(vendor.cuisines, vendor.price_range || '$', _demoMenuItems[vpath] || []);
 }
 
-// Vendor-only "apply to same markets" toggle (demo)
+// Role-based UI toggles
 (function() {
   const urlRole = new URLSearchParams(window.location.search).get('role');
   if (urlRole === 'vendor') {
     const s = document.getElementById('same-markets-section');
     if (s) s.style.display = '';
+  }
+  if (urlRole === 'organiser') {
+    const c = document.getElementById('contact-btn');
+    if (c) c.style.display = '';
   }
 })();
 
