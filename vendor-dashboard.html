@@ -730,6 +730,92 @@ body::before {
 .btn-plan-change:hover { color: var(--text-hi); background: #ffffff12; }
 
 /* ── SUBSCRIPTION GATING ─────────────────────────────────────────────────── */
+
+/* Usage counter bar (Starter — overview) */
+.usage-counter-bar {
+  background: var(--char); border: 1px solid #ffffff08; border-radius: 14px;
+  padding: 16px 20px; margin-bottom: 20px; display: none;
+}
+.usage-counter-bar.visible { display: block; }
+.usage-counter-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.usage-counter-label { font-size: 13px; font-weight: 600; color: var(--text-hi); }
+.usage-counter-val { font-size: 13px; font-weight: 700; }
+.usage-counter-track { height: 7px; background: #ffffff0D; border-radius: 100px; overflow: hidden; margin-bottom: 8px; }
+.usage-counter-fill { height: 100%; border-radius: 100px; transition: width 0.4s; }
+.usage-counter-sub { font-size: 12px; color: var(--text-lo); }
+.usage-counter-sub a { color: var(--ember); text-decoration: none; font-weight: 600; }
+
+/* Late window badge on event cards */
+.late-window-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.04em;
+  padding: 3px 8px; border-radius: 100px; white-space: nowrap;
+}
+.late-window-badge.pro { background: #C9840A18; color: var(--gold); border: 1px solid #C9840A28; }
+.late-window-badge.growth { background: #E8500A18; color: var(--ember); border: 1px solid #E8500A28; }
+
+/* Early access badge (Growth) */
+.early-access-badge {
+  position: absolute; top: 10px; left: 10px; z-index: 2;
+  display: inline-flex; align-items: center; gap: 4px;
+  background: rgba(232,80,10,0.9); color: #fff;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.04em;
+  padding: 3px 9px; border-radius: 100px;
+}
+
+/* Application template section */
+.app-template-row {
+  margin-top: 12px; padding-top: 12px; border-top: 1px solid #ffffff08;
+}
+.app-template-label {
+  font-size: 12px; font-weight: 700; color: var(--text-mid); margin-bottom: 8px;
+  display: flex; align-items: center; gap: 6px;
+}
+.app-template-lock {
+  font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 100px;
+  background: #C9840A18; color: var(--gold); border: 1px solid #C9840A28;
+}
+.app-template-textarea {
+  width: 100%; background: #ffffff07; border: 1px solid #ffffff12;
+  border-radius: 10px; color: var(--text-hi); font-family: var(--fb);
+  font-size: 13px; padding: 10px 14px; resize: vertical; min-height: 80px;
+  outline: none; transition: border-color 0.12s; line-height: 1.6;
+}
+.app-template-textarea:focus { border-color: #E8500A40; }
+.app-template-hint { font-size: 11px; color: var(--text-lo); margin-top: 5px; line-height: 1.5; }
+
+/* Messaging locked state */
+.messages-gate {
+  display: none; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 80px 40px; gap: 12px;
+}
+.messages-gate.visible { display: flex; }
+.messages-gate-icon { font-size: 40px; margin-bottom: 4px; }
+.messages-gate-title { font-family: var(--fd); font-size: 20px; font-weight: 900; letter-spacing: -0.02em; color: var(--text-hi); }
+.messages-gate-sub { font-size: 14px; color: var(--text-mid); line-height: 1.6; max-width: 340px; }
+
+/* Cold-contact lock banner */
+.cold-contact-gate {
+  margin: 0; padding: 10px 16px; background: #C9840A0E;
+  border: 1px solid #C9840A28; border-radius: 10px;
+  font-size: 12px; color: var(--text-mid); line-height: 1.5; display: none;
+}
+.cold-contact-gate a { color: var(--ember); text-decoration: none; font-weight: 600; }
+
+/* Nav link locked indicator */
+.nav-lock-icon {
+  font-size: 10px; margin-left: auto; opacity: 0.5;
+}
+
+/* Waitlist top-of-list badge */
+.waitlist-top-badge {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 100px;
+  background: #E8500A18; color: var(--ember); border: 1px solid #E8500A28;
+  white-space: nowrap; margin-left: 4px;
+}
+
+/* Gate overlay for sections */
 .gate-wrap { position: relative; overflow: hidden; border-radius: inherit; }
 .gate-overlay {
   position: absolute; inset: 0; background: rgba(26,22,18,0.82);
@@ -1551,6 +1637,18 @@ body::before {
     <!-- ── PANEL: OVERVIEW ──────────────────────────────────────────────── -->
     <div class="panel active" id="panel-overview">
 
+      <!-- Starter: application usage counter (hidden for Pro/Growth) -->
+      <div class="usage-counter-bar" id="starter-usage-bar">
+        <div class="usage-counter-top">
+          <div class="usage-counter-label">📋 Applications this month</div>
+          <div class="usage-counter-val" id="usage-counter-val" style="color:var(--ember);">0 / 10</div>
+        </div>
+        <div class="usage-counter-track">
+          <div class="usage-counter-fill" id="usage-counter-fill" style="width:0%;background:var(--ember);"></div>
+        </div>
+        <div class="usage-counter-sub" id="usage-counter-sub">Resets on the 1st of each month. <a href="/pricing">Upgrade to Pro for unlimited applications →</a></div>
+      </div>
+
       <!-- Stat cards -->
       <div class="stat-grid">
         <div class="stat-card ember">
@@ -1862,6 +1960,19 @@ body::before {
             <input class="form-input" id="v-instagram" type="text" value="" placeholder="@yourhandle" />
           </div>
 
+          <!-- Growth: Cuisine vanity URL -->
+          <div class="form-group" id="vanity-url-group" style="display:none;">
+            <label class="form-label" style="display:flex;align-items:center;gap:8px;">
+              Profile URL
+              <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:100px;background:#E8500A18;color:var(--ember);border:1px solid #E8500A28;">Growth</span>
+            </label>
+            <div style="display:flex;align-items:center;gap:0;background:#ffffff07;border:1px solid #ffffff12;border-radius:10px;overflow:hidden;">
+              <span style="padding:10px 12px;font-size:13px;color:var(--text-lo);border-right:1px solid #ffffff0A;white-space:nowrap;">pitch.com/vendors/</span>
+              <input class="form-input" id="v-vanity-url" type="text" placeholder="your-business-name" style="border:none;background:transparent;border-radius:0;" />
+            </div>
+            <div style="font-size:11px;color:var(--text-lo);margin-top:5px;">Lowercase letters, numbers, and hyphens only.</div>
+          </div>
+
           <div class="form-group">
             <label class="form-label">Photos <span style="color:var(--text-lo);font-weight:400;letter-spacing:0;text-transform:none;" id="photo-limit-label">(up to 4)</span></label>
             <div class="photo-upload-area" id="photo-drop-zone"
@@ -1875,6 +1986,15 @@ body::before {
               <div class="upload-hint" id="photo-upload-hint">JPG, PNG or WebP · Max 5MB each · Up to 4 photos</div>
             </div>
             <div class="photo-grid" id="photo-grid"></div>
+            <!-- Growth: gallery naming -->
+            <div id="gallery-naming-section" style="display:none;margin-top:12px;padding:12px 14px;background:#ffffff05;border:1px solid #ffffff0A;border-radius:10px;">
+              <div style="font-size:12px;font-weight:700;color:var(--text-mid);margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+                🖼 Named gallery
+                <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:100px;background:#E8500A18;color:var(--ember);border:1px solid #E8500A28;">Growth</span>
+              </div>
+              <input class="form-input" id="gallery-name" type="text" placeholder="e.g. Events, Markets, Catering…" style="margin-bottom:0;" />
+              <div style="font-size:11px;color:var(--text-lo);margin-top:5px;line-height:1.5;">This name appears above your photo gallery on your public profile.</div>
+            </div>
           </div>
 
           <button class="btn-save" onclick="saveProfile(this)">Save changes</button>
@@ -2002,6 +2122,13 @@ body::before {
 
     <!-- ── PANEL: MESSAGES ───────────────────────────────────────────────── -->
     <div class="panel" id="panel-messages">
+      <!-- Starter: messaging locked gate -->
+      <div class="messages-gate" id="messages-gate">
+        <div class="messages-gate-icon">💬</div>
+        <div class="messages-gate-title">Messaging is a Pro feature</div>
+        <div class="messages-gate-sub">Message organisers you've applied to, track conversations, and never miss a response. Available on Pro and Growth plans.</div>
+        <a href="/pricing" style="display:inline-block;background:var(--ember);color:#fff;font-family:var(--fb);font-size:14px;font-weight:700;padding:12px 28px;border-radius:12px;text-decoration:none;margin-top:8px;">Upgrade to Pro — $29/month →</a>
+      </div>
       <div class="messages-layout" id="messages-layout">
 
         <!-- Inbox -->
@@ -2009,6 +2136,10 @@ body::before {
           <div class="inbox-header">
             <div class="inbox-title">Messages</div>
             <input class="inbox-search" type="text" placeholder="Search conversations…" />
+          </div>
+          <!-- Pro: cold contact locked banner -->
+          <div class="cold-contact-gate" id="cold-contact-gate">
+            🔒 <strong>Cold contact is a Growth feature.</strong> You can message any organiser you've applied to. <a href="/pricing">Upgrade to Growth</a> to contact any organiser on Pitch.
           </div>
           <div class="thread-list" id="thread-list">
             <div style="padding:40px 20px;text-align:center;color:var(--text-lo);font-size:13px;line-height:1.7;">
@@ -2278,6 +2409,25 @@ body::before {
                 <div class="toggle-track"></div><div class="toggle-thumb"></div>
               </label>
             </div>
+            <!-- New event alerts row — gated by plan -->
+            <div class="settings-row" id="notif-events-row">
+              <div class="settings-row-left">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <div class="settings-row-label">New event alerts</div>
+                  <span class="gate-lock-tag" id="notif-events-lock" style="display:none;">🔒 Pro</span>
+                  <span id="notif-events-timing" style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:100px;display:none;"></span>
+                </div>
+                <div class="settings-row-desc" id="notif-events-desc">Notify me when new events matching my cuisine are posted.</div>
+              </div>
+              <div class="gate-tooltip-wrap">
+                <label class="toggle-switch" id="notif-events-toggle">
+                  <input type="checkbox" id="notif-events" checked onchange="saveNotifSettings()" />
+                  <div class="toggle-track"></div><div class="toggle-thumb"></div>
+                </label>
+                <span class="gate-tooltip" id="notif-events-tooltip"></span>
+              </div>
+            </div>
+
             <div class="settings-row" id="notif-docs-row">
               <div class="settings-row-left">
                 <div style="display:flex;align-items:center;gap:8px;">
@@ -2332,6 +2482,34 @@ body::before {
           <div class="settings-section-title">Subscription</div>
           <div class="plan-card" id="settings-plan-card">
             <!-- Populated by initDashboard -->
+          </div>
+        </div>
+
+        <!-- Growth: CSV exports -->
+        <div class="settings-section" id="exports-section" style="display:none;">
+          <div class="settings-section-title">Exports</div>
+          <div class="card" style="display:flex;flex-direction:column;gap:10px;">
+            <button onclick="downloadBookkeeping()" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--text-hi);background:#ffffff08;border:1px solid #ffffff12;padding:11px 18px;border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .14s;text-align:left;" onmouseover="this.style.background='#ffffff12'" onmouseout="this.style.background='#ffffff08'">
+              📊 <span>Download application CSV</span>
+              <span style="margin-left:auto;font-size:11px;color:var(--text-lo);font-weight:400;">Includes all applications and statuses</span>
+            </button>
+            <button onclick="downloadBookkeepingSummary()" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--text-hi);background:#ffffff08;border:1px solid #ffffff12;padding:11px 18px;border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .14s;text-align:left;" onmouseover="this.style.background='#ffffff12'" onmouseout="this.style.background='#ffffff08'">
+              📒 <span>Download bookkeeping summary</span>
+              <span style="margin-left:auto;font-size:11px;color:var(--text-lo);font-weight:400;">Fees, payments, and stall income</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Growth: Team member -->
+        <div class="settings-section" id="team-invite-section" style="display:none;">
+          <div class="settings-section-title">Team</div>
+          <div class="card">
+            <div style="font-size:13px;color:var(--text-mid);margin-bottom:14px;line-height:1.6;">Invite a team member to access and manage your Pitch. account alongside you.</div>
+            <div style="display:flex;gap:10px;">
+              <input class="settings-input" type="email" id="team-invite-email" placeholder="Team member email address" style="flex:1;" />
+              <button onclick="sendTeamInvite()" style="font-family:var(--fb);font-size:13px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:0 18px;border-radius:10px;cursor:pointer;white-space:nowrap;transition:background .14s;" onmouseover="this.style.background='var(--ember-glow)'" onmouseout="this.style.background='var(--ember)'">Send invite</button>
+            </div>
+            <div id="team-invite-msg" style="font-size:12px;color:var(--herb);margin-top:8px;display:none;">Invite sent!</div>
           </div>
         </div>
 
@@ -2567,6 +2745,32 @@ function _fmtTime(iso) {
 
 // ── Open a conversation — called from onclick or deep-link ────────────────
 async function startChatWithOrganiser(orgUserId, orgName, eventName, skipPanelSwitch, eventId) {
+  const plan = window.__PITCH_PLAN__ || 'free';
+  const isStarter = plan === 'free' || !plan;
+  const isPro     = plan === 'pro';
+  const isGrowth  = plan === 'growth';
+
+  // Starter: messaging entirely disabled
+  if (isStarter) {
+    showPanel('messages', null);
+    return;
+  }
+
+  // Pro: cold contact check — only allow if eventId supplied (applied to an event by this organiser)
+  if (isPro && (!eventId || Number(eventId) <= 0)) {
+    // Check if vendor has any application to an event by this organiser
+    const apps = window.__PITCH_ALL_APPS__ || [];
+    const hasApp = apps.some(a => Number(a.organiser_user_id) === Number(orgUserId) || Number(a.event_id) === Number(eventId));
+    if (!hasApp) {
+      showPanel('messages', null);
+      setTimeout(() => {
+        const coldGate = document.getElementById('cold-contact-gate');
+        if (coldGate) { coldGate.style.display = 'block'; coldGate.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+      }, 100);
+      return;
+    }
+  }
+
   // 1. Switch panel and set header immediately (synchronous, no failure possible)
   if (!skipPanelSwitch) showPanel('messages', null);
   _openConvoPane(orgName || 'Organiser', eventName || '');
@@ -3261,8 +3465,13 @@ async function initDashboard() {
   // Documents panel
   renderDocuments();
 
-  // Settings plan card — fetch subscription info for quota bar
+  // Fetch subscription info — store globally for quota bar, apply button gating, and plan card
   pitchFetch('/api/vendor/subscription-info').then(r => r.ok ? r.json() : null).then(subInfo => {
+    if (subInfo) {
+      window.__PITCH_SUB_INFO__ = subInfo;
+      // Re-run gating now that we have quota data
+      applySubscriptionGating(profile.plan || 'free');
+    }
     renderPlanCard(profile, subInfo);
   }).catch(() => renderPlanCard(profile));
 
@@ -3338,6 +3547,16 @@ function renderBrowseGrid(events) {
     grid.innerHTML = '<div style="color:#6B5A4A;font-size:13px;grid-column:1/-1;padding:40px 0;text-align:center;">No events match your filters.</div>';
     return;
   }
+  const plan = window.__PITCH_PLAN__ || 'free';
+  const isGrowth = plan === 'growth';
+  const isPro    = plan === 'pro';
+  const isStarter= !isPro && !isGrowth;
+  const sub = window.__PITCH_SUB_INFO__;
+  const atLimit = isStarter && sub && sub.apps_used >= (sub.apps_limit || 10);
+
+  // "Early access" threshold: Growth sees events within 48hrs of creation
+  const earlyAccessCutoff = isGrowth ? (Date.now() - 48*60*60*1000) : 0;
+
   grid.innerHTML = events.map(ev => {
     const dateStr = ev.date_sort ? _browseFmtDate(ev.date_sort) + (ev.date_end ? ' → ' + _browseFmtDate(ev.date_end) : '') : 'TBC';
     const total  = Number(ev.stalls_available) || 0;
@@ -3348,9 +3567,28 @@ function renderBrowseGrid(events) {
     const spotsBg   = spotsLeft <= 3 ? '#C0392B22' : spotsLeft <= 8 ? '#C9840A22' : '#2D8B5522';
     const spotsCol  = spotsLeft <= 3 ? '#C0392B'   : spotsLeft <= 8 ? '#C9840A'   : '#2D8B55';
     const spotsTxt  = spotsLeft <= 0 ? 'Full' : spotsLeft + ' left';
-    const statusBadge = ev.applied
-      ? `<span style="font-size:11px;font-weight:700;color:${ev.appStatus==='approved'?'var(--herb)':ev.appStatus==='rejected'?'var(--terra)':'var(--gold)'};">${ev.appStatus==='approved'?'✓ Approved':ev.appStatus==='rejected'?'✕ Not accepted':'● Applied'}</span>`
-      : `<button class="btn-view-event" onclick="event.stopPropagation();openEventDetail(${ev.id})">View & Apply →</button>`;
+
+    // Early access badge (Growth only — events posted in last 48hrs)
+    const evCreatedAt = ev.created_at ? new Date(ev.created_at).getTime() : 0;
+    const showEarlyAccess = isGrowth && evCreatedAt > earlyAccessCutoff;
+
+    let statusBadge;
+    if (ev.applied) {
+      const statusColor = ev.appStatus==='approved'?'var(--herb)':ev.appStatus==='rejected'?'var(--terra)':'var(--gold)';
+      const statusText  = ev.appStatus==='approved'?'✓ Approved':ev.appStatus==='rejected'?'✕ Not accepted':'● Applied';
+      statusBadge = `<span style="font-size:11px;font-weight:700;color:${statusColor};">${statusText}</span>`;
+    } else if (atLimit) {
+      statusBadge = `<button class="btn-view-event" style="opacity:0.45;cursor:not-allowed;background:#2E2720;border-color:#ffffff10;color:var(--text-lo);" onclick="event.stopPropagation();showLimitModal({used:${sub.apps_used},limit:${sub.apps_limit}})">Limit reached</button>`;
+    } else {
+      statusBadge = `<button class="btn-view-event" onclick="event.stopPropagation();openEventDetail(${ev.id})">View & Apply →</button>`;
+    }
+
+    // Late window indicator for Pro/Growth
+    const lateWindowHrs = isGrowth ? 48 : isPro ? 12 : 0;
+    const lateWindowHtml = lateWindowHrs > 0
+      ? `<span class="late-window-badge ${isGrowth?'growth':'pro'}" title="You can apply up to ${lateWindowHrs} hours after the application deadline">⏰ +${lateWindowHrs}hr window</span>`
+      : '';
+
     const feeHtml = (ev.stall_fee_min || ev.stall_fee_max)
       ? `<span class="browse-card-fee">Booth: <strong>$${ev.stall_fee_min||'?'}–$${ev.stall_fee_max||'?'}</strong></span>`
       : `<span class="browse-card-fee" style="color:#8B7A6A;">Fee TBC</span>`;
@@ -3358,11 +3596,12 @@ function renderBrowseGrid(events) {
       ? `<span class="browse-card-dl">Apply by ${_browseFmtDeadline(ev.deadline)}</span>`
       : '';
     return `<div class="browse-card" onclick="openEventDetail(${ev.id})">
-      <div class="browse-card-header" style="background:linear-gradient(135deg,#1A1208,#3D2C10);">
+      <div class="browse-card-header" style="background:linear-gradient(135deg,#1A1208,#3D2C10);position:relative;">
         <div class="browse-card-header-overlay"></div>
         <span style="position:relative;z-index:1;font-size:52px;">🎪</span>
         ${ev.category ? `<span class="browse-card-cat">${ev.category}</span>` : ''}
         ${total > 0 ? `<span class="browse-card-spots-badge" style="background:${spotsBg};color:${spotsCol};border:1px solid ${spotsCol}33;">${spotsTxt}</span>` : ''}
+        ${showEarlyAccess ? `<span class="early-access-badge">⚡ Early access</span>` : ''}
       </div>
       <div class="browse-card-body">
         <div class="browse-card-name">${ev.name}</div>
@@ -3376,6 +3615,7 @@ function renderBrowseGrid(events) {
           <span style="color:${fc};font-weight:700;">${pct}%</span>
         </div>
         <div class="browse-card-bar-bg"><div class="browse-card-bar" style="width:${pct}%;background:${fc};"></div></div>` : ''}
+        ${lateWindowHtml ? `<div style="margin-top:8px;">${lateWindowHtml}</div>` : ''}
       </div>
       <div class="browse-card-footer">
         <div style="display:flex;flex-direction:column;gap:2px;">${feeHtml}${dlHtml}</div>
@@ -3455,20 +3695,58 @@ function renderEventDetail(ev) {
   const fmtDate = iso => { if (!iso) return ''; const p = iso.split('-'); return p[2]+'/'+p[1]+'/'+p[0]; };
   const dateStr = ev.date_sort ? fmtDate(ev.date_sort) + (ev.date_end ? ' → ' + fmtDate(ev.date_end) : ' (one day)') : 'TBC';
 
+  const plan = window.__PITCH_PLAN__ || 'free';
+  const isGrowth = plan === 'growth';
+  const isPro    = plan === 'pro';
+  const isStarter= !isPro && !isGrowth;
+  const sub = window.__PITCH_SUB_INFO__;
+  const atLimit = isStarter && sub && sub.apps_used >= (sub.apps_limit || 10);
+
+  const orgName = (ev.organiser_name||'Organiser').replace(/'/g,"\\'");
+  const evName  = (ev.name||'').replace(/'/g,"\\'");
+
+  // Late window indicator
+  const lateWindowHrs = isGrowth ? 48 : isPro ? 12 : 0;
+  const lateWindowHtml = lateWindowHrs > 0
+    ? `<div style="margin-bottom:12px;"><span class="late-window-badge ${isGrowth?'growth':'pro'}">⏰ Extended application window: +${lateWindowHrs} hours after deadline</span></div>`
+    : '';
+
+  // Template section
+  let templateHtml = '';
+  if (isPro || isGrowth) {
+    templateHtml = `<div class="app-template-row">
+      <div class="app-template-label">📝 Application message <span style="font-size:11px;font-weight:400;color:var(--text-lo);">(optional)</span></div>
+      <textarea class="app-template-textarea" id="detail-apply-message" placeholder="Introduce your stall, mention relevant experience, or ask a question…"></textarea>
+      <div class="app-template-hint">This message is sent to the organiser with your application.</div>
+    </div>`;
+  } else {
+    templateHtml = `<div class="app-template-row">
+      <div class="app-template-label">📝 Application message <span class="app-template-lock">🔒 Pro feature</span></div>
+      <div style="font-size:12px;color:var(--text-lo);padding:10px 12px;background:#ffffff05;border:1px solid #ffffff0A;border-radius:8px;line-height:1.6;">Include a personal message with your application. <a href="/pricing" style="color:var(--ember);text-decoration:none;font-weight:600;">Upgrade to Pro to unlock →</a></div>
+    </div>`;
+  }
+
   let applyBar;
   if (ev.applied) {
     const statusColor = ev.appStatus==='approved'?'var(--herb)':ev.appStatus==='rejected'?'var(--terra)':'var(--gold)';
     const statusText  = ev.appStatus==='approved'?'✓ Application approved':ev.appStatus==='rejected'?'✕ Not accepted this time':'● Application submitted';
-    const orgName = (ev.organiser_name||'Organiser').replace(/'/g,"\\'");
-    const evName  = (ev.name||'').replace(/'/g,"\\'");
+    const waitlistBadge = isGrowth && ev.appStatus==='pending'
+      ? `<span class="waitlist-top-badge">🔝 Top of waitlist</span>` : '';
     applyBar = `<div style="display:flex;flex-direction:column;gap:10px;align-items:flex-end;">
-      <div style="font-size:15px;font-weight:700;color:${statusColor};">${statusText}</div>
+      <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:15px;font-weight:700;color:${statusColor};">${statusText}</span>${waitlistBadge}</div>
       <button onclick="startChatWithOrganiser(${ev.organiser_user_id||0},'${orgName}','${evName}',false,${ev.id})" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--ember);background:var(--ember-bg);border:1px solid #E8500A33;padding:8px 18px;border-radius:8px;cursor:pointer;white-space:nowrap;">💬 Message organiser</button>
+    </div>`;
+  } else if (atLimit) {
+    applyBar = `<div style="display:flex;flex-direction:column;gap:10px;">
+      <button class="btn-apply-full" style="opacity:0.4;cursor:not-allowed;background:#2E2720;border:1px solid #ffffff10;color:var(--text-lo);" disabled>Application limit reached</button>
+      <div style="font-size:12px;color:var(--text-lo);line-height:1.6;">You've used all ${sub.apps_limit} applications this month on the Starter plan. <a href="/pricing" style="color:var(--ember);text-decoration:none;font-weight:600;">Upgrade to Pro →</a></div>
     </div>`;
   } else {
     applyBar = `<div style="display:flex;flex-direction:column;gap:10px;">
+      ${lateWindowHtml}
       <button class="btn-apply-full" id="detail-apply-btn" onclick="applyFromDetail(${ev.id})">Apply to this event →</button>
-      <button onclick="startChatWithOrganiser(${ev.organiser_user_id||0},'${(ev.organiser_name||'Organiser').replace(/'/g,"\\'")}','${(ev.name||'').replace(/'/g,"\\'")}',false,${ev.id})" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--ember);background:var(--ember-bg);border:1px solid #E8500A33;padding:12px;border-radius:10px;cursor:pointer;width:100%;">💬 Message organiser</button>
+      ${templateHtml}
+      ${!isStarter ? `<button onclick="startChatWithOrganiser(${ev.organiser_user_id||0},'${orgName}','${evName}',false,${ev.id})" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--ember);background:var(--ember-bg);border:1px solid #E8500A33;padding:12px;border-radius:10px;cursor:pointer;width:100%;">💬 Message organiser</button>` : ''}
     </div>`;
   }
 
@@ -3516,8 +3794,10 @@ function renderEventDetail(ev) {
 async function applyFromDetail(eventId) {
   const btn = document.getElementById('detail-apply-btn');
   if (btn) { btn.textContent = 'Applying…'; btn.disabled = true; }
+  const msgEl = document.getElementById('detail-apply-message');
+  const message = msgEl ? msgEl.value.trim() : '';
   try {
-    const r = await pitchFetch(`/api/events/${eventId}/apply`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+    const r = await pitchFetch(`/api/events/${eventId}/apply`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: message || null }) });
     const d = await r.json();
     if (r.ok) {
       // Update cache
@@ -3531,6 +3811,10 @@ async function applyFromDetail(eventId) {
         if (btn) btn.outerHTML = `<div style="font-size:15px;font-weight:700;color:var(--gold);">● Application submitted</div>`;
       }
       loadApplications(); loadEvents();
+      // Refresh sub info to keep quota bar current
+      pitchFetch('/api/vendor/subscription-info').then(r2 => r2.ok ? r2.json() : null).then(si => {
+        if (si) { window.__PITCH_SUB_INFO__ = si; applySubscriptionGating(window.__PITCH_PLAN__ || 'free'); }
+      }).catch(()=>{});
     } else if (r.status === 429) {
       if (btn) { btn.textContent = 'Apply to this event →'; btn.disabled = false; }
       showLimitModal(d);
@@ -3553,6 +3837,10 @@ async function applyToEvent(eventId, btn) {
       btn.closest('.event-mini').querySelector('.event-mini-right').innerHTML =
         `<span class="event-mini-spots" style="color:var(--gold);">● Applied</span>`;
       loadApplications();
+      // Refresh sub info to keep quota bar current
+      pitchFetch('/api/vendor/subscription-info').then(r2 => r2.ok ? r2.json() : null).then(si => {
+        if (si) { window.__PITCH_SUB_INFO__ = si; applySubscriptionGating(window.__PITCH_PLAN__ || 'free'); }
+      }).catch(()=>{});
     } else if (r.status === 429) {
       btn.textContent = 'Apply →';
       btn.disabled = false;
@@ -4997,6 +5285,32 @@ function applySubscriptionGating(plan) {
   const isPro     = plan === 'pro';
   const isGrowth  = plan === 'growth';
 
+  // ── Starter: application usage counter on overview ──
+  const usageBar = document.getElementById('starter-usage-bar');
+  if (usageBar) {
+    if (isStarter) {
+      usageBar.classList.add('visible');
+      // Populate with sub info if available
+      const sub = window.__PITCH_SUB_INFO__;
+      if (sub) {
+        const used = sub.apps_used || 0;
+        const lim  = sub.apps_limit || 10;
+        const pct  = Math.min(100, Math.round((used / lim) * 100));
+        const col  = pct >= 100 ? '#C0392B' : pct >= 80 ? '#C9840A' : '#E8500A';
+        const valEl = document.getElementById('usage-counter-val');
+        const fillEl = document.getElementById('usage-counter-fill');
+        const subEl  = document.getElementById('usage-counter-sub');
+        if (valEl) { valEl.textContent = `${used} / ${lim}`; valEl.style.color = col; }
+        if (fillEl) { fillEl.style.width = pct + '%'; fillEl.style.background = col; }
+        if (subEl && pct >= 100) {
+          subEl.innerHTML = `<strong style="color:#C0392B;">You've used all ${lim} applications this month.</strong> <a href="/pricing">Upgrade to Pro for unlimited applications →</a>`;
+        }
+      }
+    } else {
+      usageBar.classList.remove('visible');
+    }
+  }
+
   // ── Photo limit hint ──
   const limit = isGrowth ? 20 : isPro ? 10 : 4;
   const limitLabel = document.getElementById('photo-limit-label');
@@ -5004,14 +5318,36 @@ function applySubscriptionGating(plan) {
   const hintEl = document.getElementById('photo-upload-hint');
   if (hintEl) hintEl.textContent = `JPG, PNG or WebP · Max 5MB each · Up to ${limit} photos`;
 
+  // ── Photo upload zone: disable and show message when at cap ──
+  const dropZone = document.getElementById('photo-drop-zone');
+  const photoCount = (window._photos || []).length;
+  if (dropZone && photoCount >= limit) {
+    const nextTier = isGrowth ? null : isPro ? 'Growth' : 'Pro';
+    const nextLimit = isGrowth ? null : isPro ? 20 : 10;
+    dropZone.onclick = null;
+    dropZone.style.cursor = 'default';
+    dropZone.style.opacity = '0.55';
+    dropZone.style.borderColor = '#ffffff12';
+    const hintEl2 = document.getElementById('photo-upload-hint');
+    if (hintEl2) hintEl2.textContent = nextTier
+      ? `Upgrade to ${nextTier} to add up to ${nextLimit} photos.`
+      : `Maximum ${limit} photos reached.`;
+  }
+
+  // ── Growth: gallery naming and vanity URL ──
+  const gallerySection = document.getElementById('gallery-naming-section');
+  const vanityGroup = document.getElementById('vanity-url-group');
+  if (gallerySection) gallerySection.style.display = isGrowth ? 'block' : 'none';
+  if (vanityGroup) vanityGroup.style.display = isGrowth ? 'block' : 'none';
+
   // ── Profile Views stat card ──
   if (isStarter) {
     const card = document.getElementById('stat-card-views');
     if (card) {
       document.getElementById('stat-views-value').innerHTML = '🔒';
-      document.getElementById('stat-views-sub').innerHTML = '';
+      document.getElementById('stat-views-sub').innerHTML = '<span style="font-size:10px;">Pro & Growth</span>';
       card.style.cursor = 'pointer';
-      card.title = 'Profile view tracking is available on Pro and Growth plans. Click to upgrade.';
+      card.title = 'Profile view tracking is available on Pro and Growth plans.';
       card.onclick = () => window.location.href = '/pricing';
     }
   }
@@ -5021,29 +5357,31 @@ function applySubscriptionGating(plan) {
     const noteEl = document.getElementById('recommended-upgrade-note');
     if (noteEl) {
       noteEl.style.display = 'block';
-      noteEl.textContent = 'Upgrade to Pro for personalised recommendations based on your cuisine and history.';
+      noteEl.innerHTML = 'Upgrade to <a href="/pricing" style="color:var(--ember);text-decoration:none;font-weight:700;">Pro</a> for personalised recommendations based on your cuisine and history.';
     }
   } else {
     const titleEl = document.getElementById('recommended-title');
     if (titleEl) titleEl.textContent = 'Recommended for you';
+    const noteEl = document.getElementById('recommended-upgrade-note');
+    if (noteEl) noteEl.style.display = 'none';
   }
 
   // ── Analytics panel gating ──
   if (isStarter) {
     _gateOverlay('analytics-views-wrap', {
-      title: 'Profile view analytics — Pro & Growth',
-      desc: 'See how many organisers and consumers have viewed your profile in the last 30 days.',
-      ctaText: 'Upgrade to Pro — $29/month',
+      title: 'Unlock analytics — upgrade to Pro',
+      desc: 'See how many organisers viewed your profile and track your application acceptance rate.',
+      ctaText: 'Upgrade to Pro — $29/month →',
       ctaHref: '/pricing',
     });
     _gateOverlay('analytics-apps-wrap', {
       title: 'Application analytics — Pro & Growth',
       desc: 'Track your acceptance rate and identify where you win most often.',
-      ctaText: 'Upgrade to Pro — $29/month',
+      ctaText: 'Upgrade to Pro — $29/month →',
       ctaHref: '/pricing',
     });
   } else {
-    // populate analytics data from applications
+    // Pro & Growth: populate analytics data
     const apps = window.__PITCH_ALL_APPS__ || [];
     const approved = apps.filter(a => a.status === 'approved').length;
     const total = apps.filter(a => a.status !== 'withdrawn').length;
@@ -5051,65 +5389,96 @@ function applySubscriptionGating(plan) {
     const rateEl = document.getElementById('analytics-acc-rate');
     const countEl = document.getElementById('analytics-app-count');
     if (rateEl) rateEl.textContent = rate !== null ? rate + '%' : '—';
-    if (countEl) countEl.textContent = apps.length;
+    if (countEl) countEl.textContent = total;
     const viewsEl = document.getElementById('analytics-views-count');
     const viewsLabel = document.getElementById('analytics-views-label');
     if (viewsEl) viewsEl.textContent = '—';
-    if (viewsLabel) {
-      viewsLabel.textContent = isPro ? 'views in the last 30 days' : 'views in the last 30 days — with trend breakdown';
+
+    if (isGrowth) {
+      // Growth: show trend graph and source breakdown
+      if (viewsLabel) viewsLabel.textContent = 'views in the last 30 days — with source & trend breakdown';
+      const graph = document.getElementById('analytics-views-graph');
+      if (graph) {
+        graph.classList.remove('analytics-blurred');
+        graph.innerHTML = '<div style="display:flex;align-items:flex-end;gap:4px;height:60px;padding:0 4px;">' +
+          [30,45,38,52,60,44,38,55,68,72,58,64,70,75,80,68,72,85,90,78,82,95,88,75,82,90,100,88,92,95]
+          .map((h,i) => `<div style="flex:1;background:linear-gradient(to top,#E8500A,#FF6B2B);border-radius:3px 3px 0 0;height:${h}%;opacity:${0.5+h/200};" title="Day ${i+1}"></div>`).join('') +
+          '</div>';
+      }
+    } else {
+      // Pro: numbers only, no trend graph
+      if (viewsLabel) viewsLabel.textContent = 'views in the last 30 days';
+      const graph = document.getElementById('analytics-views-graph');
+      if (graph) { graph.classList.remove('analytics-blurred'); graph.style.display = 'none'; }
     }
-    // Remove blurred overlay on graph for Pro+
-    const graph = document.getElementById('analytics-views-graph');
-    if (graph) graph.classList.remove('analytics-blurred');
   }
 
-  // Growth-only sections
-  if (isGrowth) {
-    const compSection = document.getElementById('analytics-competitor-section');
-    const shortSection = document.getElementById('analytics-shortlist-section');
-    if (compSection) compSection.style.display = 'block';
-    if (shortSection) shortSection.style.display = 'block';
+  // Growth-only analytics sections
+  const compSection = document.getElementById('analytics-competitor-section');
+  const shortSection = document.getElementById('analytics-shortlist-section');
+  if (compSection) compSection.style.display = isGrowth ? 'block' : 'none';
+  if (shortSection) shortSection.style.display = isGrowth ? 'block' : 'none';
+
+  // Lock analytics sections for Starter (show as locked rather than hide)
+  if (isStarter) {
+    const analyticsNavBtn = document.querySelector('.nav-link[onclick*="analytics"]');
+    if (analyticsNavBtn && !analyticsNavBtn.querySelector('.nav-lock-icon')) {
+      analyticsNavBtn.insertAdjacentHTML('beforeend', '<span class="nav-lock-icon">🔒</span>');
+    }
   }
 
   // ── Acceptance rate bar in applications tab ──
-  if (!isStarter) {
-    const bar = document.getElementById('acceptance-rate-bar');
-    if (bar) bar.style.display = 'flex';
-    // Growth gets breakdown link
-    const breakdownLink = document.getElementById('acceptance-breakdown-link');
-    if (breakdownLink && !isGrowth) breakdownLink.style.display = 'none';
-  }
+  const bar = document.getElementById('acceptance-rate-bar');
+  if (bar) bar.style.display = isStarter ? 'none' : 'flex';
+  const breakdownLink = document.getElementById('acceptance-breakdown-link');
+  if (breakdownLink) breakdownLink.style.display = isGrowth ? '' : 'none';
 
   // ── iCal export button ──
+  const icalBtn = document.getElementById('ical-export-btn');
+  const icalTooltip = document.getElementById('ical-tooltip');
   if (isStarter) {
-    const btn = document.getElementById('ical-export-btn');
-    const tooltip = document.getElementById('ical-tooltip');
-    if (btn) {
-      btn.classList.add('gate-disabled');
-      btn.style.cursor = 'not-allowed';
-    }
-    if (tooltip) {
-      tooltip.textContent = 'Export your calendar to Google Calendar or Apple Calendar. Available on Pro and Growth plans.';
-    }
+    if (icalBtn) { icalBtn.classList.add('gate-disabled'); icalBtn.style.cursor = 'not-allowed'; }
+    if (icalTooltip) icalTooltip.textContent = 'Export to calendar is available on Pro and Growth plans.';
   }
 
   // ── PDF download button ──
+  const pdfBtn = document.getElementById('btn-pdf-download');
+  const pdfTooltip = document.getElementById('pdf-tooltip');
   if (isStarter) {
-    const pdfBtn = document.getElementById('btn-pdf-download');
-    const pdfTooltip = document.getElementById('pdf-tooltip');
-    if (pdfBtn) {
-      pdfBtn.classList.add('gate-disabled');
-      pdfBtn.style.cursor = 'not-allowed';
-    }
-    if (pdfTooltip) {
-      pdfTooltip.textContent = 'Download a formatted payment history PDF. Available on Pro and Growth plans.';
-    }
+    if (pdfBtn) { pdfBtn.classList.add('gate-disabled'); pdfBtn.style.cursor = 'not-allowed'; }
+    if (pdfTooltip) pdfTooltip.textContent = 'Payment history PDF is available on Pro and Growth plans.';
   }
 
-  // Bookkeeping summary (Growth only)
-  if (isGrowth) {
-    const bkWrap = document.getElementById('bookkeeping-wrap');
-    if (bkWrap) bkWrap.style.display = 'block';
+  // ── Growth: exports section + bookkeeping ──
+  const exportsSection = document.getElementById('exports-section');
+  if (exportsSection) exportsSection.style.display = isGrowth ? 'block' : 'none';
+  const bkWrap = document.getElementById('bookkeeping-wrap');
+  if (bkWrap) bkWrap.style.display = isGrowth ? 'block' : 'none';
+
+  // ── Growth: team invite ──
+  const teamSection = document.getElementById('team-invite-section');
+  if (teamSection) teamSection.style.display = isGrowth ? 'block' : 'none';
+
+  // ── Messaging: Starter locked, Pro/Growth enabled ──
+  const messagesGate = document.getElementById('messages-gate');
+  const messagesLayout = document.getElementById('messages-layout');
+  const msgNavBtn = document.querySelector('.nav-link[onclick*="messages"]');
+  if (isStarter) {
+    if (messagesGate) messagesGate.classList.add('visible');
+    if (messagesLayout) messagesLayout.style.display = 'none';
+    if (msgNavBtn && !msgNavBtn.querySelector('.nav-lock-icon')) {
+      msgNavBtn.insertAdjacentHTML('beforeend', '<span class="nav-lock-icon">🔒</span>');
+    }
+  } else {
+    if (messagesGate) messagesGate.classList.remove('visible');
+    if (messagesLayout) messagesLayout.style.display = '';
+    // Remove lock icon if present
+    const lockIcon = msgNavBtn && msgNavBtn.querySelector('.nav-lock-icon');
+    if (lockIcon) lockIcon.remove();
+
+    // Pro: show cold-contact gate banner
+    const coldGate = document.getElementById('cold-contact-gate');
+    if (coldGate) coldGate.style.display = isPro ? 'block' : 'none';
   }
 
   // ── Document expiry notifications — locked for Starter ──
@@ -5123,6 +5492,41 @@ function applySubscriptionGating(plan) {
     if (inp) { inp.checked = false; inp.disabled = true; }
     if (tooltip) tooltip.textContent = 'Automated reminders 60 days before your documents expire. Available on Pro and Growth plans.';
   }
+
+  // ── New event alerts notifications ──
+  const eventsToggle = document.getElementById('notif-events-toggle');
+  const eventsLock   = document.getElementById('notif-events-lock');
+  const eventsInp    = document.getElementById('notif-events');
+  const eventsTiming = document.getElementById('notif-events-timing');
+  const eventsTooltip= document.getElementById('notif-events-tooltip');
+  if (isStarter) {
+    if (eventsToggle) eventsToggle.classList.add('gate-disabled');
+    if (eventsLock) eventsLock.style.display = 'inline-flex';
+    if (eventsInp) { eventsInp.checked = false; eventsInp.disabled = true; }
+    if (eventsTiming) eventsTiming.style.display = 'none';
+    if (eventsTooltip) eventsTooltip.textContent = 'Event alerts are available on Pro and Growth plans. Upgrade to get notified when new events are posted.';
+  } else {
+    if (eventsLock) eventsLock.style.display = 'none';
+    if (eventsTiming) {
+      eventsTiming.style.display = 'inline-flex';
+      if (isGrowth) {
+        eventsTiming.textContent = '⚡ Instant — 48hr head start';
+        eventsTiming.style.background = '#E8500A18';
+        eventsTiming.style.color = 'var(--ember)';
+        eventsTiming.style.border = '1px solid #E8500A28';
+      } else {
+        eventsTiming.textContent = '⏱ Within 2 hours';
+        eventsTiming.style.background = '#C9840A18';
+        eventsTiming.style.color = 'var(--gold)';
+        eventsTiming.style.border = '1px solid #C9840A28';
+      }
+    }
+    if (eventsTooltip) eventsTooltip.textContent = '';
+  }
+
+  // ── Shortlist notification lock for non-Growth ──
+  // (shown in notifications popup — handled at render time)
+  window.__PITCH_PLAN__ = plan;
 
   // ── Signature item in menu modal — locked for non-Growth ──
   if (!isGrowth) {
@@ -5152,7 +5556,22 @@ function downloadPaymentPDF() {
 }
 
 function downloadBookkeeping() {
+  alert('Generating application CSV… (feature coming soon)');
+}
+
+function downloadBookkeepingSummary() {
   alert('Generating bookkeeping summary… (feature coming soon)');
+}
+
+function sendTeamInvite() {
+  const emailEl = document.getElementById('team-invite-email');
+  const msgEl   = document.getElementById('team-invite-msg');
+  if (!emailEl) return;
+  const email = emailEl.value.trim();
+  if (!email || !email.includes('@')) { alert('Please enter a valid email address.'); return; }
+  // Placeholder — shows success message
+  emailEl.value = '';
+  if (msgEl) { msgEl.style.display = 'block'; setTimeout(() => { if (msgEl) msgEl.style.display = 'none'; }, 3000); }
 }
 </script>
 </body>
