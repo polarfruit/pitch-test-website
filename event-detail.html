@@ -1192,7 +1192,7 @@ if (ev && !window.__PITCH_DB_EVENT__) {
   document.getElementById('ev-deadline-val').textContent = ev.deadlineLabel;
   document.getElementById('ev-org-avatar').textContent = ev.organiser.initials;
   document.getElementById('ev-org-name').textContent = ev.organiser.name;
-  document.getElementById('ev-org-meta').textContent = ev.organiser.events + ' events posted \u00B7 ' + ev.organiser.rating + '\u2605 avg vendor rating';
+  document.getElementById('ev-org-meta').textContent = ev.organiser.events + ' event' + (ev.organiser.events !== 1 ? 's' : '') + ' hosted';
 }
 
 // ── COUNTDOWN ────────────────────────────────────────────────────────────────
@@ -1551,7 +1551,7 @@ function similarBadgeColor(badge) {
       '<div class="similar-hero"></div>' +
       '<div class="similar-name">' + m.name + '</div>' +
       '<div class="similar-meta">📍 ' + m.suburb + ' · ' + m.date + '</div>' +
-      '<span class="similar-badge" style="background:' + bc + '18;color:' + bc + ';border:1px solid ' + bc + '22;">' + m.badge + '</span>' +
+      '<span class="similar-badge" style="background:' + bc + '10;color:' + bc + ';border:1px solid ' + bc + '20;">' + m.badge + '</span>' +
       '</a>';
   }).join('');
 })();
