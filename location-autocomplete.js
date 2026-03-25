@@ -1,6 +1,6 @@
 /**
  * Pitch. Location Autocomplete
- * Uses OpenStreetMap Nominatim (free, no API key, AU addresses only)
+ * Local suburb dataset (instant) + optional Nominatim fallback.
  * Usage: pitchLocAC('input-id', { suburbOnly: true, onSelect: fn })
  */
 (function () {
@@ -9,10 +9,11 @@
   const STYLE = `
     .pac-wrap { position: relative; }
     .pac-dropdown {
-      position: absolute; left: 0; right: 0; top: calc(100% + 4px);
+      position: absolute; left: 0; right: 0; top: calc(100% + 6px);
       background: #231E19; border: 1px solid #3A2E26;
       border-radius: 10px; box-shadow: 0 8px 32px rgba(0,0,0,0.55);
       z-index: 9999; overflow: hidden; display: none;
+      min-width: 260px;
     }
     .pac-item {
       padding: 10px 14px; cursor: pointer;
@@ -34,44 +35,44 @@
     document.head.appendChild(s);
   }
 
+  // ── Local suburb search ─────────────────────────────────────────────────
+  const POSTCODE_RE = /^\d+$/;
+
+  function searchLocal(q) {
+    const data = window.PITCH_SUBURBS;
+    if (!data || !data.length) return [];
+    const trimmed = q.trim();
+    if (!trimmed) return [];
+
+    const MAX = 3;
+    const rank = e => (e[1] === 'SA' ? 0 : 1);
+
+    // ── Postcode mode ──────────────────────────────────────────────────────
+    if (POSTCODE_RE.test(trimmed)) {
+      const matches = data.filter(e => e[2].startsWith(trimmed));
+      matches.sort((a, b) => rank(a) - rank(b) || a[0].localeCompare(b[0]));
+      return matches.slice(0, MAX);
+    }
+
+    // ── Name mode ──────────────────────────────────────────────────────────
+    const lower = trimmed.toLowerCase();
+    const starts = [];
+    const contains = [];
+    for (const entry of data) {
+      if (starts.length >= MAX) break;
+      const name = entry[0].toLowerCase();
+      if (name.startsWith(lower)) starts.push(entry);
+      else if (name.includes(lower) && contains.length < MAX) contains.push(entry);
+    }
+    starts.sort((a, b) => rank(a) - rank(b) || a[0].localeCompare(b[0]));
+    contains.sort((a, b) => rank(a) - rank(b) || a[0].localeCompare(b[0]));
+    return [...starts, ...contains].slice(0, MAX);
+  }
+
   let _timers = {};
   function debounce(key, fn, ms) {
     clearTimeout(_timers[key]);
     _timers[key] = setTimeout(fn, ms);
-  }
-
-  async function query(q, suburbOnly) {
-    const params = new URLSearchParams({
-      format: 'json',
-      countrycodes: 'au',
-      addressdetails: 1,
-      limit: 6,
-      q: q,
-    });
-    if (suburbOnly) {
-      // bias toward settlements/suburbs
-      params.append('featuretype', 'settlement');
-    }
-    try {
-      const r = await fetch(
-        'https://nominatim.openstreetmap.org/search?' + params,
-        { headers: { 'Accept-Language': 'en', 'User-Agent': 'Pitch.au/1.0' } }
-      );
-      return await r.json();
-    } catch (e) { return []; }
-  }
-
-  function fmt(item, suburbOnly) {
-    const a = item.address || {};
-    if (suburbOnly) {
-      const place = a.suburb || a.quarter || a.neighbourhood || a.town || a.village || a.city_district || a.city || item.display_name.split(',')[0];
-      const state = a.state || '';
-      const pc    = a.postcode || '';
-      return { main: place.trim(), sub: [state, pc].filter(Boolean).join(' ') };
-    } else {
-      const parts = item.display_name.split(',').map(s => s.trim());
-      return { main: parts.slice(0, 2).join(', '), sub: parts.slice(2, 4).join(', ') };
-    }
   }
 
   window.pitchLocAC = function (inputId, opts) {
@@ -82,14 +83,11 @@
     if (!input || input._pacBound) return;
     input._pacBound = true;
 
-    const suburbOnly = !!opts.suburbOnly;
-    const onSelect   = opts.onSelect || null;
+    const onSelect = opts.onSelect || null;
 
-    // Wrap
+    // Wrap input in .pac-wrap
     const wrap = document.createElement('div');
     wrap.className = 'pac-wrap';
-    // preserve existing wrapper styles
-    wrap.style.cssText = 'display:block;';
     input.parentNode.insertBefore(wrap, input);
     wrap.appendChild(input);
 
@@ -97,19 +95,21 @@
     drop.className = 'pac-dropdown';
     wrap.appendChild(drop);
 
-    let results = [];
-    let kbdIdx  = -1;
+    let localResults = [];
+    let kbdIdx = -1;
+    let _suppressNext = false;
 
     function show() { drop.style.display = 'block'; }
     function hide() { drop.style.display = 'none'; kbdIdx = -1; }
 
-    function render() {
-      if (!results.length) { hide(); return; }
-      drop.innerHTML = results.map((r, i) => {
-        const f = fmt(r, suburbOnly);
+    function render(items) {
+      if (!items || !items.length) { hide(); return; }
+      localResults = items;
+      drop.innerHTML = items.map((r, i) => {
+        const [name, state, postcode] = r;
         return `<div class="pac-item" data-i="${i}">
-          <div class="pac-main">${f.main}</div>
-          ${f.sub ? `<div class="pac-sub">${f.sub}</div>` : ''}
+          <div class="pac-main">${name}</div>
+          <div class="pac-sub">${state}${postcode ? ' ' + postcode : ''}</div>
         </div>`;
       }).join('');
       show();
@@ -122,23 +122,13 @@
     }
 
     function pick(i) {
-      const item = results[i];
+      const item = localResults[i];
       if (!item) return;
-      const f   = fmt(item, suburbOnly);
-      const a   = item.address || {};
-      if (suburbOnly) {
-        const suburb   = a.suburb || a.quarter || a.neighbourhood || a.town || a.village || a.city_district || a.city || f.main;
-        const state    = a.state || 'SA';
-        const postcode = a.postcode || '';
-        input.value = suburb.trim();
-        if (onSelect) onSelect({ suburb: suburb.trim(), state, postcode });
-      } else {
-        // Full address: first 3 parts of display_name
-        const parts = item.display_name.split(',').map(s => s.trim());
-        input.value = parts.slice(0, 3).join(', ');
-        if (onSelect) onSelect({ display: item.display_name, address: a });
-      }
+      const [name, state, postcode] = item;
+      input.value = name;
       hide();
+      if (onSelect) onSelect({ suburb: name, state, postcode });
+      _suppressNext = true;
       input.dispatchEvent(new Event('input', { bubbles: true }));
     }
 
@@ -150,12 +140,12 @@
     }
 
     input.addEventListener('input', () => {
+      if (_suppressNext) { _suppressNext = false; return; }
       const q = input.value.trim();
       if (q.length < 2) { hide(); return; }
-      debounce(inputId + '_pac', async () => {
-        results = await query(q, suburbOnly);
-        render();
-      }, 280);
+      // Instant local results
+      const hits = searchLocal(q);
+      render(hits);
     });
 
     input.addEventListener('keydown', e => {

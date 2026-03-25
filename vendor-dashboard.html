@@ -3073,9 +3073,9 @@ async function confirmSubChange() {
       // Re-render plan card and re-apply gating
       const profile = window.__PITCH_USER__?.vendor || {};
       renderPlanCard(profile);
-      const labels = { free: '🆓 Starter', pro: '⭐ Pro', growth: '🚀 Growth' };
+      const labels = { free: '📋 Starter', pro: '⭐ Pro', growth: '🔥 Growth' };
       const pill = document.querySelector('.plan-pill');
-      if (pill) pill.textContent = labels[chosen] || '🆓 Starter';
+      if (pill) pill.textContent = labels[chosen] || '📋 Starter';
       applySubscriptionGating(chosen);
     } else {
       const d = await r.json().catch(() => ({}));
@@ -3194,8 +3194,8 @@ async function initDashboard() {
   const nameEl = document.getElementById('vendor-display-name') || document.querySelector('.vendor-mini-name');
   if (nameEl) nameEl.textContent = tradingName;
   const _plan = (profile && profile.plan) || 'free';
-  const planLabels = { free: '🆓 Starter', pro: '⭐ Pro', growth: '🚀 Growth' };
-  document.querySelector('.plan-pill').textContent = planLabels[_plan] || '🆓 Starter';
+  const planLabels = { free: '📋 Starter', pro: '⭐ Pro', growth: '🔥 Growth' };
+  document.querySelector('.plan-pill').textContent = planLabels[_plan] || '📋 Starter';
   // Apply all subscription gating
   applySubscriptionGating(_plan);
 
@@ -3261,8 +3261,10 @@ async function initDashboard() {
   // Documents panel
   renderDocuments();
 
-  // Settings plan card
-  renderPlanCard(profile);
+  // Settings plan card — fetch subscription info for quota bar
+  pitchFetch('/api/vendor/subscription-info').then(r => r.ok ? r.json() : null).then(subInfo => {
+    renderPlanCard(profile, subInfo);
+  }).catch(() => renderPlanCard(profile));
 
   // Load threads (non-blocking for deep-link case)
   loadAllThreads().catch(() => {});
@@ -3529,6 +3531,9 @@ async function applyFromDetail(eventId) {
         if (btn) btn.outerHTML = `<div style="font-size:15px;font-weight:700;color:var(--gold);">● Application submitted</div>`;
       }
       loadApplications(); loadEvents();
+    } else if (r.status === 429) {
+      if (btn) { btn.textContent = 'Apply to this event →'; btn.disabled = false; }
+      showLimitModal(d);
     } else {
       if (btn) { btn.textContent = 'Apply to this event →'; btn.disabled = false; }
       alert(d.error || 'Could not apply');
@@ -3548,6 +3553,10 @@ async function applyToEvent(eventId, btn) {
       btn.closest('.event-mini').querySelector('.event-mini-right').innerHTML =
         `<span class="event-mini-spots" style="color:var(--gold);">● Applied</span>`;
       loadApplications();
+    } else if (r.status === 429) {
+      btn.textContent = 'Apply →';
+      btn.disabled = false;
+      showLimitModal(d);
     } else {
       btn.textContent = 'Apply →';
       btn.disabled = false;
@@ -3557,6 +3566,29 @@ async function applyToEvent(eventId, btn) {
     btn.textContent = 'Apply →';
     btn.disabled = false;
   }
+}
+
+function showLimitModal(d) {
+  var existing = document.getElementById('_limit-modal');
+  if (existing) existing.remove();
+  var used = d.used || 10;
+  var limit = d.limit || 10;
+  var modal = document.createElement('div');
+  modal.id = '_limit-modal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);';
+  modal.innerHTML = `
+    <div style="background:#231E19;border:1px solid #E8500A30;border-radius:20px;padding:36px 40px;max-width:440px;width:90%;box-shadow:0 24px 60px rgba(0,0,0,0.5);text-align:center;">
+      <div style="font-size:36px;margin-bottom:16px;">📋</div>
+      <h2 style="font-family:'Fraunces',serif;font-size:22px;font-weight:900;letter-spacing:-0.03em;color:#FDF4E7;margin-bottom:10px;">Application limit reached</h2>
+      <p style="font-size:14px;color:#A89880;line-height:1.6;margin-bottom:8px;">You've used <strong style="color:#FDF4E7;">${used}/${limit}</strong> applications this month on the Starter plan.</p>
+      <p style="font-size:13px;color:#6B5A4A;margin-bottom:28px;">Upgrade to Pro or Growth to apply to unlimited events with no monthly cap.</p>
+      <div style="display:flex;gap:12px;justify-content:center;">
+        <a href="/pricing" style="display:inline-block;background:#E8500A;color:#fff;font-family:'Instrument Sans',sans-serif;font-size:14px;font-weight:700;padding:12px 28px;border-radius:12px;text-decoration:none;">View plans →</a>
+        <button onclick="document.getElementById('_limit-modal').remove()" style="background:#2E2720;border:1px solid #ffffff12;color:#A89880;font-family:'Instrument Sans',sans-serif;font-size:14px;font-weight:600;padding:12px 20px;border-radius:12px;cursor:pointer;">Cancel</button>
+      </div>
+    </div>`;
+  modal.addEventListener('click', function(e) { if (e.target === modal) modal.remove(); });
+  document.body.appendChild(modal);
 }
 
 async function loadApplications() {
@@ -3860,16 +3892,33 @@ async function removeDoc(key) {
   } catch (e) { console.warn('Doc remove failed', e); }
 }
 
-function renderPlanCard(profile) {
+function renderPlanCard(profile, subInfo) {
   const el = document.getElementById('settings-plan-card');
   if (!el) return;
   const plan = (profile && profile.plan) || 'free';
+  const appsUsed = subInfo ? subInfo.apps_used : 0;
+  const appsLimit = subInfo ? subInfo.apps_limit : 10;
+
+  const quotaBarHtml = plan === 'free' ? (() => {
+    const pct = Math.min(100, Math.round((appsUsed / appsLimit) * 100));
+    const barColor = pct >= 100 ? '#C0392B' : pct >= 80 ? '#C9840A' : '#E8500A';
+    return `<div style="margin-bottom:14px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <span style="font-size:12px;color:var(--text-lo);">Applications this month</span>
+        <span style="font-size:12px;font-weight:700;color:${barColor};">${appsUsed} / ${appsLimit}</span>
+      </div>
+      <div style="height:6px;background:#ffffff0D;border-radius:100px;overflow:hidden;">
+        <div style="height:100%;width:${pct}%;background:${barColor};border-radius:100px;transition:width 0.4s;"></div>
+      </div>
+      ${pct >= 100 ? `<div style="margin-top:6px;font-size:11px;color:#C0392B;font-weight:600;">Limit reached — upgrade to continue applying this month</div>` : ''}
+    </div>`;
+  })() : '';
 
   const planConfig = {
     free: {
-      icon: '🆓', name: 'Starter', color: 'var(--text-hi)',
+      icon: '📋', name: 'Starter', color: 'var(--text-hi)',
       price: 'Free forever · No credit card needed',
-      features: ['Unlimited event applications','Up to 4 photos','Standard placement in search','Message organisers you\'ve applied to'],
+      features: ['Up to 10 event applications per month','Up to 4 photos','Standard placement in search','Message organisers you\'ve applied to'],
       cta: `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
         <a href="/pricing?plan=pro" style="font-family:var(--fb);font-size:13px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:10px 18px;border-radius:9px;cursor:pointer;text-decoration:none;display:inline-block;">Upgrade to Pro — $29/month →</a>
         <a href="/pricing?plan=growth" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--gold);background:#C9840A10;border:1px solid #C9840A22;padding:10px 18px;border-radius:9px;cursor:pointer;text-decoration:none;display:inline-block;">Upgrade to Growth — $79/month →</a>
@@ -3878,16 +3927,16 @@ function renderPlanCard(profile) {
     pro: {
       icon: '⭐', name: 'Pro', color: 'var(--ember)',
       price: '$29 / month · Billed monthly',
-      features: ['Priority placement in search','Pro badge on your profile','Up to 10 photos','New event alerts within 2 hours','Application analytics (30-day)'],
+      features: ['Unlimited event applications','Priority placement in search','Pro badge on your profile','Up to 10 photos','New event alerts within 2 hours','Application analytics (30-day)'],
       cta: `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
         <a href="/pricing?plan=growth" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--gold);background:#C9840A10;border:1px solid #C9840A22;padding:10px 18px;border-radius:9px;cursor:pointer;text-decoration:none;display:inline-block;">Upgrade to Growth — $79/month →</a>
         <button onclick="openSubModal()" style="font-family:var(--fb);font-size:12px;font-weight:600;color:var(--text-lo);background:#ffffff07;border:1px solid #ffffff10;padding:10px 18px;border-radius:9px;cursor:pointer;transition:background 0.14s;" onmouseover="this.style.background='#ffffff12'" onmouseout="this.style.background='#ffffff07'">Manage subscription</button>
       </div>`
     },
     growth: {
-      icon: '🚀', name: 'Growth', color: 'var(--gold)',
+      icon: '🔥', name: 'Growth', color: 'var(--ember)',
       price: '$79 / month · Billed monthly',
-      features: ['Top placement in search','Growth badge on your profile','Up to 20 photos in named galleries','24-hour early event access','Full analytics + competitor insights'],
+      features: ['Unlimited event applications','Top placement in search','Growth badge on your profile','Up to 20 photos in named galleries','Instant new event alerts','Full analytics + competitor insights'],
       cta: `<div style="margin-top:16px;">
         <button onclick="openSubModal()" style="font-family:var(--fb);font-size:12px;font-weight:600;color:var(--text-lo);background:#ffffff07;border:1px solid #ffffff10;padding:10px 18px;border-radius:9px;cursor:pointer;transition:background 0.14s;" onmouseover="this.style.background='#ffffff12'" onmouseout="this.style.background='#ffffff07'">Manage subscription</button>
       </div>`
@@ -3902,6 +3951,7 @@ function renderPlanCard(profile) {
         <span style="font-family:var(--fd);font-size:18px;font-weight:900;letter-spacing:-0.02em;color:${cfg.color};">${cfg.name}</span>
       </div>
       <div style="font-size:13px;color:var(--text-mid);margin-bottom:14px;">${cfg.price}</div>
+      ${quotaBarHtml}
       <ul style="list-style:none;display:flex;flex-direction:column;gap:7px;">
         ${cfg.features.map(f => `<li style="font-size:12.5px;color:var(--text-mid);display:flex;align-items:flex-start;gap:8px;"><span style="color:var(--herb);font-weight:700;flex-shrink:0;">✓</span>${f}</li>`).join('')}
       </ul>
