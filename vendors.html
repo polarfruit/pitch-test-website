@@ -4,6 +4,9 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Vendors — Pitch.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,900;1,9..144,900&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/fonts/fonts.css">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -61,7 +64,8 @@ body::before {
 .nav-hamburger span { display: block; width: 22px; height: 2px; background: var(--text-mid); border-radius: 2px; }
 
 /* ── PAGE LAYOUT ─────────────────────────────────────────────────────────── */
-.page-wrap { max-width: 1320px; margin: 0 auto; padding: 104px 52px 80px; position: relative; z-index: 1; }
+.page-wrap { max-width: 1320px; margin: 0 auto; padding: 104px 52px 48px; position: relative; z-index: 1; }
+.page-subline { font-size: 15px; color: var(--text-mid); margin-top: 8px; line-height: 1.6; max-width: 560px; }
 
 .page-hero { margin-bottom: 32px; }
 .sec-tag {
@@ -84,18 +88,17 @@ body::before {
 /* ── FILTER BAR ──────────────────────────────────────────────────────────── */
 .filter-bar {
   background: var(--char); border: 1px solid #ffffff09;
-  border-radius: 16px; padding: 20px 24px; margin-bottom: 24px;
-  display: flex; flex-direction: column; gap: 14px;
+  border-radius: 16px; padding: 14px 18px; margin-bottom: 24px;
+  display: flex; flex-direction: row; align-items: center; gap: 10px; flex-wrap: nowrap;
 }
-.filter-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
 .filter-search {
-  flex: 1; min-width: 200px; height: 42px;
+  flex: 1; min-width: 180px; height: 42px;
   background: #ffffff08; border: 1px solid #ffffff10; border-radius: 10px;
   padding: 0 16px; font-family: var(--fb); font-size: 14px; color: var(--text-hi);
   outline: none; transition: border-color 0.14s;
 }
 .filter-search::placeholder { color: var(--text-lo); }
-.filter-search:focus { border-color: #E8500A40; }
+.filter-search:focus { border-color: #ffffff20; }
 .filter-select {
   height: 42px; padding: 0 14px; padding-right: 36px;
   background: #ffffff08 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23A89880' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 12px center;
@@ -104,28 +107,8 @@ body::before {
   appearance: none; -webkit-appearance: none; cursor: pointer; outline: none;
   transition: border-color 0.14s; white-space: nowrap;
 }
-.filter-select:focus { border-color: #E8500A40; }
+.filter-select:focus { border-color: #ffffff20; }
 .filter-select option { background: #231E19; color: var(--text-hi); }
-.filter-suburb {
-  width: 180px; height: 42px;
-  background: #ffffff08; border: 1px solid #ffffff10; border-radius: 10px;
-  padding: 0 16px; font-family: var(--fb); font-size: 14px; color: var(--text-hi);
-  outline: none; transition: border-color 0.14s;
-}
-.filter-suburb::placeholder { color: var(--text-lo); }
-.filter-suburb:focus { border-color: #E8500A40; }
-
-/* Pro checkbox */
-.pro-filter {
-  display: flex; align-items: center; gap: 8px;
-  font-size: 13px; font-weight: 500; color: var(--text-mid); cursor: pointer;
-  user-select: none; margin-left: auto; white-space: nowrap;
-}
-.pro-filter input[type="checkbox"] {
-  width: 16px; height: 16px; accent-color: var(--ember); cursor: pointer;
-  border-radius: 4px;
-}
-.pro-filter:hover { color: var(--text-hi); }
 
 /* Filter meta + chips */
 .filter-meta { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 4px; }
@@ -182,6 +165,13 @@ body::before {
   letter-spacing: 0.08em; padding: 4px 10px; border-radius: 100px;
   box-shadow: 0 2px 8px rgba(201,132,10,0.45);
 }
+.vc-growth-badge {
+  position: absolute; top: 12px; right: 12px;
+  background: linear-gradient(135deg, #E8500A, #FF6B2B);
+  color: #fff; font-family: var(--fb); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.08em; padding: 4px 10px; border-radius: 100px;
+  box-shadow: 0 2px 8px rgba(232,80,10,0.45);
+}
 .vc-setup-badge {
   position: absolute; bottom: 12px; left: 12px;
   background: rgba(26,22,18,0.65); backdrop-filter: blur(8px);
@@ -197,7 +187,7 @@ body::before {
 .vc-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
 .vc-tag {
   font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 100px;
-  background: #E8500A14; color: var(--ember); border: 1px solid #E8500A22;
+  background: #EDE3CC; color: #6B5A4A; border: 1px solid #DDD3BC;
 }
 
 .vc-stats { display: flex; align-items: center; gap: 14px; padding-top: 12px; border-top: 1px solid #EDE3CC; }
@@ -221,52 +211,43 @@ body::before {
 .empty-sub { font-size: 14px; color: var(--text-mid); }
 
 /* ── PAGINATION ───────────────────────────────────────────────────────────── */
-.pagination { display: flex; align-items: center; justify-content: center; gap: 6px; }
+.pagination { display: flex; align-items: center; gap: 5px; justify-content: center; padding-bottom: 16px; }
 .pg-btn {
-  min-width: 36px; height: 36px; padding: 0 10px;
-  background: var(--char); border: 1px solid #ffffff0d; border-radius: 9px;
-  font-family: var(--fb); font-size: 13px; font-weight: 600; color: var(--text-mid);
-  cursor: pointer; transition: all 0.14s; display: flex; align-items: center; justify-content: center;
+  min-width: 38px; height: 38px; padding: 0 10px;
+  border-radius: 10px; font-family: var(--fb); font-size: 13px; font-weight: 600;
+  cursor: pointer; background: var(--char); border: 1px solid #ffffff09;
+  color: var(--text-mid); transition: all 0.14s; display: flex; align-items: center; justify-content: center; gap: 4px;
 }
-.pg-btn:hover { background: var(--ash); color: var(--text-hi); }
-.pg-btn.active { background: var(--ember); border-color: var(--ember); color: #fff; box-shadow: 0 2px 10px #E8500A30; }
-.pg-btn:disabled { opacity: 0.3; cursor: default; }
-.pg-dots { color: var(--text-lo); font-size: 13px; padding: 0 4px; }
+.pg-btn:hover:not(:disabled):not(.dots) { background: var(--ash); color: var(--text-hi); }
+.pg-btn.active { background: var(--ember); color: #fff; border-color: transparent; box-shadow: 0 3px 12px #E8500A28; }
+.pg-btn.dots { background: transparent; border-color: transparent; color: var(--text-lo); cursor: default; }
+.pg-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 
 /* ── FOOTER ───────────────────────────────────────────────────────────────── */
-footer {
-  background: var(--char); border-top: 1px solid #ffffff07;
-  padding: 64px 52px 32px; margin-top: 80px; position: relative; z-index: 1;
-}
-.footer-grid { max-width: 1320px; margin: 0 auto; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 48px; }
-.footer-brand { display: flex; flex-direction: column; gap: 14px; }
-.footer-logo { font-family: var(--fd); font-size: 28px; font-weight: 900; letter-spacing: -0.04em; color: var(--text-hi); }
+footer { background: var(--char); border-top: 1px solid #ffffff07; position: relative; z-index: 1; }
+.footer-main { max-width: 1320px; margin: 0 auto; padding: 56px 52px 36px; display: grid; grid-template-columns: 1.8fr 1fr 1fr 1fr; gap: 48px; }
+.footer-logo { font-family: var(--fd); font-size: 24px; font-weight: 900; letter-spacing: -0.04em; color: var(--text-hi); margin-bottom: 10px; text-decoration: none; display: inline-block; }
 .footer-logo .dot { color: var(--ember); }
-.footer-desc { font-size: 13px; color: var(--text-mid); line-height: 1.7; max-width: 260px; }
-.footer-socials { display: flex; gap: 10px; margin-top: 4px; }
-.fsoc {
-  width: 34px; height: 34px; border-radius: 8px; background: #ffffff08; border: 1px solid #ffffff0C;
-  display: flex; align-items: center; justify-content: center; font-size: 13px; cursor: pointer;
-  text-decoration: none; color: var(--text-lo); transition: all 0.14s;
-}
+.footer-desc { font-size: 13px; color: var(--text-lo); line-height: 1.8; max-width: 220px; margin-bottom: 20px; }
+.footer-socials { display: flex; gap: 8px; }
+.fsoc { width: 32px; height: 32px; border-radius: 8px; background: #ffffff08; border: 1px solid #ffffff0C; display: flex; align-items: center; justify-content: center; font-size: 13px; cursor: pointer; text-decoration: none; color: var(--text-lo); transition: color 0.14s, background 0.14s; }
 .fsoc:hover { background: #ffffff14; color: var(--text-hi); }
-.footer-col h4 { font-size: 11px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-lo); margin-bottom: 16px; }
-.footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
-.footer-col ul a { font-size: 13px; color: var(--text-mid); text-decoration: none; transition: color 0.14s; }
-.footer-col ul a:hover { color: var(--text-hi); }
-.footer-bottom { max-width: 1320px; margin: 0 auto; padding-top: 24px; border-top: 1px solid #ffffff07; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+.footer-col-title { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--text-lo); font-weight: 700; margin-bottom: 16px; }
+.footer-links { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.footer-links a { font-size: 13px; color: var(--text-mid); text-decoration: none; transition: color 0.14s; }
+.footer-links a:hover { color: var(--text-hi); }
+.footer-bottom { max-width: 1320px; margin: 0 auto; padding: 18px 52px 24px; border-top: 1px solid #ffffff06; display: flex; justify-content: space-between; align-items: center; }
 .footer-copy { font-size: 12px; color: var(--text-lo); }
-.footer-legal { display: flex; gap: 24px; }
-.footer-legal a { font-size: 12px; color: var(--text-lo); text-decoration: none; transition: color 0.14s; }
-.footer-legal a:hover { color: var(--text-mid); }
+.footer-bl { font-family: var(--fd); font-size: 18px; font-weight: 900; letter-spacing: -0.04em; color: var(--text-mid); text-decoration: none; }
+.footer-bl .dot { color: var(--ember); }
 
 @media (max-width: 900px) {
   .navbar { padding: 0 24px; }
   .nav-links, .nav-actions { display: none; }
   .nav-hamburger { display: flex; }
   .page-wrap { padding: 90px 24px 60px; }
-  .footer-grid { grid-template-columns: 1fr 1fr; }
-  footer { padding: 48px 24px 24px; }
+  .footer-main { grid-template-columns: 1fr 1fr; gap: 28px; padding: 40px 28px 28px; }
+  .footer-bottom { padding: 16px 28px 20px; }
 }
 </style>
 </head>
@@ -278,7 +259,7 @@ footer {
   <ul class="nav-links">
     <li><a href="/events">Events</a></li>
     <li><a href="/vendors" class="active">Vendors</a></li>
-    <li><a href="/#how-it-works">How it Works</a></li>
+    <li><a href="/how-it-works">How it Works</a></li>
     <li><a href="/pricing">Pricing</a></li>
   </ul>
   <div class="nav-actions" id="nav-loggedout">
@@ -297,52 +278,43 @@ footer {
 
   <!-- PAGE HERO -->
   <div class="page-hero">
-    <div class="sec-tag">DISCOVER</div>
-    <h1 class="page-title">Vendors on Pitch<span style="color:var(--ember)">.</span><span class="page-count" id="result-count"></span></h1>
+    <div class="sec-tag">VENDORS</div>
+    <h1 class="page-title"><span style="color:var(--ember);font-style:italic;">Vendors</span> on Pitch.<span class="page-count" id="result-count"></span></h1>
+    <p class="page-subline">Discover verified food vendors available for events and markets near you.</p>
   </div>
 
   <!-- FILTER BAR -->
   <div class="filter-bar">
-    <div class="filter-row">
-      <input class="filter-search" id="f-search" type="text" placeholder="Search by name or cuisine…" oninput="applyFilters()" />
-    </div>
-    <div class="filter-row">
-      <select class="filter-select" id="f-cuisine" onchange="applyFilters()" style="flex:1;min-width:160px;">
-        <option value="">All Cuisines</option>
-        <option value="BBQ">BBQ</option>
-        <option value="Mexican">Mexican</option>
-        <option value="Asian Fusion">Asian Fusion</option>
-        <option value="Italian">Italian</option>
-        <option value="Desserts">Desserts</option>
-        <option value="Coffee & Drinks">Coffee &amp; Drinks</option>
-        <option value="Vegan">Vegan</option>
-        <option value="Burgers">Burgers</option>
-        <option value="Seafood">Seafood</option>
-        <option value="Other">Other</option>
-      </select>
-      <select class="filter-select" id="f-setup" onchange="applyFilters()" style="min-width:150px;">
-        <option value="">All Setup Types</option>
-        <option value="Food Truck">Food Truck</option>
-        <option value="Pop-up Stall">Pop-up Stall</option>
-        <option value="Cart">Cart</option>
-      </select>
-      <input class="filter-suburb" id="f-suburb" type="text" placeholder="Suburb or area…" oninput="applyFilters()" />
-      <label class="pro-filter">
-        <input type="checkbox" id="f-pro" onchange="applyFilters()" checked />
-        Show Pro vendors first
-      </label>
-    </div>
-    <div id="chips-row" class="filter-meta" style="display:none;">
-      <span class="filter-meta-text">Active filters:</span>
-      <div class="chips" id="chips-container"></div>
-      <button class="clear-btn" onclick="clearFilters()">Clear all</button>
-    </div>
+    <input class="filter-search" id="f-search" type="text" placeholder="Search by name or cuisine…" oninput="applyFilters()" />
+    <select class="filter-select" id="f-cuisine" onchange="applyFilters()" style="min-width:160px;">
+      <option value="">All Cuisines</option>
+      <option value="BBQ">BBQ</option>
+      <option value="Mexican">Mexican</option>
+      <option value="Asian Fusion">Asian Fusion</option>
+      <option value="Italian">Italian</option>
+      <option value="Desserts">Desserts</option>
+      <option value="Coffee & Drinks">Coffee &amp; Drinks</option>
+      <option value="Vegan">Vegan</option>
+      <option value="Burgers">Burgers</option>
+      <option value="Seafood">Seafood</option>
+      <option value="Other">Other</option>
+    </select>
+    <select class="filter-select" id="f-setup" onchange="applyFilters()" style="min-width:150px;">
+      <option value="">All Setup Types</option>
+      <option value="Food Truck">Food Truck</option>
+      <option value="Pop-up Stall">Pop-up Stall</option>
+      <option value="Cart">Cart</option>
+    </select>
+    <select class="filter-select" id="f-sort" onchange="applyFilters()" style="min-width:120px;">
+      <option value="pro">Sort ▾</option>
+      <option value="az">A–Z</option>
+      <option value="za">Z–A</option>
+    </select>
+    <input type="hidden" id="f-suburb" value="" />
+    <input type="hidden" id="f-pro" value="true" />
   </div>
 
-  <!-- GRID META -->
-  <div class="grid-meta">
-    <span class="grid-meta-text" id="grid-meta-text">Showing 1–12 of 248 vendors</span>
-  </div>
+  <span id="grid-meta-text" style="display:none;"></span>
 
   <!-- VENDOR GRID -->
   <div class="vendor-grid" id="vendor-grid"></div>
@@ -354,52 +326,47 @@ footer {
 
 <!-- FOOTER -->
 <footer>
-  <div class="footer-grid">
-    <div class="footer-brand">
-      <div class="footer-logo">Pitch<span class="dot">.</span></div>
-      <p class="footer-desc">Australia's marketplace connecting food vendors with local events. Based in Adelaide, SA.</p>
+  <div class="footer-main">
+    <div>
+      <a href="/" class="footer-logo">Pitch<span class="dot">.</span></a>
+      <p class="footer-desc">Australia's marketplace for food vendors and events.</p>
       <div class="footer-socials">
         <a href="https://x.com/pitchmkts" class="fsoc" target="_blank" rel="noopener">𝕏</a>
-        <a href="https://linkedin.com/company/pitchmkts" class="fsoc" target="_blank" rel="noopener">in</a>
         <a href="https://instagram.com/pitchmkts" class="fsoc" target="_blank" rel="noopener">◈</a>
+        <a href="https://linkedin.com/company/pitchmkts" class="fsoc" target="_blank" rel="noopener">in</a>
         <a href="https://facebook.com/pitchmkts" class="fsoc" target="_blank" rel="noopener">f</a>
       </div>
     </div>
-    <div class="footer-col">
-      <h4>For Vendors</h4>
-      <ul>
-        <li><a href="#">Browse Events</a></li>
-        <li><a href="#">Create Profile</a></li>
-        <li><a href="#">Pricing</a></li>
-        <li><a href="#">Success Stories</a></li>
+    <div>
+      <div class="footer-col-title">For Vendors</div>
+      <ul class="footer-links">
+        <li><a href="/signup?role=vendor">Sign up</a></li>
+        <li><a href="/how-it-works">How it works</a></li>
+        <li><a href="/pricing">Pricing</a></li>
+        <li><a href="/vendors">Browse vendors</a></li>
       </ul>
     </div>
-    <div class="footer-col">
-      <h4>For Organisers</h4>
-      <ul>
-        <li><a href="#">Post an Event</a></li>
-        <li><a href="#">Find Vendors</a></li>
-        <li><a href="#">Optional Extras</a></li>
-        <li><a href="#">Testimonials</a></li>
+    <div>
+      <div class="footer-col-title">For Organisers</div>
+      <ul class="footer-links">
+        <li><a href="/events/new">Post an event</a></li>
+        <li><a href="/how-it-works">How it works</a></li>
+        <li><a href="/contact">Talk to sales</a></li>
       </ul>
     </div>
-    <div class="footer-col">
-      <h4>Company</h4>
-      <ul>
-        <li><a href="#">About</a></li>
-        <li><a href="#">Blog</a></li>
-        <li><a href="#">Contact</a></li>
-        <li><a href="#">Help Centre</a></li>
+    <div>
+      <div class="footer-col-title">Company</div>
+      <ul class="footer-links">
+        <li><a href="/about">About</a></li>
+        <li><a href="/contact">Contact</a></li>
+        <li><a href="/terms">Terms</a></li>
+        <li><a href="/privacy">Privacy</a></li>
       </ul>
     </div>
   </div>
   <div class="footer-bottom">
-    <span class="footer-copy">© 2026 Pitch. Pty Ltd — Adelaide, SA</span>
-    <div class="footer-legal">
-      <a href="#">Privacy Policy</a>
-      <a href="#">Terms of Service</a>
-      <a href="#">Cookie Settings</a>
-    </div>
+    <span class="footer-copy">© 2026 Pitch. Adelaide, Australia.</span>
+    <a href="/" class="footer-bl">Pitch<span class="dot">.</span></a>
   </div>
 </footer>
 
@@ -409,7 +376,7 @@ footer {
 let VENDORS = (window.PITCH_VENDORS || []).map(function(v){ return Object.assign({}, v); });
 
 let currentPage = 1;
-const PER_PAGE = 9;
+const PER_PAGE = 12;
 
 // Fetch DB vendors and overlay/add real registered vendors
 fetch('/api/vendors').then(function(r){ return r.json(); }).then(function(data) {
@@ -483,9 +450,16 @@ function renderCard(v) {
         <div class="vc-sep"></div>
         <div class="vc-events"><strong>${v.events}</strong> events</div>
         <div class="vc-suburb">📍 ${v.suburb}</div>`;
+  const setupStyle = v.setup === 'Food Truck'
+    ? 'background:#2B5BA812;color:#2B5BA8;border:1px solid #2B5BA820;'
+    : v.setup === 'Pop-up Stall'
+    ? 'background:#2D8B5512;color:#2D8B55;border:1px solid #2D8B5520;'
+    : v.setup === 'Cart'
+    ? 'background:#E8500A12;color:#E8500A;border:1px solid #E8500A20;'
+    : 'background:#ffffff0a;color:#A89880;border:1px solid #ffffff18;';
   var topStyle = v.avatar_url
-    ? `background:${v.bg};background-image:url(${v.avatar_url});background-size:cover;background-position:center;`
-    : `background:${v.bg};`;
+    ? `background:linear-gradient(135deg,#2E2720,#1A1612);background-image:url(${v.avatar_url});background-size:cover;background-position:center;`
+    : `background:linear-gradient(135deg,#2E2720,#1A1612);`;
   var avatarHtml = v.avatar_url
     ? `<div style="position:absolute;bottom:10px;left:14px;width:44px;height:44px;border-radius:10px;border:2.5px solid rgba(255,255,255,0.3);background-image:url(${v.avatar_url});background-size:cover;background-position:center;box-shadow:0 2px 8px rgba(0,0,0,0.4);"></div>`
     : `<div style="font-size:52px;">${v.emoji}</div>`;
@@ -496,8 +470,8 @@ function renderCard(v) {
     <div class="vc-top" style="${topStyle}">
       ${overlayHtml}
       ${avatarHtml}
-      ${v.isPro ? '<span class="vc-pro-badge">PRO</span>' : ''}
-      <span class="vc-setup-badge">${v.setup}</span>
+      ${v.isGrowth ? '<span class="vc-growth-badge">GROWTH</span>' : v.isPro ? '<span class="vc-pro-badge">PRO</span>' : ''}
+      <span class="vc-setup-badge" style="${setupStyle}">${v.setup}</span>
     </div>
     <div class="vc-body">
       <div class="vc-name">${v.name}</div>
@@ -513,22 +487,25 @@ function getFiltered() {
   const search  = document.getElementById('f-search').value.trim().toLowerCase();
   const cuisine = document.getElementById('f-cuisine').value;
   const setup   = document.getElementById('f-setup').value;
-  const suburb  = document.getElementById('f-suburb').value.trim().toLowerCase();
-  const proFirst = document.getElementById('f-pro').checked;
+  const sort    = document.getElementById('f-sort').value;
 
   let list = VENDORS.filter(v => {
     if (search && !v.name.toLowerCase().includes(search) && !v.cuisines.some(c => c.toLowerCase().includes(search))) return false;
     if (cuisine && !v.cuisines.includes(cuisine)) return false;
     if (setup && v.setup !== setup) return false;
-    if (suburb && !v.suburb.toLowerCase().includes(suburb)) return false;
     return true;
   });
 
-  // Always sort Growth > Pro > Free; secondary sort by proFirst checkbox
-  list.sort((a, b) => {
-    const rank = v => v.isGrowth ? 0 : v.isPro ? 1 : 2;
-    return rank(a) - rank(b);
-  });
+  if (sort === 'az') {
+    list.sort((a, b) => a.name.localeCompare(b.name));
+  } else if (sort === 'za') {
+    list.sort((a, b) => b.name.localeCompare(a.name));
+  } else {
+    list.sort((a, b) => {
+      const rank = v => v.isGrowth ? 0 : v.isPro ? 1 : 2;
+      return rank(a) - rank(b);
+    });
+  }
   return list;
 }
 
@@ -571,9 +548,9 @@ function renderGrid() {
   const start = (currentPage - 1) * PER_PAGE;
   const page  = filtered.slice(start, start + PER_PAGE);
 
-  document.getElementById('result-count').textContent = `${total} vendor${total !== 1 ? 's' : ''}`;
+  document.getElementById('result-count').textContent = '';
   document.getElementById('grid-meta-text').textContent =
-    `Showing ${Math.min(start + 1, total)}–${Math.min(start + page.length, total)} of ${total} vendor${total !== 1 ? 's' : ''}`;
+    `Showing ${Math.min(start + 1, total)}–${Math.min(start + page.length, total)} vendors`;
 
   const grid = document.getElementById('vendor-grid');
   if (page.length === 0) {
@@ -586,17 +563,33 @@ function renderGrid() {
 }
 
 function renderPagination(total) {
-  const totalPages = Math.ceil(total / PER_PAGE);
-  if (totalPages <= 1) { document.getElementById('pagination').innerHTML = ''; return; }
+  const pg = document.getElementById('pagination');
+  const totalPages = Math.max(1, Math.ceil(total / PER_PAGE));
+  if (totalPages <= 1) { pg.innerHTML = ''; return; }
 
-  let html = `<button class="pg-btn" onclick="goPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>←</button>`;
-  for (let i = 1; i <= Math.min(totalPages, 7); i++) {
-    if (i === 6 && totalPages > 7) { html += `<span class="pg-dots">…</span>`; continue; }
-    if (i === 7 && totalPages > 7) i = totalPages;
-    html += `<button class="pg-btn${i === currentPage ? ' active' : ''}" onclick="goPage(${i})">${i}</button>`;
+  let html = `<button class="pg-btn page-prev" onclick="goPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>← Prev</button>`;
+
+  const pages = [];
+  if (totalPages <= 7) {
+    for (let i = 1; i <= totalPages; i++) pages.push(i);
+  } else {
+    pages.push(1);
+    if (currentPage > 3) pages.push('…');
+    for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) pages.push(i);
+    if (currentPage < totalPages - 2) pages.push('…');
+    pages.push(totalPages);
   }
-  html += `<button class="pg-btn" onclick="goPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>→</button>`;
-  document.getElementById('pagination').innerHTML = html;
+
+  pages.forEach(p => {
+    if (p === '…') {
+      html += `<button class="pg-btn dots">…</button>`;
+    } else {
+      html += `<button class="pg-btn ${p === currentPage ? 'active' : ''}" onclick="goPage(${p})">${p}</button>`;
+    }
+  });
+
+  html += `<button class="pg-btn page-next" onclick="goPage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>Next →</button>`;
+  pg.innerHTML = html;
 }
 
 function goPage(n) {

@@ -309,6 +309,7 @@ await _safeExec(`
   )
 `);
 
+await _safeExec(`ALTER TABLE events ADD COLUMN cover_image TEXT`);
 await _safeExec(`ALTER TABLE events ADD COLUMN cancelled_at DATETIME`);
 await _safeExec(`ALTER TABLE events ADD COLUMN cancel_reason TEXT`);
 await _safeExec(`ALTER TABLE events ADD COLUMN is_recurring INTEGER NOT NULL DEFAULT 0`);
@@ -350,6 +351,12 @@ await _safeExec(`ALTER TABLE vendors ADD COLUMN notif_apps INTEGER NOT NULL DEFA
 await _safeExec(`ALTER TABLE vendors ADD COLUMN notif_docs INTEGER NOT NULL DEFAULT 1`);
 await _safeExec(`ALTER TABLE vendors ADD COLUMN notif_reviews INTEGER NOT NULL DEFAULT 0`);
 await _safeExec(`ALTER TABLE vendors ADD COLUMN notif_payments INTEGER NOT NULL DEFAULT 1`);
+
+// ── Subscription feature migrations ──────────────────────────────────────────
+await _safeExec(`ALTER TABLE vendors ADD COLUMN apps_this_month INTEGER NOT NULL DEFAULT 0`);
+await _safeExec(`ALTER TABLE vendors ADD COLUMN apps_reset_month TEXT NOT NULL DEFAULT ''`);
+await _safeExec(`ALTER TABLE vendors ADD COLUMN trial_ends_at DATETIME`);
+await _safeExec(`ALTER TABLE vendors ADD COLUMN subscription_status TEXT NOT NULL DEFAULT 'active'`);
 
 // ── Vendors: add 'growth' to plan CHECK constraint ───────────────────────────
 {
@@ -777,7 +784,7 @@ export const stmts = {
   getApprovedVendorsByEvent: prepare(`SELECT v.user_id,v.trading_name,v.cuisine_tags,v.setup_type FROM event_applications ea JOIN vendors v ON v.user_id=ea.vendor_user_id WHERE ea.event_id=? AND ea.status='approved' ORDER BY ea.approved_at ASC`),
   countOrgEvents:    prepare(`SELECT COUNT(*) as n FROM events WHERE organiser_user_id=? AND status='published'`),
   updateEventStatus: prepare(`UPDATE events SET status=? WHERE id=?`),
-  updateEvent:       prepare(`UPDATE events SET name=@name,category=@category,suburb=@suburb,state=@state,venue_name=@venue_name,date_sort=@date_sort,date_end=@date_end,date_text=@date_text,description=@description,stalls_available=@stalls_available,stall_fee_min=@stall_fee_min,stall_fee_max=@stall_fee_max,deadline=@deadline WHERE id=@id`),
+  updateEvent:       prepare(`UPDATE events SET name=@name,category=@category,suburb=@suburb,state=@state,venue_name=@venue_name,date_sort=@date_sort,date_end=@date_end,date_text=@date_text,description=@description,stalls_available=@stalls_available,stall_fee_min=@stall_fee_min,stall_fee_max=@stall_fee_max,deadline=@deadline,cover_image=@cover_image WHERE id=@id`),
   deleteEvent:       prepare(`DELETE FROM events WHERE id=?`),
   countEvents:       prepare(`SELECT COUNT(*) as n FROM events WHERE status='published'`),
 
@@ -823,7 +830,7 @@ export const stmts = {
   withdrawApplication:     prepare(`UPDATE event_applications SET status='withdrawn' WHERE event_id=? AND vendor_user_id=?`),
 
   // organiser events
-  createEvent:        prepare(`INSERT INTO events (slug,name,category,suburb,state,date_sort,date_end,date_text,description,stalls_available,stall_fee_min,stall_fee_max,deadline,organiser_name,organiser_user_id,venue_name) VALUES (@slug,@name,@category,@suburb,@state,@date_sort,@date_end,@date_text,@description,@stalls_available,@stall_fee_min,@stall_fee_max,@deadline,@organiser_name,@organiser_user_id,@venue_name)`),
+  createEvent:        prepare(`INSERT INTO events (slug,name,category,suburb,state,date_sort,date_end,date_text,description,stalls_available,stall_fee_min,stall_fee_max,deadline,organiser_name,organiser_user_id,venue_name,cover_image) VALUES (@slug,@name,@category,@suburb,@state,@date_sort,@date_end,@date_text,@description,@stalls_available,@stall_fee_min,@stall_fee_max,@deadline,@organiser_name,@organiser_user_id,@venue_name,@cover_image)`),
   getOrganiserEvents: prepare(`SELECT * FROM events WHERE organiser_user_id=? ORDER BY date_sort ASC`),
   // single query — all apps across all of an organiser's events (replaces N+1 loop)
   getAllAppsByOrganiser: prepare(`SELECT ea.*,e.name as event_name,u.first_name,u.last_name,u.email,v.trading_name,v.mobile,v.suburb as v_suburb,v.state as v_state,v.bio,v.cuisine_tags,v.plan,v.instagram,v.setup_type,v.stall_w,v.stall_d,v.power,v.water,v.price_range FROM event_applications ea JOIN events e ON ea.event_id=e.id JOIN users u ON ea.vendor_user_id=u.id JOIN vendors v ON v.user_id=u.id WHERE e.organiser_user_id=? ORDER BY ea.created_at DESC`),
@@ -916,6 +923,12 @@ export const stmts = {
   // vendor settings
   updateVendorSettings: prepare(`UPDATE vendors SET notif_apps=@notif_apps,notif_docs=@notif_docs,notif_reviews=@notif_reviews,notif_payments=@notif_payments WHERE user_id=@user_id`),
   pauseVendor:          prepare(`UPDATE vendors SET paused=? WHERE user_id=?`),
+
+  // subscription / application quota
+  getVendorSubscription:     prepare(`SELECT plan,apps_this_month,apps_reset_month,trial_ends_at,subscription_status FROM vendors WHERE user_id=?`),
+  incrementAppsThisMonth:    prepare(`UPDATE vendors SET apps_this_month=apps_this_month+1, apps_reset_month=? WHERE user_id=?`),
+  resetAndIncrementApps:     prepare(`UPDATE vendors SET apps_this_month=1, apps_reset_month=? WHERE user_id=?`),
+  resetAppsCounter:          prepare(`UPDATE vendors SET apps_this_month=0, apps_reset_month=? WHERE user_id=?`),
 
   // announcements
   createAnnouncement:   prepare(`INSERT INTO announcements (subject,body,audience,created_by) VALUES (@subject,@body,@audience,@created_by)`),

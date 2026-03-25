@@ -139,6 +139,13 @@ html.vd-loading footer { visibility: hidden; }
   color: var(--gold); font-size: 11px; font-weight: 700;
   padding: 5px 12px; border-radius: 100px; margin-top: 8px;
 }
+.growth-badge-large {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: linear-gradient(135deg, #E8500A22, #FF6B2B18);
+  border: 1px solid #E8500A30;
+  color: var(--ember); font-size: 11px; font-weight: 700;
+  padding: 5px 12px; border-radius: 100px; margin-top: 8px;
+}
 
 .vendor-meta-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
 .vendor-tag {
@@ -571,7 +578,7 @@ if (/^\d+$/.test(window.location.pathname.replace(/^\/vendors\//, '').replace(/\
   <ul class="nav-links">
     <li><a href="/events">Events</a></li>
     <li><a href="/vendors" class="active">Vendors</a></li>
-    <li><a href="/#how-it-works">How it Works</a></li>
+    <li><a href="/how-it-works">How it Works</a></li>
     <li><a href="/pricing">Pricing</a></li>
   </ul>
   <div class="nav-actions" id="nav-loggedout">
@@ -610,6 +617,7 @@ if (/^\d+$/.test(window.location.pathname.replace(/^\/vendors\//, '').replace(/\
           <h1 class="vendor-name" id="vd-name"></h1>
           <span class="verified-badge" id="vd-verified-badge" style="display:none;">✓ Verified</span>
           <span class="pro-badge-large" id="vd-pro-badge" style="display:none;">★ Pro Vendor</span>
+          <span class="growth-badge-large" id="vd-growth-badge" style="display:none;">★ Growth Vendor</span>
         </div>
         <div class="vendor-meta-row" id="vd-meta-row"></div>
         <p class="vendor-bio" id="vd-bio"></p>
@@ -875,12 +883,12 @@ if (/^\d+$/.test(window.location.pathname.replace(/^\/vendors\//, '').replace(/\
 
       <!-- Plan badge -->
       <div class="sidebar-card" style="padding: 16px 20px;">
-        <div class="plan-badge-row">
+        <div class="plan-badge-row" id="vd-plan-badge-row">
           <div class="plan-badge-left">
             <div class="plan-badge-name" id="vd-plan-name">Pro Vendor</div>
-            <div class="plan-badge-desc">Priority placement · Verified documents</div>
+            <div class="plan-badge-desc" id="vd-plan-desc">Priority placement · Verified documents</div>
           </div>
-          <div class="plan-badge-icon">⭐</div>
+          <div class="plan-badge-icon" id="vd-plan-icon">⭐</div>
         </div>
       </div>
 
@@ -1061,8 +1069,9 @@ var isNumericId = /^\d+$/.test(vpath);
 
 
 function applyDbVendor(db) {
-  var name   = db.trading_name || '—';
-  var isPro  = db.plan === 'pro';
+  var name     = db.trading_name || '—';
+  var isPro    = db.plan === 'pro';
+  var isGrowth = db.plan === 'growth';
   var cuisines = Array.isArray(db.cuisine_tags) ? db.cuisine_tags : [];
   var setup  = db.setup_type || '';
   var suburb = db.suburb || '';
@@ -1073,7 +1082,34 @@ function applyDbVendor(db) {
   document.getElementById('vd-breadcrumb').textContent = name;
   document.getElementById('vd-name').textContent = name;
   document.getElementById('vd-pro-badge').style.display = isPro ? '' : 'none';
-  document.getElementById('vd-plan-name').textContent = isPro ? 'Pro Vendor' : 'Free Plan';
+  document.getElementById('vd-growth-badge').style.display = isGrowth ? '' : 'none';
+  // Sidebar plan badge
+  var planRow = document.getElementById('vd-plan-badge-row');
+  var planNameEl = document.getElementById('vd-plan-name');
+  var planDescEl = document.getElementById('vd-plan-desc');
+  var planIconEl = document.getElementById('vd-plan-icon');
+  if (isGrowth) {
+    planRow.style.background = 'linear-gradient(135deg,#E8500A18,#FF6B2B0E)';
+    planRow.style.borderColor = '#E8500A28';
+    planNameEl.style.color = 'var(--ember)';
+    planNameEl.textContent = 'Growth Vendor';
+    planDescEl.textContent = 'Top placement · Instant event alerts · All features';
+    planIconEl.textContent = '🔥';
+  } else if (isPro) {
+    planRow.style.background = '';
+    planRow.style.borderColor = '';
+    planNameEl.style.color = '';
+    planNameEl.textContent = 'Pro Vendor';
+    planDescEl.textContent = 'Priority placement · Verified documents';
+    planIconEl.textContent = '⭐';
+  } else {
+    planRow.style.background = 'linear-gradient(135deg,#2E272018,#1A16120E)';
+    planRow.style.borderColor = '#ffffff10';
+    planNameEl.style.color = 'var(--text-mid)';
+    planNameEl.textContent = 'Starter Plan';
+    planDescEl.textContent = 'Basic listing · Up to 10 event applications/month';
+    planIconEl.textContent = '📋';
+  }
   if (bio) document.getElementById('vd-bio').textContent = bio;
 
   var _priceLabels = { '$':'$ (under $15)', '$$':'$$ ($15–$25)', '$$$':'$$$ ($25+)' };
@@ -1196,7 +1232,8 @@ if (isNumericId) {
     document.getElementById('vd-hero-emoji').style.background = vendor.bg;
     document.getElementById('vd-hero').style.background = vendor.bg;
     document.getElementById('vd-name').textContent = vendor.name;
-    document.getElementById('vd-pro-badge').style.display = vendor.isPro ? '' : 'none';
+    document.getElementById('vd-pro-badge').style.display = (vendor.isPro && !vendor.isGrowth) ? '' : 'none';
+    document.getElementById('vd-growth-badge').style.display = vendor.isGrowth ? '' : 'none';
     var vb = document.getElementById('vd-verified-badge');
     if (vb) vb.style.display = ''; // demo vendors are all verified
     document.getElementById('vd-meta-row').innerHTML =
@@ -1249,7 +1286,29 @@ if (isNumericId) {
     document.getElementById('vd-rating-num').textContent = vendor.rating.toFixed(1);
     document.getElementById('vd-review-count').textContent = vendor.reviews + ' organiser reviews';
     document.getElementById('vd-events-count').textContent = vendor.events;
-    document.getElementById('vd-plan-name').textContent = vendor.isPro ? 'Pro Vendor' : 'Free Plan';
+    var planRow2 = document.getElementById('vd-plan-badge-row');
+    var planNameEl2 = document.getElementById('vd-plan-name');
+    var planDescEl2 = document.getElementById('vd-plan-desc');
+    var planIconEl2 = document.getElementById('vd-plan-icon');
+    if (vendor.isGrowth) {
+      planRow2.style.background = 'linear-gradient(135deg,#E8500A18,#FF6B2B0E)';
+      planRow2.style.borderColor = '#E8500A28';
+      planNameEl2.style.color = 'var(--ember)';
+      planNameEl2.textContent = 'Growth Vendor';
+      planDescEl2.textContent = 'Top placement · Instant event alerts · All features';
+      planIconEl2.textContent = '🔥';
+    } else if (vendor.isPro) {
+      planNameEl2.textContent = 'Pro Vendor';
+      planDescEl2.textContent = 'Priority placement · Verified documents';
+      planIconEl2.textContent = '⭐';
+    } else {
+      planRow2.style.background = 'linear-gradient(135deg,#2E272018,#1A16120E)';
+      planRow2.style.borderColor = '#ffffff10';
+      planNameEl2.style.color = 'var(--text-mid)';
+      planNameEl2.textContent = 'Starter Plan';
+      planDescEl2.textContent = 'Basic listing · Up to 10 event applications/month';
+      planIconEl2.textContent = '📋';
+    }
 
     window.addEventListener('load', function(){
       setTimeout(function(){

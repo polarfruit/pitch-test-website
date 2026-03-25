@@ -58,7 +58,7 @@
     }
     .nav-dashboard:hover { background:var(--ember-glow); }
 
-    main { position:relative; z-index:1; }
+    main { position:relative; z-index:1; background:#1A1612; }
 
     /* ─── Hero ─── */
     .hero {
@@ -168,7 +168,7 @@
     .org-note a:hover { color:var(--text-hi); text-decoration:underline; }
 
     /* ─── Comparison Table ─── */
-    .compare-section { padding:0 52px 96px; max-width:1160px; margin:0 auto; }
+    .compare-section { padding:0 52px 96px; max-width:1160px; margin:0 auto; scroll-margin-top:90px; }
     .compare-header { text-align:center; margin-bottom:56px; }
     .compare-header h2 {
       font-family:var(--fd); font-size:clamp(32px,4vw,44px); font-weight:900;
@@ -188,11 +188,10 @@
       padding:22px 20px; font-size:13px; font-weight:700;
       background:var(--ash); border-bottom:1.5px solid #ffffff08;
       text-align:center; vertical-align:bottom;
-      position:sticky; top:66px; z-index:10;
     }
     .compare-table thead th:first-child {
-      text-align:left; width:36%; position:sticky; left:0; top:66px;
-      background:var(--ash); z-index:11;
+      text-align:left; width:36%;
+      background:var(--ash);
     }
     .th-plan-name {
       font-family:var(--fd); font-size:17px; font-weight:900;
@@ -264,7 +263,7 @@
     }
 
     /* ─── FAQ ─── */
-    .faq-section { padding:0 52px 96px; max-width:780px; margin:0 auto; }
+    .faq-section { padding:0 52px 40px; max-width:780px; margin:0 auto; }
     .faq-header { text-align:center; margin-bottom:48px; }
     .faq-header h2 { font-family:var(--fd); font-size:clamp(30px,3.5vw,40px); font-weight:900; letter-spacing:-0.03em; }
     .faq-item { border-top:1px solid #ffffff08; }
@@ -290,16 +289,10 @@
 
     /* ─── CTA Banner ─── */
     .cta-banner {
-      margin:0 52px 80px; border-radius:22px;
-      background:linear-gradient(135deg, var(--char) 0%, #2A1F18 100%);
-      border:1.5px solid #ffffff08; padding:72px 52px;
+      margin:0 52px; border-radius:22px;
+      background:#1A1612;
+      border:1.5px solid #ffffff08; padding:64px 52px 56px;
       text-align:center; position:relative; overflow:hidden;
-    }
-    .cta-banner::before {
-      content:''; position:absolute; top:-80px; left:50%; transform:translateX(-50%);
-      width:480px; height:480px;
-      background:radial-gradient(circle, rgba(232,80,10,0.13) 0%, transparent 70%);
-      pointer-events:none;
     }
     .cta-banner h2 {
       font-family:var(--fd); font-size:clamp(34px,4.5vw,52px); font-weight:900;
@@ -322,17 +315,22 @@
     .cta-secondary-btn:hover { background:#ffffff14; }
 
     /* ─── Footer ─── */
-    footer {
-      background:#161210; border-top:1px solid #ffffff06;
-      padding:40px 52px; display:flex; justify-content:space-between;
-      align-items:center; flex-wrap:wrap; gap:16px; position:relative; z-index:1;
-    }
-    .footer-logo { font-family:'Fraunces',serif; font-size:22px; font-weight:900; color:#FDF4E7; text-decoration:none; letter-spacing:-0.04em; }
-    .footer-logo span { color:#E8500A; }
-    .footer-links { display:flex; gap:24px; flex-wrap:wrap; }
-    .footer-links a { font-size:13px; color:#6B5A4A; text-decoration:none; transition:color 0.14s; }
-    .footer-links a:hover { color:#A89880; }
-    .footer-copy { font-size:12px; color:#4A3C30; }
+    footer { background:var(--char); border-top:1px solid #ffffff07; position:relative; z-index:1; }
+    .footer-main { max-width:1320px; margin:0 auto; padding:56px 52px 36px; display:grid; grid-template-columns:1.8fr 1fr 1fr 1fr; gap:48px; }
+    .footer-logo { font-family:var(--fd); font-size:24px; font-weight:900; letter-spacing:-0.04em; color:var(--text-hi); margin-bottom:10px; text-decoration:none; display:inline-block; }
+    .footer-logo .dot { color:var(--ember); }
+    .footer-desc { font-size:13px; color:var(--text-lo); line-height:1.8; max-width:220px; margin-bottom:20px; }
+    .footer-socials { display:flex; gap:8px; }
+    .fsoc { width:32px; height:32px; border-radius:8px; background:#ffffff08; border:1px solid #ffffff0C; display:flex; align-items:center; justify-content:center; font-size:13px; cursor:pointer; text-decoration:none; color:var(--text-lo); transition:color 0.14s,background 0.14s; }
+    .fsoc:hover { background:#ffffff14; color:var(--text-hi); }
+    .footer-col-title { font-size:10px; letter-spacing:0.2em; text-transform:uppercase; color:var(--text-lo); font-weight:700; margin-bottom:16px; }
+    .footer-links { list-style:none; display:flex; flex-direction:column; gap:10px; }
+    .footer-links a { font-size:13px; color:var(--text-mid); text-decoration:none; transition:color 0.14s; }
+    .footer-links a:hover { color:var(--text-hi); }
+    .footer-bottom { max-width:1320px; margin:0 auto; padding:18px 52px 24px; border-top:1px solid #ffffff06; display:flex; justify-content:space-between; align-items:center; }
+    .footer-copy { font-size:12px; color:var(--text-lo); }
+    .footer-bl { font-family:var(--fd); font-size:18px; font-weight:900; letter-spacing:-0.04em; color:var(--text-mid); text-decoration:none; }
+    .footer-bl .dot { color:var(--ember); }
 
     /* ─── Responsive ─── */
     @media(max-width:768px) {
@@ -341,7 +339,8 @@
       .hero { padding:120px 24px 64px; }
       .tiers-section, .compare-section, .faq-section { padding-left:20px; padding-right:20px; }
       .cta-banner { margin:0 20px 64px; padding:52px 28px; }
-      footer { padding:32px 20px; flex-direction:column; align-items:flex-start; gap:20px; }
+      .footer-main { grid-template-columns:1fr 1fr; gap:28px; padding:40px 28px 28px; }
+      .footer-bottom { padding:16px 28px 20px; }
     }
   </style>
 </head>
@@ -369,7 +368,7 @@
     <div class="hero">
       <div class="hero-eyebrow">Vendor Pricing</div>
       <h1>Grow at your<br>own pace.</h1>
-      <p>Start free and upgrade when you're ready. No lock-in, no hidden fees — just the tools you need to land more events.</p>
+      <p>Start free and upgrade when you're ready. No lock-in, no contracts — just the tools you need to land more events.</p>
     </div>
 
     <!-- ─── Tier Cards ─── -->
@@ -388,7 +387,7 @@
           <a href="/signup/vendor" class="plan-cta cta-secondary" id="cta-starter">Get started free</a>
           <ul class="plan-features">
             <li><span class="feat-icon check"></span>Full vendor profile with photos &amp; menu</li>
-            <li><span class="feat-icon check"></span>Unlimited event applications</li>
+            <li><span class="feat-icon check"></span>Up to 10 event applications per month</li>
             <li><span class="feat-icon check"></span>Up to 4 photos on your profile</li>
             <li><span class="feat-icon check"></span>Message organisers you've applied to</li>
             <li><span class="feat-icon check"></span>Standard placement in search</li>
@@ -406,7 +405,7 @@
           </div>
           <div class="plan-billing-note">Billed monthly · cancel anytime</div>
           <p class="plan-desc">Priority placement, early event access, and analytics that show what's working — and what isn't.</p>
-          <a href="/signup/vendor?plan=pro" class="plan-cta cta-primary" id="cta-pro">Start Pro — 14 days free</a>
+          <a href="/signup/vendor?plan=pro" class="plan-cta cta-primary" id="cta-pro">Start Pro →</a>
           <ul class="plan-features">
             <li><span class="feat-icon check"></span>Everything in Starter</li>
             <li><span class="feat-icon check"></span>Priority placement in organiser search</li>
@@ -430,21 +429,21 @@
           </div>
           <div class="plan-billing-note">Billed monthly · cancel anytime</div>
           <p class="plan-desc">Top placement, 24-hour early event access, competitor insights, and team access — for vendors who treat this as a business.</p>
-          <a href="/signup/vendor?plan=growth" class="plan-cta cta-secondary" id="cta-growth">Start Growth — 14 days free</a>
+          <a href="/signup/vendor?plan=growth" class="plan-cta cta-secondary" id="cta-growth">Start Growth →</a>
           <ul class="plan-features">
-            <li><span class="feat-icon growth"></span>Everything in Pro</li>
-            <li><span class="feat-icon growth"></span>Top placement in organiser search</li>
-            <li><span class="feat-icon growth"></span>Growth badge on your profile</li>
-            <li><span class="feat-icon growth"></span>Up to 20 photos in named galleries</li>
-            <li><span class="feat-icon growth"></span>24-hour early event access</li>
-            <li><span class="feat-icon growth"></span>Late application window (48 hrs)</li>
-            <li><span class="feat-icon growth"></span>Cold-contact any organiser on Pitch</li>
-            <li><span class="feat-icon growth"></span>Signature showcase item on profile</li>
-            <li><span class="feat-icon growth"></span>Custom vanity URL</li>
-            <li><span class="feat-icon growth"></span>Competitor count insights</li>
-            <li><span class="feat-icon growth"></span>Shortlist tracking ("Close calls")</li>
-            <li><span class="feat-icon growth"></span>Bookkeeping summary export</li>
-            <li><span class="feat-icon growth"></span>Second account user (team access)</li>
+            <li><span class="feat-icon check"></span>Everything in Pro</li>
+            <li><span class="feat-icon check"></span>Top placement in organiser search</li>
+            <li><span class="feat-icon check"></span>Growth badge on your profile</li>
+            <li><span class="feat-icon check"></span>Up to 20 photos in named galleries</li>
+            <li><span class="feat-icon check"></span>24-hour early event access</li>
+            <li><span class="feat-icon check"></span>Late application window (48 hrs)</li>
+            <li><span class="feat-icon check"></span>Cold-contact any organiser on Pitch</li>
+            <li><span class="feat-icon check"></span>Signature showcase item on profile</li>
+            <li><span class="feat-icon check"></span>Custom vanity URL</li>
+            <li><span class="feat-icon check"></span>Competitor count insights</li>
+            <li><span class="feat-icon check"></span>Shortlist tracking ("Close calls")</li>
+            <li><span class="feat-icon check"></span>Bookkeeping summary export</li>
+            <li><span class="feat-icon check"></span>Second account user (team access)</li>
           </ul>
         </div>
 
@@ -488,7 +487,7 @@
             <tr class="section-row"><td colspan="4">Applications</td></tr>
             <tr>
               <td class="feat-col">Applications per month</td>
-              <td class="val-col has-value">Unlimited</td>
+              <td class="val-col has-value">10 per month</td>
               <td class="val-col col-pro has-value">Unlimited</td>
               <td class="val-col has-value">Unlimited</td>
             </tr>
@@ -535,7 +534,7 @@
               <td class="feat-col">Cold-contact any organiser on Pitch</td>
               <td class="val-col"><span class="icon-no"></span></td>
               <td class="val-col col-pro"><span class="icon-no"></span></td>
-              <td class="val-col"><span class="icon-growth"></span></td>
+              <td class="val-col"><span class="icon-yes"></span></td>
             </tr>
 
             <!-- Profile Visibility -->
@@ -556,13 +555,13 @@
               <td class="feat-col">Custom vanity URL</td>
               <td class="val-col"><span class="icon-no"></span></td>
               <td class="val-col col-pro"><span class="icon-no"></span></td>
-              <td class="val-col"><span class="icon-growth"></span></td>
+              <td class="val-col"><span class="icon-yes"></span></td>
             </tr>
             <tr>
               <td class="feat-col">Signature showcase item on profile</td>
               <td class="val-col"><span class="icon-no"></span></td>
               <td class="val-col col-pro"><span class="icon-no"></span></td>
-              <td class="val-col"><span class="icon-growth"></span></td>
+              <td class="val-col"><span class="icon-yes"></span></td>
             </tr>
 
             <!-- Profile Content -->
@@ -577,7 +576,7 @@
               <td class="feat-col">Named photo galleries</td>
               <td class="val-col"><span class="icon-no"></span></td>
               <td class="val-col col-pro"><span class="icon-no"></span></td>
-              <td class="val-col"><span class="icon-growth"></span></td>
+              <td class="val-col"><span class="icon-yes"></span></td>
             </tr>
             <tr>
               <td class="feat-col">Full menu editor (unlimited items)</td>
@@ -589,7 +588,7 @@
               <td class="feat-col">Second account user (team access)</td>
               <td class="val-col"><span class="icon-no"></span></td>
               <td class="val-col col-pro"><span class="icon-no"></span></td>
-              <td class="val-col"><span class="icon-growth"></span></td>
+              <td class="val-col"><span class="icon-yes"></span></td>
             </tr>
 
             <!-- Discovery & Notifications -->
@@ -616,7 +615,7 @@
               <td class="feat-col">Shortlist notifications</td>
               <td class="val-col"><span class="icon-no"></span></td>
               <td class="val-col col-pro"><span class="icon-no"></span></td>
-              <td class="val-col"><span class="icon-growth"></span></td>
+              <td class="val-col"><span class="icon-yes"></span></td>
             </tr>
             <tr>
               <td class="feat-col">Document expiry reminders</td>
@@ -649,13 +648,13 @@
               <td class="feat-col">Competitor count insights</td>
               <td class="val-col"><span class="icon-no"></span></td>
               <td class="val-col col-pro"><span class="icon-no"></span></td>
-              <td class="val-col"><span class="icon-growth"></span></td>
+              <td class="val-col"><span class="icon-yes"></span></td>
             </tr>
             <tr>
               <td class="feat-col">Shortlist tracking ("Close calls")</td>
               <td class="val-col"><span class="icon-no"></span></td>
               <td class="val-col col-pro"><span class="icon-no"></span></td>
-              <td class="val-col"><span class="icon-growth"></span></td>
+              <td class="val-col"><span class="icon-yes"></span></td>
             </tr>
             <tr>
               <td class="feat-col">iCal calendar export</td>
@@ -676,7 +675,7 @@
               <td class="feat-col">Bookkeeping summary export</td>
               <td class="val-col"><span class="icon-no"></span></td>
               <td class="val-col col-pro"><span class="icon-no"></span></td>
-              <td class="val-col"><span class="icon-growth"></span></td>
+              <td class="val-col"><span class="icon-yes"></span></td>
             </tr>
             <tr>
               <td class="feat-col">14-day free trial</td>
@@ -706,10 +705,10 @@
 
       <div class="faq-item">
         <div class="faq-q" onclick="toggleFaq(this)">
-          Does the free trial require a credit card?
+          Does the Starter plan require a credit card?
           <span class="faq-icon">+</span>
         </div>
-        <div class="faq-a">No. Both Pro and Growth trials start without a credit card. You get 14 days of full access to every feature on your chosen plan. On day 10, we'll remind you to add a payment method if you'd like to keep your features. If you don't, the account automatically drops to Starter at the end of day 14 — no charge, no friction.</div>
+        <div class="faq-a">No. The Starter plan is completely free — no credit card required. You can create a profile and apply to up to 10 events per month at no cost.</div>
       </div>
 
       <div class="faq-item">
@@ -749,7 +748,7 @@
     <!-- ─── CTA Banner ─── -->
     <div class="cta-banner">
       <h2>Ready to find your pitch?</h2>
-      <p>Join hundreds of vendors building Australia's best food markets.</p>
+      <p>Join vendors already using Pitch across South Australia.</p>
       <div class="cta-buttons">
         <a href="/signup/vendor" class="cta-primary-btn" id="cta-banner-primary">Get started free</a>
         <a href="#compare" class="cta-secondary-btn">Compare all features</a>
@@ -758,15 +757,48 @@
   </main>
 
   <footer>
-    <a href="/" class="footer-logo">Pitch<span>.</span></a>
-    <div class="footer-links">
-      <a href="/about">About</a>
-      <a href="/pricing">Pricing</a>
-      <a href="/contact">Contact</a>
-      <a href="/terms">Terms</a>
-      <a href="/privacy">Privacy</a>
+    <div class="footer-main">
+      <div>
+        <a href="/" class="footer-logo">Pitch<span class="dot">.</span></a>
+        <p class="footer-desc">Australia's marketplace for food vendors and events.</p>
+        <div class="footer-socials">
+          <a href="https://x.com/pitchmkts" class="fsoc" target="_blank" rel="noopener">𝕏</a>
+          <a href="https://instagram.com/pitchmkts" class="fsoc" target="_blank" rel="noopener">◈</a>
+          <a href="https://linkedin.com/company/pitchmkts" class="fsoc" target="_blank" rel="noopener">in</a>
+          <a href="https://facebook.com/pitchmkts" class="fsoc" target="_blank" rel="noopener">f</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-col-title">For Vendors</div>
+        <ul class="footer-links">
+          <li><a href="/signup/vendor">Sign up</a></li>
+          <li><a href="/how-it-works">How it works</a></li>
+          <li><a href="/pricing">Pricing</a></li>
+          <li><a href="/vendors">Browse vendors</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">For Organisers</div>
+        <ul class="footer-links">
+          <li><a href="/events/new">Post an event</a></li>
+          <li><a href="/how-it-works">How it works</a></li>
+          <li><a href="/contact">Talk to sales</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">Company</div>
+        <ul class="footer-links">
+          <li><a href="/about">About</a></li>
+          <li><a href="/contact">Contact</a></li>
+          <li><a href="/terms">Terms</a></li>
+          <li><a href="/privacy">Privacy</a></li>
+        </ul>
+      </div>
     </div>
-    <span class="footer-copy">© 2026 Pitch. Adelaide, Australia.</span>
+    <div class="footer-bottom">
+      <span class="footer-copy">© 2026 Pitch. Adelaide, Australia.</span>
+      <a href="/" class="footer-bl">Pitch<span class="dot">.</span></a>
+    </div>
   </footer>
 
   <script>

@@ -772,6 +772,35 @@ app.get('/api/events', apiCached('events', 60000, async () => ({
   events: await stmts.publishedEvents.all(),
 })));
 
+app.get('/api/featured-events', apiCached('featured-events', 120000, async () => {
+  const today = new Date().toISOString().slice(0, 10);
+  return db.prepare(`
+    SELECT e.id, e.name, e.slug, e.category, e.suburb, e.state, e.date_sort, e.featured,
+           COUNT(ea.id) AS vendor_count
+    FROM events e
+    LEFT JOIN event_applications ea ON ea.event_id = e.id AND ea.status = 'approved'
+    WHERE e.status = 'published'
+      AND e.date_sort >= ?
+    GROUP BY e.id
+    HAVING vendor_count > 0
+    ORDER BY e.featured DESC, e.date_sort ASC, vendor_count DESC
+    LIMIT 6
+  `).all(today);
+}));
+
+app.get('/api/category-counts', apiCached('category-counts', 120000, async () => {
+  const today = new Date().toISOString().slice(0, 10);
+  const rows = db.prepare(`
+    SELECT category, COUNT(*) AS count
+    FROM events
+    WHERE status = 'published' AND date_sort >= ?
+    GROUP BY category
+  `).all(today);
+  const counts = {};
+  rows.forEach(r => { counts[r.category] = r.count; });
+  return counts;
+}));
+
 app.get('/api/events/:slug', async (req, res) => {
   const ev = await stmts.getEventBySlug.get(req.params.slug);
   if (!ev) return res.status(404).json({ error: 'Event not found' });
@@ -1153,8 +1182,51 @@ app.post('/api/events/:id/apply', requireAuth, async (req, res) => {
   const ev = await stmts.getEventById.get(req.params.id);
   if (!ev) return res.status(404).json({ error: 'Event not found' });
 
+  // ── Subscription quota check ──────────────────────────────────────────────
+  const vendorSub = await stmts.getVendorSubscription.get(req.session.userId);
+  if (vendorSub) {
+    const now = new Date();
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+    // Check if on trial (trial_ends_at in the future = has full tier access)
+    const onTrial = vendorSub.trial_ends_at && new Date(vendorSub.trial_ends_at) > now;
+    const effectivePlan = onTrial ? 'pro' : (vendorSub.plan || 'free');
+
+    // Free plan: enforce 10 applications per month
+    if (effectivePlan === 'free') {
+      const APP_LIMIT = 10;
+      // Reset counter if it's a new month
+      if (vendorSub.apps_reset_month !== currentMonth) {
+        await stmts.resetAppsCounter.run(currentMonth, req.session.userId);
+        vendorSub.apps_this_month = 0;
+      }
+      if (Number(vendorSub.apps_this_month) >= APP_LIMIT) {
+        return res.status(429).json({
+          error: 'Application limit reached',
+          message: `You've used all ${APP_LIMIT} applications for this month on the Starter plan. Upgrade to Pro or Growth to apply to unlimited events.`,
+          limit: APP_LIMIT,
+          used: Number(vendorSub.apps_this_month),
+          upgrade_url: '/pricing'
+        });
+      }
+    }
+  }
+  // ─────────────────────────────────────────────────────────────────────────
+
   try {
     await stmts.createApplication.run(ev.id, req.session.userId, message || null);
+
+    // Increment monthly counter for free-plan vendors
+    if (vendorSub && (vendorSub.plan === 'free' || !vendorSub.plan)) {
+      const now = new Date();
+      const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      if (vendorSub.apps_reset_month !== currentMonth) {
+        await stmts.resetAndIncrementApps.run(currentMonth, req.session.userId);
+      } else {
+        await stmts.incrementAppsThisMonth.run(currentMonth, req.session.userId);
+      }
+    }
+
     res.json({ ok: true });
   } catch (err) {
     if (err.message && err.message.includes('UNIQUE')) {
@@ -1175,6 +1247,37 @@ app.get('/api/vendor/applications', requireAuth, async (req, res) => {
   if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Vendors only' });
   const apps = await stmts.getApplicationsByVendor.all(req.session.userId);
   res.json({ applications: apps });
+});
+
+app.get('/api/vendor/subscription-info', requireAuth, async (req, res) => {
+  if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Vendors only' });
+  try {
+    const sub = await stmts.getVendorSubscription.get(req.session.userId);
+    if (!sub) return res.status(404).json({ error: 'Vendor not found' });
+
+    const now = new Date();
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const onTrial = sub.trial_ends_at && new Date(sub.trial_ends_at) > now;
+    const effectivePlan = onTrial ? sub.plan : (sub.plan || 'free');
+    const APP_LIMIT = 10;
+
+    // Return 0 used if counter is from a different month
+    const appsUsed = sub.apps_reset_month === currentMonth ? Number(sub.apps_this_month) : 0;
+
+    res.json({
+      plan: sub.plan || 'free',
+      effective_plan: effectivePlan,
+      on_trial: !!onTrial,
+      trial_ends_at: sub.trial_ends_at || null,
+      subscription_status: sub.subscription_status || 'active',
+      apps_used: appsUsed,
+      apps_limit: effectivePlan === 'free' ? APP_LIMIT : null,
+      apps_remaining: effectivePlan === 'free' ? Math.max(0, APP_LIMIT - appsUsed) : null,
+    });
+  } catch (e) {
+    console.error('[subscription-info]', e);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 // ── API: Messaging ─────────────────────────────────────────────────────────
@@ -1491,7 +1594,7 @@ app.get('/api/organiser/overview', requireAuth, async (req, res) => {
 app.post('/api/organiser/events', requireAuth, async (req, res) => {
   if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
 
-  const { name, category, date_sort, date_end, date_text, suburb, state, venue_name, description, stalls_available, stall_fee_min, stall_fee_max, deadline } = req.body;
+  const { name, category, date_sort, date_end, date_text, suburb, state, venue_name, description, stalls_available, stall_fee_min, stall_fee_max, deadline, cover_image } = req.body;
   if (!name || !date_sort || !suburb) {
     return res.status(400).json({ error: 'Name, date, and suburb are required' });
   }
@@ -1517,6 +1620,7 @@ app.post('/api/organiser/events', requireAuth, async (req, res) => {
       organiser_name: organiserName,
       organiser_user_id: req.session.userId,
       venue_name: venue_name || null,
+      cover_image: cover_image || null,
     });
     res.json({ ok: true, eventId: result.lastInsertRowid, slug });
   } catch (err) {
@@ -1548,9 +1652,9 @@ app.patch('/api/organiser/events/:id', requireAuth, async (req, res) => {
   if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
   const ev = await stmts.getEventById.get(req.params.id);
   if (!ev || Number(ev.organiser_user_id) !== Number(req.session.userId)) return res.status(403).json({ error: 'Not your event' });
-  const { name, category, suburb, state, venue_name, date_sort, date_end, description, stalls_available, stall_fee_min, stall_fee_max, deadline } = req.body;
+  const { name, category, suburb, state, venue_name, date_sort, date_end, description, stalls_available, stall_fee_min, stall_fee_max, deadline, cover_image } = req.body;
   const dateText = date_sort ? new Date(date_sort).toLocaleDateString('en-AU', { day:'numeric', month:'short', year:'numeric' }) : null;
-  await stmts.updateEvent.run({ id: Number(req.params.id), name: name || ev.name, category: category || ev.category, suburb: suburb || ev.suburb, state: state || ev.state, venue_name: venue_name ?? ev.venue_name, date_sort: date_sort || ev.date_sort, date_end: date_end ?? ev.date_end, date_text: dateText || ev.date_text, description: description ?? ev.description, stalls_available: stalls_available != null ? Number(stalls_available) : ev.stalls_available, stall_fee_min: stall_fee_min != null ? Number(stall_fee_min) : ev.stall_fee_min, stall_fee_max: stall_fee_max != null ? Number(stall_fee_max) : ev.stall_fee_max, deadline: deadline !== undefined ? deadline : ev.deadline });
+  await stmts.updateEvent.run({ id: Number(req.params.id), name: name || ev.name, category: category || ev.category, suburb: suburb || ev.suburb, state: state || ev.state, venue_name: venue_name ?? ev.venue_name, date_sort: date_sort || ev.date_sort, date_end: date_end ?? ev.date_end, date_text: dateText || ev.date_text, description: description ?? ev.description, stalls_available: stalls_available != null ? Number(stalls_available) : ev.stalls_available, stall_fee_min: stall_fee_min != null ? Number(stall_fee_min) : ev.stall_fee_min, stall_fee_max: stall_fee_max != null ? Number(stall_fee_max) : ev.stall_fee_max, deadline: deadline !== undefined ? deadline : ev.deadline, cover_image: cover_image !== undefined ? cover_image : ev.cover_image });
   res.json({ ok: true });
 });
 
@@ -1891,8 +1995,16 @@ function page(file) {
 
 app.get('/',                    page('index.html'));
 app.get('/how-it-works',        page('how-it-works.html'));
+let _eventsPageCache = null;
+let _eventsPageCacheTs = 0;
+const EVENTS_PAGE_TTL = 60000;
 app.get('/events', async (req, res) => {
   try {
+    const now = Date.now();
+    if (_eventsPageCache && now - _eventsPageCacheTs < EVENTS_PAGE_TTL) {
+      res.setHeader('Cache-Control', 'public, max-age=60');
+      return res.send(_eventsPageCache);
+    }
     const events = await stmts.publishedEvents.all();
     const today = new Date().toISOString().slice(0, 10);
     const mapData = events
@@ -1917,6 +2029,9 @@ app.get('/events', async (req, res) => {
 window.__PITCH_MAP_EVENTS__ = ${JSON.stringify(mapData)};
 window.__MAPBOX_TOKEN__ = ${JSON.stringify(token)};
 </script></head>`);
+    _eventsPageCache = html;
+    _eventsPageCacheTs = now;
+    res.setHeader('Cache-Control', 'public, max-age=60');
     res.send(html);
   } catch (e) {
     console.error('[events page]', e);

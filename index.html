@@ -178,13 +178,16 @@ body::before {
 .hero-cat-chip {
   display: inline-flex; align-items: center; gap: 5px;
   font-family: var(--fb); font-size: 12px; font-weight: 600;
-  padding: 5px 14px; border-radius: 100px;
-  background: #ffffff0a; border: 1px solid #ffffff12;
-  color: var(--text-lo); cursor: pointer;
+  padding: 6px 14px; border-radius: 100px;
+  background: #ffffff12; border: 1px solid #ffffff28;
+  color: var(--text-mid); cursor: pointer;
   transition: background 0.14s, border-color 0.14s, color 0.14s;
 }
-.hero-cat-chip:hover, .hero-cat-chip.active {
-  background: var(--ember-bg); border-color: #E8500A30; color: var(--ember);
+.hero-cat-chip:hover {
+  background: #ffffff1e; border-color: #ffffff40; color: var(--text-hi);
+}
+.hero-cat-chip.active {
+  background: var(--ember-bg); border-color: #E8500A50; color: var(--ember);
 }
 
 /* ── SOCIAL PROOF BAR (thin) ─────────────────────────────────────────────── */
@@ -202,17 +205,18 @@ body::before {
   justify-content: space-around;
 }
 .proof-item {
-  display: flex; align-items: center; gap: 10px;
-  flex: 1;
+  display: flex; align-items: center; gap: 8px;
+  flex: 1; justify-content: center;
 }
-.proof-item + .proof-item { border-left: 1px solid var(--linen); padding-left: 32px; }
-.proof-n {
-  font-family: var(--fd); font-size: 22px; font-weight: 900;
-  letter-spacing: -0.03em; color: var(--coal); line-height: 1;
+.proof-item + .proof-item { border-left: 1px solid var(--linen); }
+.proof-icon {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #E8500A; flex-shrink: 0;
+  display: inline-block;
 }
-.proof-l {
-  font-size: 11px; font-weight: 600; color: #9A8870;
-  letter-spacing: 0.02em; line-height: 1.4;
+.proof-sig {
+  font-size: 13px; font-weight: 600; color: var(--coal);
+  font-family: var(--fb); letter-spacing: 0.01em; white-space: nowrap;
 }
 
 /* ── THIS WEEKEND ────────────────────────────────────────────────────────── */
@@ -238,46 +242,57 @@ body::before {
   70%  { box-shadow: 0 0 0 8px transparent; }
   100% { box-shadow: 0 0 0 0 transparent; }
 }
-.tw-title {
-  font-family: var(--fd); font-size: 18px; font-weight: 900;
-  color: var(--text-hi); letter-spacing: -0.02em;
-}
+.tw-header .sec-title { margin-bottom: 0; }
 .tw-subtitle { font-size: 12px; color: var(--text-lo); margin-left: 4px; }
 .tw-scroll-wrap {
   overflow-x: auto; margin: 0 -52px; padding: 0 52px 20px;
   scrollbar-width: none;
 }
 .tw-scroll-wrap::-webkit-scrollbar { display: none; }
-.tw-scroll { display: flex; gap: 14px; width: max-content; }
+.tw-scroll { display: flex; gap: 16px; width: max-content; }
 .tw-card {
-  width: 220px; flex-shrink: 0;
-  background: var(--char); border: 1px solid #ffffff0a;
-  border-radius: 14px; padding: 16px; cursor: pointer;
-  text-decoration: none; display: block;
-  transition: transform 0.14s, border-color 0.14s;
+  width: 256px; flex-shrink: 0;
+  background: #2A2320; border: 1px solid #ffffff18;
+  border-radius: 14px; padding: 0; cursor: pointer;
+  text-decoration: none; display: flex; flex-direction: column;
+  overflow: hidden;
+  transition: transform 0.14s, box-shadow 0.14s;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.3);
 }
-.tw-card:hover { transform: translateY(-3px); border-color: #E8500A30; }
+.tw-card:hover { transform: translateY(-3px); box-shadow: 0 8px 28px rgba(0,0,0,0.4); }
+/* Category top border */
+.tw-card[data-cat="Night Market"]    { border-top: 3px solid #2B5BA8; }
+.tw-card[data-cat="Farmers Market"]  { border-top: 3px solid #2D8B55; }
+.tw-card[data-cat="Festival"]        { border-top: 3px solid #C9840A; }
+.tw-card[data-cat="Twilight Market"] { border-top: 3px solid #7C3AED; }
+.tw-card[data-cat="Pop-up"]          { border-top: 3px solid #E8500A; }
+.tw-card-body { padding: 24px 24px 12px; flex: 1; display: flex; flex-direction: column; }
 .tw-card-day {
   font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
   text-transform: uppercase; color: var(--ember); margin-bottom: 6px;
 }
 .tw-card-name {
-  font-family: var(--fd); font-size: 14px; font-weight: 800;
+  font-family: var(--fd); font-size: 16px; font-weight: 800;
   color: var(--text-hi); line-height: 1.25; margin-bottom: 5px;
 }
-.tw-card-where { font-size: 11px; color: var(--text-lo); margin-bottom: 10px; }
+.tw-card-where { font-size: 11px; color: var(--text-lo); margin-bottom: 8px; }
+.tw-card-meta {
+  font-size: 11px; color: var(--herb);
+  font-weight: 600;
+}
 .tw-card-foot {
-  display: flex; align-items: center; justify-content: space-between;
-  padding-top: 10px; border-top: 1px solid #ffffff07;
+  padding: 12px 24px 16px;
+  border-top: 1px solid #ffffff0a;
 }
-.tw-spots { font-size: 11px; color: var(--text-mid); }
-.tw-spots strong { color: var(--herb); }
 .tw-apply {
-  font-size: 11px; font-weight: 700; color: #fff;
-  background: var(--ember); padding: 4px 10px; border-radius: 6px;
-  transition: background 0.12s;
+  font-size: 11px; font-weight: 700;
+  color: var(--ember); border: 1px solid #E8500A55;
+  padding: 5px 12px; border-radius: 6px;
+  background: transparent;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+  display: inline-block;
 }
-.tw-card:hover .tw-apply { background: var(--ember-glow); }
+.tw-card:hover .tw-apply { background: var(--ember); color: #fff; border-color: var(--ember); }
 .tw-empty { padding: 20px 0; font-size: 13px; color: var(--text-lo); }
 
 /* ── VENDOR MARQUEE ──────────────────────────────────────────────────────── */
@@ -299,12 +314,11 @@ body::before {
 
 /* ── HERO ─────────────────────────────────────────────────────────────────── */
 .hero {
-  min-height: 100vh;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  align-items: center;
+  align-items: stretch;
   padding: 120px 52px 80px;
-  position: relative; z-index: 1;
+  position: relative; z-index: 10;
   gap: 64px;
   max-width: 1320px;
   margin: 0 auto;
@@ -337,9 +351,24 @@ body::before {
 .eyebrow-dot {
   width: 6px; height: 6px; border-radius: 50%;
   background: var(--ember);
-  animation: blink 2.2s ease-in-out infinite;
+  position: relative;
+  flex-shrink: 0;
 }
-@keyframes blink { 0%,100%{opacity:1;} 50%{opacity:0.25;} }
+.eyebrow-dot::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  border: 1.5px solid var(--ember);
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 0.9;
+  animation: sonar-ring 1.8s ease-out infinite;
+}
+@keyframes sonar-ring {
+  0%   { transform: translate(-50%, -50%) scale(1); opacity: 0.9; }
+  100% { transform: translate(-50%, -50%) scale(3.5); opacity: 0; }
+}
 
 .hero-heading {
   font-family: var(--fd);
@@ -355,7 +384,26 @@ body::before {
 .hero-sub {
   font-size: 17px; color: var(--text-mid);
   line-height: 1.75; max-width: 460px;
-  margin-bottom: 36px;
+  margin-bottom: 20px;
+}
+
+.hero-cta-row {
+  display: flex; gap: 12px; flex-wrap: wrap;
+  margin-bottom: 28px;
+}
+.hero-ghost-btn {
+  font-family: var(--fb); font-size: 14px; font-weight: 700;
+  color: #E8500A; border: 1.5px solid #E8500A;
+  background: transparent; border-radius: 8px;
+  padding: 10px 18px; text-decoration: none;
+  transition: background 0.14s, color 0.14s;
+  white-space: nowrap;
+}
+.hero-ghost-btn:hover { background: #E8500A; color: #fff; }
+
+.hero-search-label {
+  font-family: var(--fb); font-size: 12px; font-weight: 400;
+  color: #A89880; margin-bottom: 10px;
 }
 
 .hero-ctas {
@@ -383,103 +431,227 @@ body::before {
 }
 .btn-organiser:hover { border-color: #ffffff44; background: #ffffff08; transform: translateY(-1px); }
 
+/* ── Three-segment hero search pill ───────────────────────────────────── */
 .hero-search {
   display: flex; align-items: stretch;
-  background: #ffffff09; border: 1px solid #ffffff12;
-  border-radius: 12px; overflow: hidden;
-  width: 100%; max-width: 460px;
-  transition: border-color 0.15s, box-shadow 0.15s;
+  background: #fff;
+  border-radius: 14px;
+  width: 100%;
+  box-shadow: 0 6px 32px rgba(0,0,0,0.45);
+  transition: box-shadow 0.15s;
+  overflow: visible;
 }
-.hero-search:focus-within { border-color: #E8500A40; box-shadow: 0 0 0 3px #E8500A14; }
-.hero-search-icon {
-  font-size: 16px; color: var(--text-lo); flex-shrink: 0;
-  display: flex; align-items: center; padding-left: 16px;
+/* Subtle focus — no heavy glow ring, just a slightly deeper shadow */
+.hero-search:focus-within { box-shadow: 0 8px 36px rgba(0,0,0,0.55); }
+
+/* Segment base */
+.hs-seg {
+  flex: 1; display: flex; flex-direction: column;
+  justify-content: center; padding: 11px 16px;
+  min-width: 0; cursor: text;
 }
-.hero-search input {
-  flex: 1; padding: 14px 10px;
+.hs-seg:first-child { flex: 2; padding-left: 20px; }
+
+.hs-label {
+  font-family: var(--fb); font-size: 10px; font-weight: 700;
+  color: #9B8878; text-transform: uppercase;
+  letter-spacing: 0.07em; margin-bottom: 3px; line-height: 1;
+}
+
+.hs-input {
   background: transparent; border: none; outline: none;
-  color: var(--text-hi); font-family: var(--fb);
-  font-size: 14px; min-width: 0;
+  color: #1A1612; font-family: var(--fb);
+  font-size: 14px; padding: 0; width: 100%; line-height: 1.3;
 }
-.hero-search input::placeholder { color: var(--text-lo); }
-.hero-search-sep {
-  width: 1px; background: #ffffff14;
-  flex-shrink: 0; align-self: center; height: 20px;
+.hs-input::placeholder { color: #B8A898; }
+
+/* Autocomplete wrapper within location segment */
+.hero-search .pac-wrap {
+  flex: 1 !important; min-width: 0;
+  display: block !important; position: relative;
 }
-.hero-search-btn {
-  font-family: var(--fb); font-size: 13px; font-weight: 700;
+.hero-search .pac-wrap input {
+  width: 100%; background: transparent; border: none; outline: none;
+  color: #1A1612; font-family: var(--fb);
+  font-size: 14px; padding: 0; line-height: 1.3;
+}
+.hero-search .pac-wrap input::placeholder { color: #B8A898; }
+
+/* Custom select segments */
+.hs-seg-sel { cursor: pointer; position: relative; }
+.hs-csel { display: flex; align-items: center; gap: 5px; position: relative; }
+.hs-csel-val {
+  font-family: var(--fb); font-size: 14px; color: #1A1612;
+  flex: 1; min-width: 0; white-space: nowrap; overflow: hidden;
+  text-overflow: ellipsis; user-select: none; line-height: 1.3;
+}
+.hs-csel-val.placeholder { color: #B8A898; }
+.hs-sel-arrow {
+  font-size: 10px; color: #9B8878; flex-shrink: 0;
+  pointer-events: none; margin-top: 1px;
+}
+
+/* Custom dropdown panel — stays dark to match site palette */
+.hs-csel-drop {
+  display: none; position: absolute; left: -16px; top: calc(100% + 8px);
+  background: #231E19; border: 1px solid #3A2E26;
+  border-radius: 10px; box-shadow: 0 8px 32px rgba(0,0,0,0.55);
+  z-index: 9999; min-width: 180px;
+  overflow-y: visible;
+}
+.hs-csel-drop.open { display: block; }
+.hs-csel-opt {
+  padding: 7px 14px; cursor: pointer;
+  font-family: var(--fb); font-size: 13px; font-weight: 500;
+  color: #FDF4E7; border-bottom: 1px solid #2A2018;
+  transition: background 0.1s;
+}
+.hs-csel-opt:last-child { border-bottom: none; }
+.hs-csel-opt:hover { background: #2E2720; }
+.hs-csel-opt.selected { color: var(--ember); font-weight: 700; }
+
+/* Dividers between segments */
+.hs-div {
+  width: 1px; background: rgba(0,0,0,0.1);
+  align-self: center; height: 30px; flex-shrink: 0;
+}
+
+/* Search button — fused flush right, no gap */
+.hs-btn {
+  font-family: var(--fb); font-size: 14px; font-weight: 700;
   color: #fff; background: var(--ember);
-  border: none; padding: 0 22px; cursor: pointer;
+  border: none; padding: 0 26px; cursor: pointer;
   flex-shrink: 0; align-self: stretch;
+  border-radius: 0 12px 12px 0;
   transition: background 0.14s;
+  white-space: nowrap;
+  /* Remove any gap between container bg and button */
+  margin: 0;
 }
-.hero-search-btn:hover { background: var(--ember-glow); }
-.hero-search-btn:active { opacity: 0.9; }
+.hs-btn:hover { background: var(--ember-glow); }
+.hs-btn:active { opacity: 0.9; }
 
 /* Hero right — stacked preview cards */
 .hero-right {
   position: relative; z-index: 1;
   display: flex; align-items: center; justify-content: center;
-  height: 520px;
 }
 
-.hero-card-stack { position: relative; width: 340px; height: 480px; }
+/* Push stack down so the front card (not the peeking back cards) aligns with left content midpoint */
+.hero-card-stack { position: relative; width: 400px; height: 360px; cursor: pointer; }
 
 .hc {
   position: absolute;
   background: var(--parchment);
   border: 1px solid var(--linen);
   border-radius: 18px;
-  padding: 20px;
+  padding: 16px 24px 24px; /* reduced top so badge sits high and peeks above front card */
   color: var(--coal);
-  width: 300px;
+  width: 380px;
   box-shadow: 0 20px 60px #00000030;
+  overflow: hidden;
+  transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              background 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              top 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              left 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-.hc-1 {
-  top: 0; left: 0;
-  transform: rotate(-3deg);
+/* Stack — badge at 16px from top, front card at 60px → badge always peeks above front */
+.hc[data-pos="0"] {
+  top: 0; left: 16px;
+  transform: rotate(1.5deg) scale(0.9);
   z-index: 1;
-  opacity: 0.65;
+  background: rgba(253,244,231,0.42);
+  border-color: rgba(237,227,204,0.4);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.18);
 }
-.hc-2 {
-  top: 30px; left: 28px;
-  transform: rotate(-1deg);
+/* Fade text on back card — badge at full opacity */
+.hc[data-pos="0"] .hc-title,
+.hc[data-pos="0"] .hc-meta,
+.hc[data-pos="0"] .hc-attend,
+.hc[data-pos="0"] .hc-footer { opacity: 0.2; }
+
+.hc[data-pos="1"] {
+  top: 30px; left: 8px;
+  transform: rotate(0.6deg) scale(0.95);
   z-index: 2;
-  opacity: 0.82;
+  background: rgba(253,244,231,0.7);
+  border-color: rgba(237,227,204,0.7);
+  box-shadow: 0 16px 50px rgba(0,0,0,0.24);
 }
-.hc-3 {
-  top: 60px; left: 48px;
+/* Partially fade text on middle card — badge stays vivid */
+.hc[data-pos="1"] .hc-title,
+.hc[data-pos="1"] .hc-meta,
+.hc[data-pos="1"] .hc-attend,
+.hc[data-pos="1"] .hc-footer { opacity: 0.4; }
+
+.hc[data-pos="2"] {
+  top: 60px; left: 0;
+  transform: rotate(0deg) scale(1);
   z-index: 3;
+  background: var(--parchment);
+  border-color: var(--linen);
+}
+.hc[data-pos="-1"] {
+  top: 0; left: 16px;
+  transform: rotate(1.5deg) scale(0.88);
+  z-index: 0; background: rgba(253,244,231,0); opacity: 0; pointer-events: none;
 }
 
 .hc-badge {
-  display: inline-block; font-size: 10px; font-weight: 700;
-  padding: 3px 10px; border-radius: 100px;
+  display: inline-block; font-size: 12px; font-weight: 700;
+  padding: 4px 12px; border-radius: 100px;
   letter-spacing: 0.06em; font-family: var(--fb);
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
-.hc-badge-blue { background: #2B5BA812; color: #2B5BA8; }
-.hc-badge-ember { background: #E8500A12; color: var(--ember); }
-.hc-badge-herb { background: #2D8B5512; color: var(--herb); }
+
+@media (max-width: 1024px) {
+  .hero-card-stack { width: 340px; }
+  .hc { width: 320px; padding: 22px; }
+}
+/* Solid pastel backgrounds — stay clearly coloured even at 35% card opacity */
+.hc-badge-blue   { background: #D6E6F7; color: #2B5BA8; }
+.hc-badge-ember  { background: #FAD9C8; color: #C94000; }
+.hc-badge-herb   { background: #C8E8D4; color: #1F6B3C; }
+.hc-badge-gold   { background: #F5E3C0; color: #A06B00; }
+.hc-badge-purple { background: #E6D4F5; color: #6A2D9A; }
 
 .hc-title {
-  font-family: var(--fd); font-size: 16px; font-weight: 800;
-  color: var(--coal); margin-bottom: 4px;
+  font-family: var(--fd); font-size: 20px; font-weight: 600;
+  color: var(--coal); margin-bottom: 6px;
 }
-.hc-meta { font-size: 11px; color: #9A8870; margin-bottom: 12px; }
+.hc-meta { font-size: 13px; color: #9A8870; margin-bottom: 14px; }
 
 .hc-bar-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
 .hc-bar-row span { font-size: 10px; color: #9A8870; }
 .hc-bar-bg { height: 4px; background: var(--linen); border-radius: 2px; margin-bottom: 12px; overflow: hidden; }
 .hc-bar-fill { height: 100%; border-radius: 2px; }
+.hc-attend { font-size: 14px; font-weight: 600; color: #2D8B55; margin-bottom: 16px; }
 .fill-g { background: var(--herb); }
 .fill-a { background: var(--gold); }
 .fill-r { background: var(--terra); }
 
-.hc-footer { display: flex; justify-content: space-between; padding-top: 10px; border-top: 1px solid var(--linen); }
-.hc-footer span { font-size: 11px; color: #9A8870; }
+.hc-footer { display: flex; justify-content: space-between; padding-top: 12px; border-top: 1px solid var(--linen); }
+.hc-footer span { font-size: 13px; color: #9A8870; }
 .hc-footer strong { color: var(--coal); }
+
+/* Progress bar — front card only */
+@keyframes hc-progress-fill {
+  from { width: 0%; }
+  to   { width: 100%; }
+}
+.hc-progress {
+  display: none;
+  position: absolute;
+  bottom: 0; left: 0;
+  height: 3px; width: 0%;
+  background: #E8500A;
+  border-radius: 0 0 16px 16px;
+}
+.hc[data-pos="2"] .hc-progress { display: block; }
+.hc-progress.animating { animation: hc-progress-fill 3.5s linear forwards; }
+.hc-progress.paused    { animation-play-state: paused; }
+@media (max-width: 767px) { .hc-progress { display: none !important; } }
 
 /* ── STATS BAR ────────────────────────────────────────────────────────────── */
 .stats-bar {
@@ -515,8 +687,9 @@ body::before {
 
 .section {
   max-width: 1320px; margin: 0 auto;
-  padding: 88px 52px;
+  padding: 80px 52px;
 }
+
 
 .sec-tag {
   display: inline-flex; align-items: center; gap: 9px;
@@ -803,12 +976,12 @@ body::before {
   font-size: clamp(28px, 3vw, 44px);
   font-weight: 900; letter-spacing: -0.03em;
   color: var(--text-hi); margin-bottom: 10px;
-  text-align: center;
+  text-align: left;
 }
 .trust-heading em { font-style: italic; color: var(--ember); }
 .trust-sub {
-  font-size: 15px; color: var(--text-mid); text-align: center;
-  margin-bottom: 56px; line-height: 1.7;
+  font-size: 15px; color: var(--text-mid); text-align: left;
+  margin-bottom: 56px; line-height: 1.7; max-width: 580px;
 }
 
 .trust-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
@@ -1009,64 +1182,72 @@ footer {
   <div class="hero-left">
     <div class="hero-eyebrow">
       <span class="eyebrow-dot"></span>
-      Now live across SA, VIC & QLD
+      Now live in South Australia
     </div>
 
     <h1 class="hero-heading">Find your<br /><em>Pitch.</em></h1>
 
-    <p class="hero-sub">Australia's marketplace connecting food vendors with local events — from night markets to national festivals.</p>
+    <p class="hero-sub">Australia's marketplace for food vendors and events.</p>
+
+    <div class="hero-cta-row">
+      <a href="/signup/vendor" class="hero-ghost-btn">Find your next pitch →</a>
+      <a href="/signup/organiser" class="hero-ghost-btn">List your market →</a>
+    </div>
+
+    <p class="hero-search-label">or browse upcoming markets near you</p>
 
     <form class="hero-search" onsubmit="heroSearch(event)">
-      <span class="hero-search-icon">🔍</span>
-      <input id="hero-search-input" type="text" placeholder="Search events by suburb or name…" />
-      <span class="hero-search-sep"></span>
-      <button type="submit" class="hero-search-btn">Search</button>
+      <!-- Segment 1: Location -->
+      <div class="hs-seg hs-seg-loc">
+        <span class="hs-label">Location</span>
+        <input id="hero-search-input" class="hs-input" type="text" placeholder="Suburb or postcode" autocomplete="off" />
+      </div>
+
+      <div class="hs-div"></div>
+
+      <!-- Segment 2: When (custom dropdown) -->
+      <div class="hs-seg hs-seg-sel" id="hs-when-seg">
+        <span class="hs-label">When</span>
+        <div class="hs-csel" id="hs-when-trigger">
+          <span class="hs-csel-val placeholder" id="hs-when-val" data-value="">Any time</span>
+          <span class="hs-sel-arrow">▾</span>
+          <div class="hs-csel-drop" id="hs-when-drop">
+            <div class="hs-csel-opt selected" data-value="">Any time</div>
+            <div class="hs-csel-opt" data-value="weekend">This weekend</div>
+            <div class="hs-csel-opt" data-value="month">This month</div>
+            <div class="hs-csel-opt" data-value="next">Next month</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hs-div"></div>
+
+      <!-- Segment 3: Market type (custom dropdown) -->
+      <div class="hs-seg hs-seg-sel" id="hs-type-seg">
+        <span class="hs-label">Market type</span>
+        <div class="hs-csel" id="hs-type-trigger">
+          <span class="hs-csel-val placeholder" id="hs-type-val" data-value="">Any type</span>
+          <span class="hs-sel-arrow">▾</span>
+          <div class="hs-csel-drop" id="hs-type-drop">
+            <div class="hs-csel-opt selected" data-value="">Any type</div>
+            <div class="hs-csel-opt" data-value="Night Market">Night Market</div>
+            <div class="hs-csel-opt" data-value="Farmers Market">Farmers Market</div>
+            <div class="hs-csel-opt" data-value="Festival">Festival</div>
+            <div class="hs-csel-opt" data-value="Twilight Market">Twilight Market</div>
+            <div class="hs-csel-opt" data-value="Pop-up">Pop-up</div>
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="hs-btn">Search</button>
     </form>
 
-    <div class="hero-cat-chips">
-      <button class="hero-cat-chip" onclick="filterByCat('Night Market',this)">🌙 Night Markets</button>
-      <button class="hero-cat-chip" onclick="filterByCat('Farmers Market',this)">🌾 Farmers Markets</button>
-      <button class="hero-cat-chip" onclick="filterByCat('Festival',this)">🎪 Festivals</button>
-      <button class="hero-cat-chip" onclick="filterByCat('Twilight Market',this)">🌅 Twilight Markets</button>
-      <button class="hero-cat-chip" onclick="filterByCat('Pop-up',this)">⚡ Pop-ups</button>
-    </div>
+
   </div>
 
-  <!-- Right — stacked event card previews -->
+  <!-- Right — stacked event card previews (populated by JS) -->
   <div class="hero-right">
-    <div class="hero-card-stack">
-
-      <!-- Card 1 (back) -->
-      <div class="hc hc-1">
-        <span class="hc-badge hc-badge-herb">Farmers Market</span>
-        <div class="hc-title">Barossa Valley Harvest</div>
-        <div class="hc-meta">📍 Tanunda &nbsp;·&nbsp; 📅 26 Apr 2026</div>
-        <div class="hc-bar-row"><span>12/20 spots</span><span style="color:#2D8B55;font-weight:700;">60%</span></div>
-        <div class="hc-bar-bg"><div class="hc-bar-fill fill-g" style="width:60%"></div></div>
-        <div class="hc-footer"><span>Booth: <strong>$300–$500</strong></span><span>8 left</span></div>
-      </div>
-
-      <!-- Card 2 (middle) -->
-      <div class="hc hc-2">
-        <span class="hc-badge hc-badge-ember">Festival</span>
-        <div class="hc-title">Fringe Food Village 2026</div>
-        <div class="hc-meta">📍 Adelaide CBD &nbsp;·&nbsp; 📅 2–22 Mar 2026</div>
-        <div class="hc-bar-row"><span>28/40 spots</span><span style="color:#2D8B55;font-weight:700;">70%</span></div>
-        <div class="hc-bar-bg"><div class="hc-bar-fill fill-g" style="width:70%"></div></div>
-        <div class="hc-footer"><span>Booth: <strong>$400–$700</strong></span><span>12 left</span></div>
-      </div>
-
-      <!-- Card 3 (front) -->
-      <div class="hc hc-3">
-        <span class="hc-badge hc-badge-blue">Night Market</span>
-        <div class="hc-title">Rundle Mall Night Eats</div>
-        <div class="hc-meta">📍 CBD, Adelaide &nbsp;·&nbsp; 📅 12 Apr 2026</div>
-        <div class="hc-bar-row"><span>14/20 spots</span><span style="color:#2D8B55;font-weight:700;">70%</span></div>
-        <div class="hc-bar-bg"><div class="hc-bar-fill fill-g" style="width:70%"></div></div>
-        <div class="hc-footer"><span>Booth: <strong>$200–$350</strong></span><span>6 left</span></div>
-      </div>
-
-    </div>
+    <div class="hero-card-stack" id="hero-card-stack"></div>
   </div>
 
 </section>
@@ -1076,33 +1257,21 @@ footer {
 ═══════════════════════════════════════════════════════════════════════════ -->
 <div class="proof-bar">
   <div class="proof-inner">
-    <div class="proof-item">
-      <div class="proof-n" id="stat-vendors-count">14+</div>
-      <div class="proof-l">Verified<br>Vendors</div>
-    </div>
-    <div class="proof-item">
-      <div class="proof-n" id="stat-events-count">12+</div>
-      <div class="proof-l">Markets<br>Listed</div>
-    </div>
-    <div class="proof-item">
-      <div class="proof-n" id="stat-apps-count">340+</div>
-      <div class="proof-l">Successful<br>Matches</div>
-    </div>
-    <div class="proof-item">
-      <div class="proof-n" id="stat-rating">4.8★</div>
-      <div class="proof-l">Average<br>Rating</div>
-    </div>
+    <div class="proof-item"><span class="proof-icon"></span><span class="proof-sig">ABN verified</span></div>
+    <div class="proof-item"><span class="proof-icon"></span><span class="proof-sig">Food safety certified</span></div>
+    <div class="proof-item"><span class="proof-icon"></span><span class="proof-sig">$10M liability insured</span></div>
+    <div class="proof-item"><span class="proof-icon"></span><span class="proof-sig">Free to join</span></div>
   </div>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════
      THIS WEEKEND
 ═══════════════════════════════════════════════════════════════════════════ -->
-<div class="section-wrap" style="padding-top:56px;padding-bottom:8px;">
+<div class="section-wrap" style="padding-top:80px;padding-bottom:0;">
 <div class="tw-inner">
   <div class="tw-header">
     <div class="tw-live-dot"></div>
-    <div class="tw-title">This weekend</div>
+    <h2 class="sec-title">This <em>weekend.</em></h2>
     <div class="tw-subtitle" id="tw-date-range"></div>
   </div>
   <div class="tw-scroll-wrap">
@@ -1117,7 +1286,7 @@ footer {
      FEATURED EVENTS
 ═══════════════════════════════════════════════════════════════════════════ -->
 <div class="section-wrap" id="events">
-<div class="section">
+<div class="section" style="padding-top:56px">
   <div class="sec-header">
     <div>
       <div class="sec-tag">Browse Events</div>
@@ -1151,6 +1320,15 @@ footer {
       if (pct >= 70) return '#C9840A';
       return '#2D8B55';
     }
+    var CAT_PHOTO = {
+      'Night Market':    'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=576&h=296&fit=crop&auto=format&q=80',
+      'Farmers Market':  'https://images.unsplash.com/photo-1488459716781-31db52582fe9?w=576&h=296&fit=crop&auto=format&q=80',
+      'Festival':        'https://images.unsplash.com/photo-1562802378-063ec186a863?w=576&h=296&fit=crop&auto=format&q=80',
+      'Twilight Market': 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=576&h=296&fit=crop&auto=format&q=80',
+      'Pop-up':          'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=576&h=296&fit=crop&auto=format&q=80',
+      'Corporate':       'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=576&h=296&fit=crop&auto=format&q=80',
+    };
+
     function renderHomeEvents(events) {
       var el = document.getElementById('home-events-scroll');
       if (!events || !events.length) {
@@ -1163,9 +1341,13 @@ footer {
         var spots = ev.total - ev.filled;
         var fc = fillColor(pct);
         var sc = spotsColor(pct);
+        var photo = CAT_PHOTO[ev.category];
+        var imgContent = photo
+          ? '<img src="' + photo + '" alt="' + ev.category + '" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" loading="lazy">'
+          : ev.emoji;
         return '<a href="/events/' + ev.id + '" class="event-card">' +
           '<div class="ec-img ' + cs.cls + '">' +
-            ev.emoji +
+            imgContent +
             '<div class="ec-img-overlay"></div>' +
             '<span class="ec-cat-badge" style="background:' + cs.catBg + ';color:' + cs.catClr + ';">' + ev.category + '</span>' +
             '<span class="ec-spots-badge" style="background:' + sc.bg + ';color:' + sc.clr + ';border:1px solid ' + sc.border + ';">' + spots + ' spot' + (spots === 1 ? '' : 's') + ' left</span>' +
@@ -1211,7 +1393,7 @@ footer {
      FEATURED VENDORS
 ═══════════════════════════════════════════════════════════════════════════ -->
 <div class="section-wrap alt" id="vendors">
-<div class="section">
+<div class="section" style="padding-top:40px">
   <div class="sec-header">
     <div>
       <div class="sec-tag">Featured Vendors</div>
@@ -1450,36 +1632,51 @@ footer {
     <a href="/events?category=Night+Market" class="cat-tile">
       <div class="cat-emoji">🌙</div>
       <div class="cat-name">Night Markets</div>
-      <div class="cat-count">48 active events</div>
+      <div class="cat-count" data-cat="Night Market">—</div>
     </a>
     <a href="/events?category=Festival" class="cat-tile">
       <div class="cat-emoji">🎪</div>
       <div class="cat-name">Festivals</div>
-      <div class="cat-count">32 active events</div>
+      <div class="cat-count" data-cat="Festival">—</div>
     </a>
     <a href="/events?category=Farmers+Market" class="cat-tile">
       <div class="cat-emoji">🌾</div>
       <div class="cat-name">Farmers Markets</div>
-      <div class="cat-count">27 active events</div>
+      <div class="cat-count" data-cat="Farmers Market">—</div>
     </a>
     <a href="/events?category=Corporate" class="cat-tile">
       <div class="cat-emoji">🏢</div>
       <div class="cat-name">Corporate Events</div>
-      <div class="cat-count">19 active events</div>
+      <div class="cat-count" data-cat="Corporate">—</div>
     </a>
     <a href="/events?category=Pop-up" class="cat-tile">
       <div class="cat-emoji">⚡</div>
       <div class="cat-name">Pop-ups</div>
-      <div class="cat-count">41 active events</div>
+      <div class="cat-count" data-cat="Pop-up">—</div>
     </a>
     <a href="/events?category=Twilight+Market" class="cat-tile">
       <div class="cat-emoji">🌅</div>
       <div class="cat-name">Twilight Markets</div>
-      <div class="cat-count">23 active events</div>
+      <div class="cat-count" data-cat="Twilight Market">—</div>
     </a>
   </div>
 </div>
 </div>
+<script>
+fetch('/api/category-counts')
+  .then(r => r.ok ? r.json() : {})
+  .then(counts => {
+    document.querySelectorAll('.cat-count[data-cat]').forEach(el => {
+      const n = counts[el.dataset.cat];
+      el.textContent = (n != null ? n : 0) + ' active event' + (n === 1 ? '' : 's');
+    });
+  })
+  .catch(() => {
+    document.querySelectorAll('.cat-count[data-cat]').forEach(el => {
+      el.textContent = '0 active events';
+    });
+  });
+</script>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════
      HOW IT WORKS — PREVIEW
@@ -1488,7 +1685,7 @@ footer {
 <div class="section">
   <div class="sec-tag">How It Works</div>
   <h2 class="sec-title" style="margin-bottom:12px;">Your pitch, <em>simplified.</em></h2>
-  <p style="font-size:15px;color:var(--text-mid);text-align:center;margin-bottom:52px;line-height:1.7;">Whether you're a food vendor looking for your next gig or an organiser building a world-class lineup — Pitch. handles the matchmaking.</p>
+  <p style="font-size:15px;color:var(--text-mid);text-align:left;margin-bottom:52px;line-height:1.7;">Whether you're a vendor chasing your next gig or an organiser building a lineup — Pitch handles the matchmaking.</p>
 
   <div class="hiw-preview-grid">
 
@@ -1603,7 +1800,7 @@ footer {
   <div class="footer-main">
     <div>
       <a href="/" class="footer-logo">Pitch<span class="dot">.</span></a>
-      <p class="footer-desc">Australia's marketplace connecting food vendors with local events. Find your pitch. Own your market.</p>
+      <p class="footer-desc">Australia's marketplace for food vendors and events.</p>
       <div class="footer-socials">
         <a href="https://x.com/pitchmkts" class="fsoc" title="X" target="_blank" rel="noopener">𝕏</a>
         <a href="https://instagram.com/pitchmkts" class="fsoc" title="Instagram" target="_blank" rel="noopener">◈</a>
@@ -1718,16 +1915,17 @@ function filterByCat(cat, btn) {
       // Support both API events (ev.slug, ev.date_sort) and PITCH_EVENTS (ev.id, ev.dateLabel)
       const href = '/events/' + (ev.slug || ev.id);
       const dayLabel = ev.date_sort ? fmt(new Date(ev.date_sort + 'T00:00:00')) : (ev.dateLabel || '—');
-      const total = ev.stalls_available || ev.total || 20;
-      const filled = ev.filled || 0;
-      const spots = Math.max(0, total - filled);
-      return `<a href="${href}" class="tw-card">
-        <div class="tw-card-day">${emoji} ${dayLabel}</div>
-        <div class="tw-card-name">${ev.name}</div>
-        <div class="tw-card-where">📍 ${ev.suburb || '—'}${ev.state ? ', '+ev.state : ''}</div>
+      const vendorCount = ev.vendor_count || ev.filled || 0;
+      const metaLine = vendorCount > 0 ? `👥 ${vendorCount} vendors &nbsp;·&nbsp; Free entry` : 'Free entry';
+      return `<a href="${href}" class="tw-card" data-cat="${ev.category || ''}">
+        <div class="tw-card-body">
+          <div class="tw-card-day">${emoji} ${dayLabel}</div>
+          <div class="tw-card-name">${ev.name}</div>
+          <div class="tw-card-where">📍 ${ev.suburb || '—'}${ev.state ? ', '+ev.state : ''}</div>
+          <div class="tw-card-meta">${metaLine}</div>
+        </div>
         <div class="tw-card-foot">
-          <div class="tw-spots">${spots > 0 ? '<strong>'+spots+'</strong> spots left' : 'Full'}</div>
-          <span class="tw-apply">Apply →</span>
+          <span class="tw-apply">View market →</span>
         </div>
       </a>`;
     }).join('');
@@ -1750,7 +1948,7 @@ function filterByCat(cat, btn) {
       // No real weekend events — show first 3 from static data as "coming up"
       const upcoming = (window.PITCH_EVENTS || []).slice(0, 3);
       if (upcoming.length) {
-        if (dateEl) dateEl.textContent = '· Coming up';
+        if (dateEl) dateEl.textContent = '';
         renderTWCards(upcoming);
       } else {
         el.innerHTML = '<div class="tw-empty">No markets this weekend — <a href="/events" style="color:var(--ember);">browse all upcoming →</a></div>';
@@ -1760,7 +1958,7 @@ function filterByCat(cat, btn) {
     // On error, fall back to static data
     const upcoming = (window.PITCH_EVENTS || []).slice(0, 3);
     if (upcoming.length) {
-      if (dateEl) dateEl.textContent = '· Coming up';
+      if (dateEl) dateEl.textContent = '';
       renderTWCards(upcoming);
     } else {
       const el = document.getElementById('tw-scroll');
@@ -1836,23 +2034,222 @@ fetch('/api/stats').then(r => r.json()).then(d => {
   if (d.rating && d.rating > 0) set('stat-rating', d.rating.toFixed(1) + '★');
 }).catch(() => {});
 
-// Hero search — redirect to events page with query
+// Hero search — redirect to events page with all three segment params
 function heroSearch(e) {
   e.preventDefault();
-  const q = document.getElementById('hero-search-input').value.trim();
-  if (q) window.location.href = '/events?q=' + encodeURIComponent(q);
+  const q    = document.getElementById('hero-search-input').value.trim();
+  const when = document.getElementById('hs-when-val').dataset.value;
+  const type = document.getElementById('hs-type-val').dataset.value;
+  const params = new URLSearchParams();
+  if (q)    params.set('q', q);
+  if (when) params.set('when', when);
+  if (type) params.set('type', type);
+  const qs = params.toString();
+  window.location.href = '/events' + (qs ? '?' + qs : '');
 }
+
+// Custom dropdown init
+(function() {
+  function initCsel(segId, valId, dropId) {
+    const seg  = document.getElementById(segId);
+    const val  = document.getElementById(valId);
+    const drop = document.getElementById(dropId);
+    if (!seg) return;
+
+    // Attach to whole segment so clicking label/padding also triggers
+    seg.addEventListener('mousedown', function(e) {
+      if (drop.contains(e.target)) return; // let option picks handle themselves
+      e.stopPropagation();
+      const isOpen = drop.classList.contains('open');
+      document.querySelectorAll('.hs-csel-drop.open').forEach(d => d.classList.remove('open'));
+      if (!isOpen) drop.classList.add('open');
+    });
+
+    drop.querySelectorAll('.hs-csel-opt').forEach(function(opt) {
+      opt.addEventListener('mousedown', function(e) {
+        e.stopPropagation();
+        drop.querySelectorAll('.hs-csel-opt').forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+        val.dataset.value = opt.dataset.value;
+        val.textContent   = opt.textContent;
+        val.classList.toggle('placeholder', !opt.dataset.value);
+        drop.classList.remove('open');
+      });
+    });
+  }
+
+  document.addEventListener('mousedown', function() {
+    document.querySelectorAll('.hs-csel-drop.open').forEach(d => d.classList.remove('open'));
+  });
+
+  initCsel('hs-when-seg', 'hs-when-val', 'hs-when-drop');
+  initCsel('hs-type-seg', 'hs-type-val', 'hs-type-drop');
+})();
 </script>
-<script src="/location-autocomplete.js"></script>
+<script src="/suburbs.js?v=3"></script>
+<script src="/location-autocomplete.js?v=4"></script>
 <script>
 // Hero search autocomplete — selecting a suburb redirects immediately
-pitchLocAC('hero-search-input', {
-  suburbOnly: false,
-  onSelect: function(r) {
-    const val = document.getElementById('hero-search-input').value.trim();
-    if (val) window.location.href = '/events?q=' + encodeURIComponent(val);
+// Clicking anywhere in the location segment immediately focuses the input
+(function() {
+  var locSeg = document.querySelector('.hs-seg-loc');
+  var inp    = document.getElementById('hero-search-input');
+  if (locSeg && inp) {
+    locSeg.addEventListener('mousedown', function(e) {
+      if (e.target !== inp) { e.preventDefault(); inp.focus(); }
+    });
   }
+})();
+
+pitchLocAC('hero-search-input', {
+  suburbOnly: false
 });
+</script>
+
+<script>
+// Hero card stack — dynamic, DB-driven, auto-rotating
+(function() {
+  const stack = document.getElementById('hero-card-stack');
+  if (!stack) return;
+
+  const BADGE = {
+    'Night Market':   'hc-badge-blue',
+    'Farmers Market': 'hc-badge-herb',
+    'Festival':       'hc-badge-gold',
+    'Twilight Market':'hc-badge-purple',
+    'Pop-up':         'hc-badge-ember',
+  };
+
+  const STATIC = [
+    { slug:'rundle-mall-night-eats',    name:'Rundle Mall Night Eats',    category:'Night Market',   suburb:'CBD',          state:'SA', date_sort:'2026-04-12', spots_left:6,  fee_min:200, fee_max:350, deadline:'2026-04-05' },
+    { slug:'glenelg-twilight',          name:'Glenelg Twilight Market',   category:'Twilight Market',suburb:'Glenelg Beach', state:'SA', date_sort:'2026-04-20', spots_left:4,  fee_min:180, fee_max:280, deadline:'2026-04-13' },
+    { slug:'barossa-food-wine',         name:'Barossa Valley Harvest',    category:'Farmers Market', suburb:'Tanunda',       state:'SA', date_sort:'2026-04-26', spots_left:8,  fee_min:250, fee_max:400, deadline:'2026-04-19' },
+    { slug:'port-adelaide-night-market',name:'Port Adelaide Night Market',category:'Night Market',   suburb:'Port Adelaide', state:'SA', date_sort:'2026-05-03', spots_left:3,  fee_min:160, fee_max:260, deadline:'2026-04-26' },
+    { slug:'victor-harbor-summer-fair', name:'Victor Harbor Festival',    category:'Festival',       suburb:'Victor Harbor', state:'SA', date_sort:'2026-05-10', spots_left:12, fee_min:300, fee_max:500, deadline:'2026-05-03' },
+    { slug:'prospect-farmers-market',   name:'Prospect Farmers Market',   category:'Farmers Market', suburb:'Prospect',      state:'SA', date_sort:'2026-04-19', spots_left:5,  fee_min:150, fee_max:220, deadline:'2026-04-12' },
+  ];
+
+  function fmtDate(d) {
+    if (!d) return '';
+    const dt = new Date(d + 'T00:00:00');
+    return dt.toLocaleDateString('en-AU', { day:'numeric', month:'short', year:'numeric' });
+  }
+  function dayLabel(d) {
+    if (!d) return '';
+    const dt = new Date(d + 'T00:00:00');
+    const today = new Date(); today.setHours(0,0,0,0);
+    const diff = Math.round((dt - today) / 86400000);
+    if (diff === 0) return 'Today';
+    if (diff === 1) return 'Tomorrow';
+    if (diff <= 6)  return 'This ' + dt.toLocaleDateString('en-AU', { weekday:'long' });
+    if (diff <= 13) return 'Next ' + dt.toLocaleDateString('en-AU', { weekday:'long' });
+    return dt.toLocaleDateString('en-AU', { weekday:'short', day:'numeric', month:'short' });
+  }
+
+  function cardHTML(ev) {
+    const badge   = BADGE[ev.category] || 'hc-badge-ember';
+    const loc     = [ev.suburb, ev.state].filter(Boolean).join(', ');
+    const dt      = fmtDate(ev.date_sort);
+    const day     = dayLabel(ev.date_sort);
+    const spots   = ev.spots_left != null ? ev.spots_left : '—';
+    const feeStr  = (ev.fee_min && ev.fee_max) ? `$${ev.fee_min}–$${ev.fee_max}` : (ev.fee_min ? `$${ev.fee_min}+` : '—');
+    const dlDate  = ev.deadline ? new Date(ev.deadline + 'T00:00:00').toLocaleDateString('en-AU', { day:'numeric', month:'short' }) : '—';
+    return `<span class="hc-badge ${badge}">${ev.category || 'Market'}</span>
+      <div class="hc-title">${ev.name}</div>
+      <div class="hc-meta">📍 ${loc} &nbsp;·&nbsp; 📅 ${dt}</div>
+      <div class="hc-attend">🪑 ${spots} spots left</div>
+      <div class="hc-footer"><span>Booth: <strong>${feeStr}</strong></span><span>Deadline: ${dlDate}</span></div>
+      <div class="hc-progress"></div>`;
+  }
+
+  function buildStack(events) {
+    // Pad to at least 3 with static fallbacks
+    const pool = [...events];
+    for (const s of STATIC) {
+      if (pool.length >= 6) break;
+      if (!pool.find(e => e.name === s.name)) pool.push(s);
+    }
+    if (pool.length === 0) {
+      const heroRight = stack.closest('.hero-right');
+      if (heroRight) heroRight.style.display = 'none';
+      const heroLeft = document.querySelector('.hero-left');
+      if (heroLeft) { heroLeft.style.maxWidth = '720px'; heroLeft.style.flex = '1'; }
+      return;
+    }
+
+    // Create exactly min(pool.length, 6) card elements — only 3 at most visible
+    const count = Math.min(pool.length, 6);
+    stack.innerHTML = '';
+    for (let i = 0; i < count; i++) {
+      const div = document.createElement('div');
+      div.className = 'hc';
+      div.dataset.pos = i < 3 ? String(i) : '-1';
+      div.dataset.slug = pool[i].slug || pool[i].id || '';
+      div.innerHTML = cardHTML(pool[i]);
+      stack.appendChild(div);
+    }
+
+    // If only 1 or 2 events, adjust stack sizing
+    if (pool.length === 1) {
+      stack.querySelector('.hc').dataset.pos = '2';
+    } else if (pool.length === 2) {
+      stack.querySelectorAll('.hc')[0].dataset.pos = '1';
+      stack.querySelectorAll('.hc')[1].dataset.pos = '2';
+    }
+
+    // Click anywhere on stack → navigate to the front card's event
+    stack.addEventListener('click', () => {
+      const front = stack.querySelector('.hc[data-pos="2"]');
+      const slug = front && front.dataset.slug;
+      window.location.href = slug ? '/events/' + slug : '/events';
+    });
+
+    if (count < 3) return; // no rotation needed
+
+    let nextIdx = 3 % count;
+
+    function getFrontBar() {
+      const front = stack.querySelector('.hc[data-pos="2"]');
+      return front ? front.querySelector('.hc-progress') : null;
+    }
+    function startProgress() {
+      const bar = getFrontBar();
+      if (!bar) return;
+      bar.classList.remove('animating', 'paused');
+      void bar.offsetWidth;
+      bar.classList.add('animating');
+    }
+
+    function rotate() {
+      const cards = stack.querySelectorAll('.hc');
+      cards.forEach(c => {
+        const p = parseInt(c.dataset.pos, 10);
+        if (p >= 0) c.dataset.pos = String((p + 1) % 3);
+      });
+
+      startProgress();
+
+      setTimeout(() => {
+        const backCard = stack.querySelector('.hc[data-pos="0"]');
+        if (!backCard) return;
+        backCard.style.transition = 'none';
+        backCard.innerHTML = cardHTML(pool[nextIdx]);
+        backCard.dataset.slug = pool[nextIdx].slug || pool[nextIdx].id || '';
+        nextIdx = (nextIdx + 1) % count;
+        void backCard.offsetWidth;
+        backCard.style.transition = '';
+      }, 380);
+    }
+
+    startProgress();
+    setInterval(rotate, 3500);
+  }
+
+  fetch('/api/featured-events')
+    .then(r => r.ok ? r.json() : [])
+    .then(data => buildStack(Array.isArray(data) ? data : []))
+    .catch(() => buildStack([]));
+})();
 </script>
 
 </body>

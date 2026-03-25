@@ -78,6 +78,7 @@ body::before {
   font-weight: 900; letter-spacing: -0.03em;
   color: var(--text-hi); line-height: 1.02;
 }
+.page-subline { font-size: 15px; color: var(--text-mid); margin-top: 8px; line-height: 1.6; max-width: 560px; }
 .page-count {
   font-family: var(--fb); font-size: 0.45em; font-weight: 400;
   color: var(--text-lo); letter-spacing: 0; vertical-align: middle;
@@ -89,12 +90,12 @@ body::before {
   background: var(--char);
   border: 1px solid #ffffff09;
   border-radius: 16px;
-  padding: 16px 20px;
-  display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
-  margin-bottom: 24px;
+  padding: 12px 16px;
+  display: flex; gap: 8px; align-items: center; flex-wrap: nowrap;
+  margin-bottom: 12px;
 }
 
-.filter-search-wrap { position: relative; flex: 2; min-width: 200px; }
+.filter-search-wrap { position: relative; flex: 1; min-width: 0; }
 .filter-search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-size: 14px; color: var(--text-lo); pointer-events: none; }
 
 .filter-input, .filter-select {
@@ -113,16 +114,15 @@ body::before {
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7' viewBox='0 0 12 7'%3E%3Cpath d='M1 1l5 4.5L11 1' stroke='%236B5A4A' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat; background-position: right 12px center;
-  padding-right: 32px; cursor: pointer; min-width: 162px; flex-shrink: 0;
+  padding-right: 32px; cursor: pointer; width: 150px; flex-shrink: 0;
 }
 .filter-select option { background: var(--char); color: var(--text-hi); }
 
+
 /* Date range inputs + calendar button */
 .date-range-wrap { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
-.date-field { display: flex; flex-direction: column; gap: 2px; }
-.date-field-label { font-size: 10px; font-weight: 700; color: var(--text-lo); letter-spacing: 0.06em; text-transform: uppercase; padding-left: 2px; }
 .date-text-input {
-  width: 112px; height: 40px;
+  width: 96px; height: 40px;
   background: var(--ash); border: 1px solid #ffffff0A;
   border-radius: 9px; padding: 0 10px;
   font-family: var(--fb); font-size: 12px; color: var(--text-hi); outline: none;
@@ -131,7 +131,8 @@ body::before {
 .date-text-input:focus { border-color: #E8500A40; box-shadow: 0 0 0 3px #E8500A12; }
 .date-text-input::placeholder { color: var(--text-lo); }
 .date-text-input.has-value { border-color: #E8500A40; }
-.date-sep { font-size: 13px; color: var(--text-lo); align-self: flex-end; padding-bottom: 9px; }
+.date-sep { font-size: 13px; color: var(--text-lo); }
+
 
 .cal-toggle-btn {
   display: inline-flex; align-items: center; justify-content: center;
@@ -279,7 +280,8 @@ body::before {
 
 .ec-img {
   height: 156px; display: flex; align-items: center; justify-content: center;
-  font-size: 50px; position: relative; overflow: hidden;
+  position: relative; overflow: hidden;
+  font-size: 50px; background: linear-gradient(135deg, #2E2720, #1A1612);
 }
 .ec-img-night   { background: linear-gradient(135deg, #1A1612 0%, #321A0A 100%); }
 .ec-img-farm    { background: linear-gradient(135deg, #162214 0%, #243416 100%); }
@@ -295,7 +297,7 @@ body::before {
 .ec-spots { position: absolute; top: 12px; right: 12px; font-size: 10px; font-weight: 700; padding: 3px 10px; border-radius: 100px; font-family: var(--fb); }
 
 .ec-body { padding: 18px 20px 20px; }
-.ec-name { font-family: var(--fd); font-size: 16px; font-weight: 800; color: var(--coal); margin-bottom: 3px; line-height: 1.25; }
+.ec-name { font-family: var(--fd); font-size: 16px; font-weight: 900; color: var(--coal); margin-bottom: 3px; line-height: 1.25; }
 .ec-loc  { font-size: 12px; color: #9A8870; margin-bottom: 2px; }
 .ec-date { font-size: 12px; color: #9A8870; margin-bottom: 14px; }
 
@@ -469,8 +471,9 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
 }
 @media (max-width: 640px) {
   .events-grid { grid-template-columns: 1fr; }
-  .filter-bar { flex-direction: column; align-items: stretch; }
-  .filter-search-wrap, .filter-select { min-width: unset; }
+  .filter-bar { flex-wrap: wrap; }
+  .filter-search-wrap { flex: 1 1 100%; }
+  .filter-select { width: calc(50% - 4px); }
   .date-range-wrap { flex-wrap: wrap; }
   .date-text-input { width: 100px; }
   .footer-main { grid-template-columns: 1fr; }
@@ -485,7 +488,7 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
   <ul class="nav-links">
     <li><a href="/events" class="active">Events</a></li>
     <li><a href="/vendors">Vendors</a></li>
-    <li><a href="/#how-it-works">How It Works</a></li>
+    <li><a href="/how-it-works">How It Works</a></li>
     <li><a href="/pricing">Pricing</a></li>
   </ul>
   <div class="nav-actions" id="nav-loggedout">
@@ -506,17 +509,20 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
 
   <!-- Page header -->
   <div class="page-hero">
-    <div class="sec-tag">Discover</div>
-    <h1 class="page-title">Upcoming Events<span class="page-count" id="event-count-display">(124 events)</span></h1>
+    <div class="sec-tag">EVENTS</div>
+    <h1 class="page-title">Upcoming <span style="color:var(--ember);font-style:italic;">Events.</span></h1>
+    <p class="page-subline">Browse verified events and markets looking for food vendors across South Australia.</p>
   </div>
 
   <!-- Filter bar -->
   <div class="filter-bar">
+    <!-- Search -->
     <div class="filter-search-wrap">
       <span class="filter-search-icon">🔍</span>
       <input class="filter-input" id="f-search" type="text" placeholder="Search by name or suburb…" oninput="applyFilters()" />
     </div>
 
+    <!-- Categories -->
     <select class="filter-select" id="f-category" onchange="applyFilters()">
       <option value="">All Categories</option>
       <option value="Night Market">Night Market</option>
@@ -527,28 +533,15 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
       <option value="Twilight Market">Twilight Market</option>
     </select>
 
-    <input class="filter-input" id="f-suburb" type="text" placeholder="Suburb or area…" style="min-width:140px;flex-shrink:0;" oninput="applyFilters()" />
-
-    <select class="filter-select" id="f-sort" onchange="applyFilters()" style="min-width:155px;">
-      <option value="date">Sort: Date ↑</option>
-      <option value="spots">Sort: Spots Left</option>
-      <option value="newest">Sort: Newest</option>
-      <option value="fee">Sort: Fee ↑</option>
-    </select>
+    <input type="hidden" id="f-suburb" value="" />
 
     <!-- Date range: text inputs + calendar popup -->
     <div class="date-range-wrap" style="position:relative;">
-      <div class="date-field">
-        <span class="date-field-label">From</span>
-        <input class="date-text-input" id="f-from-text" type="text" placeholder="DD/MM/YYYY"
-               oninput="onDateTextInput('from')" onblur="normalizeDateInput('from')" />
-      </div>
+      <input class="date-text-input" id="f-from-text" type="text" placeholder="Start date"
+             oninput="onDateTextInput('from', event)" onblur="normalizeDateInput('from')" />
       <span class="date-sep">→</span>
-      <div class="date-field">
-        <span class="date-field-label">To</span>
-        <input class="date-text-input" id="f-to-text" type="text" placeholder="DD/MM/YYYY"
-               oninput="onDateTextInput('to')" onblur="normalizeDateInput('to')" />
-      </div>
+      <input class="date-text-input" id="f-to-text" type="text" placeholder="End date"
+             oninput="onDateTextInput('to', event)" onblur="normalizeDateInput('to')" />
 
       <button class="cal-toggle-btn" id="date-range-btn" onclick="toggleCalendar(event)" title="Open calendar">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -559,7 +552,6 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
 
       <div class="cal-popup" id="cal-popup">
         <div class="cal-popup-inner">
-          <!-- Month A -->
           <div class="cal-month">
             <div class="cal-month-header">
               <button class="cal-nav" onclick="calPrev()">‹</button>
@@ -568,10 +560,7 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
             </div>
             <div class="cal-grid" id="cal-grid-a"></div>
           </div>
-
           <div class="cal-divider"></div>
-
-          <!-- Month B -->
           <div class="cal-month">
             <div class="cal-month-header">
               <span></span>
@@ -581,7 +570,6 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
             <div class="cal-grid" id="cal-grid-b"></div>
           </div>
         </div>
-
         <div class="cal-footer">
           <div class="cal-selected-label" id="cal-selected-label">Click a date to start</div>
           <div class="cal-footer-actions">
@@ -590,18 +578,28 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
           </div>
         </div>
       </div>
+
+      <!-- Hidden ISO date values -->
+      <input type="hidden" id="f-from" />
+      <input type="hidden" id="f-to" />
     </div>
 
-    <!-- Hidden ISO date values for filter logic -->
-    <input type="hidden" id="f-from" />
-    <input type="hidden" id="f-to" />
+    <!-- Sort -->
+    <select class="filter-select" id="f-sort" onchange="applyFilters()">
+      <option value="date">Sort ▾</option>
+      <option value="spots">Sort: Spots Left</option>
+      <option value="newest">Sort: Newest</option>
+      <option value="fee">Sort: Fee ↑</option>
+    </select>
 
-    <button class="filter-clear" onclick="clearFilters()">Clear filters</button>
   </div>
 
   <!-- Results meta -->
   <div class="results-meta">
-    <div class="results-count" id="results-count"></div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div class="results-count" id="results-count"></div>
+      <button class="filter-clear" onclick="clearFilters()">Clear filters</button>
+    </div>
     <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
       <div class="active-filters" id="active-filters"></div>
       <div class="view-toggle">
@@ -643,7 +641,7 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
   <div class="footer-main">
     <div>
       <a href="/" class="footer-logo">Pitch<span class="dot">.</span></a>
-      <p class="footer-desc">Australia's marketplace connecting food vendors with local events.</p>
+      <p class="footer-desc">Australia's marketplace for food vendors and events.</p>
       <div class="footer-socials">
         <a href="https://x.com/pitchmkts" class="fsoc" target="_blank" rel="noopener">𝕏</a><a href="https://instagram.com/pitchmkts" class="fsoc" target="_blank" rel="noopener">◈</a>
         <a href="https://linkedin.com/company/pitchmkts" class="fsoc" target="_blank" rel="noopener">in</a><a href="https://facebook.com/pitchmkts" class="fsoc" target="_blank" rel="noopener">f</a>
@@ -653,15 +651,16 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
       <div class="footer-col-title">For Vendors</div>
       <ul class="footer-links">
         <li><a href="/signup?role=vendor">Sign up</a></li>
-        <li><a href="/#how-it-works">How it works</a></li>
+        <li><a href="/how-it-works">How it works</a></li>
         <li><a href="/pricing">Pricing</a></li>
+        <li><a href="/vendors">Browse vendors</a></li>
       </ul>
     </div>
     <div>
       <div class="footer-col-title">For Organisers</div>
       <ul class="footer-links">
         <li><a href="/events/new">Post an event</a></li>
-        <li><a href="/#how-it-works">How it works</a></li>
+        <li><a href="/how-it-works">How it works</a></li>
         <li><a href="/contact">Talk to sales</a></li>
       </ul>
     </div>
@@ -683,15 +682,54 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
 
 <script src="/data.js"></script>
 <script>
-// Pre-fill search from ?q= URL param (from homepage hero search)
+// Pre-fill filters from URL params (from homepage hero search)
 (function() {
-  const q = new URLSearchParams(window.location.search).get('q');
-  if (q) {
-    window.addEventListener('DOMContentLoaded', () => {
+  const p    = new URLSearchParams(window.location.search);
+  const q    = p.get('q');
+  const type = p.get('type');
+  const when = p.get('when');
+  if (!q && !type && !when) return;
+
+  function applyFromUrl() {
+    if (q) {
       const el = document.getElementById('f-search');
-      if (el) { el.value = q; }
-    });
+      if (el) el.value = q;
+    }
+    if (type) {
+      const el = document.getElementById('f-category');
+      if (el) el.value = type;
+    }
+    if (when) {
+      const today = new Date();
+      const fmt   = d => d.toISOString().split('T')[0];
+      const fromEl = document.getElementById('f-from');
+      const toEl   = document.getElementById('f-to');
+      const fromTx = document.getElementById('f-from-text');
+      const toTx   = document.getElementById('f-to-text');
+      const fmtDisp = d => d.toLocaleDateString('en-AU', {day:'2-digit',month:'2-digit',year:'numeric'});
+      let from, to;
+      if (when === 'weekend') {
+        const day = today.getDay();
+        const toFri = (5 - day + 7) % 7 || 7;
+        from = new Date(today); from.setDate(today.getDate() + toFri);
+        to   = new Date(from);  to.setDate(from.getDate() + 2);
+      } else if (when === 'month') {
+        from = new Date(today.getFullYear(), today.getMonth(), 1);
+        to   = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+      } else if (when === 'next') {
+        from = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+        to   = new Date(today.getFullYear(), today.getMonth() + 2, 0);
+      }
+      if (from && fromEl) { fromEl.value = fmt(from); if (fromTx) fromTx.value = fmtDisp(from); }
+      if (to   && toEl)   { toEl.value   = fmt(to);   if (toTx)   toTx.value   = fmtDisp(to);   }
+    }
   }
+
+  // Run after init applyFilters call so our values win
+  window.addEventListener('DOMContentLoaded', function() {
+    applyFromUrl();
+    if (typeof applyFilters === 'function') applyFilters();
+  });
 })();
 
 // ── DATA: loaded from API, filtered against data.js ───────────────────────────
@@ -745,11 +783,14 @@ function renderCard(ev) {
   const pct  = Math.round((ev.filled / ev.total) * 100);
   const fc   = fillColor(pct);
   const sp   = spotsInfo(ev.total, ev.filled);
-  const cs   = CAT_STYLE[ev.category] || { bg:'#ffffff12', color:ev.text, border:'#ffffff20' };
+  const cs   = CAT_STYLE[ev.category] || { bg:'#ffffff12', color:'#A89880', border:'#ffffff20' };
+  const imgContent = ev.cover_image
+    ? `<img src="${ev.cover_image}" alt="${ev.name}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" loading="lazy">`
+    : '';
   return `
   <a href="/events/${ev.id}" class="ec">
-    <div class="ec-img ec-img-${ev.bg}">
-      ${ev.emoji}
+    <div class="ec-img" style="${ev.cover_image ? '' : 'background:linear-gradient(135deg,#2E2720,#1A1612);'}">
+      ${imgContent}
       <div class="ec-overlay"></div>
       <span class="ec-cat" style="background:${cs.bg};color:${cs.color};border:1px solid ${cs.border};">${ev.category}</span>
       <span class="ec-spots" style="background:${sp.bg};color:${sp.color};border:1px solid ${sp.border};">${sp.text}</span>
@@ -854,13 +895,24 @@ function normalizeDateInput(field) {
   }
 }
 
-function onDateTextInput(field) {
+function onDateTextInput(field, e) {
   var inp = document.getElementById('f-' + field + '-text');
+
+  // Auto-insert slashes when typing (not deleting) at positions DD and DD/MM
+  var isDeleting = e && (e.inputType === 'deleteContentBackward' || e.inputType === 'deleteContentForward');
+  if (!isDeleting) {
+    var raw = inp.value;
+    if (raw.length === 2 && /^\d\d$/.test(raw)) {
+      inp.value = raw + '/';
+    } else if (raw.length === 5 && /^\d\d\/\d\d$/.test(raw)) {
+      inp.value = raw + '/';
+    }
+  }
+
   var iso = parseDisplayDate(inp.value);
   document.getElementById('f-' + field).value = iso;
   inp.classList.toggle('has-value', !!iso);
   if (iso) {
-    // Sync cal state
     if (field === 'from') calStart = iso;
     if (field === 'to')   calEnd   = iso;
     applyFilters();
@@ -895,11 +947,10 @@ function renderMeta() {
                      document.getElementById('f-from').value ||
                      document.getElementById('f-to').value;
 
-  const total = hasFilters ? filtered.length : TOTAL_EVENTS;
-  const showing = Math.min(filtered.length, PER_PAGE);
+  const total = filtered.length;
 
   document.getElementById('results-count').innerHTML =
-    `Showing <strong>${showing}</strong> of <strong>${total}</strong> events`;
+    `<strong>${total}</strong> event${total === 1 ? '' : 's'} found`;
 
   // Active filter chips
   const chips = [];
@@ -922,7 +973,7 @@ function renderMeta() {
 
 function renderPagination() {
   const pg = document.getElementById('pagination');
-  const totalPages = Math.max(1, Math.ceil(TOTAL_EVENTS / PER_PAGE));
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PER_PAGE));
 
   let html = `<button class="pg-btn page-prev" onclick="goPage(${currentPage-1})" ${currentPage===1?'disabled':''}>← Prev</button>`;
 
@@ -950,7 +1001,7 @@ function renderPagination() {
 }
 
 function goPage(n) {
-  const totalPages = Math.ceil(TOTAL_EVENTS / PER_PAGE);
+  const totalPages = Math.ceil(filtered.length / PER_PAGE);
   if (n < 1 || n > totalPages) return;
   currentPage = n;
   // For pages > 1, just show the mock events again (prototype)
@@ -1076,10 +1127,10 @@ function initMap() {
   }
 
   if (!_map) {
-    mapboxgl.accessToken = token;
+    mapboxgl.accessToken = 'no-token';
     _map = new mapboxgl.Map({
       container: 'map-canvas',
-      style: 'mapbox://styles/mapbox/dark-v11',
+      style: `https://api.maptiler.com/maps/dataviz-dark/style.json?key=${token}`,
       center: [138.6007, -34.9285],
       zoom: 9,
       attributionControl: false,
@@ -1251,24 +1302,22 @@ fetch('/api/events')
     dbEvents.forEach(function(e) {
       if (!staticSlugs.has(e.slug)) {
         EVENTS.push({
-          id:        e.slug,
-          name:      e.name,
-          category:  e.category || 'Market',
-          suburb:    e.suburb || 'Adelaide',
-          state:     e.state  || 'SA',
-          date:      e.date_sort || '',
-          dateLabel: e.date_sort ? new Date(e.date_sort).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'}) : 'TBC',
-          time:      'TBC',
-          filled:    0,
-          total:     e.stalls_available || 20,
-          feeMin:    0,
-          feeMax:    0,
-          deadline:  e.date_sort || '',
-          emoji:     '🎪',
-          bg:        'dark',
-          text:      '#FDF4E7',
-          organiser: e.organiser_name || '',
-          _dbEvent:  true,
+          id:          e.slug,
+          name:        e.name,
+          category:    e.category || 'Market',
+          suburb:      e.suburb || 'Adelaide',
+          state:       e.state  || 'SA',
+          date:        e.date_sort || '',
+          dateLabel:   e.date_sort ? new Date(e.date_sort).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'}) : 'TBC',
+          time:        'TBC',
+          filled:      0,
+          total:       e.stalls_available || 20,
+          feeMin:      0,
+          feeMax:      0,
+          deadline:    e.date_sort || '',
+          cover_image: e.cover_image || null,
+          organiser:   e.organiser_name || '',
+          _dbEvent:    true,
         });
       }
     });
@@ -1496,7 +1545,7 @@ document.addEventListener('click', function(e) {
 </script>
 <script src="/location-autocomplete.js"></script>
 <script>
-pitchLocAC('f-suburb', { suburbOnly: true, onSelect: () => applyFilters() });
+// All Locations field removed — suburb filtering still works via f-suburb hidden input
 </script>
 <script>
 (function() {
