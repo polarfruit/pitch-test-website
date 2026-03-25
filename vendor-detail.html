@@ -611,6 +611,17 @@ if (/^\d+$/.test(window.location.pathname.replace(/^\/vendors\//, '').replace(/\
     <!-- ── LEFT COLUMN ──────────────────────────────────────────────────── -->
     <div class="left-col">
 
+      <!-- Growth: Signature Showcase (hidden for non-Growth) -->
+      <div id="vd-signature-showcase" style="display:none;margin-bottom:28px;background:linear-gradient(135deg,#E8500A14,#FF6B2B0A);border:1px solid #E8500A22;border-radius:18px;padding:24px 28px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+          <span style="font-size:18px;">🔥</span>
+          <span style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ember);">Signature Item</span>
+        </div>
+        <div id="vd-showcase-name" style="font-family:'Fraunces',serif;font-size:22px;font-weight:900;letter-spacing:-0.02em;color:#FDF4E7;margin-bottom:6px;"></div>
+        <div id="vd-showcase-desc" style="font-size:14px;color:#A89880;line-height:1.7;"></div>
+        <div id="vd-showcase-price" style="margin-top:10px;font-size:14px;font-weight:700;color:var(--ember);"></div>
+      </div>
+
       <!-- Identity -->
       <div class="vendor-identity">
         <div class="vendor-name-row">
@@ -1112,6 +1123,38 @@ function applyDbVendor(db) {
   }
   if (bio) document.getElementById('vd-bio').textContent = bio;
 
+  // Growth: signature showcase block
+  var showcaseEl = document.getElementById('vd-signature-showcase');
+  if (showcaseEl) {
+    if (isGrowth) {
+      showcaseEl.style.display = 'block';
+      // Try to load signature menu item
+      var userId = db.user_id;
+      if (userId) {
+        fetch('/api/vendors/' + userId + '/menu').then(function(r){ return r.json(); }).then(function(d){
+          var items = Array.isArray(d) ? d : (d.menu_items || []);
+          var sig = items.find(function(i){ return i.is_signature; });
+          if (sig) {
+            var nameEl = document.getElementById('vd-showcase-name');
+            var descEl = document.getElementById('vd-showcase-desc');
+            var priceEl = document.getElementById('vd-showcase-price');
+            if (nameEl) nameEl.textContent = sig.name || '';
+            if (descEl) descEl.textContent = sig.description || '';
+            if (priceEl) {
+              if (sig.price_type === 'exact' && sig.price_min) priceEl.textContent = '$' + Number(sig.price_min).toFixed(2);
+              else if (sig.price_type === 'range' && sig.price_min && sig.price_max) priceEl.textContent = '$' + Number(sig.price_min).toFixed(2) + ' – $' + Number(sig.price_max).toFixed(2);
+              else if (sig.price_type === 'varies') priceEl.textContent = 'Price varies';
+            }
+          } else {
+            showcaseEl.style.display = 'none';
+          }
+        }).catch(function(){ showcaseEl.style.display = 'none'; });
+      }
+    } else {
+      showcaseEl.style.display = 'none';
+    }
+  }
+
   var _priceLabels = { '$':'$ (under $15)', '$$':'$$ ($15–$25)', '$$$':'$$$ ($25+)' };
   function _fmtPrice(p) { return p ? (_priceLabels[p.trim()] || p) : ''; }
 
@@ -1234,6 +1277,8 @@ if (isNumericId) {
     document.getElementById('vd-name').textContent = vendor.name;
     document.getElementById('vd-pro-badge').style.display = (vendor.isPro && !vendor.isGrowth) ? '' : 'none';
     document.getElementById('vd-growth-badge').style.display = vendor.isGrowth ? '' : 'none';
+    var sigShowcase = document.getElementById('vd-signature-showcase');
+    if (sigShowcase) sigShowcase.style.display = 'none'; // static demo vendors have no menu data
     var vb = document.getElementById('vd-verified-badge');
     if (vb) vb.style.display = ''; // demo vendors are all verified
     document.getElementById('vd-meta-row').innerHTML =
