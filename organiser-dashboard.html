@@ -941,9 +941,15 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
             <label class="form-label">Exclusivity rules</label>
             <div class="toggle-row"><span class="toggle-label">Only one vendor per cuisine category</span><label class="toggle-switch"><input type="checkbox" checked id="ne-exclusivity" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
           </div>
-          <div class="form-group"><label class="form-label">Custom requirements</label><textarea class="form-textarea" placeholder="Any specific requirements for vendors at this event — e.g. health certificates, setup rules, equipment restrictions…"></textarea></div>
+          <div class="form-group">
+            <label class="form-label">What we're looking for <span style="color:var(--ember);font-weight:700;text-transform:none;letter-spacing:0;">*</span></label>
+            <textarea class="form-textarea" id="ne-looking-for" placeholder="Describe the type of vendors you want — e.g. diverse cuisines, family-friendly options, premium quality only, local producers preferred…" style="min-height:100px;"></textarea>
+            <div style="font-size:11px;color:var(--text-lo);margin-top:5px;">Required — this appears on the public event page to help vendors self-select.</div>
+          </div>
+          <div class="form-group"><label class="form-label">Custom requirements</label><textarea class="form-textarea" id="ne-custom-req" placeholder="Any specific requirements for vendors at this event — e.g. health certificates, setup rules, equipment restrictions…"></textarea></div>
+          <div id="ne-error-3" style="display:none;margin-top:12px;padding:11px 14px;background:rgba(192,57,43,0.1);border:1px solid rgba(192,57,43,0.25);border-radius:8px;font-size:13px;color:#C0392B;"></div>
         </div>
-        <div class="step-nav"><button class="btn-step-back" onclick="goStep(2)">← Back</button><button class="btn-step-next" onclick="goStep(4)">Next: Terms →</button></div>
+        <div class="step-nav"><button class="btn-step-back" onclick="goStep(2)">← Back</button><button class="btn-step-next" onclick="validateStep3()">Next: Terms →</button></div>
       </div>
 
       <!-- Step 4: Terms -->
@@ -983,6 +989,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
           <div class="review-field"><div class="review-field-label">Pack-down</div><div class="review-field-value" id="rv-packdown">—</div></div>
           <div class="review-field"><div class="review-field-label">App. deadline</div><div class="review-field-value" id="rv-deadline">—</div></div>
           <div class="review-field"><div class="review-field-label">Cuisines wanted</div><div class="review-field-value" id="rv-cuisines">—</div></div>
+          <div class="review-field"><div class="review-field-label">What we're looking for</div><div class="review-field-value" id="rv-looking-for" style="white-space:pre-wrap;">—</div></div>
           <div class="review-field"><div class="review-field-label">Exclusivity</div><div class="review-field-value" id="rv-exclusivity">—</div></div>
           <div class="review-field"><div class="review-field-label">Payment terms</div><div class="review-field-value" id="rv-payment">—</div></div>
         </div>
@@ -1721,6 +1728,8 @@ function populateReview() {
   var excl = document.getElementById('ne-exclusivity');
   document.getElementById('rv-exclusivity').textContent = (excl && excl.checked) ? 'One vendor per cuisine' : 'No exclusivity rules';
 
+  document.getElementById('rv-looking-for').textContent = v('ne-looking-for') || '—';
+
   // Step 4 — Terms
   document.getElementById('rv-payment').textContent = v('ne-payment-terms') || '—';
 }
@@ -1752,6 +1761,19 @@ function validateStep1() {
   }
   errEl.style.display = 'none';
   goStep(2);
+}
+
+function validateStep3() {
+  const lookingFor = (document.getElementById('ne-looking-for') || {}).value || '';
+  const errEl = document.getElementById('ne-error-3');
+  if (!lookingFor.trim()) {
+    errEl.textContent = 'Please describe what you\'re looking for — this is required before your event can go live.';
+    errEl.style.display = 'block';
+    document.getElementById('ne-looking-for').focus();
+    return;
+  }
+  errEl.style.display = 'none';
+  goStep(4);
 }
 
 async function publishEvent() {

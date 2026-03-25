@@ -109,7 +109,7 @@ body::before {
 .detail-event-name {
   font-family: var(--fd);
   font-size: clamp(32px, 4vw, 52px);
-  font-weight: 900; letter-spacing: -0.03em;
+  font-weight: 800; letter-spacing: -0.03em;
   color: var(--text-hi); line-height: 1.02;
   margin-bottom: 16px;
 }
@@ -499,7 +499,7 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
   display: flex; flex-direction: column; gap: 7px;
 }
 .similar-card:hover { transform: translateY(-2px); border-color: #E8500A22; }
-.similar-emoji { font-size: 26px; }
+.similar-hero { height: 72px; border-radius: 10px; margin-bottom: 10px; background: linear-gradient(135deg, #2E2720, #1A1612); }
 .similar-name { font-family: var(--fd); font-size: 13px; font-weight: 800; color: var(--text-hi); line-height: 1.3; }
 .similar-meta { font-size: 11px; color: var(--text-lo); }
 .similar-badge {
@@ -578,7 +578,6 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
 
     <!-- Hero image -->
     <div class="detail-hero" id="ev-hero">
-      <div class="detail-hero-emoji-wrap"><span id="ev-emoji">🌃</span></div>
       <div class="detail-hero-overlay"></div>
       <span class="detail-hero-badge" id="ev-hero-category">Night Market</span>
       <div class="detail-hero-meta">
@@ -767,7 +766,7 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
         <svg class="fill-ring-svg" width="140" height="140" viewBox="0 0 140 140">
           <circle class="fill-ring-track" cx="70" cy="70" r="54"/>
           <circle class="fill-ring-fill" id="fill-ring-circle" cx="70" cy="70" r="54"
-            stroke="#C9840A"
+            stroke="#2D8B55"
             stroke-dasharray="0 339.3"
             transform="rotate(-90, 70, 70)"/>
           <text class="fill-ring-label" id="ev-ring-label" x="70" y="66" text-anchor="middle" dominant-baseline="middle">70%</text>
@@ -787,8 +786,11 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
       <div class="organiser-row">
         <div class="org-avatar" id="ev-org-avatar">AC</div>
         <div>
-          <div class="org-name" id="ev-org-name">Adelaide City Council Events</div>
-          <div class="org-meta" id="ev-org-meta">34 events posted · 4.8★ avg vendor rating</div>
+          <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;">
+            <div class="org-name" id="ev-org-name">Adelaide City Council Events</div>
+            <span id="ev-org-verified" style="display:none;font-size:10px;font-weight:700;color:#2B5BA8;background:#2B5BA812;border:1px solid #2B5BA822;padding:2px 8px;border-radius:100px;">✓ Verified</span>
+          </div>
+          <div class="org-meta" id="ev-org-meta">34 events hosted</div>
         </div>
       </div>
     </div>
@@ -824,7 +826,7 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
   <div class="footer-main">
     <div>
       <a href="/" class="footer-logo">Pitch<span class="dot">.</span></a>
-      <p class="footer-desc">Australia's marketplace connecting food vendors with local events.</p>
+      <p class="footer-desc">Australia's marketplace for food vendors and events.</p>
       <div class="footer-socials">
         <a href="https://x.com/pitchmkts" class="fsoc" target="_blank" rel="noopener">𝕏</a><a href="https://instagram.com/pitchmkts" class="fsoc" target="_blank" rel="noopener">◈</a>
         <a href="https://linkedin.com/company/pitchmkts" class="fsoc" target="_blank" rel="noopener">in</a><a href="https://facebook.com/pitchmkts" class="fsoc" target="_blank" rel="noopener">f</a>
@@ -1021,18 +1023,20 @@ if (window.__PITCH_DB_EVENT__) {
   var db = window.__PITCH_DB_EVENT__;
   var fmtD = function(iso) { if (!iso) return 'TBC'; var p = iso.split('-'); return p[2]+'/'+p[1]+'/'+p[0]; };
   var set = function(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; };
+  var setHTML = function(id, val) { var el = document.getElementById(id); if (el) el.innerHTML = val; };
+  var TBC = '<span style="color:#6B5A4A;font-style:italic;">To be confirmed</span>';
 
   document.title = db.name + ' — Pitch.';
   set('ev-breadcrumb', db.name);
-  set('ev-emoji', '🎪');
-  // Apply hero (banner_url from DB, otherwise use gradient)
+  // Apply hero (banner_url from DB, otherwise warm fallback gradient)
   var heroEl = document.getElementById('ev-hero');
   if (db.banner_url) {
     heroEl.style.backgroundImage = 'url(' + db.banner_url + ')';
     heroEl.style.backgroundSize = 'cover';
+    heroEl.style.backgroundPosition = 'center';
     heroEl.classList.add('has-photo');
   } else {
-    applyEventHero(heroEl, db.category, db.slug || slug);
+    heroEl.style.background = 'linear-gradient(135deg, #2E2720, #1A1612)';
   }
   set('ev-hero-category', db.category || '');
   set('ev-hero-loc', '📍 ' + (db.suburb||'') + (db.state?', '+db.state:''));
@@ -1050,19 +1054,20 @@ if (window.__PITCH_DB_EVENT__) {
 
   // Specs
   set('sv-date', fmtD(db.date_sort) + (db.date_end ? ' — ' + fmtD(db.date_end) : ''));
-  set('sv-time', '—');
+  setHTML('sv-time', TBC);
   set('sv-location', (db.venue_name ? db.venue_name + ', ' : '') + (db.suburb||'') + (db.state?', '+db.state:''));
-  set('sv-attendance', '—');
+  setHTML('sv-attendance', TBC);
   set('sv-spots', db.stalls_available ? db.stalls_available + ' spots' : '—');
-  set('sv-size', '—');
-  set('sv-power', '—');
-  set('sv-water', '—');
-  set('sv-setup', '—');
-  set('sv-packdown', '—');
+  setHTML('sv-size', TBC);
+  setHTML('sv-power', TBC);
+  setHTML('sv-water', TBC);
+  setHTML('sv-setup', TBC);
+  setHTML('sv-packdown', TBC);
 
   // Fee — not stored in DB
-  set('ev-fee-range', '—');
+  setHTML('ev-fee-range', TBC);
   var feeInc = document.getElementById('ev-fee-includes'); if (feeInc) feeInc.innerHTML = '';
+  var feeNote = document.querySelector('.fee-note'); if (feeNote) feeNote.style.display = 'none';
 
   // Looking for — not stored in DB
   var lfor = document.getElementById('ev-looking-for'); if (lfor) lfor.innerHTML = '<span style="color:var(--text-lo);font-size:13px;">Details to be announced by the organiser.</span>';
@@ -1096,7 +1101,7 @@ if (window.__PITCH_DB_EVENT__) {
     if (ring) {
       var arc = CIRC2 * (fillPct / 100);
       ring.setAttribute('stroke-dasharray', arc + ' ' + (CIRC2 - arc));
-      ring.setAttribute('stroke', fillPct >= 85 ? '#C0392B' : fillPct >= 70 ? '#C9840A' : '#2D8B55');
+      ring.setAttribute('stroke', '#2D8B55');
     }
   }, 200);
   set('ev-ring-label', fillPct + '%');
@@ -1111,12 +1116,21 @@ if (window.__PITCH_DB_EVENT__) {
   }
 
   // Deadline
-  set('ev-deadline-val', '—');
+  setHTML('ev-deadline-val', TBC);
 
   // Organiser
-  set('ev-org-avatar', (db.organiser_name || 'O').charAt(0).toUpperCase());
-  set('ev-org-name', db.organiser_name || '—');
-  set('ev-org-meta', db.org_event_count > 0 ? db.org_event_count + ' event' + (db.org_event_count !== 1 ? 's' : '') + ' posted on Pitch.' : 'Organiser on Pitch.');
+  var orgInitials = (db.organiser_name || 'O').split(' ').map(function(w){return w.charAt(0).toUpperCase();}).join('').slice(0,2);
+  set('ev-org-avatar', orgInitials);
+  if (db.organiser_avatar_url) {
+    var orgAvEl = document.getElementById('ev-org-avatar');
+    if (orgAvEl) { orgAvEl.style.backgroundImage = 'url(' + db.organiser_avatar_url + ')'; orgAvEl.style.backgroundSize = 'cover'; orgAvEl.style.backgroundPosition = 'center'; orgAvEl.textContent = ''; }
+  }
+  set('ev-org-name', db.organiser_name || 'Organiser');
+  set('ev-org-meta', db.org_event_count > 0 ? db.org_event_count + ' event' + (db.org_event_count !== 1 ? 's' : '') + ' hosted' : 'New on Pitch.');
+  if (db.organiser_verified) {
+    var verBadge = document.getElementById('ev-org-verified');
+    if (verBadge) verBadge.style.display = '';
+  }
 
   // Show Message organiser button if there is a linked organiser account
   if (db.organiser_user_id) {
@@ -1128,7 +1142,6 @@ if (window.__PITCH_DB_EVENT__) {
 if (ev && !window.__PITCH_DB_EVENT__) {
   document.title = ev.name + ' \u2014 Pitch.';
   document.getElementById('ev-breadcrumb').textContent = ev.name;
-  document.getElementById('ev-emoji').textContent = ev.emoji;
   document.getElementById('ev-hero-category').textContent = ev.category;
   document.getElementById('ev-hero-loc').textContent = '\uD83D\uDCCD ' + ev.suburb;
   document.getElementById('ev-hero-date').textContent = '\uD83D\uDCC5 ' + ev.dateLabel;
@@ -1516,22 +1529,29 @@ else if (window.__PITCH_DB_EVENT__) {
 
 // ── SIMILAR MARKETS ────────────────────────────────────────────────────────────
 var SIMILAR_DEMOS = [
-  { id:'glenelg-twilight-market', emoji:'🌅', name:'Glenelg Twilight Market', suburb:'Glenelg', date:'Sun 3 May', badge:'6 spots left', bc:'#2D8B55' },
-  { id:'adelaide-showground-harvest-fair', emoji:'🌾', name:'Adelaide Showground Harvest Fair', suburb:'Wayville', date:'Sun 18 Apr', badge:'Open now', bc:'#2B5BA8' },
-  { id:'fringe-food-village-2026', emoji:'🎪', name:'Fringe Food Village 2026', suburb:'Adelaide CBD', date:'Sat 22 Mar', badge:'Coming soon', bc:'#C9840A' },
-  { id:'port-noarlunga-twilight', emoji:'🌊', name:'Port Noarlunga Twilight Market', suburb:'Port Noarlunga', date:'Sat 26 Apr', badge:'3 spots left', bc:'#C0392B' },
+  { id:'glenelg-twilight-market', name:'Glenelg Twilight Market', suburb:'Glenelg', date:'Sun 3 May', badge:'6 spots left' },
+  { id:'adelaide-showground-harvest-fair', name:'Adelaide Showground Harvest Fair', suburb:'Wayville', date:'Sun 18 Apr', badge:'Open now' },
+  { id:'fringe-food-village-2026', name:'Fringe Food Village 2026', suburb:'Adelaide CBD', date:'Sat 22 Mar', badge:'Coming soon' },
+  { id:'port-noarlunga-twilight', name:'Port Noarlunga Twilight Market', suburb:'Port Noarlunga', date:'Sat 26 Apr', badge:'3 spots left' },
 ];
+function similarBadgeColor(badge) {
+  var b = (badge || '').toLowerCase();
+  if (b.indexOf('soon') >= 0) return '#C9840A';
+  if (b.indexOf('full') >= 0 || b.indexOf('closed') >= 0) return '#C0392B';
+  return '#2D8B55';
+}
 (function renderSimilar() {
   var el = document.getElementById('ev-similar');
   if (!el) return;
   var currentId = slug;
   var items = SIMILAR_DEMOS.filter(function(m){ return m.id !== currentId; }).slice(0, 3);
   el.innerHTML = items.map(function(m) {
+    var bc = similarBadgeColor(m.badge);
     return '<a href="/events/' + m.id + '" class="similar-card">' +
-      '<div class="similar-emoji">' + m.emoji + '</div>' +
+      '<div class="similar-hero"></div>' +
       '<div class="similar-name">' + m.name + '</div>' +
       '<div class="similar-meta">📍 ' + m.suburb + ' · ' + m.date + '</div>' +
-      '<span class="similar-badge" style="background:' + m.bc + '18;color:' + m.bc + ';border:1px solid ' + m.bc + '22;">' + m.badge + '</span>' +
+      '<span class="similar-badge" style="background:' + bc + '18;color:' + bc + ';border:1px solid ' + bc + '22;">' + m.badge + '</span>' +
       '</a>';
   }).join('');
 })();
