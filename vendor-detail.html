@@ -67,7 +67,7 @@ html.vd-loading .page-wrap,
 html.vd-loading footer { visibility: hidden; }
 
 .vendor-hero {
-  position: relative; width: 100%; height: 320px;
+  position: relative; width: 100%; height: 160px;
   background: linear-gradient(135deg, #231E19 0%, #1A1612 100%);
   overflow: hidden; margin-top: 66px;
 }
@@ -78,7 +78,7 @@ html.vd-loading footer { visibility: hidden; }
 }
 .vendor-hero-initials {
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-  font-family: var(--fd); font-size: 140px; font-weight: 900; letter-spacing: -0.04em;
+  font-family: var(--fd); font-size: 80px; font-weight: 900; letter-spacing: -0.04em;
   color: rgba(253,244,231,0.10); user-select: none; pointer-events: none;
 }
 .vendor-hero-avatar {
@@ -172,24 +172,21 @@ html.vd-loading footer { visibility: hidden; }
 /* Photo gallery */
 .gallery-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 10px;
 }
 .gallery-item {
-  aspect-ratio: 4/3; border-radius: 12px; overflow: hidden;
+  height: 180px; border-radius: 12px; overflow: hidden;
   cursor: pointer; position: relative;
   transition: transform 0.18s, box-shadow 0.18s;
 }
 .gallery-item:hover { transform: scale(1.02); box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
-.gallery-item:first-child {
-  grid-column: span 2; grid-row: span 2; aspect-ratio: auto;
-}
+.gallery-item:first-child { grid-column: 1; grid-row: 1; }
 .gallery-img {
   width: 100%; height: 100%;
-  background: var(--char); display: flex; align-items: center; justify-content: center;
-  font-size: 32px; position: relative;
+  background: var(--char); display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 8px; position: relative;
 }
-.gallery-item:first-child .gallery-img { font-size: 64px; min-height: 240px; }
 .gallery-img::after {
   content: ''; position: absolute; inset: 0;
   background: linear-gradient(to top, rgba(26,22,18,0.4) 0%, transparent 50%);
@@ -293,10 +290,10 @@ html.vd-loading footer { visibility: hidden; }
 .rb-count { font-size: 11px; color: var(--text-lo); width: 20px; }
 
 /* Stats */
-.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 .stat-item { display: flex; flex-direction: column; gap: 3px; }
 .stat-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-lo); }
-.stat-value { font-family: var(--fd); font-size: 20px; font-weight: 900; letter-spacing: -0.02em; color: var(--text-hi); }
+.stat-value { font-family: var(--fd); font-size: 26px; font-weight: 900; letter-spacing: -0.03em; color: var(--text-hi); }
 .stat-sub { font-size: 11px; color: var(--text-lo); }
 
 /* Plan badge */
@@ -307,7 +304,7 @@ html.vd-loading footer { visibility: hidden; }
 }
 .plan-badge-left { display: flex; flex-direction: column; gap: 3px; }
 .plan-badge-name { font-size: 13px; font-weight: 700; color: var(--gold); }
-.plan-badge-desc { font-size: 11px; color: var(--text-lo); }
+.plan-badge-desc { font-size: 12px; color: var(--text-lo); }
 .plan-badge-icon { font-size: 20px; }
 
 /* Document trust */
@@ -360,6 +357,12 @@ html.vd-loading footer { visibility: hidden; }
 .appearance-name { font-size: 12px; font-weight: 600; color: var(--text-hi); margin-bottom: 1px; }
 .appearance-date { font-size: 11px; color: var(--text-lo); }
 .appearance-arrow { font-size: 11px; color: var(--text-lo); }
+.appearance-avatar {
+  width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
+  background: var(--ember); color: #fff; font-size: 11px; font-weight: 700;
+  font-family: var(--fb); display: flex; align-items: center; justify-content: center;
+  letter-spacing: 0;
+}
 
 /* Lightbox */
 .lightbox {
@@ -606,7 +609,7 @@ if (/^\d+$/.test(window.location.pathname.replace(/^\/vendors\//, '').replace(/\
 <div class="vendor-hero" id="vd-hero">
   <div class="vendor-hero-initials" id="vd-hero-initials"></div>
   <div class="vendor-hero-overlay"></div>
-  <div class="vendor-hero-avatar" id="vd-hero-avatar"></div>
+  <div class="vendor-hero-avatar" id="vd-hero-avatar" style="display:none;"></div>
   <div class="hero-breadcrumb">
     <a href="/">Home</a>
     <span class="sep">/</span>
@@ -651,15 +654,10 @@ if (/^\d+$/.test(window.location.pathname.replace(/^\/vendors\//, '').replace(/\
         <div class="gallery-grid" id="vd-gallery"></div>
       </div>
 
-      <!-- What they sell -->
-      <div class="section-block" id="vd-sell-section">
-        <h2 class="section-heading">What they sell</h2>
-        <div class="sell-tags" id="vd-sell-tags">
-          <!-- populated by JS -->
-        </div>
-        <div class="sell-price-note" id="vd-price-note" style="display:none;">
-          <span>💲</span><span id="vd-price-label"></span>
-        </div>
+      <!-- Cuisine tags rendered inline in meta row; sell section only shown if menu items exist -->
+      <div class="section-block" id="vd-sell-section" style="display:none;">
+        <h2 class="section-heading">Menu</h2>
+        <div class="sell-tags" id="vd-sell-tags"></div>
       </div>
 
       <!-- Menu -->
@@ -675,7 +673,7 @@ if (/^\d+$/.test(window.location.pathname.replace(/^\/vendors\//, '').replace(/\
       </div>
 
       <!-- Past Events -->
-      <div class="section-block">
+      <div class="section-block section-alt-bg">
         <h2 class="section-heading">Past events on Pitch.</h2>
         <div class="past-events-list" id="past-events-list">
           <a class="pe-item" href="/events/rundle-mall-night-eats">
@@ -798,7 +796,7 @@ if (/^\d+$/.test(window.location.pathname.replace(/^\/vendors\//, '').replace(/\
         <p style="font-size:13px;color:var(--text-lo);margin-bottom:20px;">Reviews from people who've visited this vendor at markets.</p>
         <div class="review-list" id="consumer-review-list"></div>
         <p style="font-size:12px;color:var(--text-lo);margin-top:16px;">
-          Visited this vendor? <a href="/login?redirect=/vendors" style="color:var(--ember);text-decoration:none;font-weight:600;">Sign in to leave a review →</a>
+          Been to one of their events? <a href="/login?redirect=/vendors" style="color:var(--ember);text-decoration:none;font-weight:600;">Sign in to leave a review →</a>
         </p>
       </div>
 
@@ -903,14 +901,14 @@ if (/^\d+$/.test(window.location.pathname.replace(/^\/vendors\//, '').replace(/\
         <div class="plan-badge-row" id="vd-plan-badge-row">
           <div class="plan-badge-left">
             <div class="plan-badge-name" id="vd-plan-name">Pro Vendor</div>
-            <div class="plan-badge-desc" id="vd-plan-desc">Priority placement · Verified documents</div>
+            <div class="plan-badge-desc" id="vd-plan-desc">Priority placement in search results.</div>
           </div>
           <div class="plan-badge-icon" id="vd-plan-icon">⭐</div>
         </div>
       </div>
 
       <!-- Document trust -->
-      <div class="sidebar-card" id="vd-doc-trust" style="background:linear-gradient(135deg,#2D8B5508,#23231910);border-color:#2D8B5514;">
+      <div class="sidebar-card" id="vd-doc-trust" style="background:#2D8B5508;border-color:#2D8B5518;">
         <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-lo);margin-bottom:16px;">Documents</div>
         <div class="doc-list" id="vd-doc-list">
           <div class="doc-item">
@@ -959,7 +957,7 @@ if (/^\d+$/.test(window.location.pathname.replace(/^\/vendors\//, '').replace(/\
         <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-lo);margin-bottom:16px;">Upcoming Appearances</div>
         <div class="appearances-list">
           <a class="appearance-chip" href="/events/rundle-mall-night-eats">
-            <span class="appearance-emoji">🌃</span>
+            <div class="appearance-avatar">RN</div>
             <div class="appearance-body">
               <div class="appearance-name">Rundle Mall Night Eats</div>
               <div class="appearance-date">Sat 12 Apr · Adelaide CBD</div>
@@ -967,7 +965,7 @@ if (/^\d+$/.test(window.location.pathname.replace(/^\/vendors\//, '').replace(/\
             <span class="appearance-arrow">→</span>
           </a>
           <a class="appearance-chip" href="/events/glenelg-twilight-market">
-            <span class="appearance-emoji">🌅</span>
+            <div class="appearance-avatar">GT</div>
             <div class="appearance-body">
               <div class="appearance-name">Glenelg Twilight Market</div>
               <div class="appearance-date">Sun 3 May · Glenelg</div>
@@ -975,7 +973,7 @@ if (/^\d+$/.test(window.location.pathname.replace(/^\/vendors\//, '').replace(/\
             <span class="appearance-arrow">→</span>
           </a>
           <a class="appearance-chip" href="/events/adelaide-showground-harvest-fair">
-            <span class="appearance-emoji">🌾</span>
+            <div class="appearance-avatar">AS</div>
             <div class="appearance-body">
               <div class="appearance-name">Adelaide Showground Harvest Fair</div>
               <div class="appearance-date">Sun 18 Apr · Wayville</div>
@@ -1117,7 +1115,7 @@ function applyDbVendor(db) {
     planRow.style.borderColor = '';
     planNameEl.style.color = '';
     planNameEl.textContent = 'Pro Vendor';
-    planDescEl.textContent = 'Priority placement · Verified documents';
+    planDescEl.textContent = 'Priority placement in search results.';
     planIconEl.textContent = '⭐';
   } else {
     planRow.style.background = 'linear-gradient(135deg,#2E272018,#1A16120E)';
@@ -1306,7 +1304,15 @@ if (isNumericId) {
     document.getElementById('vd-bio').textContent = vendor.bio;
 
     document.getElementById('vd-gallery').innerHTML = vendor.gallery.map(function(g, i){
-      return '<div class="gallery-item" onclick="openLightbox(' + i + ')"><div class="gallery-img" style="background:linear-gradient(135deg,#2E2720,#1A1612);"></div><div class="gallery-overlay">\uD83D\uDD0D</div></div>';
+      return '<div class="gallery-item" onclick="openLightbox(' + i + ')">' +
+        '<div class="gallery-img" style="background:linear-gradient(135deg,#2E2720,#1A1612);">' +
+          '<div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:8px;">' +
+            '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#6B5A4A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>' +
+            '<span style="font-size:11px;color:#6B5A4A;font-weight:500;letter-spacing:0;">Photo coming soon</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="gallery-overlay" style="font-size:13px;font-weight:600;letter-spacing:0;">View</div>' +
+      '</div>';
     }).join('');
 
     document.getElementById('past-events-list').innerHTML = vendor.pastEvents.map(function(pe){
@@ -1362,7 +1368,7 @@ if (isNumericId) {
       planIconEl2.textContent = '🔥';
     } else if (vendor.isPro) {
       planNameEl2.textContent = 'Pro Vendor';
-      planDescEl2.textContent = 'Priority placement · Verified documents';
+      planDescEl2.textContent = 'Priority placement in search results.';
       planIconEl2.textContent = '⭐';
     } else {
       planRow2.style.background = 'linear-gradient(135deg,#2E272018,#1A16120E)';
@@ -1543,32 +1549,16 @@ function showVendorToast(msg) {
 
 /* ── Populate "What they sell" ─────────────────────────────────────────────── */
 function renderWhatTheySell(cuisines, priceRange, menuItems) {
+  // Cuisine tags are shown inline in the vendor meta row; this section only
+  // surfaces if there are explicit menu items to show.
   const tagsEl  = document.getElementById('vd-sell-tags');
-  const priceEl = document.getElementById('vd-price-note');
-  const priceLbl = document.getElementById('vd-price-label');
   const section = document.getElementById('vd-sell-section');
-  if (!tagsEl) return;
-
-  var tags = [];
-  (cuisines || []).forEach(function(c) {
-    tags.push('<span class="sell-category">' + c + '</span>');
-  });
-  (menuItems || []).forEach(function(item) {
-    tags.push('<span class="sell-item">' + item + '</span>');
-  });
-
-  if (!tags.length) {
-    // No tags — hide section so it doesn't show as blank
-    if (section) section.style.display = 'none';
-    return;
-  }
-  tagsEl.innerHTML = tags.join('');
-
-  const priceMap = { '$':'Under $15 per serve', '$$':'$15–$25 per serve', '$$$':'$25+ per serve' };
-  if (priceRange && priceMap[priceRange.trim()] && priceEl && priceLbl) {
-    priceLbl.textContent = priceMap[priceRange.trim()];
-    priceEl.style.display = 'flex';
-  }
+  var items = (menuItems || []).filter(Boolean);
+  if (!tagsEl || !items.length) return;
+  tagsEl.innerHTML = items.map(function(item) {
+    return '<span class="sell-item">' + item + '</span>';
+  }).join('');
+  if (section) section.style.display = '';
 }
 
 // Render for static demo vendor (cuisines + demo menu items)
@@ -1579,7 +1569,7 @@ if (!isNumericId && typeof vendor !== 'undefined' && vendor) {
     'barista-mob':     ['Single Origin Espresso', 'Cold Brew', 'Matcha Latte', 'House-made Syrups'],
     'taco-cartel':     ['Street Tacos', 'Quesadillas', 'Churros', 'Agua Fresca'],
   };
-  renderWhatTheySell(vendor.cuisines, vendor.price_range || '$', _demoMenuItems[vpath] || []);
+  // Cuisine tags shown inline in meta row; sell-section stays hidden for static vendors
 }
 
 // Role-based UI toggles
