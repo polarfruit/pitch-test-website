@@ -106,7 +106,7 @@ html.vd-loading footer { visibility: hidden; }
 
 /* ── PAGE LAYOUT ─────────────────────────────────────────────────────────── */
 .page-wrap {
-  max-width: 1320px; margin: 0 auto; padding: 60px 52px 80px;
+  max-width: 1320px; margin: 0 auto; padding: 60px 52px 48px;
   position: relative; z-index: 1;
 }
 .detail-grid {
@@ -151,7 +151,7 @@ html.vd-loading footer { visibility: hidden; }
 .vendor-meta-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
 .vendor-tag {
   font-size: 12px; font-weight: 600; padding: 4px 11px; border-radius: 100px;
-  background: #E8500A14; color: var(--ember); border: 1px solid #E8500A22;
+  background: #F5EDD8; color: #1A1612; border: 1px solid #EDE3CC;
 }
 .vendor-setup-tag {
   font-size: 12px; font-weight: 600; padding: 4px 11px; border-radius: 100px;
@@ -237,10 +237,10 @@ html.vd-loading footer { visibility: hidden; }
 .sort-btn.active { background: var(--ember); border-color: var(--ember); color: #fff; }
 .sort-btn:hover:not(.active) { background: #ffffff09; color: var(--text-hi); }
 
-.review-list { display: flex; flex-direction: column; gap: 16px; }
+.review-list { display: flex; flex-direction: column; gap: 0; }
 .review-card {
-  background: var(--char); border: 1px solid #ffffff07; border-radius: 14px;
-  padding: 20px 22px;
+  background: #231E19; border: 1px solid #ffffff0A; border-radius: 12px;
+  padding: 20px; margin-bottom: 12px;
 }
 .review-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 10px; }
 .review-org { display: flex; flex-direction: column; gap: 2px; }
@@ -1304,7 +1304,7 @@ if (isNumericId) {
       '<span class="vendor-suburb">\uD83D\uDCCD ' + vendor.suburb + ', ' + vendor.state + '</span>';
     document.getElementById('vd-bio').textContent = vendor.bio;
 
-    document.getElementById('vd-gallery').innerHTML = vendor.gallery.map(function(g, i){
+    var _galleryTile = function(i) {
       return '<div class="gallery-item" onclick="openLightbox(' + i + ')">' +
         '<div class="gallery-img" style="background:linear-gradient(135deg,#2E2720,#1A1612);">' +
           '<div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:8px;">' +
@@ -1314,7 +1314,11 @@ if (isNumericId) {
         '</div>' +
         '<div class="gallery-overlay" style="font-size:13px;font-weight:600;letter-spacing:0;">View</div>' +
       '</div>';
-    }).join('');
+    };
+    var _galleryCount = Math.max(6, vendor.gallery.length % 2 === 0 ? vendor.gallery.length : vendor.gallery.length + 1);
+    var _galleryTiles = [];
+    for (var _gi = 0; _gi < _galleryCount; _gi++) _galleryTiles.push(_galleryTile(_gi));
+    document.getElementById('vd-gallery').innerHTML = _galleryTiles.join('');
 
     document.getElementById('past-events-list').innerHTML = vendor.pastEvents.map(function(pe){
       return '<a class="pe-item" href="/events/' + pe.id + '"><div class="pe-dot"></div><div class="pe-body"><div class="pe-name">' + pe.name + '</div><div class="pe-date">' + pe.date + '</div></div><span class="pe-arrow">\u2192</span></a>';
