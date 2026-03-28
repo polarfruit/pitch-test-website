@@ -831,7 +831,7 @@ export const stmts = {
   countEventsByCategory: prepare(`SELECT COALESCE(category,'Other') as category, COUNT(*) as n FROM events WHERE status='published' GROUP BY category ORDER BY n DESC`),
 
   // vendor/organiser detail (admin)
-  getVendorDetail:    prepare(`SELECT v.*,u.email,u.first_name,u.last_name,u.status,u.role,u.created_at FROM vendors v JOIN users u ON v.user_id=u.id WHERE v.user_id=?`),
+  getVendorDetail:    prepare(`SELECT v.*,u.id as user_id,u.email,u.first_name,u.last_name,u.status,u.role,u.created_at FROM users u LEFT JOIN vendors v ON v.user_id=u.id AND v.id=(SELECT MIN(id) FROM vendors WHERE user_id=u.id) WHERE u.id=? AND u.role='vendor'`),
   getOrganiserDetail: prepare(`SELECT o.*,u.email,u.first_name,u.last_name,u.status,u.role,u.created_at FROM organisers o JOIN users u ON o.user_id=u.id WHERE o.user_id=?`),
 
   // payments
