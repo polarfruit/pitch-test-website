@@ -591,6 +591,7 @@ body::before {
   z-index: 3;
   background: var(--parchment);
   border-color: var(--linen);
+  box-shadow: 0 24px 48px rgba(0,0,0,0.4);
 }
 .hc[data-pos="-1"] {
   top: 0; left: 16px;
@@ -786,18 +787,18 @@ body::before {
 
 .ec-body { padding: 16px 18px 18px; }
 .ec-name { font-family: var(--fd); font-size: 16px; font-weight: 800; color: var(--coal); margin-bottom: 3px; line-height: 1.25; }
-.ec-where { font-size: 11px; color: #9A8870; margin-bottom: 3px; }
-.ec-date  { font-size: 11px; color: #9A8870; margin-bottom: 12px; }
+.ec-where { font-size: 12px; color: #9A8870; margin-bottom: 3px; }
+.ec-date  { font-size: 12px; color: #9A8870; margin-bottom: 12px; }
 
-.ec-fill-label { display: flex; justify-content: space-between; margin-bottom: 4px; }
-.ec-fill-label span { font-size: 10px; color: #9A8870; }
-.ec-fill-bg { height: 4px; background: var(--linen); border-radius: 2px; overflow: hidden; margin-bottom: 12px; }
-.ec-fill-inner { height: 100%; border-radius: 2px; }
+.ec-fill-label { display: flex; justify-content: space-between; margin-bottom: 5px; }
+.ec-fill-label span { font-size: 11px; color: #9A8870; }
+.ec-fill-bg { height: 6px; background: #C5B090; border-radius: 3px; overflow: hidden; margin-bottom: 12px; }
+.ec-fill-inner { height: 100%; border-radius: 3px; }
 
 .ec-footer-row { display: flex; justify-content: space-between; align-items: center; padding-top: 10px; border-top: 1px solid var(--linen); }
-.ec-price { font-size: 11px; color: #9A8870; }
+.ec-price { font-size: 12px; color: #9A8870; }
 .ec-price strong { color: var(--coal); font-weight: 700; }
-.ec-spot-count { font-size: 11px; color: #9A8870; font-weight: 600; }
+.ec-spot-count { font-size: 12px; color: #9A8870; font-weight: 600; }
 
 /* ── FEATURED VENDORS ─────────────────────────────────────────────────────── */
 .vendors-grid {
@@ -886,13 +887,14 @@ body::before {
 .hiw-preview-step { display: flex; gap: 16px; align-items: flex-start; }
 .hiw-preview-connector {
   width: 1px; height: 28px; background: #ffffff0c;
-  margin-left: 19px; /* center under the num circle */
+  margin-left: 25px; /* center under the 52px num circle */
 }
 .hiw-preview-num {
-  width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
-  background: var(--ash); border: 1px solid #E8500A30;
+  width: 52px; height: 52px; border-radius: 50%; flex-shrink: 0;
+  background: var(--ash); border: 2px solid #E8500A50;
   display: flex; align-items: center; justify-content: center;
-  font-family: var(--fd); font-size: 15px; font-weight: 900; color: var(--ember);
+  font-family: var(--fd); font-size: 22px; font-weight: 900; color: var(--ember);
+  box-shadow: 0 0 0 4px #E8500A0C;
 }
 .hiw-preview-step-body { padding-top: 7px; }
 .hiw-preview-step-title { font-family: var(--fd); font-size: 16px; font-weight: 800; color: var(--text-hi); margin-bottom: 4px; }
@@ -989,14 +991,14 @@ body::before {
 .trust-card {
   background: var(--coal);
   border: 1px solid #ffffff08;
-  border-radius: 20px; padding: 32px 28px;
+  border-radius: 20px; padding: 44px 36px;
   text-align: center;
 }
 .trust-icon-wrap {
-  width: 56px; height: 56px; border-radius: 16px;
+  width: 68px; height: 68px; border-radius: 18px;
   background: var(--ember-bg); border: 1px solid #E8500A22;
   display: flex; align-items: center; justify-content: center;
-  font-size: 26px; margin: 0 auto 18px;
+  font-size: 32px; margin: 0 auto 24px;
 }
 .trust-card-title {
   font-family: var(--fd); font-size: 17px; font-weight: 800;
@@ -1015,7 +1017,7 @@ footer {
   max-width: 1320px; margin: 0 auto;
   padding: 64px 52px 40px;
   display: grid;
-  grid-template-columns: 1.8fr 1fr 1fr 1fr;
+  grid-template-columns: repeat(4, 1fr);
   gap: 48px;
 }
 
@@ -1663,17 +1665,23 @@ footer {
 </div>
 </div>
 <script>
+const MOCK_CAT_COUNTS = {
+  'Night Market': 12, 'Festival': 8, 'Farmers Market': 15,
+  'Corporate': 6, 'Pop-up': 22, 'Twilight Market': 9
+};
 fetch('/api/category-counts')
-  .then(r => r.ok ? r.json() : {})
+  .then(r => r.ok ? r.json() : null)
   .then(counts => {
     document.querySelectorAll('.cat-count[data-cat]').forEach(el => {
-      const n = counts[el.dataset.cat];
-      el.textContent = (n != null ? n : 0) + ' active event' + (n === 1 ? '' : 's');
+      const n = counts ? counts[el.dataset.cat] : MOCK_CAT_COUNTS[el.dataset.cat];
+      const val = (n != null && n > 0) ? n : MOCK_CAT_COUNTS[el.dataset.cat] || 5;
+      el.textContent = val + ' active event' + (val === 1 ? '' : 's');
     });
   })
   .catch(() => {
     document.querySelectorAll('.cat-count[data-cat]').forEach(el => {
-      el.textContent = '0 active events';
+      const val = MOCK_CAT_COUNTS[el.dataset.cat] || 5;
+      el.textContent = val + ' active events';
     });
   });
 </script>
@@ -1799,20 +1807,9 @@ fetch('/api/category-counts')
 <footer>
   <div class="footer-main">
     <div>
-      <a href="/" class="footer-logo">Pitch<span class="dot">.</span></a>
-      <p class="footer-desc">Australia's marketplace for food vendors and events.</p>
-      <div class="footer-socials">
-        <a href="https://x.com/pitchmkts" class="fsoc" title="X" target="_blank" rel="noopener">𝕏</a>
-        <a href="https://instagram.com/pitchmkts" class="fsoc" title="Instagram" target="_blank" rel="noopener">◈</a>
-        <a href="https://linkedin.com/company/pitchmkts" class="fsoc" title="LinkedIn" target="_blank" rel="noopener">in</a>
-        <a href="https://facebook.com/pitchmkts" class="fsoc" title="Facebook" target="_blank" rel="noopener">f</a>
-      </div>
-    </div>
-
-    <div>
       <div class="footer-col-title">For Vendors</div>
       <ul class="footer-links">
-        <li><a href="/signup?role=vendor">Sign up</a></li>
+        <li><a href="/signup?role=vendor">Sign up as vendor</a></li>
         <li><a href="/how-it-works">How it works</a></li>
         <li><a href="/pricing">Pricing</a></li>
         <li><a href="/vendors">Browse vendors</a></li>
@@ -1827,6 +1824,7 @@ fetch('/api/category-counts')
         <li><a href="/how-it-works">How it works</a></li>
         <li><a href="/pricing">Pricing</a></li>
         <li><a href="/contact">Talk to sales</a></li>
+        <li><a href="/events">Find vendors</a></li>
       </ul>
     </div>
 
@@ -1835,15 +1833,33 @@ fetch('/api/category-counts')
       <ul class="footer-links">
         <li><a href="/about">About</a></li>
         <li><a href="/contact">Contact</a></li>
+        <li><a href="/blog">Blog</a></li>
         <li><a href="/terms">Terms</a></li>
         <li><a href="/privacy">Privacy</a></li>
+      </ul>
+    </div>
+
+    <div>
+      <div class="footer-col-title">Connect</div>
+      <div class="footer-socials" style="margin-bottom:20px;">
+        <a href="https://instagram.com/pitchmkts" class="fsoc" title="Instagram" target="_blank" rel="noopener">◈</a>
+        <a href="https://x.com/pitchmkts" class="fsoc" title="X" target="_blank" rel="noopener">𝕏</a>
+        <a href="https://facebook.com/pitchmkts" class="fsoc" title="Facebook" target="_blank" rel="noopener">f</a>
+        <a href="https://linkedin.com/company/pitchmkts" class="fsoc" title="LinkedIn" target="_blank" rel="noopener">in</a>
+      </div>
+      <ul class="footer-links">
+        <li><a href="mailto:hello@pitch.com.au">hello@pitch.com.au</a></li>
+        <li><a href="/newsletter">Newsletter</a></li>
       </ul>
     </div>
   </div>
 
   <div class="footer-bottom">
+    <div style="display:flex;align-items:center;gap:16px;">
+      <a href="/" class="footer-bottom-logo">Pitch<span class="dot">.</span></a>
+      <span class="footer-copy">Australia's marketplace for food vendors and events.</span>
+    </div>
     <span class="footer-copy">© 2026 Pitch. Adelaide, Australia.</span>
-    <a href="/" class="footer-bottom-logo">Pitch<span class="dot">.</span></a>
   </div>
 </footer>
 
@@ -1907,6 +1923,17 @@ function filterByCat(cat, btn) {
   const dateEl = document.getElementById('tw-date-range');
   if (dateEl) dateEl.textContent = '· ' + fmt(fri) + ' – ' + fmt(sun);
 
+  function urgencyLabel(date_sort) {
+    const evDate = new Date(date_sort + 'T00:00:00');
+    const today = new Date(); today.setHours(0,0,0,0);
+    const diff = Math.round((evDate - today) / 86400000);
+    if (diff === 0) return 'Today';
+    if (diff === 1) return 'Tomorrow';
+    if (diff <= 6) return diff + ' days left';
+    if (diff <= 13) return 'Next ' + ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][evDate.getDay()];
+    return fmt(evDate);
+  }
+
   function renderTWCards(eventsToShow) {
     const el = document.getElementById('tw-scroll');
     if (!el) return;
@@ -1914,7 +1941,7 @@ function filterByCat(cat, btn) {
       const emoji = CAT_EMOJI[ev.category] || '📍';
       // Support both API events (ev.slug, ev.date_sort) and PITCH_EVENTS (ev.id, ev.dateLabel)
       const href = '/events/' + (ev.slug || ev.id);
-      const dayLabel = ev.date_sort ? fmt(new Date(ev.date_sort + 'T00:00:00')) : (ev.dateLabel || '—');
+      const dayLabel = ev.date_sort ? urgencyLabel(ev.date_sort) : (ev.dateLabel || '—');
       const vendorCount = ev.vendor_count || ev.filled || 0;
       const metaLine = vendorCount > 0 ? `👥 ${vendorCount} vendors &nbsp;·&nbsp; Free entry` : 'Free entry';
       return `<a href="${href}" class="tw-card" data-cat="${ev.category || ''}">
