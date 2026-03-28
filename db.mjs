@@ -694,15 +694,6 @@ if (_needsSeed) {
   }
 }
 
-// ── Repair: ensure every vendor user has a vendor record (single bulk query) ──
-// INSERT OR IGNORE means existing records are untouched.
-await _safeExec(`
-  INSERT OR IGNORE INTO vendors (user_id, trading_name, cuisine_tags, plan)
-  SELECT u.id, u.first_name||' '||u.last_name, '[]', 'free'
-  FROM users u
-  WHERE u.role='vendor'
-    AND NOT EXISTS (SELECT 1 FROM vendors WHERE user_id=u.id)
-`);
 
 // Ensure leroy.anton@yahoo.com and polarfruit@outlook.com accounts are always active.
 for (const email of ['leroy.anton@yahoo.com', 'polarfruit@outlook.com']) {
@@ -753,6 +744,16 @@ await _safeExec(`DELETE FROM _schema_meta`);
 await _safeExec(`INSERT INTO _schema_meta (v) VALUES (${SCHEMA_VERSION})`);
 
 } // end if (_schemaVersion < SCHEMA_VERSION)
+
+// ── Always: ensure every vendor user has a vendors row (idempotent) ──────────
+// Runs on every cold start — INSERT OR IGNORE is a no-op when record exists.
+await _safeExec(`
+  INSERT OR IGNORE INTO vendors (user_id, trading_name, cuisine_tags, plan)
+  SELECT u.id, u.first_name||' '||u.last_name, '[]', 'free'
+  FROM users u
+  WHERE u.role='vendor'
+    AND NOT EXISTS (SELECT 1 FROM vendors WHERE user_id=u.id)
+`);
 
 // ── Prepared statements ──────────────────────────────────────────────────────
 export const stmts = {

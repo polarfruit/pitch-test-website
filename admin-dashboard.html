@@ -2071,13 +2071,14 @@
         </div>`) +
         detailSection('Payment history', paymentsHTML(payments));
 
+      const _vName = vendor.trading_name || (user.first_name + ' ' + user.last_name).trim() || 'Vendor';
       const saveBar = `<div class="save-bar">
         <button class="save-btn" onclick="saveVendor(${userId})">Save changes</button>
         <span class="save-msg" id="save-msg"></span>
-        <button class="delete-account-btn" onclick="deleteAccount(${userId}, '${vendor.trading_name.replace(/'/g,"\\'")}')">🗑 Delete account</button>
+        <button class="delete-account-btn" onclick="deleteAccount(${userId}, '${_vName.replace(/'/g,"\\'")}')">🗑 Delete account</button>
       </div>`;
 
-      openDetailDrawer(vendor.trading_name, 'Vendor · ' + user.email, body + saveBar);
+      openDetailDrawer(_vName, 'Vendor · ' + user.email, body + saveBar);
     } catch(e) {
       console.error('Vendor detail failed', e);
       openDetailDrawer('Error', 'Vendor', `<div style="padding:40px;color:#C0392B;">Failed to load vendor profile.<br><small style="color:#6B5A4A;">${e.message}</small><br><br><small style="color:#6B5A4A;">If this keeps happening, try logging out and back into the admin panel.</small></div>`);
