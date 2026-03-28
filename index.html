@@ -301,6 +301,12 @@ body::before {
   mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
   -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
 }
+.marquee-wrap::after {
+  content: '';
+  position: absolute; top: 0; right: 0; bottom: 0; width: 120px;
+  background: linear-gradient(to right, transparent, #1A1612);
+  pointer-events: none; z-index: 2;
+}
 .marquee-track {
   display: flex; gap: 18px;
   animation: marquee-scroll 36s linear infinite;
@@ -893,7 +899,7 @@ body::before {
   width: 52px; height: 52px; border-radius: 50%; flex-shrink: 0;
   background: var(--ash); border: 2px solid #E8500A50;
   display: flex; align-items: center; justify-content: center;
-  font-family: var(--fd); font-size: 22px; font-weight: 900; color: var(--ember);
+  font-family: var(--fd); font-size: 28px; font-weight: 900; color: #E8500A;
   box-shadow: 0 0 0 4px #E8500A0C;
 }
 .hiw-preview-step-body { padding-top: 7px; }
@@ -986,7 +992,7 @@ body::before {
   margin-bottom: 56px; line-height: 1.7; max-width: 580px;
 }
 
-.trust-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.trust-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; }
 
 .trust-card {
   background: var(--coal);
