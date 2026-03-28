@@ -2055,7 +2055,7 @@
           ${dfInput('df-instagram', 'Instagram', vendor.instagram)}
           ${dfInput('df-suburb', 'Suburb', vendor.suburb)}
           ${dfSelect('df-state', 'State', vendor.state, AU_STATES)}
-          ${dfSelect('df-plan', 'Plan', vendor.plan, [{v:'free',l:'Free'},{v:'pro',l:'Pro'}])}
+          ${dfSelect('df-plan', 'Plan', vendor.plan || 'free', [{v:'free',l:'Starter (Free)'},{v:'pro',l:'Pro — $29/mo'},{v:'growth',l:'Growth — $79/mo'}])}
           ${dfSelect('df-setup', 'Setup type', vendor.setup_type, [
             {v:'',l:'— Type —'},{v:'Food truck',l:'Food truck'},{v:'Market stall',l:'Market stall'},
             {v:'Pop-up tent',l:'Pop-up tent'},{v:'Cart',l:'Cart'},{v:'Trailer',l:'Trailer'}
