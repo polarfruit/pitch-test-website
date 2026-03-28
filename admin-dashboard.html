@@ -2157,9 +2157,12 @@
       });
       const data = await r.json();
       if (data.warning) console.warn('[admin] Status update warning:', data.warning);
-      await loadVendors();
-      await loadOrganisers();
-      await loadStats();
+      await Promise.all([loadVendors(), loadOrganisers(), loadStats()]);
+      // Refresh the drawer if it's open for this user
+      if (_openDrawerUserId === userId) {
+        if (_openDrawerType === 'vendor')     openVendorDetail(userId);
+        if (_openDrawerType === 'organiser')  openOrganiserDetail(userId);
+      }
     } catch(e) { console.warn('Status update failed', e); }
   }
 
@@ -2261,9 +2264,14 @@
   }
 
   // ── Detail drawer ─────────────────────────────────────────────────────────
+  let _openDrawerUserId = null;
+  let _openDrawerType   = null; // 'vendor' | 'organiser'
+
   function closeDetailDrawer() {
     document.getElementById('detail-overlay').classList.remove('open');
     document.getElementById('detail-drawer').classList.remove('open');
+    _openDrawerUserId = null;
+    _openDrawerType   = null;
   }
 
   function openDetailDrawer(title, sub, bodyHTML) {
@@ -2321,6 +2329,7 @@
   ];
 
   async function openVendorDetail(userId) {
+    _openDrawerUserId = userId; _openDrawerType = 'vendor';
     openDetailDrawer('Loading…', 'Vendor', '<div style="padding:40px;color:#6B5A4A;">Loading…</div>');
     try {
       const [vr, pr] = await Promise.all([
@@ -2420,6 +2429,7 @@
   }
 
   async function openOrganiserDetail(userId) {
+    _openDrawerUserId = userId; _openDrawerType = 'organiser';
     openDetailDrawer('Loading…', 'Organiser', '<div style="padding:40px;color:#6B5A4A;">Loading…</div>');
     try {
       const [or, pr] = await Promise.all([
