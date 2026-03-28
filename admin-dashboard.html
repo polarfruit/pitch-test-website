@@ -1740,10 +1740,22 @@
       const affV     = _lastStats.vendorsAffectedBySuspension || 0;
       const hasSuspensions = suspV + suspO > 0;
 
-      const suspRow = (count, label, linkPanel, amber) => count > 0
+      // Collect actual suspended account IDs from caches for direct drawer navigation
+      const suspendedVendorsList = allVendors.filter(v => v.status === 'suspended');
+      const suspendedOrgsList    = allOrgs.filter(o => o.status === 'suspended');
+
+      // Build onclick: navigate to panel, then open drawer if exactly 1 account
+      const vendorSuspClick = suspendedVendorsList.length === 1
+        ? `showPanel('vendors');setTimeout(()=>openVendorDetail(${suspendedVendorsList[0].user_id}),150)`
+        : `showPanel('vendors')`;
+      const orgSuspClick = suspendedOrgsList.length === 1
+        ? `showPanel('organisers');setTimeout(()=>openOrganiserDetail(${suspendedOrgsList[0].user_id}),150)`
+        : `showPanel('organisers')`;
+
+      const suspRow = (count, label, onclick, linkLabel, amber) => count > 0
         ? `<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid #1E1916;">
              <span style="font-size:12px;color:${amber ? '#C9840A' : '#E07060'};">${count} ${label}</span>
-             <span style="font-size:11px;color:#E8500A;cursor:pointer;" onclick="showPanel('${linkPanel}')">${linkPanel === 'vendors' ? 'View vendors →' : linkPanel === 'events' ? 'View events →' : 'View applications →'}</span>
+             <span style="font-size:11px;color:#E8500A;cursor:pointer;" onclick="${onclick}">${linkLabel}</span>
            </div>`
         : '';
 
@@ -1770,10 +1782,10 @@
             ${hasSuspensions ? `
             <div style="margin-bottom:12px;">
               <div style="font-size:10px;font-weight:700;color:#4A3C30;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Active suspensions</div>
-              ${suspRow(suspV, `vendor${suspV===1?'':'s'} currently suspended`, 'vendors', true)}
-              ${suspRow(suspO, `organiser${suspO===1?'':'s'} currently suspended`, 'vendors', true)}
-              ${suspRow(hiddenEv, `event${hiddenEv===1?'':'s'} hidden due to organiser suspension`, 'events', false)}
-              ${suspRow(affV, `vendor${affV===1?'':'s'} with spots at suspended events`, 'applications', false)}
+              ${suspRow(suspV, `vendor${suspV===1?'':'s'} currently suspended`, vendorSuspClick, suspendedVendorsList.length===1 ? 'View account →' : 'View vendors →', true)}
+              ${suspRow(suspO, `organiser${suspO===1?'':'s'} currently suspended`, orgSuspClick, suspendedOrgsList.length===1 ? 'View account →' : 'View organisers →', true)}
+              ${suspRow(hiddenEv, `event${hiddenEv===1?'':'s'} hidden due to organiser suspension`, `showPanel('events')`, 'View events →', false)}
+              ${suspRow(affV, `vendor${affV===1?'':'s'} with spots at suspended events`, `showPanel('applications')`, 'View applications →', false)}
             </div>` : `
             <div style="padding:10px 0 12px;font-size:12px;color:#3DA86A;">No active suspensions — platform looks healthy</div>`}
           </div>
