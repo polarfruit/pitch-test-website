@@ -755,6 +755,22 @@ await _safeExec(`
     AND NOT EXISTS (SELECT 1 FROM vendors WHERE user_id=u.id)
 `);
 
+// ── Suspension feature migrations (idempotent, outside version gate) ─────────
+await _safeExec(`ALTER TABLE users ADD COLUMN suspended_reason TEXT`);
+await _safeExec(`ALTER TABLE events ADD COLUMN suspended_by_admin INTEGER NOT NULL DEFAULT 0`);
+await _safeExec(`
+  CREATE TABLE IF NOT EXISTS admin_audit_log (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    admin_user_id   INTEGER,
+    action          TEXT NOT NULL,
+    target_user_id  INTEGER NOT NULL,
+    target_role     TEXT,
+    reason          TEXT,
+    metadata        TEXT,
+    created_at      DATETIME DEFAULT (datetime('now'))
+  )
+`);
+
 // ── Prepared statements ──────────────────────────────────────────────────────
 export const stmts = {
   // users
@@ -790,6 +806,40 @@ export const stmts = {
   // admin actions
   updateUserAvatar:                prepare(`UPDATE users SET avatar_url=? WHERE id=?`),
   updateUserStatus:                prepare(`UPDATE users SET status=? WHERE id=?`),
+  setSuspendedReason:              prepare(`UPDATE users SET suspended_reason=? WHERE id=?`),
+
+  // suspension side-effects
+  withdrawVendorPendingApps: prepare(`UPDATE event_applications SET status='withdrawn' WHERE vendor_user_id=? AND status='pending'`),
+  getVendorApprovedApps: prepare(`
+    SELECT ea.id, ea.event_id, e.name as event_name, e.organiser_user_id,
+           COALESCE(o.org_name, e.organiser_name) as organiser_name,
+           ou.email as organiser_email
+    FROM event_applications ea
+    JOIN events e ON ea.event_id=e.id
+    LEFT JOIN organisers o ON o.user_id=e.organiser_user_id
+    LEFT JOIN users ou ON ou.id=e.organiser_user_id
+    WHERE ea.vendor_user_id=? AND ea.status='approved'
+  `),
+  suspendOrgEvents: prepare(`UPDATE events SET status='archived',suspended_by_admin=1 WHERE organiser_user_id=? AND status='published'`),
+  reinstateOrgEvents: prepare(`UPDATE events SET status='published',suspended_by_admin=0 WHERE organiser_user_id=? AND suspended_by_admin=1`),
+  getConfirmedVendorsAtOrgEvents: prepare(`
+    SELECT DISTINCT ea.vendor_user_id, u.email as vendor_email, u.first_name,
+           COALESCE(v.trading_name, u.first_name||' '||u.last_name) as trading_name,
+           e.name as event_name, e.id as event_id
+    FROM events e
+    JOIN event_applications ea ON ea.event_id=e.id AND ea.status='approved'
+    JOIN users u ON u.id=ea.vendor_user_id
+    LEFT JOIN vendors v ON v.user_id=u.id
+    WHERE e.organiser_user_id=?
+  `),
+  insertAuditLog: prepare(`INSERT INTO admin_audit_log (admin_user_id,action,target_user_id,target_role,reason,metadata) VALUES (@admin_user_id,@action,@target_user_id,@target_role,@reason,@metadata)`),
+  getAuditLog:    prepare(`SELECT * FROM admin_audit_log ORDER BY created_at DESC LIMIT 100`),
+
+  // suspension health stats
+  countSuspendedVendors:              prepare(`SELECT COUNT(*) as n FROM users WHERE role='vendor' AND status='suspended'`),
+  countSuspendedOrgs:                 prepare(`SELECT COUNT(*) as n FROM users WHERE role='organiser' AND status='suspended'`),
+  countHiddenByOrgSuspension:         prepare(`SELECT COUNT(*) as n FROM events WHERE suspended_by_admin=1`),
+  countVendorsAffectedBySuspension:   prepare(`SELECT COUNT(DISTINCT ea.vendor_user_id) as n FROM event_applications ea JOIN events e ON ea.event_id=e.id WHERE e.suspended_by_admin=1 AND ea.status='approved'`),
   updateUserPassword:              prepare(`UPDATE users SET password_hash=? WHERE id=?`),
   deleteUser:                      prepare(`DELETE FROM users WHERE id=?`),
   deleteVendorByUserId:            prepare(`DELETE FROM vendors WHERE user_id=?`),
