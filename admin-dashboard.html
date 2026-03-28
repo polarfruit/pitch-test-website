@@ -1655,21 +1655,26 @@
   function _renderSignupsChart(dayRows, barsId, labelsId, yaxisId, miniBarId, miniLabelsId) {
     const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
     const today = new Date();
-    // days[0]=6 days ago … days[6]=today — chronological left→right
-    const days = Array.from({length:7}, (_,i) => {
+    // Build last 7 calendar dates chronologically (6 days ago → today)
+    const allDays = Array.from({length:7}, (_,i) => {
       const d = new Date(today);
       d.setDate(today.getDate() - (6 - i));
       const iso = d.toISOString().slice(0,10);
-      return { iso, label: DAY_NAMES[d.getDay()], isToday: i === 6 };
+      return { iso, label: DAY_NAMES[d.getDay()] };
     });
+    // Rotate so today (allDays[6]) is first, then continues forward through the week
+    // Result: [today, today+1(wrapped), today+2(wrapped), …]
+    const days = [...allDays.slice(6), ...allDays.slice(0, 6)];
+    days.forEach((d, i) => { d.isToday = i === 0; });
+
     const lookup = {};
     (dayRows || []).forEach(r => { lookup[r.day] = r.n; });
     const counts = days.map(d => lookup[d.iso] || 0);
     const maxN = Math.max(...counts, 1);
 
-    // Bar opacity builds toward today (rightmost = brightest)
-    const barBg = (i) => i === 6 ? '#E8500A'
-      : `rgba(232,80,10,${(0.18 + i * 0.06).toFixed(2)})`;
+    // Today (index 0) is brightest; fades as days move away from today
+    const barBg = (i) => i === 0 ? '#E8500A'
+      : `rgba(232,80,10,${Math.max(0.55 - i * 0.07, 0.12).toFixed(2)})`;
 
     const barsEl  = document.getElementById(barsId);
     const labelsEl = document.getElementById(labelsId);
