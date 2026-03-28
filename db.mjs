@@ -694,34 +694,15 @@ if (_needsSeed) {
   }
 }
 
-// ── Repair: re-seed vendor records that were lost due to a failed migration ──
-// Runs unconditionally — INSERT OR IGNORE means no duplicates if records exist.
-{
-  const _sv2 = prepare(`INSERT OR IGNORE INTO vendors (user_id,trading_name,suburb,state,bio,cuisine_tags,setup_type,stall_w,stall_d,power,water,price_range,instagram,plan) SELECT @user_id,@trading_name,@suburb,@state,@bio,@cuisine_tags,@setup_type,@stall_w,@stall_d,@power,@water,@price_range,@instagram,@plan WHERE NOT EXISTS (SELECT 1 FROM vendors WHERE user_id=@user_id)`);
-  const _uid2 = prepare(`SELECT id FROM users WHERE email=?`);
-  for (const v of [
-    { email:'joe@smokyjoes.com.au',        trading_name:"Smoky Joe's BBQ",   suburb:'Norwood',       state:'SA', bio:"Adelaide's most-loved BBQ food truck, smoking low-and-slow since 2019.", cuisine_tags:'["BBQ"]',             setup_type:'Food Truck',  stall_w:3,   stall_d:3,   power:1, water:0, price_range:'$12–$22', instagram:'@smokyjoes_adl',      plan:'pro'  },
-    { email:'maria@tacoloco.com',           trading_name:'Taco Loco',         suburb:'Glenelg',       state:'SA', bio:'Authentic Mexican street food made from scratch every day.',           cuisine_tags:'["Mexican"]',         setup_type:'Pop-up Stall',stall_w:3,   stall_d:2,   power:0, water:1, price_range:'$8–$16',  instagram:'@tacoloco_glenelg',   plan:'pro'  },
-    { email:'hello@wokandroll.com.au',      trading_name:'Wok & Roll',        suburb:'Adelaide CBD',  state:'SA', bio:'Modern Asian fusion food truck serving bold, wok-fired flavours.',     cuisine_tags:'["Asian Fusion"]',    setup_type:'Food Truck',  stall_w:3,   stall_d:6,   power:0, water:0, price_range:'$10–$18', instagram:'@wokandroll_adl',     plan:'pro'  },
-    { email:'ciao@napoliexpress.com.au',    trading_name:'Napoli Express',    suburb:'Hindmarsh',     state:'SA', bio:'Authentic Neapolitan-style pizza and arancini made fresh on-site.',    cuisine_tags:'["Italian"]',        setup_type:'Pop-up Stall',stall_w:4,   stall_d:3,   power:1, water:1, price_range:'$12–$20', instagram:'@napoliexpressadl',   plan:'free' },
-    { email:'hello@thedessertlab.com.au',   trading_name:'The Dessert Lab',   suburb:'North Adelaide',state:'SA', bio:'Creative dessert cart serving handcrafted sweets — Instagram-worthy.',  cuisine_tags:'["Desserts"]',        setup_type:'Cart',        stall_w:2,   stall_d:2,   power:1, water:0, price_range:'$7–$14',  instagram:'@thedessertlab',      plan:'pro'  },
-    { email:'brew@beanery.com.au',          trading_name:'Beanery Coffee Co.',suburb:'Unley',         state:'SA', bio:'Specialty coffee on wheels — single-origin beans, La Marzocco cart.',  cuisine_tags:'["Coffee & Drinks"]', setup_type:'Cart',        stall_w:2,   stall_d:1.5, power:1, water:1, price_range:'$4.50–$8',instagram:'@beanery_coffee',     plan:'free' },
-    { email:'eat@greenbowl.com.au',         trading_name:'Green Bowl',        suburb:'Prospect',      state:'SA', bio:'Wholesome vegan and plant-based street food made fresh on-site.',      cuisine_tags:'["Vegan"]',           setup_type:'Pop-up Stall',stall_w:3,   stall_d:2,   power:0, water:1, price_range:'$12–$18', instagram:'@greenbowl_sa',       plan:'free' },
-    { email:'hey@brewskiburgers.com.au',    trading_name:'Brewski Burgers',   suburb:'Port Adelaide', state:'SA', bio:"Port Adelaide's premier burger truck — smash burgers, SA farm beef.",  cuisine_tags:'["Burgers"]',         setup_type:'Food Truck',  stall_w:3,   stall_d:6,   power:0, water:0, price_range:'$12–$22', instagram:'@brewski_burgers',    plan:'free' },
-    { email:'catch@oceanandfire.com.au',    trading_name:'Ocean & Fire',      suburb:'Glenelg',       state:'SA', bio:'Premium seafood sourced directly from SA fishermen — grilled fresh.',  cuisine_tags:'["Seafood"]',         setup_type:'Pop-up Stall',stall_w:3,   stall_d:3,   power:1, water:1, price_range:'$14–$28', instagram:'@oceanandfire_sa',    plan:'pro'  },
-    { email:'churros@thechurrostand.com.au',trading_name:'The Churro Stand',  suburb:'Adelaide CBD',  state:'SA', bio:'Hot fresh churros with a dozen dipping sauces and creative toppings.', cuisine_tags:'["Desserts"]',        setup_type:'Cart',        stall_w:2,   stall_d:1.5, power:1, water:0, price_range:'$6–$12',  instagram:'@thechurrostand',     plan:'free' },
-    { email:'hello@punjabpalace.com.au',    trading_name:'Punjab Palace',     suburb:'Elizabeth',     state:'SA', bio:'Authentic Punjabi cooking — slow-cooked curries, tandoor naan, biryani.',cuisine_tags:'["Indian"]',         setup_type:'Food Truck',  stall_w:3,   stall_d:5,   power:0, water:0, price_range:'$10–$18', instagram:'@punjabpalace_adl',   plan:'free' },
-    { email:'sip@pressedandbrewed.com.au',  trading_name:'Pressed & Brewed',  suburb:'Burnside',      state:'SA', bio:'Cold-pressed juices and filter coffee. All juice pressed fresh on-site.',cuisine_tags:'["Coffee & Drinks"]',setup_type:'Cart',        stall_w:1.5, stall_d:1.5, power:1, water:1, price_range:'$5–$10',  instagram:'@pressedandbrewed',   plan:'free' },
-  ]) {
-    const row = await _uid2.get(v.email);
-    if (row) await _sv2.run({ user_id: row.id, trading_name: v.trading_name, suburb: v.suburb, state: v.state, bio: v.bio, cuisine_tags: v.cuisine_tags, setup_type: v.setup_type, stall_w: v.stall_w, stall_d: v.stall_d, power: v.power, water: v.water, price_range: v.price_range, instagram: v.instagram, plan: v.plan });
-  }
-  // Any remaining vendor users without a record get a placeholder
-  const orphans = await prepare(`SELECT u.id, u.first_name, u.last_name FROM users u LEFT JOIN vendors v ON v.user_id=u.id WHERE u.role='vendor' AND v.id IS NULL`).all();
-  for (const u of orphans) {
-    await _sv2.run({ user_id: u.id, trading_name: `${u.first_name} ${u.last_name}`.trim() || 'Vendor', suburb: null, state: null, bio: null, cuisine_tags: '[]', setup_type: null, stall_w: null, stall_d: null, power: 0, water: 0, price_range: null, instagram: null, plan: 'free' });
-  }
-}
+// ── Repair: ensure every vendor user has a vendor record (single bulk query) ──
+// INSERT OR IGNORE means existing records are untouched.
+await _safeExec(`
+  INSERT OR IGNORE INTO vendors (user_id, trading_name, cuisine_tags, plan)
+  SELECT u.id, u.first_name||' '||u.last_name, '[]', 'free'
+  FROM users u
+  WHERE u.role='vendor'
+    AND NOT EXISTS (SELECT 1 FROM vendors WHERE user_id=u.id)
+`);
 
 // Ensure leroy.anton@yahoo.com and polarfruit@outlook.com accounts are always active.
 for (const email of ['leroy.anton@yahoo.com', 'polarfruit@outlook.com']) {
@@ -769,7 +750,7 @@ await _safeExec(`UPDATE users SET created_at='2026-03-18 11:00:00' WHERE email='
 // ── Mark schema as current so migrations are skipped on next boot ─────────────
 await _safeExec(`CREATE TABLE IF NOT EXISTS _schema_meta (v INTEGER)`);
 await _safeExec(`DELETE FROM _schema_meta`);
-await prepare(`INSERT INTO _schema_meta (v) VALUES (?)`).run(SCHEMA_VERSION);
+await _safeExec(`INSERT INTO _schema_meta (v) VALUES (${SCHEMA_VERSION})`);
 
 } // end if (_schemaVersion < SCHEMA_VERSION)
 
