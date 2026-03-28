@@ -691,37 +691,8 @@
             <span style="font-size:16px;">⚡</span>
             <span class="card-title">Activity feed</span>
           </div>
-          <div class="card-body">
-            <div class="feed-item">
-              <div class="feed-dot green"></div>
-              <div class="feed-text"><strong>Smoky Joe's BBQ</strong> was approved</div>
-              <div class="feed-time">2m</div>
-            </div>
-            <div class="feed-item">
-              <div class="feed-dot ember"></div>
-              <div class="feed-text"><strong>Rundle Mall Night Eats</strong> published a new event</div>
-              <div class="feed-time">8m</div>
-            </div>
-            <div class="feed-item">
-              <div class="feed-dot red"></div>
-              <div class="feed-text"><strong>Report #1048</strong> filed against Street Bao</div>
-              <div class="feed-time">22m</div>
-            </div>
-            <div class="feed-item">
-              <div class="feed-dot amber"></div>
-              <div class="feed-text"><strong>Noodle Republic</strong> has expired PLI document</div>
-              <div class="feed-time">1h</div>
-            </div>
-            <div class="feed-item">
-              <div class="feed-dot blue"></div>
-              <div class="feed-text"><strong>Port Adelaide Events</strong> signup under review</div>
-              <div class="feed-time">3h</div>
-            </div>
-            <div class="feed-item">
-              <div class="feed-dot green"></div>
-              <div class="feed-text"><strong>48 applications</strong> processed today</div>
-              <div class="feed-time">4h</div>
-            </div>
+          <div class="card-body" id="activity-feed-body">
+            <div class="feed-item"><div class="feed-dot" style="background:#2A2018;"></div><div class="feed-text" style="color:#4A3C30;">Loading…</div></div>
           </div>
         </div>
       </div>
@@ -1679,67 +1650,59 @@
   const fmtDate = d => d ? new Date(d).toLocaleDateString('en-AU', {day:'numeric',month:'short',year:'numeric'}) : '—';
 
   // ── Shared: build the rolling 7-day signups bar chart ─────────────────────
-  // dayRows: [{day:'2026-03-28', n:5}, …] from API (sparse — missing days = 0)
+  // Today is always the FIRST (leftmost) bar; bars go back in time to the right.
+  // On Saturday: Sat, Fri, Thu, Wed, Tue, Mon, Sun — today's name anchors position 0.
   function _renderSignupsChart(dayRows, barsId, labelsId, yaxisId, miniBarId, miniLabelsId) {
     const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-    // Build an ordered array of the last 7 calendar dates (today = last)
     const today = new Date();
+    // days[0]=today, days[1]=yesterday, …, days[6]=6 days ago
     const days = Array.from({length:7}, (_,i) => {
       const d = new Date(today);
-      d.setDate(today.getDate() - (6 - i));
+      d.setDate(today.getDate() - i);
       const iso = d.toISOString().slice(0,10);
-      const label = DAY_NAMES[d.getDay()];
-      return { iso, label, isToday: i === 6 };
+      return { iso, label: DAY_NAMES[d.getDay()], isToday: i === 0 };
     });
-    // Map API rows to a lookup
     const lookup = {};
     (dayRows || []).forEach(r => { lookup[r.day] = r.n; });
     const counts = days.map(d => lookup[d.iso] || 0);
     const maxN = Math.max(...counts, 1);
 
-    // Render full analytics chart
-    const barsEl = document.getElementById(barsId);
+    // Bar opacity fades from full (today, index 0) to dim (oldest, index 6)
+    const barBg = (i) => i === 0 ? '#E8500A'
+      : `rgba(232,80,10,${(0.55 - i * 0.07).toFixed(2)})`;
+
+    const barsEl  = document.getElementById(barsId);
     const labelsEl = document.getElementById(labelsId);
-    const yaxisEl = document.getElementById(yaxisId);
+    const yaxisEl  = document.getElementById(yaxisId);
     if (barsEl) {
       barsEl.innerHTML = days.map((d, i) => {
         const n = counts[i];
         const pct = Math.max(Math.round((n / maxN) * 100), n > 0 ? 8 : 3);
-        const isToday = d.isToday;
-        const bg = isToday ? '#E8500A'
-          : i === 5 ? 'rgba(232,80,10,0.55)'
-          : i === 4 ? 'rgba(232,80,10,0.35)'
-          : 'rgba(232,80,10,0.2)';
-        return `<div class="week-bar-col" style="height:${pct}%;background:${bg};" title="${d.label}: ${n}"><div class="tooltip">${d.label}: ${n}</div></div>`;
+        return `<div class="week-bar-col" style="height:${pct}%;background:${barBg(i)};" title="${d.label}: ${n}"><div class="tooltip">${d.label}: ${n}</div></div>`;
       }).join('');
     }
     if (labelsEl) {
-      labelsEl.innerHTML = days.map(d =>
-        `<span style="${d.isToday ? 'color:#E8500A;font-weight:700;' : ''}">${d.label}</span>`
+      labelsEl.innerHTML = days.map((d, i) =>
+        `<span style="${i === 0 ? 'color:#E8500A;font-weight:700;' : ''}">${d.label}</span>`
       ).join('');
     }
     if (yaxisEl) {
-      const top = maxN;
-      const steps = [top, Math.round(top*0.7), Math.round(top*0.5), Math.round(top*0.3), 0];
+      const steps = [maxN, Math.round(maxN*0.7), Math.round(maxN*0.5), Math.round(maxN*0.3), 0];
       yaxisEl.innerHTML = steps.map(v => `<span>${v}</span>`).join('');
     }
 
-    // Render overview mini chart (same data, simpler markup)
-    const miniEl = document.getElementById(miniBarId);
+    const miniEl  = document.getElementById(miniBarId);
     const miniLbls = document.getElementById(miniLabelsId);
     if (miniEl) {
       miniEl.innerHTML = days.map((d, i) => {
         const n = counts[i];
         const pct = Math.max(Math.round((n / maxN) * 100), n > 0 ? 10 : 4);
-        const bg = d.isToday ? '#E8500A'
-          : i === 5 ? 'rgba(232,80,10,0.5)'
-          : 'rgba(232,80,10,0.2)';
-        return `<div class="mini-bar-col" style="height:${pct}%;background:${bg};" title="${d.label}: ${n}"></div>`;
+        return `<div class="mini-bar-col" style="height:${pct}%;background:${barBg(i)};" title="${d.label}: ${n}"></div>`;
       }).join('');
     }
     if (miniLbls) {
-      miniLbls.innerHTML = days.map(d =>
-        `<span style="${d.isToday ? 'color:#E8500A;font-weight:700;' : ''}">${d.label}</span>`
+      miniLbls.innerHTML = days.map((d, i) =>
+        `<span style="${i === 0 ? 'color:#E8500A;font-weight:700;' : ''}">${d.label}</span>`
       ).join('');
     }
   }
@@ -2923,6 +2886,64 @@
   }
 
   // ── Admin notifications popup ─────────────────────────────────────────────
+  // ── Activity feed ─────────────────────────────────────────────────────────
+  function _timeAgo(ts) {
+    if (!ts) return '';
+    const diff = Date.now() - new Date(ts).getTime();
+    const m = Math.floor(diff / 60000);
+    if (m < 1)  return 'just now';
+    if (m < 60) return `${m}m`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `${h}h`;
+    const d = Math.floor(h / 24);
+    return `${d}d`;
+  }
+
+  async function loadActivityFeed() {
+    try {
+      const r = await fetch('/api/admin/activity');
+      if (!r.ok) return;
+      const { activity } = await r.json();
+      const el = document.getElementById('activity-feed-body');
+      if (!el) return;
+      if (!activity || !activity.length) {
+        el.innerHTML = '<div class="feed-item"><div class="feed-text" style="color:#4A3C30;font-size:13px;">No activity yet.</div></div>';
+        return;
+      }
+      const dotColor = (row) => {
+        if (row.type === 'application') return row.status === 'approved' ? 'green' : row.status === 'declined' ? 'red' : 'amber';
+        if (row.type === 'event') return 'ember';
+        if (row.status === 'active') return 'green';
+        if (row.status === 'pending') return 'blue';
+        if (row.status === 'suspended' || row.status === 'banned') return 'red';
+        return 'amber';
+      };
+      const feedText = (row) => {
+        if (row.type === 'signup') {
+          const role = row.subject_name === 'vendor' ? 'vendor' : row.subject_name === 'organiser' ? 'organiser' : 'user';
+          const label = row.status === 'active' ? 'joined as ' + role
+            : row.status === 'pending' ? role + ' signup under review'
+            : row.status === 'suspended' ? role + ' account suspended'
+            : role + ' account ' + row.status;
+          return `<strong>${row.actor_name}</strong> ${label}`;
+        }
+        if (row.type === 'application') {
+          return `<strong>${row.actor_name}</strong> applied to <strong>${row.subject_name}</strong>`;
+        }
+        if (row.type === 'event') {
+          return `<strong>${row.actor_name}</strong> published <strong>${row.subject_name}</strong>`;
+        }
+        return `<strong>${row.actor_name}</strong> — ${row.subject_name}`;
+      };
+      el.innerHTML = activity.map(row => `
+        <div class="feed-item">
+          <div class="feed-dot ${dotColor(row)}"></div>
+          <div class="feed-text">${feedText(row)}</div>
+          <div class="feed-time">${_timeAgo(row.ts)}</div>
+        </div>`).join('');
+    } catch(e) { console.warn('Activity feed failed', e); }
+  }
+
   let _adminNotifs = [];
 
   async function loadAdminNotifs() {
@@ -3017,6 +3038,7 @@
     loadStats();
     loadVendors();
     loadOrganisers();
+    loadActivityFeed();
     loadAdminNotifs();
   })();
 </script>

@@ -1882,6 +1882,12 @@ app.post('/api/admin/users/:id/password-reset', requireAdmin, async (req, res) =
   res.json({ ok: true, temp_password: tempPw });
 });
 
+// ── Admin — activity feed ─────────────────────────────────────────────────
+app.get('/api/admin/activity', requireAdmin, async (req, res) => {
+  const rows = await stmts.recentActivity.all();
+  res.json({ activity: rows });
+});
+
 // ── Admin — analytics ─────────────────────────────────────────────────────
 app.get('/api/admin/analytics', requireAdmin, async (req, res) => {
   const [vendors, organisers, events, appCounts, catCounts, signupsByDay] = await Promise.all([
