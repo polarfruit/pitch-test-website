@@ -827,6 +827,11 @@
       showErr('Passwords do not match.');
       return;
     }
+    if (payload.abn && payload.abn.length !== 11) {
+      showErr('ABN must be exactly 11 digits. Please check and try again.');
+      document.getElementById('abn-org').focus();
+      return;
+    }
 
     btn.textContent = 'Sending code…';
     btn.disabled = true;
