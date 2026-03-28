@@ -6,7 +6,7 @@ import bcrypt from 'bcryptjs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import db, { stmts, txSignupVendor, txSignupOrganiser, txSignupFoodie } from './db.mjs';
-import { sendVerificationEmail, sendVerificationSMS } from './mailer.mjs';
+import { sendVerificationEmail, sendVerificationSMS, sendAdminEmail, buildSuspensionEmailHtml, buildSuspensionNoticeHtml } from './mailer.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -842,7 +842,7 @@ app.get('/api/admin/organisers', requireAdmin, async (req, res) => {
 });
 
 app.get('/api/admin/stats', requireAdmin, async (req, res) => {
-  const [vendors, organisers, pending, nv7, no7, na7, nap7] = await Promise.all([
+  const [vendors, organisers, pending, nv7, no7, na7, nap7, suspV, suspO, hiddenEv, affV] = await Promise.all([
     stmts.countVendors.get(),
     stmts.countOrganisers.get(),
     stmts.countPending.get(),
@@ -850,6 +850,10 @@ app.get('/api/admin/stats', requireAdmin, async (req, res) => {
     stmts.newOrgs7d.get(),
     stmts.newApps7d.get(),
     stmts.newAppsPrior7d.get(),
+    stmts.countSuspendedVendors.get(),
+    stmts.countSuspendedOrgs.get(),
+    stmts.countHiddenByOrgSuspension.get(),
+    stmts.countVendorsAffectedBySuspension.get(),
   ]);
   res.json({
     vendors:    vendors.n,
@@ -859,15 +863,111 @@ app.get('/api/admin/stats', requireAdmin, async (req, res) => {
     newOrgs7d:      no7.n,
     apps7d:         na7.n,
     appsPrior7d:    nap7.n,
+    suspendedVendors:            suspV.n,
+    suspendedOrgs:               suspO.n,
+    hiddenByOrgSuspension:       hiddenEv.n,
+    vendorsAffectedBySuspension: affV.n,
   });
 });
 
 app.post('/api/admin/users/:id/status', requireAdmin, async (req, res) => {
-  const { status } = req.body;
+  const { status, reason } = req.body;
   const allowed = ['active', 'pending', 'suspended', 'banned'];
   if (!allowed.includes(status)) return res.status(400).json({ error: 'Invalid status' });
-  await stmts.updateUserStatus.run(status, req.params.id);
-  res.json({ ok: true });
+
+  const userId = parseInt(req.params.id);
+  const user = await stmts.getUserById.get(userId);
+  if (!user) return res.status(404).json({ error: 'User not found' });
+
+  const prevStatus = user.status;
+  await stmts.updateUserStatus.run(status, userId);
+  if (reason !== undefined) await stmts.setSuspendedReason.run(reason || null, userId);
+
+  const adminId = req.session?.userId || null;
+  let warning = null;
+
+  try {
+    if (status === 'suspended') {
+      if (user.role === 'vendor') {
+        // Withdraw all pending applications
+        await stmts.withdrawVendorPendingApps.run(userId);
+        // Notify organisers of newly-vacant confirmed spots
+        const vendorRow = await stmts.getVendorByUserId.get(userId);
+        const vendorName = vendorRow?.trading_name || (user.first_name + ' ' + user.last_name);
+        const approvedApps = await stmts.getVendorApprovedApps.all(userId);
+        for (const app of approvedApps) {
+          if (app.organiser_email) {
+            await sendAdminEmail(
+              app.organiser_email,
+              `Confirmed vendor suspended — spot now vacant at ${app.event_name}`,
+              buildSuspensionNoticeHtml(`A confirmed vendor (<strong>${vendorName}</strong>) at your event <strong>${app.event_name}</strong> has been suspended. Their spot is now vacant.`),
+              `A confirmed vendor (${vendorName}) at your event "${app.event_name}" has been suspended. Their spot is now vacant.`
+            );
+          }
+        }
+        // Suspension email to vendor
+        await sendAdminEmail(
+          user.email,
+          'Your Pitch. account has been suspended',
+          buildSuspensionEmailHtml(user.first_name, reason || 'Violation of platform terms.', 'vendor'),
+          `Your Pitch. vendor account has been suspended. Reason: ${reason || 'Violation of platform terms.'}. Contact support@getpitch.com.au to appeal.`
+        );
+      } else if (user.role === 'organiser') {
+        // Notify confirmed vendors BEFORE archiving events
+        const affectedVendors = await stmts.getConfirmedVendorsAtOrgEvents.all(userId);
+        for (const v of affectedVendors) {
+          await sendAdminEmail(
+            v.vendor_email,
+            `Event update — ${v.event_name}`,
+            buildSuspensionNoticeHtml(`<strong>${v.event_name}</strong> has been suspended from Pitch. Your application is currently on hold.`),
+            `"${v.event_name}" has been suspended from Pitch. Your application is on hold.`
+          );
+        }
+        // Archive all their published events
+        await stmts.suspendOrgEvents.run(userId);
+        // Suspension email to organiser
+        await sendAdminEmail(
+          user.email,
+          'Your Pitch. organiser account has been suspended',
+          buildSuspensionEmailHtml(user.first_name, reason || 'Violation of platform terms.', 'organiser'),
+          `Your Pitch. organiser account has been suspended. Reason: ${reason || 'Violation of platform terms.'}. Contact support@getpitch.com.au to appeal.`
+        );
+      }
+    } else if (status === 'active' && prevStatus === 'suspended') {
+      // Reinstatement
+      if (user.role === 'organiser') {
+        // Re-publish events that were hidden by this suspension
+        await stmts.reinstateOrgEvents.run(userId);
+        // Notify confirmed vendors
+        const affectedVendors = await stmts.getConfirmedVendorsAtOrgEvents.all(userId);
+        for (const v of affectedVendors) {
+          await sendAdminEmail(
+            v.vendor_email,
+            `Event reinstated — ${v.event_name}`,
+            buildSuspensionNoticeHtml(`Good news — <strong>${v.event_name}</strong> is back on Pitch. Your confirmed spot is active again.`),
+            `"${v.event_name}" is back on Pitch. Your confirmed spot is active again.`
+          );
+        }
+      }
+      // Clear suspension reason on reinstatement
+      await stmts.setSuspendedReason.run(null, userId);
+    }
+
+    // Audit log
+    await stmts.insertAuditLog.run({
+      admin_user_id: adminId,
+      action: status,
+      target_user_id: userId,
+      target_role: user.role,
+      reason: reason || null,
+      metadata: JSON.stringify({ prev_status: prevStatus }),
+    });
+  } catch (sideEffectErr) {
+    console.error('[admin] Suspension side-effect error:', sideEffectErr);
+    warning = 'Status updated but some notifications may have failed.';
+  }
+
+  res.json({ ok: true, ...(warning ? { warning } : {}) });
 });
 
 app.post('/api/admin/users/:id/delete', requireAdmin, async (req, res) => {

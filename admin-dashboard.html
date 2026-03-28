@@ -1407,6 +1407,56 @@
   </div>
 </div>
 
+<!-- ── Suspend modal ── -->
+<div class="modal-overlay" id="suspendModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span style="font-size:18px;">⏸</span>
+      <span class="modal-title" id="suspendModalTitle">Suspend account</span>
+      <button class="modal-close" onclick="closeModal('suspendModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="background:rgba(201,132,10,0.1);border:1px solid rgba(201,132,10,0.25);border-radius:8px;padding:12px 14px;margin-bottom:16px;">
+        <div style="font-size:12px;font-weight:700;color:#C9840A;margin-bottom:4px;">Suspend — reversible</div>
+        <div style="font-size:12px;color:#A89880;line-height:1.5;">Account is frozen. Data is preserved. Vendor's pending applications will be withdrawn. You can reinstate at any time.</div>
+      </div>
+      <div style="margin-bottom:12px;">
+        <label class="field-label-sm">Reason for suspension <span style="color:#C0392B;">*</span></label>
+        <textarea id="suspendReason" class="field-sm" rows="3" placeholder="Describe the reason. This will be included in the notification email sent to the account holder."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sm-outline" onclick="closeModal('suspendModal')">Cancel</button>
+      <button class="btn-sm-danger" style="background:rgba(201,132,10,0.15);border-color:rgba(201,132,10,0.4);color:#C9840A;" id="suspendConfirmBtn" onclick="confirmSuspend()">Suspend account</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Ban modal ── -->
+<div class="modal-overlay" id="banModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span style="font-size:18px;">🚫</span>
+      <span class="modal-title" id="banModalTitle">Ban account</span>
+      <button class="modal-close" onclick="closeModal('banModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="background:rgba(192,57,43,0.1);border:1px solid rgba(192,57,43,0.25);border-radius:8px;padding:12px 14px;margin-bottom:16px;">
+        <div style="font-size:12px;font-weight:700;color:#C0392B;margin-bottom:4px;">Ban — permanent</div>
+        <div style="font-size:12px;color:#A89880;line-height:1.5;">Account is permanently closed. The email and ABN cannot be used to create a new account. This action cannot be undone.</div>
+      </div>
+      <div style="margin-bottom:12px;">
+        <label class="field-label-sm">Reason for ban <span style="color:#C0392B;">*</span></label>
+        <textarea id="banReason" class="field-sm" rows="3" placeholder="Describe the reason. This is logged in the audit trail."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sm-outline" onclick="closeModal('banModal')">Cancel</button>
+      <button class="btn-sm-danger" id="banConfirmBtn" onclick="confirmBan()">Permanently ban</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── Dispute resolve modal ── -->
 <div class="modal-overlay" id="disputeModal">
   <div class="modal">
@@ -1678,45 +1728,54 @@
     const total = pendingVendors.length + pendingOrgs.length;
 
     if (!total) {
-      const allVendors   = (_vendorsCache || []);
-      const allOrgs      = (_orgsCache    || []);
+      const allVendors = (_vendorsCache || []);
+      const allOrgs    = (_orgsCache    || []);
       const activeV  = allVendors.filter(v => v.status === 'active').length;
       const activeO  = allOrgs.filter(o => o.status === 'active').length;
-      const rejectedV = allVendors.filter(v => v.status === 'rejected').length;
-      const rejectedO = allOrgs.filter(o => o.status === 'rejected').length;
       const totalV   = allVendors.length;
       const totalO   = allOrgs.length;
+      const suspV    = _lastStats.suspendedVendors || 0;
+      const suspO    = _lastStats.suspendedOrgs || 0;
+      const hiddenEv = _lastStats.hiddenByOrgSuspension || 0;
+      const affV     = _lastStats.vendorsAffectedBySuspension || 0;
+      const hasSuspensions = suspV + suspO > 0;
+
+      const suspRow = (count, label, linkPanel, amber) => count > 0
+        ? `<div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid #1E1916;">
+             <span style="font-size:12px;color:${amber ? '#C9840A' : '#E07060'};">${count} ${label}</span>
+             <span style="font-size:11px;color:#E8500A;cursor:pointer;" onclick="showPanel('${linkPanel}')">${linkPanel === 'vendors' ? 'View vendors →' : linkPanel === 'events' ? 'View events →' : 'View applications →'}</span>
+           </div>`
+        : '';
+
       card.innerHTML = `
         <div style="background:rgba(45,139,85,0.1);border:1px solid rgba(45,139,85,0.2);border-radius:10px;padding:14px 18px;display:flex;align-items:center;gap:10px;margin-bottom:14px;">
-          <span style="font-size:16px;">✓</span>
+          <span style="font-size:15px;">✓</span>
           <span style="font-size:13px;color:#3DA86A;font-weight:600;">All clear — no pending approvals</span>
         </div>
         <div class="card" style="padding:0;overflow:hidden;">
           <div class="card-header"><span style="font-size:16px;">🏥</span><span class="card-title">Platform health</span></div>
-          <div style="padding:16px 20px;display:flex;flex-direction:column;gap:10px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;">
-              <span style="font-size:13px;color:#A89880;">Active vendors</span>
-              <span style="font-size:13px;font-weight:700;color:#FDF4E7;">${activeV} <span style="font-size:11px;font-weight:400;color:#4A3C30;">/ ${totalV} total</span></span>
+          <div style="padding:14px 20px 6px;">
+            <div style="display:flex;gap:10px;margin-bottom:14px;">
+              <div style="flex:1;background:#1E1916;border-radius:8px;padding:10px 12px;">
+                <div style="font-size:18px;font-weight:700;color:#FDF4E7;">${activeV}</div>
+                <div style="font-size:11px;color:#4A3C30;margin-top:2px;">Active vendors</div>
+                <div style="background:#231E19;border-radius:3px;height:3px;margin-top:8px;overflow:hidden;"><div style="height:100%;background:#E8500A;width:${totalV ? Math.round((activeV/totalV)*100) : 0}%;"></div></div>
+              </div>
+              <div style="flex:1;background:#1E1916;border-radius:8px;padding:10px 12px;">
+                <div style="font-size:18px;font-weight:700;color:#FDF4E7;">${activeO}</div>
+                <div style="font-size:11px;color:#4A3C30;margin-top:2px;">Active organisers</div>
+                <div style="background:#231E19;border-radius:3px;height:3px;margin-top:8px;overflow:hidden;"><div style="height:100%;background:#2B5BA8;width:${totalO ? Math.round((activeO/totalO)*100) : 0}%;"></div></div>
+              </div>
             </div>
-            <div style="background:#1E1916;border-radius:4px;height:5px;overflow:hidden;">
-              <div style="height:100%;background:#E8500A;width:${totalV ? Math.round((activeV/totalV)*100) : 0}%;border-radius:4px;"></div>
-            </div>
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px;">
-              <span style="font-size:13px;color:#A89880;">Active organisers</span>
-              <span style="font-size:13px;font-weight:700;color:#FDF4E7;">${activeO} <span style="font-size:11px;font-weight:400;color:#4A3C30;">/ ${totalO} total</span></span>
-            </div>
-            <div style="background:#1E1916;border-radius:4px;height:5px;overflow:hidden;">
-              <div style="height:100%;background:#2B5BA8;width:${totalO ? Math.round((activeO/totalO)*100) : 0}%;border-radius:4px;"></div>
-            </div>
-            ${(rejectedV + rejectedO) > 0 ? `
-            <div style="margin-top:6px;padding:10px 12px;background:rgba(192,57,43,0.08);border:1px solid rgba(192,57,43,0.18);border-radius:8px;font-size:12px;color:#E07060;">
-              ${rejectedV + rejectedO} rejected account${(rejectedV+rejectedO)===1?'':'s'} on platform
-              <span style="color:#4A3C30;"> · </span>
-              <span style="cursor:pointer;color:#E8500A;" onclick="showPanel('vendors')">Review →</span>
+            ${hasSuspensions ? `
+            <div style="margin-bottom:12px;">
+              <div style="font-size:10px;font-weight:700;color:#4A3C30;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px;">Active suspensions</div>
+              ${suspRow(suspV, `vendor${suspV===1?'':'s'} currently suspended`, 'vendors', true)}
+              ${suspRow(suspO, `organiser${suspO===1?'':'s'} currently suspended`, 'vendors', true)}
+              ${suspRow(hiddenEv, `event${hiddenEv===1?'':'s'} hidden due to organiser suspension`, 'events', false)}
+              ${suspRow(affV, `vendor${affV===1?'':'s'} with spots at suspended events`, 'applications', false)}
             </div>` : `
-            <div style="margin-top:6px;padding:10px 12px;background:rgba(45,139,85,0.06);border:1px solid rgba(45,139,85,0.12);border-radius:8px;font-size:12px;color:#3DA86A;">
-              No rejected accounts — platform looks healthy
-            </div>`}
+            <div style="padding:10px 0 12px;font-size:12px;color:#3DA86A;">No active suspensions — platform looks healthy</div>`}
           </div>
         </div>`;
       return;
@@ -1794,7 +1853,10 @@
       const stats  = await sr.json();
       const { vendors, organisers, pending,
               newVendors7d = 0, newOrgs7d = 0,
-              apps7d = 0, appsPrior7d = 0 } = stats;
+              apps7d = 0, appsPrior7d = 0,
+              suspendedVendors = 0, suspendedOrgs = 0,
+              hiddenByOrgSuspension = 0, vendorsAffectedBySuspension = 0 } = stats;
+      _lastStats = { suspendedVendors, suspendedOrgs, hiddenByOrgSuspension, vendorsAffectedBySuspension };
       const anData = ar.ok ? await ar.json() : {};
 
       document.getElementById('kpi-vendors').textContent    = vendors.toLocaleString();
@@ -1869,6 +1931,7 @@
 
   let _vendorsCache = [];
   let _vendorStatusFilter = null;
+  let _lastStats = {};
 
   async function loadVendors() {
     try {
@@ -1897,18 +1960,23 @@
     showing.textContent = `Showing ${vendors.length} result${vendors.length===1?'':'s'}`;
 
     tbody.innerHTML = vendors.map(v => {
+      const vSafeName = (v.trading_name||'').replace(/'/g,"\\'");
       const actions = v.status === 'pending'
         ? `<div class="act-group">
              <button class="act-btn act-approve" onclick="setUserStatus(${v.user_id},'active',this)">Approve</button>
-             <button class="act-btn act-reject" onclick="openRejectModal('${v.trading_name.replace(/'/g,"\\'")}')">Reject</button>
+             <button class="act-btn act-reject" onclick="openRejectModal('${vSafeName}')">Reject</button>
            </div>`
         : v.status === 'suspended'
         ? `<div class="act-group">
-             <button class="act-btn act-approve" onclick="setUserStatus(${v.user_id},'active',this)">Reinstate</button>
-             <button class="act-btn act-reject" onclick="setUserStatus(${v.user_id},'banned',this)">Ban</button>
+             <button class="act-btn act-approve" onclick="_doSetUserStatus(${v.user_id},'active',null)">Reinstate</button>
+             <button class="act-btn act-reject" onclick="openBanModal(${v.user_id},'${vSafeName}')">Ban</button>
+           </div>`
+        : v.status === 'banned'
+        ? `<div class="act-group">
+             <button class="act-btn act-view" onclick="openVendorDetail(${v.user_id})">View</button>
            </div>`
         : `<div class="act-group">
-             <button class="act-btn act-suspend" onclick="setUserStatus(${v.user_id},'suspended',this)">Suspend</button>
+             <button class="act-btn act-suspend" onclick="openSuspendModal(${v.user_id},'${vSafeName}')">Suspend</button>
              <button class="act-btn act-view" onclick="openVendorDetail(${v.user_id})">View</button>
            </div>`;
 
@@ -1966,18 +2034,23 @@
     showing.textContent = `Showing ${organisers.length} result${organisers.length===1?'':'s'}`;
 
     tbody.innerHTML = organisers.map(o => {
+      const oSafeName = (o.org_name||'').replace(/'/g,"\\'");
       const actions = o.status === 'pending'
         ? `<div class="act-group">
              <button class="act-btn act-approve" onclick="setUserStatus(${o.user_id},'active',this)">Approve</button>
-             <button class="act-btn act-reject" onclick="openRejectModal('${o.org_name.replace(/'/g,"\\'")}')">Reject</button>
+             <button class="act-btn act-reject" onclick="openRejectModal('${oSafeName}')">Reject</button>
            </div>`
         : o.status === 'suspended'
         ? `<div class="act-group">
-             <button class="act-btn act-approve" onclick="setUserStatus(${o.user_id},'active',this)">Reinstate</button>
-             <button class="act-btn act-reject" onclick="setUserStatus(${o.user_id},'banned',this)">Ban</button>
+             <button class="act-btn act-approve" onclick="_doSetUserStatus(${o.user_id},'active',null)">Reinstate</button>
+             <button class="act-btn act-reject" onclick="openBanModal(${o.user_id},'${oSafeName}')">Ban</button>
+           </div>`
+        : o.status === 'banned'
+        ? `<div class="act-group">
+             <button class="act-btn act-view" onclick="openOrganiserDetail(${o.user_id})">View</button>
            </div>`
         : `<div class="act-group">
-             <button class="act-btn act-suspend" onclick="setUserStatus(${o.user_id},'suspended',this)">Suspend</button>
+             <button class="act-btn act-suspend" onclick="openSuspendModal(${o.user_id},'${oSafeName}')">Suspend</button>
              <button class="act-btn act-view" onclick="openOrganiserDetail(${o.user_id})">View</button>
            </div>`;
 
@@ -2016,14 +2089,59 @@
     renderOrgsTable(filtered);
   }
 
+  // Pending suspend/ban target
+  let _pendingActionUserId = null;
+  let _pendingActionName   = '';
+
+  function openSuspendModal(userId, name) {
+    _pendingActionUserId = userId;
+    _pendingActionName   = name;
+    document.getElementById('suspendModalTitle').textContent = 'Suspend — ' + name;
+    document.getElementById('suspendReason').value = '';
+    document.getElementById('suspendModal').classList.add('open');
+  }
+
+  function openBanModal(userId, name) {
+    _pendingActionUserId = userId;
+    _pendingActionName   = name;
+    document.getElementById('banModalTitle').textContent = 'Ban — ' + name;
+    document.getElementById('banReason').value = '';
+    document.getElementById('banModal').classList.add('open');
+  }
+
+  async function confirmSuspend() {
+    const reason = document.getElementById('suspendReason').value.trim();
+    if (!reason) { document.getElementById('suspendReason').focus(); return; }
+    closeModal('suspendModal');
+    await _doSetUserStatus(_pendingActionUserId, 'suspended', reason);
+  }
+
+  async function confirmBan() {
+    const reason = document.getElementById('banReason').value.trim();
+    if (!reason) { document.getElementById('banReason').focus(); return; }
+    closeModal('banModal');
+    await _doSetUserStatus(_pendingActionUserId, 'banned', reason);
+  }
+
   async function setUserStatus(userId, status, btn) {
+    // Suspend and ban require a reason — open their respective modals
+    const name = btn?.closest('tr')?.querySelector('td:first-child')?.textContent?.trim()
+               || btn?.closest('.queue-item')?.querySelector('.queue-name')?.textContent?.trim()
+               || 'this account';
+    if (status === 'suspended') { openSuspendModal(userId, name); return; }
+    if (status === 'banned')    { openBanModal(userId, name);    return; }
+    await _doSetUserStatus(userId, status, null);
+  }
+
+  async function _doSetUserStatus(userId, status, reason) {
     try {
-      await fetch(`/api/admin/users/${userId}/status`, {
+      const r = await fetch(`/api/admin/users/${userId}/status`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status }),
+        body: JSON.stringify({ status, reason }),
       });
-      // Reload the active panel
+      const data = await r.json();
+      if (data.warning) console.warn('[admin] Status update warning:', data.warning);
       await loadVendors();
       await loadOrganisers();
       await loadStats();
