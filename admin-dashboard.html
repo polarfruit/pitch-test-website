@@ -1583,6 +1583,7 @@
     const meta = panelMeta[id] || {};
     document.getElementById('topbar-title').textContent = meta.title || id;
     document.getElementById('topbar-sub').textContent = meta.sub || '';
+    if (id === 'overview')       { loadStats(); loadVendors(); loadOrganisers(); loadActivityFeed(); }
     if (id === 'events')         loadAdminEvents();
     if (id === 'applications')   loadApplications();
     if (id === 'users')          loadAllUsers();
