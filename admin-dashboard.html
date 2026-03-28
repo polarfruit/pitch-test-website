@@ -608,18 +608,8 @@
 
     <div class="two-col">
       <!-- Pending review queue -->
-      <div class="card">
-        <div class="card-header">
-          <span style="font-size:16px;">🕐</span>
-          <span class="card-title">Pending approval</span>
-          <span class="card-sub" id="pending-queue-count">—</span>
-        </div>
-        <div class="card-body" id="pending-queue-body">
-          <div class="queue-item"><div class="queue-body"><div class="queue-name" style="color:#4A3C30;">Loading…</div></div></div>
-        </div>
-        <div class="card-footer">
-          <button class="act-btn act-view" onclick="showPanel('vendors',document.querySelectorAll('.nav-item')[1])" style="width:100%;padding:8px;">View all pending →</button>
-        </div>
+      <div id="pending-queue-card">
+        <!-- populated by renderPendingQueue() -->
       </div>
 
       <!-- Right col -->
@@ -1680,30 +1670,27 @@
 
   // ── Pending approval queue (overview card) ───────────────────────────────
   function renderPendingQueue() {
-    const body = document.getElementById('pending-queue-body');
-    const countEl = document.getElementById('pending-queue-count');
-    if (!body) return;
+    const card = document.getElementById('pending-queue-card');
+    if (!card) return;
 
     const pendingVendors = (_vendorsCache || []).filter(v => v.status === 'pending');
     const pendingOrgs    = (_orgsCache    || []).filter(o => o.status === 'pending');
     const total = pendingVendors.length + pendingOrgs.length;
 
-    if (countEl) countEl.textContent = total ? `${total} item${total===1?'':'s'}` : 'All clear';
-
     if (!total) {
-      body.innerHTML = `<div class="queue-item"><div class="queue-body"><div class="queue-name" style="color:#4A3C30;font-size:13px;">No accounts pending approval.</div></div></div>`;
+      card.innerHTML = `<div style="background:rgba(45,139,85,0.1);border:1px solid rgba(45,139,85,0.2);border-radius:10px;padding:14px 18px;display:flex;align-items:center;gap:10px;"><span style="font-size:16px;">✓</span><span style="font-size:13px;color:#3DA86A;font-weight:600;">All clear — no pending approvals</span></div>`;
       return;
     }
 
-    let html = '';
+    let bodyHtml = '';
 
     if (pendingVendors.length) {
-      html += `<div style="padding:10px 20px 6px;font-size:11px;font-weight:600;color:#4A3C30;text-transform:uppercase;letter-spacing:.08em;">Vendor accounts</div>`;
+      bodyHtml += `<div style="padding:10px 20px 6px;font-size:11px;font-weight:600;color:#4A3C30;text-transform:uppercase;letter-spacing:.08em;">Vendor accounts</div>`;
       pendingVendors.forEach(v => {
         const name = v.trading_name || (v.first_name + ' ' + v.last_name).trim();
         const safeName = name.replace(/'/g, "\\'");
         const meta = (v.first_name + ' ' + v.last_name).trim() + (v.abn ? ' · ABN: ' + v.abn : ' · No ABN') + (v.suburb ? ' · ' + v.suburb : '');
-        html += `<div class="queue-item">
+        bodyHtml += `<div class="queue-item">
           <div class="queue-avatar">🍔</div>
           <div class="queue-body">
             <div class="queue-name">${name}</div>
@@ -1721,12 +1708,12 @@
     }
 
     if (pendingOrgs.length) {
-      html += `<div style="padding:10px 20px 6px;font-size:11px;font-weight:600;color:#4A3C30;text-transform:uppercase;letter-spacing:.08em;${pendingVendors.length ? 'border-top:1px solid #1E1916;margin-top:4px;' : ''}">Organiser accounts</div>`;
+      bodyHtml += `<div style="padding:10px 20px 6px;font-size:11px;font-weight:600;color:#4A3C30;text-transform:uppercase;letter-spacing:.08em;${pendingVendors.length ? 'border-top:1px solid #1E1916;margin-top:4px;' : ''}">Organiser accounts</div>`;
       pendingOrgs.forEach(o => {
         const name = o.org_name || (o.first_name + ' ' + o.last_name).trim();
         const safeName = name.replace(/'/g, "\\'");
         const meta = (o.first_name || '') + ' ' + (o.last_name || '') + (o.abn ? ' · ABN: ' + o.abn : ' · No ABN') + (o.suburb ? ' · ' + o.suburb : '');
-        html += `<div class="queue-item">
+        bodyHtml += `<div class="queue-item">
           <div class="queue-avatar">🏛</div>
           <div class="queue-body">
             <div class="queue-name">${name}</div>
@@ -1743,12 +1730,22 @@
       });
     }
 
-    body.innerHTML = html;
+    card.innerHTML = `
+      <div class="card" style="padding:0;overflow:hidden;">
+        <div class="card-header" style="display:flex;align-items:center;justify-content:space-between;">
+          <div>
+            <div class="card-title">Pending approvals</div>
+            <div class="card-sub">${total} account${total===1?'':'s'} awaiting review</div>
+          </div>
+          <button class="btn-ghost" onclick="showPanel('vendors')">View all</button>
+        </div>
+        <div>${bodyHtml}</div>
+      </div>`;
   }
 
   function _deltaText(n, label) {
-    if (n === 0) return { cls: 'neutral', text: `→ 0 ${label}` };
-    return { cls: 'up', text: `▲ ${n} ${label}` };
+    if (n === 0) return { cls: 'neutral', text: '', hide: true };
+    return { cls: 'up', text: `▲ ${n} ${label}`, hide: false };
   }
 
   async function loadStats() {
@@ -1790,19 +1787,20 @@
       if (evDelta) { evDelta.className = 'kpi-delta neutral'; evDelta.textContent = 'Published & active'; }
 
       const vDelta = document.getElementById('kpi-vendors-delta');
-      if (vDelta) { vDelta.className = `kpi-delta ${vd.cls}`; vDelta.textContent = vd.text; }
+      if (vDelta) { vDelta.style.display = vd.hide ? 'none' : ''; vDelta.className = `kpi-delta ${vd.cls}`; vDelta.textContent = vd.text; }
 
       const oDelta = document.getElementById('kpi-orgs-delta');
-      if (oDelta) { oDelta.className = `kpi-delta ${od.cls}`; oDelta.textContent = od.text; }
+      if (oDelta) { oDelta.style.display = od.hide ? 'none' : ''; oDelta.className = `kpi-delta ${od.cls}`; oDelta.textContent = od.text; }
 
       // Apps delta: % change vs prior 7d
       const aDelta = document.getElementById('kpi-apps-delta');
       if (aDelta) {
-        if (appsPrior7d === 0 && apps7d === 0) {
-          aDelta.className = 'kpi-delta neutral'; aDelta.textContent = '→ No applications yet';
+        if (apps7d === 0) {
+          aDelta.style.display = 'none';
         } else if (appsPrior7d === 0) {
-          aDelta.className = 'kpi-delta up'; aDelta.textContent = `▲ New this week`;
+          aDelta.style.display = ''; aDelta.className = 'kpi-delta up'; aDelta.textContent = `▲ New this week`;
         } else {
+          aDelta.style.display = '';
           const pct = Math.round(((apps7d - appsPrior7d) / appsPrior7d) * 100);
           if (pct > 0)      { aDelta.className = 'kpi-delta up';   aDelta.textContent = `▲ ${pct}% vs prior 7d`; }
           else if (pct < 0) { aDelta.className = 'kpi-delta down'; aDelta.textContent = `▼ ${Math.abs(pct)}% vs prior 7d`; }
