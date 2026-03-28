@@ -1871,17 +1871,19 @@ app.post('/api/admin/users/:id/password-reset', requireAdmin, async (req, res) =
 
 // ── Admin — analytics ─────────────────────────────────────────────────────
 app.get('/api/admin/analytics', requireAdmin, async (req, res) => {
-  const [vendors, organisers, events, appCounts] = await Promise.all([
+  const [vendors, organisers, events, appCounts, catCounts] = await Promise.all([
     stmts.countVendors.get(),
     stmts.countOrganisers.get(),
     stmts.countEvents.get(),
     stmts.countApplications.all(),
+    stmts.countEventsByCategory.all(),
   ]);
   res.json({
     totalVendors: vendors.n,
     totalOrganisers: organisers.n,
     totalEvents: events.n,
     applicationsByStatus: appCounts,
+    eventsByCategory: catCounts,
   });
 });
 

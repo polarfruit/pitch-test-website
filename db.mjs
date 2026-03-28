@@ -140,8 +140,18 @@ if (process.env.TURSO_DATABASE_URL) {
   };
 }
 
+// ── Schema version — bump this whenever migrations are added ─────────────────
+// On a versioned DB the entire migration block is skipped (1 read vs 50+ calls).
+const SCHEMA_VERSION = 10;
+let _schemaVersion = 0;
+try {
+  const _ver = await prepare(`SELECT v FROM _schema_meta LIMIT 1`).get();
+  _schemaVersion = _ver?.v ?? 0;
+} catch { /* table doesn't exist yet */ }
+
 // ── Schema + seed guard ──────────────────────────────────────────────────────
 let _needsSeed = false;
+if (_schemaVersion < SCHEMA_VERSION) {
 try {
   const _check = await prepare(`SELECT COUNT(*) as n FROM users`).get();
   _needsSeed = Number(_check.n) === 0;
@@ -404,7 +414,8 @@ await _safeExec(`ALTER TABLE vendors ADD COLUMN subscription_status TEXT NOT NUL
         featured          INTEGER NOT NULL DEFAULT 0,
         created_at   DATETIME DEFAULT (datetime('now'))
       );
-      INSERT INTO vendors SELECT * FROM _vendors_old;
+      INSERT INTO vendors (id,user_id,trading_name,abn,abn_verified,mobile,state,suburb,bio,cuisine_tags,setup_type,stall_w,stall_d,power,water,price_range,instagram,plan,photos,food_safety_url,pli_url,council_url,paused,notif_apps,notif_docs,notif_reviews,notif_payments,featured,created_at)
+        SELECT id,user_id,trading_name,abn,abn_verified,mobile,state,suburb,bio,cuisine_tags,setup_type,stall_w,stall_d,power,water,price_range,instagram,plan,photos,food_safety_url,pli_url,council_url,paused,notif_apps,notif_docs,notif_reviews,notif_payments,featured,created_at FROM _vendors_old;
       DROP TABLE _vendors_old;
     `;
     try {
@@ -683,6 +694,35 @@ if (_needsSeed) {
   }
 }
 
+// ── Repair: re-seed vendor records that were lost due to a failed migration ──
+// Runs unconditionally — INSERT OR IGNORE means no duplicates if records exist.
+{
+  const _sv2 = prepare(`INSERT OR IGNORE INTO vendors (user_id,trading_name,suburb,state,bio,cuisine_tags,setup_type,stall_w,stall_d,power,water,price_range,instagram,plan) SELECT @user_id,@trading_name,@suburb,@state,@bio,@cuisine_tags,@setup_type,@stall_w,@stall_d,@power,@water,@price_range,@instagram,@plan WHERE NOT EXISTS (SELECT 1 FROM vendors WHERE user_id=@user_id)`);
+  const _uid2 = prepare(`SELECT id FROM users WHERE email=?`);
+  for (const v of [
+    { email:'joe@smokyjoes.com.au',        trading_name:"Smoky Joe's BBQ",   suburb:'Norwood',       state:'SA', bio:"Adelaide's most-loved BBQ food truck, smoking low-and-slow since 2019.", cuisine_tags:'["BBQ"]',             setup_type:'Food Truck',  stall_w:3,   stall_d:3,   power:1, water:0, price_range:'$12–$22', instagram:'@smokyjoes_adl',      plan:'pro'  },
+    { email:'maria@tacoloco.com',           trading_name:'Taco Loco',         suburb:'Glenelg',       state:'SA', bio:'Authentic Mexican street food made from scratch every day.',           cuisine_tags:'["Mexican"]',         setup_type:'Pop-up Stall',stall_w:3,   stall_d:2,   power:0, water:1, price_range:'$8–$16',  instagram:'@tacoloco_glenelg',   plan:'pro'  },
+    { email:'hello@wokandroll.com.au',      trading_name:'Wok & Roll',        suburb:'Adelaide CBD',  state:'SA', bio:'Modern Asian fusion food truck serving bold, wok-fired flavours.',     cuisine_tags:'["Asian Fusion"]',    setup_type:'Food Truck',  stall_w:3,   stall_d:6,   power:0, water:0, price_range:'$10–$18', instagram:'@wokandroll_adl',     plan:'pro'  },
+    { email:'ciao@napoliexpress.com.au',    trading_name:'Napoli Express',    suburb:'Hindmarsh',     state:'SA', bio:'Authentic Neapolitan-style pizza and arancini made fresh on-site.',    cuisine_tags:'["Italian"]',        setup_type:'Pop-up Stall',stall_w:4,   stall_d:3,   power:1, water:1, price_range:'$12–$20', instagram:'@napoliexpressadl',   plan:'free' },
+    { email:'hello@thedessertlab.com.au',   trading_name:'The Dessert Lab',   suburb:'North Adelaide',state:'SA', bio:'Creative dessert cart serving handcrafted sweets — Instagram-worthy.',  cuisine_tags:'["Desserts"]',        setup_type:'Cart',        stall_w:2,   stall_d:2,   power:1, water:0, price_range:'$7–$14',  instagram:'@thedessertlab',      plan:'pro'  },
+    { email:'brew@beanery.com.au',          trading_name:'Beanery Coffee Co.',suburb:'Unley',         state:'SA', bio:'Specialty coffee on wheels — single-origin beans, La Marzocco cart.',  cuisine_tags:'["Coffee & Drinks"]', setup_type:'Cart',        stall_w:2,   stall_d:1.5, power:1, water:1, price_range:'$4.50–$8',instagram:'@beanery_coffee',     plan:'free' },
+    { email:'eat@greenbowl.com.au',         trading_name:'Green Bowl',        suburb:'Prospect',      state:'SA', bio:'Wholesome vegan and plant-based street food made fresh on-site.',      cuisine_tags:'["Vegan"]',           setup_type:'Pop-up Stall',stall_w:3,   stall_d:2,   power:0, water:1, price_range:'$12–$18', instagram:'@greenbowl_sa',       plan:'free' },
+    { email:'hey@brewskiburgers.com.au',    trading_name:'Brewski Burgers',   suburb:'Port Adelaide', state:'SA', bio:"Port Adelaide's premier burger truck — smash burgers, SA farm beef.",  cuisine_tags:'["Burgers"]',         setup_type:'Food Truck',  stall_w:3,   stall_d:6,   power:0, water:0, price_range:'$12–$22', instagram:'@brewski_burgers',    plan:'free' },
+    { email:'catch@oceanandfire.com.au',    trading_name:'Ocean & Fire',      suburb:'Glenelg',       state:'SA', bio:'Premium seafood sourced directly from SA fishermen — grilled fresh.',  cuisine_tags:'["Seafood"]',         setup_type:'Pop-up Stall',stall_w:3,   stall_d:3,   power:1, water:1, price_range:'$14–$28', instagram:'@oceanandfire_sa',    plan:'pro'  },
+    { email:'churros@thechurrostand.com.au',trading_name:'The Churro Stand',  suburb:'Adelaide CBD',  state:'SA', bio:'Hot fresh churros with a dozen dipping sauces and creative toppings.', cuisine_tags:'["Desserts"]',        setup_type:'Cart',        stall_w:2,   stall_d:1.5, power:1, water:0, price_range:'$6–$12',  instagram:'@thechurrostand',     plan:'free' },
+    { email:'hello@punjabpalace.com.au',    trading_name:'Punjab Palace',     suburb:'Elizabeth',     state:'SA', bio:'Authentic Punjabi cooking — slow-cooked curries, tandoor naan, biryani.',cuisine_tags:'["Indian"]',         setup_type:'Food Truck',  stall_w:3,   stall_d:5,   power:0, water:0, price_range:'$10–$18', instagram:'@punjabpalace_adl',   plan:'free' },
+    { email:'sip@pressedandbrewed.com.au',  trading_name:'Pressed & Brewed',  suburb:'Burnside',      state:'SA', bio:'Cold-pressed juices and filter coffee. All juice pressed fresh on-site.',cuisine_tags:'["Coffee & Drinks"]',setup_type:'Cart',        stall_w:1.5, stall_d:1.5, power:1, water:1, price_range:'$5–$10',  instagram:'@pressedandbrewed',   plan:'free' },
+  ]) {
+    const row = await _uid2.get(v.email);
+    if (row) await _sv2.run({ user_id: row.id, trading_name: v.trading_name, suburb: v.suburb, state: v.state, bio: v.bio, cuisine_tags: v.cuisine_tags, setup_type: v.setup_type, stall_w: v.stall_w, stall_d: v.stall_d, power: v.power, water: v.water, price_range: v.price_range, instagram: v.instagram, plan: v.plan });
+  }
+  // Any remaining vendor users without a record get a placeholder
+  const orphans = await prepare(`SELECT u.id, u.first_name, u.last_name FROM users u LEFT JOIN vendors v ON v.user_id=u.id WHERE u.role='vendor' AND v.id IS NULL`).all();
+  for (const u of orphans) {
+    await _sv2.run({ user_id: u.id, trading_name: `${u.first_name} ${u.last_name}`.trim() || 'Vendor', suburb: null, state: null, bio: null, cuisine_tags: '[]', setup_type: null, stall_w: null, stall_d: null, power: 0, water: 0, price_range: null, instagram: null, plan: 'free' });
+  }
+}
+
 // Ensure leroy.anton@yahoo.com and polarfruit@outlook.com accounts are always active.
 for (const email of ['leroy.anton@yahoo.com', 'polarfruit@outlook.com']) {
   await _safeExec(`UPDATE users SET status='active' WHERE email='${email}' AND status != 'active'`);
@@ -714,6 +754,25 @@ await _safeExec(`
   WHERE organiser_user_id IS NULL
 `);
 
+// ── Data cleanup / fixups ─────────────────────────────────────────────────────
+// Remove obviously fake test organiser+user accounts
+await _safeExec(`DELETE FROM organisers WHERE email IN ('test@test.com.au','test@test') OR org_name IN ('test','testtest1!')`);
+await _safeExec(`DELETE FROM users WHERE email IN ('test@test.com.au','test@test')`);
+// Fix seed org name typo
+await _safeExec(`UPDATE organisers SET org_name='SA Showground Events' WHERE org_name='Test SA Showground Events'`);
+// Add delivery column to announcements for richer history
+await _safeExec(`ALTER TABLE announcements ADD COLUMN delivery TEXT NOT NULL DEFAULT 'inapp'`);
+// Backfill users.created_at — spread seed accounts across March 1–20 2026 based on id
+await _safeExec(`UPDATE users SET created_at=datetime('2026-03-0'||((abs(id)%14)+1)||'T10:00:00') WHERE created_at=0 OR created_at IS NULL OR created_at='0'`);
+await _safeExec(`UPDATE users SET created_at='2026-03-18 11:00:00' WHERE email='leroy.anton@yahoo.com'`);
+
+// ── Mark schema as current so migrations are skipped on next boot ─────────────
+await _safeExec(`CREATE TABLE IF NOT EXISTS _schema_meta (v INTEGER)`);
+await _safeExec(`DELETE FROM _schema_meta`);
+await prepare(`INSERT INTO _schema_meta (v) VALUES (?)`).run(SCHEMA_VERSION);
+
+} // end if (_schemaVersion < SCHEMA_VERSION)
+
 // ── Prepared statements ──────────────────────────────────────────────────────
 export const stmts = {
   // users
@@ -730,8 +789,8 @@ export const stmts = {
       @cuisine_tags,@setup_type,@stall_w,@stall_d,@power,@water,@price_range,@instagram,@plan)
   `),
   getVendorByUserId: prepare(`SELECT * FROM vendors WHERE user_id = ?`),
-  allVendors: prepare(`SELECT v.*,u.email,u.first_name,u.last_name,u.status,u.created_at as joined FROM vendors v JOIN users u ON v.user_id=u.id WHERE v.id IN (SELECT MIN(id) FROM vendors GROUP BY user_id) ORDER BY v.created_at DESC`),
-  vendorsByStatus: prepare(`SELECT v.*,u.email,u.first_name,u.last_name,u.status,u.created_at as joined FROM vendors v JOIN users u ON v.user_id=u.id WHERE v.id IN (SELECT MIN(id) FROM vendors GROUP BY user_id) AND u.status=? ORDER BY v.created_at DESC`),
+  allVendors: prepare(`SELECT u.id as user_id, COALESCE(v.trading_name, u.first_name||' '||u.last_name) as trading_name, u.email, u.first_name, u.last_name, u.status, u.created_at as joined, v.abn, COALESCE(v.plan,'free') as plan, v.suburb, v.state, v.id as vid, v.created_at FROM users u LEFT JOIN vendors v ON v.user_id=u.id AND v.id=(SELECT MIN(id) FROM vendors WHERE user_id=u.id) WHERE u.role='vendor' ORDER BY u.id DESC`),
+  vendorsByStatus: prepare(`SELECT u.id as user_id, COALESCE(v.trading_name, u.first_name||' '||u.last_name) as trading_name, u.email, u.first_name, u.last_name, u.status, u.created_at as joined, v.abn, COALESCE(v.plan,'free') as plan, v.suburb, v.state, v.id as vid, v.created_at FROM users u LEFT JOIN vendors v ON v.user_id=u.id AND v.id=(SELECT MIN(id) FROM vendors WHERE user_id=u.id) WHERE u.role='vendor' AND u.status=? ORDER BY u.id DESC`),
 
   // organisers
   createOrganiser: prepare(`
@@ -788,6 +847,7 @@ export const stmts = {
   updateEvent:       prepare(`UPDATE events SET name=@name,category=@category,suburb=@suburb,state=@state,venue_name=@venue_name,date_sort=@date_sort,date_end=@date_end,date_text=@date_text,description=@description,stalls_available=@stalls_available,stall_fee_min=@stall_fee_min,stall_fee_max=@stall_fee_max,deadline=@deadline,cover_image=@cover_image WHERE id=@id`),
   deleteEvent:       prepare(`DELETE FROM events WHERE id=?`),
   countEvents:       prepare(`SELECT COUNT(*) as n FROM events WHERE status='published'`),
+  countEventsByCategory: prepare(`SELECT COALESCE(category,'Other') as category, COUNT(*) as n FROM events WHERE status='published' GROUP BY category ORDER BY n DESC`),
 
   // vendor/organiser detail (admin)
   getVendorDetail:    prepare(`SELECT v.*,u.email,u.first_name,u.last_name,u.status,u.role,u.created_at FROM vendors v JOIN users u ON v.user_id=u.id WHERE v.user_id=?`),

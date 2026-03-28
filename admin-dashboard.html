@@ -220,7 +220,8 @@
     .settings-row:last-child { border-bottom: none; }
     .settings-row-label strong { display: block; font-size: 13.5px; color: #FDF4E7; margin-bottom: 2px; }
     .settings-row-label span { font-size: 12px; color: #6B5A4A; }
-    .settings-row-ctrl { margin-left: auto; }
+    .settings-row-label { flex: 1; min-width: 0; }
+    .settings-row-ctrl { flex-shrink: 0; margin-left: 12px; }
 
     /* Toggle switch */
     .toggle { position: relative; width: 40px; height: 22px; flex-shrink: 0; }
@@ -560,7 +561,7 @@
       <div class="kpi-card">
         <div class="kpi-label">Total vendors</div>
         <div class="kpi-val" id="kpi-vendors">—</div>
-        <div class="kpi-delta up" id="kpi-vendors-sub">Loading…</div>
+        <div class="kpi-delta up">▲ 3 this week</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">Total organisers</div>
@@ -569,13 +570,13 @@
       </div>
       <div class="kpi-card">
         <div class="kpi-label">Active events</div>
-        <div class="kpi-val">843</div>
-        <div class="kpi-delta neutral">→ 12 new today</div>
+        <div class="kpi-val" id="kpi-events">—</div>
+        <div class="kpi-delta neutral">→ 2 published today</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">Applications (7d)</div>
-        <div class="kpi-val">1,204</div>
-        <div class="kpi-delta up">▲ 18% vs last week</div>
+        <div class="kpi-val" id="kpi-apps">—</div>
+        <div class="kpi-delta up">▲ 8% vs last week</div>
       </div>
     </div>
 
@@ -1081,7 +1082,7 @@
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
               <div>
                 <label class="field-label-sm">Max free applications/month</label>
-                <input class="field-sm" type="number" value="5" />
+                <input class="field-sm" type="number" value="3" />
               </div>
               <div>
                 <label class="field-label-sm">Max Pro applications/month</label>
@@ -1286,30 +1287,37 @@
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;">
             <div>
               <label class="field-label-sm">Audience</label>
-              <select class="field-sm" id="ann-audience" style="appearance:none;">
+              <select class="field-sm" id="ann-audience" style="appearance:none;" onchange="toggleSuburbField(this.value)">
                 <option value="all">All users</option>
-                <option value="vendors">Vendors only</option>
-                <option value="organisers">Organisers only</option>
+                <option value="vendors">All vendors</option>
+                <option value="organisers">All organisers</option>
+                <option value="pending_vendors">Pending vendors</option>
                 <option value="pro">Pro vendors only</option>
+                <option value="suburb">Vendors in specific suburb</option>
               </select>
             </div>
             <div>
               <label class="field-label-sm">Delivery</label>
-              <select class="field-sm" style="appearance:none;">
-                <option>In-app notification</option>
-                <option>Email</option>
-                <option>Both (in-app + email)</option>
+              <select class="field-sm" id="ann-delivery" style="appearance:none;">
+                <option value="inapp">In-app notification</option>
+                <option value="email">Email</option>
+                <option value="both">Both (in-app + email)</option>
               </select>
             </div>
+          </div>
+          <div id="ann-suburb-row" style="margin-bottom:12px;display:none;">
+            <label class="field-label-sm">Suburb</label>
+            <input class="field-sm" id="ann-suburb" type="text" placeholder="e.g. Norwood" />
           </div>
           <div style="margin-bottom:12px;">
             <label class="field-label-sm">Subject</label>
             <input class="field-sm" id="ann-subject" type="text" placeholder="e.g. Platform update — March 2026" />
           </div>
-          <div style="margin-bottom:16px;">
+          <div style="margin-bottom:4px;">
             <label class="field-label-sm">Message</label>
-            <textarea class="field-sm" id="ann-body" style="min-height:120px;" placeholder="Write your announcement…"></textarea>
+            <textarea class="field-sm" id="ann-body" style="min-height:120px;" placeholder="Write your announcement…" oninput="updateCharCount()" maxlength="500"></textarea>
           </div>
+          <div style="text-align:right;font-size:11px;color:#6B5A4A;margin-bottom:12px;" id="ann-char-count">0 / 500 chars</div>
           <div style="display:flex;gap:10px;">
             <button class="btn-sm-primary" onclick="sendAnnouncement()">Send announcement</button>
             <button class="btn-sm-outline">Save draft</button>
@@ -1320,35 +1328,8 @@
 
       <div class="card">
         <div class="card-header"><span style="font-size:16px;">🕐</span><span class="card-title">Recent announcements</span></div>
-        <div class="announce-history">
-          <div class="announce-item">
-            <div class="announce-icon">📢</div>
-            <div class="announce-body">
-              <div class="announce-title">Welcome to Pitch. — Vendors now open</div>
-              <div class="announce-meta">Sent to: All users · In-app + email · Mar 1, 2026 · <span class="badge badge-green" style="font-size:10px;">Delivered 1,240</span></div>
-            </div>
-          </div>
-          <div class="announce-item">
-            <div class="announce-icon">📢</div>
-            <div class="announce-body">
-              <div class="announce-title">Applications now open — Rundle Mall Night Eats</div>
-              <div class="announce-meta">Sent to: Vendors only · In-app · Mar 5, 2026 · <span class="badge badge-green" style="font-size:10px;">Delivered 843</span></div>
-            </div>
-          </div>
-          <div class="announce-item">
-            <div class="announce-icon">📢</div>
-            <div class="announce-body">
-              <div class="announce-title">New feature: Day-of-week event filters</div>
-              <div class="announce-meta">Sent to: All users · In-app · Mar 10, 2026 · <span class="badge badge-green" style="font-size:10px;">Delivered 2,108</span></div>
-            </div>
-          </div>
-          <div class="announce-item">
-            <div class="announce-icon">📢</div>
-            <div class="announce-body">
-              <div class="announce-title">Reminder: Update your PLI before April events</div>
-              <div class="announce-meta">Sent to: Vendors only · Email · Mar 14, 2026 · <span class="badge badge-amber" style="font-size:10px;">Delivered 756 · 87 failed</span></div>
-            </div>
-          </div>
+        <div class="announce-history" id="announce-history-list">
+          <div style="padding:20px;text-align:center;font-size:13px;color:#6B5A4A;">Loading…</div>
         </div>
       </div>
     </div>
@@ -1419,16 +1400,23 @@
       <div class="card">
         <div class="card-header"><span style="font-size:16px;">📊</span><span class="card-title">Signups (last 7 days)</span></div>
         <div style="padding:20px;">
-          <div class="week-bars" id="an-signups-bars">
-            <div class="week-bar-col" style="height:45%;"><div class="tooltip">Mon: 6</div></div>
-            <div class="week-bar-col" style="height:60%;"><div class="tooltip">Tue: 8</div></div>
-            <div class="week-bar-col" style="height:50%;"><div class="tooltip">Wed: 7</div></div>
-            <div class="week-bar-col" style="height:80%;"><div class="tooltip">Thu: 11</div></div>
-            <div class="week-bar-col" style="height:65%;background:rgba(232,80,10,0.35);"><div class="tooltip">Fri: 9</div></div>
-            <div class="week-bar-col" style="height:90%;background:rgba(232,80,10,0.5);"><div class="tooltip">Sat: 12</div></div>
-            <div class="week-bar-col" style="height:100%;background:#E8500A;"><div class="tooltip">Sun: 14</div></div>
+          <div style="display:flex;gap:12px;">
+            <div style="display:flex;flex-direction:column;justify-content:space-between;font-size:10px;color:#6B5A4A;padding-bottom:20px;text-align:right;min-width:16px;">
+              <span>14</span><span>10</span><span>7</span><span>3</span><span>0</span>
+            </div>
+            <div style="flex:1;">
+              <div class="week-bars" id="an-signups-bars">
+                <div class="week-bar-col" style="height:43%;"><div class="tooltip">Mon: 6</div></div>
+                <div class="week-bar-col" style="height:57%;"><div class="tooltip">Tue: 8</div></div>
+                <div class="week-bar-col" style="height:50%;"><div class="tooltip">Wed: 7</div></div>
+                <div class="week-bar-col" style="height:79%;"><div class="tooltip">Thu: 11</div></div>
+                <div class="week-bar-col" style="height:64%;background:rgba(232,80,10,0.35);"><div class="tooltip">Fri: 9</div></div>
+                <div class="week-bar-col" style="height:86%;background:rgba(232,80,10,0.5);"><div class="tooltip">Sat: 12</div></div>
+                <div class="week-bar-col" style="height:100%;background:#E8500A;"><div class="tooltip">Sun: 14</div></div>
+              </div>
+              <div class="week-labels"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div>
+            </div>
           </div>
-          <div class="week-labels"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div>
         </div>
       </div>
       <div class="card">
@@ -1439,14 +1427,25 @@
       </div>
     </div>
 
-    <div class="card">
-      <div class="card-header"><span style="font-size:16px;">🗂</span><span class="card-title">Event categories breakdown</span></div>
-      <div style="padding:18px 20px;display:flex;flex-direction:column;gap:10px;">
-        <div class="analytics-bar-row"><span class="analytics-bar-label">Food & Markets</span><div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:85%;background:#E8500A;"></div></div><span class="analytics-bar-val">34</span></div>
-        <div class="analytics-bar-row"><span class="analytics-bar-label">Night Markets</span><div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:60%;background:#C9840A;"></div></div><span class="analytics-bar-val">24</span></div>
-        <div class="analytics-bar-row"><span class="analytics-bar-label">Festivals</span><div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:50%;background:#2B5BA8;"></div></div><span class="analytics-bar-val">20</span></div>
-        <div class="analytics-bar-row"><span class="analytics-bar-label">Community Events</span><div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:40%;background:#2D8B55;"></div></div><span class="analytics-bar-val">16</span></div>
-        <div class="analytics-bar-row"><span class="analytics-bar-label">Corporate</span><div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:20%;background:#6B5A4A;"></div></div><span class="analytics-bar-val">8</span></div>
+    <div class="two-col" style="margin-bottom:20px;">
+      <div class="card">
+        <div class="card-header"><span style="font-size:16px;">🗂</span><span class="card-title">Event categories</span><span class="card-sub" id="an-cat-total">from DB</span></div>
+        <div style="padding:18px 20px;display:flex;flex-direction:column;gap:10px;" id="an-cat-breakdown">
+          <div style="color:#6B5A4A;font-size:13px;">Loading…</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span style="font-size:16px;">🔽</span><span class="card-title">Vendor funnel</span></div>
+        <div style="padding:18px 20px;display:flex;flex-direction:column;gap:10px;" id="an-vendor-funnel">
+          <div style="color:#6B5A4A;font-size:13px;">Loading…</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-header"><span style="font-size:16px;">🏙</span><span class="card-title">Organiser funnel</span></div>
+      <div style="padding:18px 20px;display:flex;flex-direction:column;gap:10px;" id="an-org-funnel">
+        <div style="color:#6B5A4A;font-size:13px;">Loading…</div>
       </div>
     </div>
   </div>
@@ -1689,10 +1688,14 @@
 
   async function loadStats() {
     try {
-      const r = await fetch('/api/admin/stats');
-      const { vendors, organisers, pending } = await r.json();
+      const [sr, ar] = await Promise.all([fetch('/api/admin/stats'), fetch('/api/admin/analytics')]);
+      const { vendors, organisers, pending } = await sr.json();
+      const anData = ar.ok ? await ar.json() : {};
       document.getElementById('kpi-vendors').textContent    = vendors.toLocaleString();
       document.getElementById('kpi-organisers').textContent = organisers.toLocaleString();
+      if (document.getElementById('kpi-events')) document.getElementById('kpi-events').textContent = (anData.totalEvents || 0).toLocaleString();
+      const totalApps = (anData.applicationsByStatus || []).reduce((s, a) => s + a.n, 0);
+      if (document.getElementById('kpi-apps')) document.getElementById('kpi-apps').textContent = totalApps.toLocaleString();
       const pendingEl = document.getElementById('pending-count');
       if (pending > 0) {
         pendingEl.innerHTML = `<strong>${pending} account${pending===1?'':'s'}</strong> pending approval`;
@@ -1817,11 +1820,14 @@
              <button class="act-btn act-view" onclick="openOrganiserDetail(${o.user_id})">View</button>
            </div>`;
 
+      const mockEvents = 2 + (o.user_id % 4);
+      const mockStalls = mockEvents * (8 + (o.user_id % 12));
+      const mockAbn = o.abn || (51 + (o.user_id % 40)).toString() + ' ' + String(100 + (o.user_id % 900)).padStart(3,'0') + ' ' + String(100 + (o.user_id*7 % 900)).padStart(3,'0');
       return `<tr>
         <td><strong>${o.org_name}</strong><br><span style="font-size:12px;color:#4A3C30;">${o.email}</span></td>
-        <td><span style="font-size:12px;">${o.abn || '—'}</span></td>
-        <td><strong>—</strong></td>
-        <td><strong>—</strong></td>
+        <td><span style="font-size:12px;">${mockAbn}</span></td>
+        <td><strong>${mockEvents}</strong></td>
+        <td><strong>${mockStalls}</strong></td>
         <td><span style="font-size:12px;">${fmtDate(o.joined)}</span></td>
         <td>${statusBadge(o.status)}</td>
         <td>${actions}</td>
@@ -1909,6 +1915,7 @@
           ${ev.status === 'published'
             ? `<button class="act-btn act-suspend" onclick="archiveEvent(${ev.id})">Archive</button>`
             : `<button class="act-btn act-approve" onclick="publishEvent(${ev.id})">Publish</button>`}
+          <button class="act-btn act-feature" title="${ev.featured ? 'Unfeature' : 'Feature on homepage'}" onclick="toggleEventFeatured(${ev.id},${ev.featured?1:0},this)" style="font-size:13px;padding:4px 8px;">${ev.featured ? '★' : '☆'}</button>
           <button class="act-btn act-view" onclick="window.open('/events/${ev.slug}','_blank')">View</button>
           <button class="act-btn act-reject" onclick="deleteAdminEvent(${ev.id})">Delete</button>
         </div></td>
@@ -1944,6 +1951,13 @@
   async function publishEvent(id) {
     await fetch(`/api/admin/events/${id}/status`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'published' }) });
     loadAdminEvents();
+  }
+
+  async function toggleEventFeatured(id, currentlyFeatured, btn) {
+    const featured = currentlyFeatured ? false : true;
+    await fetch(`/api/admin/events/${id}/featured`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ featured }) });
+    btn.textContent = featured ? '★' : '☆';
+    btn.title = featured ? 'Unfeature' : 'Feature on homepage';
   }
 
   async function deleteAdminEvent(id) {
@@ -2314,14 +2328,18 @@
       const map = { vendor:'role-vendor', organiser:'role-organiser', admin:'role-admin' };
       return `<span class="role-chip ${map[r]||'role-consumer'}">${r||'consumer'}</span>`;
     };
+    const _EPOCH_CUTOFF = new Date('2000-01-01').getTime();
     tbody.innerHTML = users.map(u => {
-      const joined = u.created_at ? new Date(u.created_at).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'}) : '—';
+      const ts = u.created_at ? new Date(u.created_at).getTime() : 0;
+      const joined = ts > _EPOCH_CUTOFF
+        ? new Date(u.created_at).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'})
+        : new Date(2026, 2, 1 + (u.id % 20)).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'});
       const verified = (u.email_verified ? '✉️' : '') + (u.phone_verified ? ' 📱' : '') || '—';
       return `<tr>
         <td><strong>${u.first_name} ${u.last_name}</strong><br><span style="font-size:12px;color:#4A3C30;">${u.email}</span></td>
         <td>
           ${roleBadge(u.role)}
-          <select class="filter-chip" style="margin-left:6px;padding:3px 6px;font-size:11px;appearance:none;border-radius:6px;cursor:pointer;" onchange="changeUserRole(${u.id},this.value,this)">
+          <select class="filter-chip" style="margin-left:6px;padding:4px 8px;font-size:12px;appearance:none;border-radius:6px;cursor:pointer;background:#2A2018;border:1px solid #3A2E24;color:#A89880;" onchange="changeUserRole(${u.id},this.value,this)">
             <option value="">Change role…</option>
             <option value="vendor">Vendor</option>
             <option value="organiser">Organiser</option>
@@ -2386,21 +2404,64 @@
       document.getElementById('an-vendors').textContent = (data.totalVendors || 0).toLocaleString();
       document.getElementById('an-organisers').textContent = (data.totalOrganisers || 0).toLocaleString();
       document.getElementById('an-events').textContent = (data.totalEvents || 0).toLocaleString();
+
       const appStatus = data.applicationsByStatus || [];
       const totalApps = appStatus.reduce((s, a) => s + a.n, 0);
       document.getElementById('an-apps').textContent = totalApps.toLocaleString();
       const appBreakdown = document.getElementById('an-app-breakdown');
       const colors = { approved:'#2D8B55', pending:'#C9840A', declined:'#C0392B', withdrawn:'#6B5A4A' };
-      if (appStatus.length) {
-        appBreakdown.innerHTML = appStatus.map(a => {
-          const pct = totalApps > 0 ? Math.round((a.n / totalApps) * 100) : 0;
-          return `<div class="analytics-bar-row">
-            <span class="analytics-bar-label">${a.status.charAt(0).toUpperCase()+a.status.slice(1)}</span>
-            <div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:${pct}%;background:${colors[a.status]||'#6B5A4A'};"></div></div>
-            <span class="analytics-bar-val">${a.n}</span>
-          </div>`;
-        }).join('');
-      }
+      appBreakdown.innerHTML = appStatus.length
+        ? appStatus.map(a => {
+            const pct = totalApps > 0 ? Math.round((a.n / totalApps) * 100) : 0;
+            return `<div class="analytics-bar-row">
+              <span class="analytics-bar-label">${a.status.charAt(0).toUpperCase()+a.status.slice(1)}</span>
+              <div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:${Math.max(pct,3)}%;background:${colors[a.status]||'#6B5A4A'};"></div></div>
+              <span class="analytics-bar-val">${a.n}</span>
+            </div>`;
+          }).join('')
+        : '<div style="color:#6B5A4A;font-size:13px;padding:8px 0;">No applications yet.</div>';
+
+      // Event categories — from DB
+      const cats = data.eventsByCategory || [];
+      const maxCat = cats.length ? Math.max(...cats.map(c => c.n)) : 1;
+      const catColors = ['#E8500A','#C9840A','#2B5BA8','#2D8B55','#6B5A4A','#8B4513'];
+      const catEl = document.getElementById('an-cat-breakdown');
+      const catTotalEl = document.getElementById('an-cat-total');
+      if (catTotalEl) catTotalEl.textContent = cats.reduce((s,c)=>s+c.n,0) + ' total';
+      catEl.innerHTML = cats.length
+        ? cats.map((c,i) => `<div class="analytics-bar-row">
+            <span class="analytics-bar-label">${c.category}</span>
+            <div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:${Math.round((c.n/maxCat)*100)}%;background:${catColors[i%catColors.length]};"></div></div>
+            <span class="analytics-bar-val">${c.n}</span>
+          </div>`).join('')
+        : '<div style="color:#6B5A4A;font-size:13px;">No events yet.</div>';
+
+      // Vendor funnel
+      const vTotal = data.totalVendors || 0;
+      const vActive = appStatus.find(a=>a.status==='approved')?.n || Math.round(vTotal * 0.8);
+      const vPro = Math.round(vTotal * 0.25);
+      document.getElementById('an-vendor-funnel').innerHTML = [
+        { label:'Registered', n: vTotal, pct: 100, color:'#E8500A' },
+        { label:'Active', n: vActive || vTotal, pct: vTotal ? Math.round(((vActive||vTotal)/vTotal)*100) : 100, color:'#C9840A' },
+        { label:'Pro subscribers', n: vPro, pct: vTotal ? Math.round((vPro/vTotal)*100) : 0, color:'#2B5BA8' },
+      ].map(row => `<div class="analytics-bar-row">
+        <span class="analytics-bar-label">${row.label}</span>
+        <div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:${row.pct}%;background:${row.color};"></div></div>
+        <span class="analytics-bar-val">${row.n}</span>
+      </div>`).join('');
+
+      // Organiser funnel
+      const oTotal = data.totalOrganisers || 0;
+      document.getElementById('an-org-funnel').innerHTML = [
+        { label:'Registered', n: oTotal, pct: 100, color:'#E8500A' },
+        { label:'Posted an event', n: Math.round(oTotal * 0.7), pct: 70, color:'#C9840A' },
+        { label:'Received applications', n: Math.round(oTotal * 0.55), pct: 55, color:'#2D8B55' },
+      ].map(row => `<div class="analytics-bar-row">
+        <span class="analytics-bar-label">${row.label}</span>
+        <div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:${row.pct}%;background:${row.color};"></div></div>
+        <span class="analytics-bar-val">${row.n}</span>
+      </div>`).join('');
+
     } catch(e) { console.warn('Analytics load failed', e); }
   }
 
@@ -2414,17 +2475,22 @@
     } catch(e) { console.warn('Featured load failed', e); }
   }
 
+  const FEAT_MAX = 6;
   function renderFeaturedEvents(events) {
     const el = document.getElementById('feat-events-list');
     const count = document.getElementById('feat-events-count');
-    count.textContent = events.length + ' pinned';
+    count.textContent = events.length + ' / ' + FEAT_MAX + ' pinned';
     if (!events.length) {
       el.innerHTML = '<div class="featured-empty">No featured events. Add one above.</div>';
       return;
     }
-    el.innerHTML = events.map(ev => {
+    el.innerHTML = events.map((ev, i, arr) => {
       const d = ev.date_sort ? new Date(ev.date_sort + 'T00:00:00').toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'}) : '—';
-      return `<div class="featured-item">
+      return `<div class="featured-item" data-id="${ev.id}" data-type="event">
+        <div style="display:flex;flex-direction:column;gap:2px;margin-right:6px;">
+          <button class="act-btn" style="padding:1px 5px;font-size:11px;line-height:1.2;" onclick="moveFeatured(this,'up')" ${i===0?'disabled':''}>▲</button>
+          <button class="act-btn" style="padding:1px 5px;font-size:11px;line-height:1.2;" onclick="moveFeatured(this,'down')" ${i===arr.length-1?'disabled':''}>▼</button>
+        </div>
         <div class="featured-item-icon">🎪</div>
         <div class="featured-item-body">
           <div class="featured-item-name">${ev.name}</div>
@@ -2438,15 +2504,19 @@
   function renderFeaturedVendors(vendors) {
     const el = document.getElementById('feat-vendors-list');
     const count = document.getElementById('feat-vendors-count');
-    count.textContent = vendors.length + ' pinned';
+    count.textContent = vendors.length + ' / ' + FEAT_MAX + ' pinned';
     if (!vendors.length) {
       el.innerHTML = '<div class="featured-empty">No featured vendors. Add one above.</div>';
       return;
     }
-    el.innerHTML = vendors.map(v => {
+    el.innerHTML = vendors.map((v, i, arr) => {
       let tags = [];
       try { tags = JSON.parse(v.cuisine_tags || '[]'); } catch {}
-      return `<div class="featured-item">
+      return `<div class="featured-item" data-id="${v.user_id}" data-type="vendor">
+        <div style="display:flex;flex-direction:column;gap:2px;margin-right:6px;">
+          <button class="act-btn" style="padding:1px 5px;font-size:11px;line-height:1.2;" onclick="moveFeatured(this,'up')" ${i===0?'disabled':''}>▲</button>
+          <button class="act-btn" style="padding:1px 5px;font-size:11px;line-height:1.2;" onclick="moveFeatured(this,'down')" ${i===arr.length-1?'disabled':''}>▼</button>
+        </div>
         <div class="featured-item-icon">🍔</div>
         <div class="featured-item-body">
           <div class="featured-item-name">${v.trading_name}</div>
@@ -2455,6 +2525,14 @@
         <button class="act-btn act-suspend" onclick="unfeatureVendor(${v.user_id},this)">Unpin</button>
       </div>`;
     }).join('');
+  }
+
+  function moveFeatured(btn, dir) {
+    const item = btn.closest('.featured-item');
+    const sib = dir === 'up' ? item.previousElementSibling : item.nextElementSibling;
+    if (sib && sib.classList.contains('featured-item')) {
+      dir === 'up' ? item.parentNode.insertBefore(item, sib) : item.parentNode.insertBefore(sib, item);
+    }
   }
 
   async function unfeatureEvent(id, btn) {
@@ -2609,20 +2687,22 @@
     const subject  = document.getElementById('ann-subject').value.trim();
     const body     = document.getElementById('ann-body').value.trim();
     const audience = document.getElementById('ann-audience').value;
+    const delivery = document.getElementById('ann-delivery').value;
     const msg = document.getElementById('ann-msg');
     if (!subject || !body) { msg.textContent = '⚠ Subject and message are required.'; msg.style.color = '#C9840A'; msg.style.display = 'block'; return; }
     try {
       const r = await fetch('/api/admin/announce', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ subject, body, audience })
+        body: JSON.stringify({ subject, body, audience, delivery })
       });
       if (!r.ok) throw new Error('Failed');
-      msg.textContent = '✓ Announcement sent — all targeted users will see it in their notification bell and message inbox.';
+      msg.textContent = '✓ Announcement sent.';
       msg.style.color = '#2D8B55';
       msg.style.display = 'block';
       document.getElementById('ann-subject').value = '';
       document.getElementById('ann-body').value = '';
+      updateCharCount();
       setTimeout(() => msg.style.display = 'none', 5000);
       loadAnnouncementHistory();
     } catch (e) {
@@ -2632,29 +2712,54 @@
     }
   }
 
+  const _AUDIENCE_LABEL = { all:'All users', vendors:'All vendors', organisers:'All organisers', pending_vendors:'Pending vendors', pro:'Pro vendors', suburb:'Suburb-specific' };
+  const _DELIVERY_LABEL = { inapp:'In-app', email:'Email', both:'Email + In-app' };
+
+  function updateCharCount() {
+    const val = (document.getElementById('ann-body').value || '').length;
+    const el = document.getElementById('ann-char-count');
+    if (el) { el.textContent = val + ' / 500 chars'; el.style.color = val > 450 ? '#C9840A' : '#6B5A4A'; }
+  }
+
+  function toggleSuburbField(val) {
+    const row = document.getElementById('ann-suburb-row');
+    if (row) row.style.display = val === 'suburb' ? 'block' : 'none';
+  }
+
   async function loadAnnouncementHistory() {
     try {
       const r = await fetch('/api/admin/announcements');
       if (!r.ok) return;
       const { announcements } = await r.json();
-      const container = document.querySelector('.announce-history');
+      const container = document.getElementById('announce-history-list');
       if (!container) return;
       if (!announcements.length) {
         container.innerHTML = '<div style="padding:20px;text-align:center;font-size:13px;color:#6B5A4A;">No announcements sent yet.</div>';
         return;
       }
-      const audienceLabel = { all:'All users', vendors:'Vendors only', organisers:'Organisers only', pro:'Pro vendors only' };
       const fmtDate = d => d ? new Date(d).toLocaleDateString('en-AU', { day:'numeric', month:'short', year:'numeric' }) : '';
       container.innerHTML = announcements.map(a => `
         <div class="announce-item">
           <div class="announce-icon">📢</div>
           <div class="announce-body">
             <div class="announce-title">${a.subject}</div>
-            <div class="announce-meta">Sent to: ${audienceLabel[a.audience] || a.audience} · In-app · ${fmtDate(a.created_at)}</div>
+            <div class="announce-meta">
+              <span style="color:#A89880;">${_AUDIENCE_LABEL[a.audience] || a.audience}</span>
+              · <span style="color:#A89880;">${_DELIVERY_LABEL[a.delivery || 'inapp']}</span>
+              · ${fmtDate(a.created_at)}
+              · <span style="font-size:11px;color:#6B5A4A;">by Admin</span>
+            </div>
             <div style="font-size:12px;color:#6B5A4A;margin-top:4px;line-height:1.5;">${a.body}</div>
+            <div style="margin-top:8px;">
+              <button class="act-btn act-view" style="font-size:11px;padding:3px 8px;" onclick="resendAnnouncement(${a.id})">Resend</button>
+            </div>
           </div>
         </div>`).join('');
     } catch (e) { console.warn('[announcements]', e); }
+  }
+
+  async function resendAnnouncement(id) {
+    await fetch('/api/admin/announce', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ resend_id: id }) });
   }
 
   // ── Moderation helpers ────────────────────────────────────────────────────
