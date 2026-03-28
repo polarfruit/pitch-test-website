@@ -2308,6 +2308,36 @@
     </div>`;
   }
 
+  // Cache vendor doc URLs so adminViewDoc can access them without a second fetch
+  let _docCache = {};
+
+  async function adminViewDoc(docKey, userId) {
+    // Try cache first, otherwise fetch
+    let url = _docCache[`${userId}_${docKey}`];
+    if (!url) {
+      try {
+        const r = await fetch(`/api/admin/vendors/${userId}`);
+        const data = await r.json();
+        if (data.vendor) {
+          ['food_safety_url','pli_url','council_url'].forEach(k => {
+            _docCache[`${userId}_${k}`] = data.vendor[k] || null;
+          });
+          url = _docCache[`${userId}_${docKey}`];
+        }
+      } catch(e) { console.warn('Doc fetch failed', e); return; }
+    }
+    if (!url) { alert('No file uploaded for this document.'); return; }
+    // Open data URL in a new tab
+    const win = window.open();
+    if (win) {
+      if (url.startsWith('data:image')) {
+        win.document.write(`<html><body style="margin:0;background:#111;display:flex;align-items:center;justify-content:center;min-height:100vh;"><img src="${url}" style="max-width:100%;max-height:100vh;object-fit:contain;" /></body></html>`);
+      } else {
+        win.document.write(`<html><body style="margin:0;"><embed src="${url}" type="application/pdf" width="100%" height="100%" style="position:fixed;inset:0;" /></body></html>`);
+      }
+    }
+  }
+
   function paymentsHTML(payments) {
     return payments.length
       ? payments.map(p => `<div class="payment-row">
@@ -2339,6 +2369,10 @@
       if (!vr.vendor) throw new Error(vr.error || 'Vendor not found');
       const { vendor, user } = vr;
       const payments = pr.payments || [];
+      // Pre-populate doc cache so View buttons are instant
+      ['food_safety_url','pli_url','council_url'].forEach(k => {
+        _docCache[`${userId}_${k}`] = vendor[k] || null;
+      });
 
       const body =
         detailSection('Account', `<div class="detail-grid">
@@ -2372,6 +2406,36 @@
           ${dfSelect('df-water', 'Water required', vendor.water?'1':'0', [{v:'1',l:'Yes'},{v:'0',l:'No'}])}
           ${dfTextarea('df-bio', 'Bio', vendor.bio)}
         </div>`) +
+        detailSection('Compliance documents', (() => {
+          const docs = [
+            { key: 'food_safety_url', label: 'Food Safety Certificate' },
+            { key: 'pli_url',         label: 'Public Liability Insurance' },
+            { key: 'council_url',     label: 'Council Permit' },
+          ];
+          return docs.map(d => {
+            const url = vendor[d.key];
+            if (!url) {
+              return `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #1E1916;">
+                <span style="font-size:13px;color:#A89880;">${d.label}</span>
+                <span style="font-size:12px;color:#4A3C30;background:#1E1916;border-radius:6px;padding:3px 10px;">Not uploaded</span>
+              </div>`;
+            }
+            const isPdf = url.startsWith('data:application/pdf') || url.startsWith('data:application/octet');
+            const isImg = url.startsWith('data:image');
+            const icon  = isPdf ? '📄' : isImg ? '🖼' : '📎';
+            const typeLabel = isPdf ? 'PDF' : isImg ? 'Image' : 'File';
+            return `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #1E1916;">
+              <div>
+                <div style="font-size:13px;color:#FDF4E7;">${d.label}</div>
+                <div style="font-size:11px;color:#4A3C30;margin-top:2px;">${icon} ${typeLabel} uploaded</div>
+              </div>
+              <div style="display:flex;gap:8px;">
+                <button onclick="adminViewDoc('${d.key}',${userId})" style="background:rgba(232,80,10,0.1);border:1px solid rgba(232,80,10,0.3);border-radius:6px;padding:4px 12px;font-size:12px;color:#E8500A;cursor:pointer;font-family:inherit;">View</button>
+                ${isImg ? `<button onclick="adminViewDoc('${d.key}',${userId})" style="background:#1E1916;border:1px solid #2A2018;border-radius:6px;padding:4px 12px;font-size:12px;color:#A89880;cursor:pointer;font-family:inherit;">Preview</button>` : ''}
+              </div>
+            </div>`;
+          }).join('');
+        })()) +
         detailSection('Payment history', paymentsHTML(payments));
 
       const _vName = vendor.trading_name || (user.first_name + ' ' + user.last_name).trim() || 'Vendor';
