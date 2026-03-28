@@ -1655,21 +1655,21 @@
   function _renderSignupsChart(dayRows, barsId, labelsId, yaxisId, miniBarId, miniLabelsId) {
     const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
     const today = new Date();
-    // days[0]=today, days[1]=yesterday, …, days[6]=6 days ago
+    // days[0]=6 days ago … days[6]=today — chronological left→right
     const days = Array.from({length:7}, (_,i) => {
       const d = new Date(today);
-      d.setDate(today.getDate() - i);
+      d.setDate(today.getDate() - (6 - i));
       const iso = d.toISOString().slice(0,10);
-      return { iso, label: DAY_NAMES[d.getDay()], isToday: i === 0 };
+      return { iso, label: DAY_NAMES[d.getDay()], isToday: i === 6 };
     });
     const lookup = {};
     (dayRows || []).forEach(r => { lookup[r.day] = r.n; });
     const counts = days.map(d => lookup[d.iso] || 0);
     const maxN = Math.max(...counts, 1);
 
-    // Bar opacity fades from full (today, index 0) to dim (oldest, index 6)
-    const barBg = (i) => i === 0 ? '#E8500A'
-      : `rgba(232,80,10,${(0.55 - i * 0.07).toFixed(2)})`;
+    // Bar opacity builds toward today (rightmost = brightest)
+    const barBg = (i) => i === 6 ? '#E8500A'
+      : `rgba(232,80,10,${(0.18 + i * 0.06).toFixed(2)})`;
 
     const barsEl  = document.getElementById(barsId);
     const labelsEl = document.getElementById(labelsId);
@@ -1682,8 +1682,8 @@
       }).join('');
     }
     if (labelsEl) {
-      labelsEl.innerHTML = days.map((d, i) =>
-        `<span style="${i === 0 ? 'color:#E8500A;font-weight:700;' : ''}">${d.label}</span>`
+      labelsEl.innerHTML = days.map(d =>
+        `<span style="${d.isToday ? 'color:#E8500A;font-weight:700;' : ''}">${d.label}</span>`
       ).join('');
     }
     if (yaxisEl) {
@@ -1701,8 +1701,8 @@
       }).join('');
     }
     if (miniLbls) {
-      miniLbls.innerHTML = days.map((d, i) =>
-        `<span style="${i === 0 ? 'color:#E8500A;font-weight:700;' : ''}">${d.label}</span>`
+      miniLbls.innerHTML = days.map(d =>
+        `<span style="${d.isToday ? 'color:#E8500A;font-weight:700;' : ''}">${d.label}</span>`
       ).join('');
     }
   }
