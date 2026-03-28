@@ -579,8 +579,8 @@
   <!-- ════════════ OVERVIEW ════════════ -->
   <div class="panel active" id="panel-overview">
 
-    <div class="alert-bar" id="pending-alert">
-      ⚠️ <strong id="pending-count">…</strong> — <a onclick="showPanel('vendors',document.querySelectorAll('.nav-item')[1])">Review now →</a>
+    <div class="alert-bar" id="pending-alert" style="display:none;">
+      ⚠️ <span id="pending-count"></span> — <a onclick="showPanel('vendors',document.querySelectorAll('.nav-item')[1])">Review now →</a>
     </div>
 
     <div class="kpi-grid">
@@ -1803,11 +1803,12 @@
       }
 
       const pendingEl = document.getElementById('pending-count');
+      const alertEl = document.getElementById('pending-alert');
       if (pending > 0) {
-        pendingEl.innerHTML = `<strong>${pending} account${pending===1?'':'s'}</strong> pending approval`;
-        document.getElementById('pending-alert').style.display = '';
+        pendingEl.innerHTML = `<strong>${pending} account${pending===1?'':'s'} pending approval</strong>`;
+        alertEl.style.display = '';
       } else {
-        document.getElementById('pending-alert').style.display = 'none';
+        alertEl.style.display = 'none';
       }
       updateSidebarBadge(pending);
     } catch(e) { console.warn('Stats load failed', e); }
