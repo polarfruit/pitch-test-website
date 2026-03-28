@@ -809,6 +809,40 @@ export const stmts = {
   newAppsPrior7d:  prepare(`SELECT COUNT(*) as n FROM event_applications WHERE created_at >= datetime('now','-14 days') AND created_at < datetime('now','-7 days')`),
   // Per-day signup counts for the rolling 7-day chart
   signups7dByDay:  prepare(`SELECT date(created_at) as day, COUNT(*) as n FROM users WHERE created_at >= date('now','-6 days') GROUP BY date(created_at) ORDER BY day ASC`),
+  // Activity feed — 6 most recent events across signups, applications, events published
+  recentActivity: prepare(`
+    SELECT type, actor_name, subject_name, status, ts FROM (
+      SELECT 'signup'      AS type,
+             first_name||' '||last_name AS actor_name,
+             role          AS subject_name,
+             status,
+             created_at    AS ts
+        FROM users
+       WHERE created_at IS NOT NULL AND created_at != '' AND created_at != '0'
+      UNION ALL
+      SELECT 'application' AS type,
+             COALESCE(v.trading_name, u.first_name||' '||u.last_name) AS actor_name,
+             COALESCE(e.name, 'an event') AS subject_name,
+             ea.status,
+             ea.created_at AS ts
+        FROM event_applications ea
+        JOIN users u ON u.id = ea.vendor_user_id
+        LEFT JOIN vendors v ON v.user_id = u.id AND v.id=(SELECT MIN(id) FROM vendors WHERE user_id=u.id)
+        LEFT JOIN events e ON e.id = ea.event_id
+       WHERE ea.created_at IS NOT NULL
+      UNION ALL
+      SELECT 'event'       AS type,
+             COALESCE(o.org_name, 'Unknown') AS actor_name,
+             e.name        AS subject_name,
+             e.status,
+             e.created_at  AS ts
+        FROM events e
+        LEFT JOIN organisers o ON o.user_id = e.organiser_user_id
+       WHERE e.created_at IS NOT NULL AND e.status='published'
+    )
+    ORDER BY ts DESC
+    LIMIT 6
+  `),
 
   // all users (admin)
   allUsers:    prepare(`SELECT id,email,first_name,last_name,role,status,email_verified,phone_verified,created_at FROM users ORDER BY created_at DESC`),
