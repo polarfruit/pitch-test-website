@@ -561,22 +561,22 @@
       <div class="kpi-card">
         <div class="kpi-label">Total vendors</div>
         <div class="kpi-val" id="kpi-vendors">—</div>
-        <div class="kpi-delta up">▲ 3 this week</div>
+        <div class="kpi-delta neutral" id="kpi-vendors-delta">—</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">Total organisers</div>
         <div class="kpi-val" id="kpi-organisers">—</div>
-        <div class="kpi-delta up">▲ 6 this week</div>
+        <div class="kpi-delta neutral" id="kpi-orgs-delta">—</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">Active events</div>
         <div class="kpi-val" id="kpi-events">—</div>
-        <div class="kpi-delta neutral">→ 2 published today</div>
+        <div class="kpi-delta neutral" id="kpi-events-delta">—</div>
       </div>
       <div class="kpi-card">
         <div class="kpi-label">Applications (7d)</div>
         <div class="kpi-val" id="kpi-apps">—</div>
-        <div class="kpi-delta up">▲ 8% vs last week</div>
+        <div class="kpi-delta neutral" id="kpi-apps-delta">—</div>
       </div>
     </div>
 
@@ -666,21 +666,21 @@
           </div>
           <div style="padding:16px 20px 18px;">
             <div style="display:flex;gap:10px;margin-bottom:12px;">
-              <div class="stat-mini"><div class="val">43</div><div class="lbl">Vendors</div></div>
-              <div class="stat-mini"><div class="val">6</div><div class="lbl">Organisers</div></div>
-              <div class="stat-mini"><div class="val">12</div><div class="lbl">Events</div></div>
+              <div class="stat-mini"><div class="val" id="mini-vendors-7d">—</div><div class="lbl">Vendors</div></div>
+              <div class="stat-mini"><div class="val" id="mini-orgs-7d">—</div><div class="lbl">Organisers</div></div>
+              <div class="stat-mini"><div class="val" id="mini-events-7d">—</div><div class="lbl">Events</div></div>
             </div>
-            <div class="mini-bar">
-              <div class="mini-bar-col" style="height:45%;"></div>
-              <div class="mini-bar-col" style="height:60%;"></div>
-              <div class="mini-bar-col" style="height:50%;"></div>
-              <div class="mini-bar-col" style="height:80%;"></div>
-              <div class="mini-bar-col" style="height:65%;"></div>
-              <div class="mini-bar-col" style="height:90%;background:rgba(232,80,10,0.5);"></div>
-              <div class="mini-bar-col" style="height:100%;background:#E8500A;"></div>
+            <div class="mini-bar" id="mini-bar-chart">
+              <div class="mini-bar-col" style="height:10%;"></div>
+              <div class="mini-bar-col" style="height:10%;"></div>
+              <div class="mini-bar-col" style="height:10%;"></div>
+              <div class="mini-bar-col" style="height:10%;"></div>
+              <div class="mini-bar-col" style="height:10%;"></div>
+              <div class="mini-bar-col" style="height:10%;"></div>
+              <div class="mini-bar-col" style="height:10%;background:#E8500A;"></div>
             </div>
-            <div style="display:flex;justify-content:space-between;font-size:11px;color:#4A3C30;margin-top:5px;">
-              <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+            <div style="display:flex;justify-content:space-between;font-size:11px;color:#4A3C30;margin-top:5px;" id="mini-bar-labels">
+              <span>—</span><span>—</span><span>—</span><span>—</span><span>—</span><span>—</span><span>—</span>
             </div>
           </div>
         </div>
@@ -1401,20 +1401,12 @@
         <div class="card-header"><span style="font-size:16px;">📊</span><span class="card-title">Signups (last 7 days)</span></div>
         <div style="padding:20px;">
           <div style="display:flex;gap:12px;">
-            <div style="display:flex;flex-direction:column;justify-content:space-between;font-size:10px;color:#6B5A4A;padding-bottom:20px;text-align:right;min-width:16px;">
-              <span>14</span><span>10</span><span>7</span><span>3</span><span>0</span>
+            <div style="display:flex;flex-direction:column;justify-content:space-between;font-size:10px;color:#6B5A4A;padding-bottom:20px;text-align:right;min-width:16px;" id="an-signups-yaxis">
+              <span>—</span><span>—</span><span>—</span><span>—</span><span>0</span>
             </div>
             <div style="flex:1;">
-              <div class="week-bars" id="an-signups-bars">
-                <div class="week-bar-col" style="height:43%;"><div class="tooltip">Mon: 6</div></div>
-                <div class="week-bar-col" style="height:57%;"><div class="tooltip">Tue: 8</div></div>
-                <div class="week-bar-col" style="height:50%;"><div class="tooltip">Wed: 7</div></div>
-                <div class="week-bar-col" style="height:79%;"><div class="tooltip">Thu: 11</div></div>
-                <div class="week-bar-col" style="height:64%;background:rgba(232,80,10,0.35);"><div class="tooltip">Fri: 9</div></div>
-                <div class="week-bar-col" style="height:86%;background:rgba(232,80,10,0.5);"><div class="tooltip">Sat: 12</div></div>
-                <div class="week-bar-col" style="height:100%;background:#E8500A;"><div class="tooltip">Sun: 14</div></div>
-              </div>
-              <div class="week-labels"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span></div>
+              <div class="week-bars" id="an-signups-bars"></div>
+              <div class="week-labels" id="an-signups-labels"></div>
             </div>
           </div>
         </div>
@@ -1686,16 +1678,136 @@
     : `<span class="badge badge-grey">Free</span>`;
   const fmtDate = d => d ? new Date(d).toLocaleDateString('en-AU', {day:'numeric',month:'short',year:'numeric'}) : '—';
 
+  // ── Shared: build the rolling 7-day signups bar chart ─────────────────────
+  // dayRows: [{day:'2026-03-28', n:5}, …] from API (sparse — missing days = 0)
+  function _renderSignupsChart(dayRows, barsId, labelsId, yaxisId, miniBarId, miniLabelsId) {
+    const DAY_NAMES = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    // Build an ordered array of the last 7 calendar dates (today = last)
+    const today = new Date();
+    const days = Array.from({length:7}, (_,i) => {
+      const d = new Date(today);
+      d.setDate(today.getDate() - (6 - i));
+      const iso = d.toISOString().slice(0,10);
+      const label = DAY_NAMES[d.getDay()];
+      return { iso, label, isToday: i === 6 };
+    });
+    // Map API rows to a lookup
+    const lookup = {};
+    (dayRows || []).forEach(r => { lookup[r.day] = r.n; });
+    const counts = days.map(d => lookup[d.iso] || 0);
+    const maxN = Math.max(...counts, 1);
+
+    // Render full analytics chart
+    const barsEl = document.getElementById(barsId);
+    const labelsEl = document.getElementById(labelsId);
+    const yaxisEl = document.getElementById(yaxisId);
+    if (barsEl) {
+      barsEl.innerHTML = days.map((d, i) => {
+        const n = counts[i];
+        const pct = Math.max(Math.round((n / maxN) * 100), n > 0 ? 8 : 3);
+        const isToday = d.isToday;
+        const bg = isToday ? '#E8500A'
+          : i === 5 ? 'rgba(232,80,10,0.55)'
+          : i === 4 ? 'rgba(232,80,10,0.35)'
+          : 'rgba(232,80,10,0.2)';
+        return `<div class="week-bar-col" style="height:${pct}%;background:${bg};" title="${d.label}: ${n}"><div class="tooltip">${d.label}: ${n}</div></div>`;
+      }).join('');
+    }
+    if (labelsEl) {
+      labelsEl.innerHTML = days.map(d =>
+        `<span style="${d.isToday ? 'color:#E8500A;font-weight:700;' : ''}">${d.label}</span>`
+      ).join('');
+    }
+    if (yaxisEl) {
+      const top = maxN;
+      const steps = [top, Math.round(top*0.7), Math.round(top*0.5), Math.round(top*0.3), 0];
+      yaxisEl.innerHTML = steps.map(v => `<span>${v}</span>`).join('');
+    }
+
+    // Render overview mini chart (same data, simpler markup)
+    const miniEl = document.getElementById(miniBarId);
+    const miniLbls = document.getElementById(miniLabelsId);
+    if (miniEl) {
+      miniEl.innerHTML = days.map((d, i) => {
+        const n = counts[i];
+        const pct = Math.max(Math.round((n / maxN) * 100), n > 0 ? 10 : 4);
+        const bg = d.isToday ? '#E8500A'
+          : i === 5 ? 'rgba(232,80,10,0.5)'
+          : 'rgba(232,80,10,0.2)';
+        return `<div class="mini-bar-col" style="height:${pct}%;background:${bg};" title="${d.label}: ${n}"></div>`;
+      }).join('');
+    }
+    if (miniLbls) {
+      miniLbls.innerHTML = days.map(d =>
+        `<span style="${d.isToday ? 'color:#E8500A;font-weight:700;' : ''}">${d.label}</span>`
+      ).join('');
+    }
+  }
+
+  function _deltaText(n, label) {
+    if (n === 0) return { cls: 'neutral', text: `→ 0 ${label}` };
+    return { cls: 'up', text: `▲ ${n} ${label}` };
+  }
+
   async function loadStats() {
     try {
       const [sr, ar] = await Promise.all([fetch('/api/admin/stats'), fetch('/api/admin/analytics')]);
-      const { vendors, organisers, pending } = await sr.json();
+      const stats  = await sr.json();
+      const { vendors, organisers, pending,
+              newVendors7d = 0, newOrgs7d = 0,
+              apps7d = 0, appsPrior7d = 0 } = stats;
       const anData = ar.ok ? await ar.json() : {};
+
       document.getElementById('kpi-vendors').textContent    = vendors.toLocaleString();
       document.getElementById('kpi-organisers').textContent = organisers.toLocaleString();
       if (document.getElementById('kpi-events')) document.getElementById('kpi-events').textContent = (anData.totalEvents || 0).toLocaleString();
-      const totalApps = (anData.applicationsByStatus || []).reduce((s, a) => s + a.n, 0);
-      if (document.getElementById('kpi-apps')) document.getElementById('kpi-apps').textContent = totalApps.toLocaleString();
+
+      // Applications (7d) — show actual rolling-7d count, not all-time
+      if (document.getElementById('kpi-apps')) document.getElementById('kpi-apps').textContent = apps7d.toLocaleString();
+
+      // Mini stat pills in signups card
+      const mv = document.getElementById('mini-vendors-7d');
+      const mo = document.getElementById('mini-orgs-7d');
+      const me = document.getElementById('mini-events-7d');
+      if (mv) mv.textContent = newVendors7d;
+      if (mo) mo.textContent = newOrgs7d;
+      if (me) me.textContent = (anData.totalEvents || 0);
+
+      // Render both charts from the same day-by-day data
+      _renderSignupsChart(
+        anData.signups7dByDay || [],
+        'an-signups-bars', 'an-signups-labels', 'an-signups-yaxis',
+        'mini-bar-chart', 'mini-bar-labels'
+      );
+
+      // Delta labels
+      const vd = _deltaText(newVendors7d, `new this week`);
+      const od = _deltaText(newOrgs7d,    `new this week`);
+
+      const evDelta = document.getElementById('kpi-events-delta');
+      if (evDelta) { evDelta.className = 'kpi-delta neutral'; evDelta.textContent = 'Published & active'; }
+
+      const vDelta = document.getElementById('kpi-vendors-delta');
+      if (vDelta) { vDelta.className = `kpi-delta ${vd.cls}`; vDelta.textContent = vd.text; }
+
+      const oDelta = document.getElementById('kpi-orgs-delta');
+      if (oDelta) { oDelta.className = `kpi-delta ${od.cls}`; oDelta.textContent = od.text; }
+
+      // Apps delta: % change vs prior 7d
+      const aDelta = document.getElementById('kpi-apps-delta');
+      if (aDelta) {
+        if (appsPrior7d === 0 && apps7d === 0) {
+          aDelta.className = 'kpi-delta neutral'; aDelta.textContent = '→ No applications yet';
+        } else if (appsPrior7d === 0) {
+          aDelta.className = 'kpi-delta up'; aDelta.textContent = `▲ New this week`;
+        } else {
+          const pct = Math.round(((apps7d - appsPrior7d) / appsPrior7d) * 100);
+          if (pct > 0)      { aDelta.className = 'kpi-delta up';   aDelta.textContent = `▲ ${pct}% vs prior 7d`; }
+          else if (pct < 0) { aDelta.className = 'kpi-delta down'; aDelta.textContent = `▼ ${Math.abs(pct)}% vs prior 7d`; }
+          else              { aDelta.className = 'kpi-delta neutral'; aDelta.textContent = `→ Same as prior 7d`; }
+        }
+      }
+
       const pendingEl = document.getElementById('pending-count');
       if (pending > 0) {
         pendingEl.innerHTML = `<strong>${pending} account${pending===1?'':'s'}</strong> pending approval`;
@@ -1703,7 +1815,6 @@
       } else {
         document.getElementById('pending-alert').style.display = 'none';
       }
-      // Update sidebar badge
       updateSidebarBadge(pending);
     } catch(e) { console.warn('Stats load failed', e); }
   }
@@ -2436,6 +2547,13 @@
             <span class="analytics-bar-val">${c.n}</span>
           </div>`).join('')
         : '<div style="color:#6B5A4A;font-size:13px;">No events yet.</div>';
+
+      // Signups chart (also rendered here so it updates if analytics panel opened fresh)
+      _renderSignupsChart(
+        data.signups7dByDay || [],
+        'an-signups-bars', 'an-signups-labels', 'an-signups-yaxis',
+        'mini-bar-chart', 'mini-bar-labels'
+      );
 
       // Vendor funnel
       const vTotal = data.totalVendors || 0;
