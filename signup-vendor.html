@@ -831,6 +831,12 @@ async function submitVendorSignup() {
     return;
   }
 
+  if (payload.abn && payload.abn.length !== 11) {
+    showErr('ABN must be exactly 11 digits. Please check and try again.');
+    document.getElementById('abn-input').focus();
+    return;
+  }
+
   btn.textContent = 'Sending code…';
   btn.disabled = true;
 
