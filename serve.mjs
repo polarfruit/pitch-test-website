@@ -842,10 +842,23 @@ app.get('/api/admin/organisers', requireAdmin, async (req, res) => {
 });
 
 app.get('/api/admin/stats', requireAdmin, async (req, res) => {
+  const [vendors, organisers, pending, nv7, no7, na7, nap7] = await Promise.all([
+    stmts.countVendors.get(),
+    stmts.countOrganisers.get(),
+    stmts.countPending.get(),
+    stmts.newVendors7d.get(),
+    stmts.newOrgs7d.get(),
+    stmts.newApps7d.get(),
+    stmts.newAppsPrior7d.get(),
+  ]);
   res.json({
-    vendors:    (await stmts.countVendors.get()).n,
-    organisers: (await stmts.countOrganisers.get()).n,
-    pending:    (await stmts.countPending.get()).n,
+    vendors:    vendors.n,
+    organisers: organisers.n,
+    pending:    pending.n,
+    newVendors7d:   nv7.n,
+    newOrgs7d:      no7.n,
+    apps7d:         na7.n,
+    appsPrior7d:    nap7.n,
   });
 });
 
@@ -1871,12 +1884,13 @@ app.post('/api/admin/users/:id/password-reset', requireAdmin, async (req, res) =
 
 // ── Admin — analytics ─────────────────────────────────────────────────────
 app.get('/api/admin/analytics', requireAdmin, async (req, res) => {
-  const [vendors, organisers, events, appCounts, catCounts] = await Promise.all([
+  const [vendors, organisers, events, appCounts, catCounts, signupsByDay] = await Promise.all([
     stmts.countVendors.get(),
     stmts.countOrganisers.get(),
     stmts.countEvents.get(),
     stmts.countApplications.all(),
     stmts.countEventsByCategory.all(),
+    stmts.signups7dByDay.all(),
   ]);
   res.json({
     totalVendors: vendors.n,
@@ -1884,6 +1898,7 @@ app.get('/api/admin/analytics', requireAdmin, async (req, res) => {
     totalEvents: events.n,
     applicationsByStatus: appCounts,
     eventsByCategory: catCounts,
+    signups7dByDay: signupsByDay,
   });
 });
 

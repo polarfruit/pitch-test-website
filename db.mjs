@@ -802,6 +802,13 @@ export const stmts = {
   countOrganisers: prepare(`SELECT COUNT(*) as n FROM users WHERE role='organiser'`),
   countPending:    prepare(`SELECT COUNT(*) as n FROM users WHERE status='pending'`),
   countApplications: prepare(`SELECT status, COUNT(*) as n FROM event_applications GROUP BY status`),
+  // 7-day rolling window deltas
+  newVendors7d:    prepare(`SELECT COUNT(*) as n FROM users WHERE role='vendor'    AND created_at >= datetime('now','-7 days')`),
+  newOrgs7d:       prepare(`SELECT COUNT(*) as n FROM users WHERE role='organiser' AND created_at >= datetime('now','-7 days')`),
+  newApps7d:       prepare(`SELECT COUNT(*) as n FROM event_applications WHERE created_at >= datetime('now','-7 days')`),
+  newAppsPrior7d:  prepare(`SELECT COUNT(*) as n FROM event_applications WHERE created_at >= datetime('now','-14 days') AND created_at < datetime('now','-7 days')`),
+  // Per-day signup counts for the rolling 7-day chart
+  signups7dByDay:  prepare(`SELECT date(created_at) as day, COUNT(*) as n FROM users WHERE created_at >= date('now','-6 days') GROUP BY date(created_at) ORDER BY day ASC`),
 
   // all users (admin)
   allUsers:    prepare(`SELECT id,email,first_name,last_name,role,status,email_verified,phone_verified,created_at FROM users ORDER BY created_at DESC`),
