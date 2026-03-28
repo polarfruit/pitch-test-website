@@ -1926,6 +1926,8 @@
         alertEl.style.display = 'none';
       }
       updateSidebarBadge(pending);
+      // Re-render platform health card now that _lastStats is populated
+      renderPendingQueue();
     } catch(e) { console.warn('Stats load failed', e); }
   }
 
