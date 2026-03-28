@@ -61,6 +61,27 @@
     }
     .topbar-search::placeholder { color: #4A3C30; }
     .topbar-search:focus { border-color: #E8500A; }
+    .search-wrap { position: relative; }
+    .search-results {
+      display: none; position: absolute; top: calc(100% + 6px); left: 0; right: 0;
+      background: #1C1814; border: 1px solid #2A2018; border-radius: 10px;
+      box-shadow: 0 8px 32px #00000070; z-index: 300; overflow: hidden; min-width: 320px;
+    }
+    .search-results.open { display: block; }
+    .search-group-label {
+      font-size: 10px; font-weight: 700; color: #4A3C30; text-transform: uppercase;
+      letter-spacing: 0.08em; padding: 8px 14px 4px;
+    }
+    .search-result-item {
+      padding: 9px 14px; cursor: pointer; display: flex; align-items: center; gap: 10px;
+      border-bottom: 1px solid #1E1916;
+    }
+    .search-result-item:last-child { border-bottom: none; }
+    .search-result-item:hover { background: #231E19; }
+    .search-result-icon { font-size: 14px; flex-shrink: 0; }
+    .search-result-main { font-size: 13px; color: #FDF4E7; font-weight: 600; }
+    .search-result-sub { font-size: 11px; color: #6B5A4A; margin-top: 1px; }
+    .search-no-results { padding: 14px; font-size: 13px; color: #4A3C30; text-align: center; }
     .icon-btn {
       width: 34px; height: 34px; border-radius: 8px; background: #231E19; border: 1px solid #2A2018;
       display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px;
@@ -524,7 +545,12 @@
       <div class="topbar-sub" id="topbar-sub">Platform at a glance</div>
     </div>
     <div class="topbar-right">
-      <input class="topbar-search" id="admin-global-search" type="text" placeholder="Search vendors, events…" oninput="adminGlobalSearch()" />
+      <div class="search-wrap">
+        <input class="topbar-search" id="admin-global-search" type="text" placeholder="Search vendors, events, users…"
+               oninput="adminGlobalSearch()" onkeydown="adminSearchKeydown(event)"
+               autocomplete="off" />
+        <div class="search-results" id="admin-search-results"></div>
+      </div>
       <div style="position:relative;">
         <div class="icon-btn has-dot" id="admin-notif-btn" onclick="toggleAdminNotifPopup(event)">🔔</div>
         <div id="admin-notif-popup" style="display:none;position:absolute;top:42px;right:0;width:300px;background:#1C1814;border:1px solid #2A2018;border-radius:12px;box-shadow:0 8px 32px #00000060;z-index:200;overflow:hidden;">
@@ -2879,16 +2905,151 @@
   }
 
   // ── Topbar global search ──────────────────────────────────────────────────
+  let _searchHighlight = 0;
+  let _searchItems = [];
+
   function adminGlobalSearch() {
-    const q = document.getElementById('admin-global-search').value;
-    // Mirror query into all three per-panel inputs and filter all simultaneously
-    const vsEl = document.getElementById('vendor-search');
-    const osEl = document.getElementById('org-search');
-    const esEl = document.getElementById('events-search');
-    if (vsEl) { vsEl.value = q; filterVendorsTable(); }
-    if (osEl) { osEl.value = q; filterOrgsTable(); }
-    if (esEl) { esEl.value = q; filterEventsTable(); }
+    const q = (document.getElementById('admin-global-search').value || '').trim().toLowerCase();
+    const drop = document.getElementById('admin-search-results');
+    if (!q) { drop.classList.remove('open'); drop.innerHTML = ''; _searchItems = []; return; }
+
+    const match = (str) => (str || '').toLowerCase().includes(q);
+
+    // Search cached data
+    const vendors = (_vendorsCache || []).filter(v =>
+      match(v.trading_name) || match(v.email) || match(v.abn) || match(v.first_name + ' ' + v.last_name)
+    ).slice(0, 4);
+
+    const orgs = (_orgsCache || []).filter(o =>
+      match(o.org_name) || match(o.email) || match(o.abn)
+    ).slice(0, 4);
+
+    const events = (_eventsCache || []).filter(e =>
+      match(e.name) || match(e.organiser_name) || match(e.suburb) || match(e.category)
+    ).slice(0, 4);
+
+    const users = (_usersCache || []).filter(u =>
+      match(u.first_name + ' ' + u.last_name) || match(u.email)
+    ).slice(0, 3);
+
+    _searchItems = [];
+    let html = '';
+
+    if (vendors.length) {
+      html += `<div class="search-group-label">Vendors</div>`;
+      vendors.forEach(v => {
+        const idx = _searchItems.length;
+        _searchItems.push({ type: 'vendor', id: v.user_id, label: v.trading_name });
+        html += `<div class="search-result-item" data-idx="${idx}" onclick="_searchGo(${idx})">
+          <div class="search-result-icon">🍔</div>
+          <div><div class="search-result-main">${v.trading_name}</div>
+          <div class="search-result-sub">${v.email} · ${statusBadge(v.status)}</div></div>
+        </div>`;
+      });
+    }
+
+    if (orgs.length) {
+      html += `<div class="search-group-label">Organisers</div>`;
+      orgs.forEach(o => {
+        const idx = _searchItems.length;
+        _searchItems.push({ type: 'organiser', id: o.user_id, label: o.org_name });
+        html += `<div class="search-result-item" data-idx="${idx}" onclick="_searchGo(${idx})">
+          <div class="search-result-icon">🏛</div>
+          <div><div class="search-result-main">${o.org_name}</div>
+          <div class="search-result-sub">${o.email}</div></div>
+        </div>`;
+      });
+    }
+
+    if (events.length) {
+      html += `<div class="search-group-label">Events</div>`;
+      events.forEach(e => {
+        const idx = _searchItems.length;
+        _searchItems.push({ type: 'event', id: e.id, label: e.name });
+        html += `<div class="search-result-item" data-idx="${idx}" onclick="_searchGo(${idx})">
+          <div class="search-result-icon">🎪</div>
+          <div><div class="search-result-main">${e.name}</div>
+          <div class="search-result-sub">${e.suburb || ''} · ${e.category || ''}</div></div>
+        </div>`;
+      });
+    }
+
+    if (users.length) {
+      html += `<div class="search-group-label">Users</div>`;
+      users.forEach(u => {
+        const idx = _searchItems.length;
+        _searchItems.push({ type: 'user', id: u.id, label: u.first_name + ' ' + u.last_name });
+        html += `<div class="search-result-item" data-idx="${idx}" onclick="_searchGo(${idx})">
+          <div class="search-result-icon">👤</div>
+          <div><div class="search-result-main">${u.first_name} ${u.last_name}</div>
+          <div class="search-result-sub">${u.email} · ${u.role}</div></div>
+        </div>`;
+      });
+    }
+
+    if (!html) html = `<div class="search-no-results">No results for "${q}"</div>`;
+
+    _searchHighlight = -1;
+    drop.innerHTML = html;
+    drop.classList.add('open');
   }
+
+  function _searchGo(idx) {
+    const item = _searchItems[idx];
+    if (!item) return;
+    _searchClose();
+    if (item.type === 'vendor') {
+      showPanel('vendors', document.querySelector('.nav-item[onclick*="vendors"]'));
+      setTimeout(() => openVendorDetail(item.id), 100);
+    } else if (item.type === 'organiser') {
+      showPanel('organisers', document.querySelector('.nav-item[onclick*="organisers"]'));
+      setTimeout(() => openOrganiserDetail(item.id), 100);
+    } else if (item.type === 'event') {
+      showPanel('events', document.querySelector('.nav-item[onclick*="events"]'));
+      setTimeout(() => {
+        const esEl = document.getElementById('events-search');
+        if (esEl) { esEl.value = item.label; filterEventsTable(); }
+      }, 100);
+    } else if (item.type === 'user') {
+      showPanel('users', document.querySelector('.nav-item[onclick*="users"]'));
+      setTimeout(() => {
+        const usEl = document.getElementById('users-search');
+        if (usEl) { usEl.value = item.label; filterUsersTable(); }
+      }, 100);
+    }
+  }
+
+  function adminSearchKeydown(e) {
+    const drop = document.getElementById('admin-search-results');
+    const items = drop.querySelectorAll('.search-result-item');
+    if (!items.length) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      _searchHighlight = Math.min(_searchHighlight + 1, items.length - 1);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      _searchHighlight = Math.max(_searchHighlight - 1, 0);
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (_searchHighlight >= 0) _searchGo(Number(items[_searchHighlight].dataset.idx));
+      else if (items.length > 0) _searchGo(Number(items[0].dataset.idx));
+      return;
+    } else if (e.key === 'Escape') {
+      _searchClose(); return;
+    } else { return; }
+    items.forEach((el, i) => el.style.background = i === _searchHighlight ? '#2A2018' : '');
+  }
+
+  function _searchClose() {
+    document.getElementById('admin-global-search').value = '';
+    const drop = document.getElementById('admin-search-results');
+    drop.classList.remove('open'); drop.innerHTML = ''; _searchItems = [];
+  }
+
+  // Close search results when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('.search-wrap')) _searchClose();
+  });
 
   // ── Admin notifications popup ─────────────────────────────────────────────
   // ── Activity feed ─────────────────────────────────────────────────────────
