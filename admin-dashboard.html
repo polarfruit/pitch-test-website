@@ -612,70 +612,10 @@
         <div class="card-header">
           <span style="font-size:16px;">🕐</span>
           <span class="card-title">Pending approval</span>
-          <span class="card-sub">16 items</span>
+          <span class="card-sub" id="pending-queue-count">—</span>
         </div>
-        <div class="card-body">
-          <!-- Vendors -->
-          <div style="padding:10px 20px 8px;font-size:11px;font-weight:600;color:#4A3C30;text-transform:uppercase;letter-spacing:.08em;">Vendor accounts</div>
-          <div class="queue-item">
-            <div class="queue-avatar">🌮</div>
-            <div class="queue-body">
-              <div class="queue-name">Taco Loco SA</div>
-              <div class="queue-meta">Maria Fernandez · ABN verified · FSC ✓ · PLI ✓</div>
-            </div>
-            <div class="queue-actions">
-              <div class="act-group">
-                <button class="act-btn act-approve" onclick="approveItem(this)">Approve</button>
-                <button class="act-btn act-reject" onclick="openRejectModal('Taco Loco SA')">Reject</button>
-              </div>
-              <span class="queue-time">2 min ago</span>
-            </div>
-          </div>
-          <div class="queue-item">
-            <div class="queue-avatar">🍜</div>
-            <div class="queue-body">
-              <div class="queue-name">Noodle Republic</div>
-              <div class="queue-meta">James Huang · ABN verified · FSC ✓ · PLI pending</div>
-            </div>
-            <div class="queue-actions">
-              <div class="act-group">
-                <button class="act-btn act-approve" onclick="approveItem(this)">Approve</button>
-                <button class="act-btn act-reject" onclick="openRejectModal('Noodle Republic')">Reject</button>
-              </div>
-              <span class="queue-time">14 min ago</span>
-            </div>
-          </div>
-          <div class="queue-item">
-            <div class="queue-avatar">🍕</div>
-            <div class="queue-body">
-              <div class="queue-name">Wood Fired Wonders</div>
-              <div class="queue-meta">Rachel Kim · ABN unverified · FSC ✗ · PLI ✗</div>
-            </div>
-            <div class="queue-actions">
-              <div class="act-group">
-                <button class="act-btn act-suspend" onclick="approveItem(this)">Request docs</button>
-                <button class="act-btn act-reject" onclick="openRejectModal('Wood Fired Wonders')">Reject</button>
-              </div>
-              <span class="queue-time">1 hr ago</span>
-            </div>
-          </div>
-
-          <!-- Organisers -->
-          <div style="padding:10px 20px 8px;font-size:11px;font-weight:600;color:#4A3C30;text-transform:uppercase;letter-spacing:.08em;border-top:1px solid #1E1916;margin-top:4px;">Organiser accounts</div>
-          <div class="queue-item">
-            <div class="queue-avatar">🏙</div>
-            <div class="queue-body">
-              <div class="queue-name">Port Adelaide Events Co.</div>
-              <div class="queue-meta">Tom Baker · ABN verified · Website confirmed</div>
-            </div>
-            <div class="queue-actions">
-              <div class="act-group">
-                <button class="act-btn act-approve" onclick="approveItem(this)">Approve</button>
-                <button class="act-btn act-reject" onclick="openRejectModal('Port Adelaide Events Co.')">Reject</button>
-              </div>
-              <span class="queue-time">3 hr ago</span>
-            </div>
-          </div>
+        <div class="card-body" id="pending-queue-body">
+          <div class="queue-item"><div class="queue-body"><div class="queue-name" style="color:#4A3C30;">Loading…</div></div></div>
         </div>
         <div class="card-footer">
           <button class="act-btn act-view" onclick="showPanel('vendors',document.querySelectorAll('.nav-item')[1])" style="width:100%;padding:8px;">View all pending →</button>
@@ -1738,6 +1678,74 @@
     }
   }
 
+  // ── Pending approval queue (overview card) ───────────────────────────────
+  function renderPendingQueue() {
+    const body = document.getElementById('pending-queue-body');
+    const countEl = document.getElementById('pending-queue-count');
+    if (!body) return;
+
+    const pendingVendors = (_vendorsCache || []).filter(v => v.status === 'pending');
+    const pendingOrgs    = (_orgsCache    || []).filter(o => o.status === 'pending');
+    const total = pendingVendors.length + pendingOrgs.length;
+
+    if (countEl) countEl.textContent = total ? `${total} item${total===1?'':'s'}` : 'All clear';
+
+    if (!total) {
+      body.innerHTML = `<div class="queue-item"><div class="queue-body"><div class="queue-name" style="color:#4A3C30;font-size:13px;">No accounts pending approval.</div></div></div>`;
+      return;
+    }
+
+    let html = '';
+
+    if (pendingVendors.length) {
+      html += `<div style="padding:10px 20px 6px;font-size:11px;font-weight:600;color:#4A3C30;text-transform:uppercase;letter-spacing:.08em;">Vendor accounts</div>`;
+      pendingVendors.forEach(v => {
+        const name = v.trading_name || (v.first_name + ' ' + v.last_name).trim();
+        const safeName = name.replace(/'/g, "\\'");
+        const meta = (v.first_name + ' ' + v.last_name).trim() + (v.abn ? ' · ABN: ' + v.abn : ' · No ABN') + (v.suburb ? ' · ' + v.suburb : '');
+        html += `<div class="queue-item">
+          <div class="queue-avatar">🍔</div>
+          <div class="queue-body">
+            <div class="queue-name">${name}</div>
+            <div class="queue-meta">${meta}</div>
+          </div>
+          <div class="queue-actions">
+            <div class="act-group">
+              <button class="act-btn act-approve" onclick="setUserStatus(${v.user_id},'active',this);setTimeout(renderPendingQueue,300)">Approve</button>
+              <button class="act-btn act-reject" onclick="openRejectModal('${safeName}')">Reject</button>
+            </div>
+            <span class="queue-time">${fmtDate(v.joined)}</span>
+          </div>
+        </div>`;
+      });
+    }
+
+    if (pendingOrgs.length) {
+      html += `<div style="padding:10px 20px 6px;font-size:11px;font-weight:600;color:#4A3C30;text-transform:uppercase;letter-spacing:.08em;${pendingVendors.length ? 'border-top:1px solid #1E1916;margin-top:4px;' : ''}">Organiser accounts</div>`;
+      pendingOrgs.forEach(o => {
+        const name = o.org_name || (o.first_name + ' ' + o.last_name).trim();
+        const safeName = name.replace(/'/g, "\\'");
+        const meta = (o.first_name || '') + ' ' + (o.last_name || '') + (o.abn ? ' · ABN: ' + o.abn : ' · No ABN') + (o.suburb ? ' · ' + o.suburb : '');
+        html += `<div class="queue-item">
+          <div class="queue-avatar">🏛</div>
+          <div class="queue-body">
+            <div class="queue-name">${name}</div>
+            <div class="queue-meta">${meta.trim()}</div>
+          </div>
+          <div class="queue-actions">
+            <div class="act-group">
+              <button class="act-btn act-approve" onclick="setUserStatus(${o.user_id},'active',this);setTimeout(renderPendingQueue,300)">Approve</button>
+              <button class="act-btn act-reject" onclick="openRejectModal('${safeName}')">Reject</button>
+            </div>
+            <span class="queue-time">${fmtDate(o.joined)}</span>
+          </div>
+        </div>`;
+      });
+    }
+
+    body.innerHTML = html;
+  }
+
   function _deltaText(n, label) {
     if (n === 0) return { cls: 'neutral', text: `→ 0 ${label}` };
     return { cls: 'up', text: `▲ ${n} ${label}` };
@@ -1824,6 +1832,7 @@
       _vendorsCache = vendors;
       const filtered = _vendorStatusFilter ? vendors.filter(v => v.status === _vendorStatusFilter) : vendors;
       renderVendorsTable(filtered);
+      renderPendingQueue();
     } catch(e) { console.warn('Vendors load failed', e); }
   }
 
@@ -1892,6 +1901,7 @@
       _orgsCache = organisers;
       const filtered = _orgStatusFilter ? organisers.filter(o => o.status === _orgStatusFilter) : organisers;
       renderOrgsTable(filtered);
+      renderPendingQueue();
     } catch(e) { console.warn('Organisers load failed', e); }
   }
 
