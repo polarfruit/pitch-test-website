@@ -810,6 +810,15 @@ app.get('/api/events/:slug', async (req, res) => {
 
 // ── API: Public vendors ────────────────────────────────────────────────────
 
+app.get('/api/vendors-debug', async (_req, res) => {
+  try {
+    const rows = await stmts.publicVendors.all();
+    res.json({ count: rows.length, vendors: rows });
+  } catch(e) {
+    res.json({ error: e.message, stack: e.stack });
+  }
+});
+
 app.get('/api/vendors', apiCached('vendors', 60000, async () => {
   try {
     const rows = await stmts.publicVendors.all();
