@@ -413,6 +413,7 @@ fetch('/api/vendors').then(function(r){ return r.json(); }).then(function(data) 
       isGrowth:   db.plan === 'growth',
       avatar_url: db.avatar_url   || null,
       _dbUserId:  db.user_id,
+      _real:      db.user_id > 100, // seeded demo accounts have low IDs
     });
   });
 
@@ -524,11 +525,12 @@ function getFiltered() {
   } else if (sort === 'za') {
     list.sort((a, b) => b.name.localeCompare(a.name));
   } else {
-    // Sort: real signups (email_verified) first → then by plan tier
+    // Sort: real user-created accounts first, then plan tier
+    // _real = true means the account was created via signup (not a seeded demo vendor)
     list.sort((a, b) => {
-      const evA = a._emailVerified || 0;
-      const evB = b._emailVerified || 0;
-      if (evB !== evA) return evB - evA; // email-verified signups at top
+      const realA = a._real ? 0 : 1;  // 0 = real signup, 1 = demo
+      const realB = b._real ? 0 : 1;
+      if (realA !== realB) return realA - realB;
       const rank = v => v.isGrowth ? 0 : v.isPro ? 1 : 2;
       return rank(a) - rank(b);
     });
