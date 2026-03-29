@@ -383,12 +383,18 @@ fetch('/api/vendors').then(function(r){ return r.json(); }).then(function(data) 
   var dbVendors = data.vendors || [];
   var staticNames = new Set(VENDORS.map(function(v){ return v.name.toLowerCase(); }));
 
-  // Overlay matching static entries
+  // Build a set of DB trading names for quick lookup
+  var dbNames = new Set(dbVendors.map(function(d){ return d.trading_name ? d.trading_name.toLowerCase() : ''; }));
+
+  // Overlay matching static entries; strip plan badge from unmatched static vendors
   VENDORS = VENDORS.map(function(v) {
     var db = dbVendors.find(function(d) {
       return d.trading_name && d.trading_name.toLowerCase() === v.name.toLowerCase();
     });
-    if (!db) return v;
+    if (!db) {
+      // No real DB account — remove any hardcoded Pro/Growth badge
+      return Object.assign({}, v, { isPro: false, isGrowth: false });
+    }
     return Object.assign({}, v, {
       name:       db.trading_name || v.name,
       suburb:     db.suburb       || v.suburb,
