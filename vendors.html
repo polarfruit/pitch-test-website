@@ -422,24 +422,34 @@ fetch('/api/vendors').then(function(r){ return r.json(); }).then(function(data) 
     if (staticNames.has(db.trading_name.toLowerCase())) return;
     var tags = db.cuisine_tags || [];
     VENDORS.push({
-      id:         String(db.user_id),
-      name:       db.trading_name,
-      suburb:     db.suburb    || 'Adelaide',
-      state:      db.state     || 'SA',
-      bio:        db.bio       || '',
-      cuisines:   tags.length ? tags : ['Food'],
-      setup:      db.setup_type || 'Market Stall',
-      rating:     0,
-      reviews:    0,
-      events:     0,
-      isPro:      db.plan === 'pro' || db.plan === 'growth',
-      isGrowth:   db.plan === 'growth',
-      emoji:      '🍽',
-      bg:         'linear-gradient(135deg,#1A1612,#2A1A0A)',
-      avatar_url: db.avatar_url || null,
-      _dbUserId:  db.user_id,
-      _real:      true,
+      id:             String(db.user_id),
+      name:           db.trading_name,
+      suburb:         db.suburb    || 'Adelaide',
+      state:          db.state     || 'SA',
+      bio:            db.bio       || '',
+      cuisines:       tags.length ? tags : ['Food'],
+      setup:          db.setup_type || 'Market Stall',
+      rating:         0,
+      reviews:        0,
+      events:         0,
+      isPro:          db.plan === 'pro' || db.plan === 'growth',
+      isGrowth:       db.plan === 'growth',
+      emoji:          '🍽',
+      bg:             'linear-gradient(135deg,#1A1612,#2A1A0A)',
+      avatar_url:     db.avatar_url  || null,
+      _dbUserId:      db.user_id,
+      _emailVerified: db.email_verified ? 1 : 0,
+      _real:          true,
     });
+  });
+
+  // Tag email_verified onto overlaid static entries
+  VENDORS = VENDORS.map(function(v) {
+    if (v._dbUserId && !('_emailVerified' in v)) {
+      var db = dbVendors.find(function(d){ return d.user_id === v._dbUserId; });
+      return Object.assign({}, v, { _emailVerified: db ? (db.email_verified ? 1 : 0) : 0 });
+    }
+    return v;
   });
 
   renderGrid();
@@ -514,11 +524,11 @@ function getFiltered() {
   } else if (sort === 'za') {
     list.sort((a, b) => b.name.localeCompare(a.name));
   } else {
-    // Real DB accounts first, then by plan tier, then static demo vendors last
+    // Sort: real signups (email_verified) first → then by plan tier
     list.sort((a, b) => {
-      const realA = a._dbUserId ? 1 : 0;
-      const realB = b._dbUserId ? 1 : 0;
-      if (realB !== realA) return realB - realA; // real DB accounts first
+      const evA = a._emailVerified || 0;
+      const evB = b._emailVerified || 0;
+      if (evB !== evA) return evB - evA; // email-verified signups at top
       const rank = v => v.isGrowth ? 0 : v.isPro ? 1 : 2;
       return rank(a) - rank(b);
     });
