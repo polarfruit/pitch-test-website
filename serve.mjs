@@ -357,6 +357,7 @@ app.post('/api/signup/vendor', async (req, res) => {
     await stmts.setUserStatus.run('active', userId);
     await stmts.setEmailVerified.run(userId);
     await stmts.deletePresignupCode.run(email.toLowerCase());
+    _apiCache.delete('vendors'); _apiCache.delete('stats');
 
     sessWrite(res, { userId, role: 'vendor', name: `${first_name} ${last_name}` });
     res.json({ ok: true, redirect: '/dashboard/vendor' });
@@ -753,13 +754,13 @@ function apiCached(key, ttlMs, fn) {
   return async (req, res) => {
     const hit = _apiCache.get(key);
     if (hit && Date.now() - hit.ts < ttlMs) {
-      res.setHeader('Cache-Control', 'public, max-age=60');
+      res.setHeader('Cache-Control', 'no-cache');
       return res.json(hit.data);
     }
     try {
       const data = await fn();
       _apiCache.set(key, { data, ts: Date.now() });
-      res.setHeader('Cache-Control', 'public, max-age=60');
+      res.setHeader('Cache-Control', 'no-cache');
       res.json(data);
     } catch(e) {
       console.error('[apiCached]', key, e);
@@ -967,6 +968,7 @@ app.post('/api/admin/users/:id/status', requireAdmin, async (req, res) => {
     warning = 'Status updated but some notifications may have failed.';
   }
 
+  _apiCache.delete('vendors'); _apiCache.delete('stats');
   res.json({ ok: true, ...(warning ? { warning } : {}) });
 });
 
