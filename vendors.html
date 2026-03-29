@@ -211,7 +211,13 @@ body::before {
 .empty-sub { font-size: 14px; color: var(--text-mid); }
 
 /* ── PAGINATION ───────────────────────────────────────────────────────────── */
-.pagination { display: flex; align-items: center; gap: 5px; justify-content: center; padding-bottom: 16px; }
+.pagination-wrap {
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+  padding: 28px 0 8px; border-top: 1px solid #ffffff07; margin-top: 12px;
+}
+.pagination-meta { font-size: 13px; color: var(--text-lo); }
+.pagination-meta strong { color: var(--text-mid); font-weight: 600; }
+.pagination { display: flex; align-items: center; gap: 5px; justify-content: center; }
 .pg-btn {
   min-width: 38px; height: 38px; padding: 0 10px;
   border-radius: 10px; font-family: var(--fb); font-size: 13px; font-weight: 600;
@@ -314,13 +320,14 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
     <input type="hidden" id="f-pro" value="true" />
   </div>
 
-  <span id="grid-meta-text" style="display:none;"></span>
-
   <!-- VENDOR GRID -->
   <div class="vendor-grid" id="vendor-grid"></div>
 
   <!-- PAGINATION -->
-  <div class="pagination" id="pagination"></div>
+  <div class="pagination-wrap" id="pagination-wrap" style="display:none;">
+    <div class="pagination-meta" id="pagination-meta"></div>
+    <div class="pagination" id="pagination"></div>
+  </div>
 
 </main>
 
@@ -376,7 +383,7 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
 let VENDORS = (window.PITCH_VENDORS || []).map(function(v){ return Object.assign({}, v); });
 
 let currentPage = 1;
-const PER_PAGE = 12;
+const PER_PAGE = 9;
 
 // Fetch DB vendors and overlay/add real registered vendors
 fetch('/api/vendors').then(function(r){ return r.json(); }).then(function(data) {
@@ -558,9 +565,9 @@ function renderGrid() {
   const start = (currentPage - 1) * PER_PAGE;
   const page  = filtered.slice(start, start + PER_PAGE);
 
-  document.getElementById('result-count').textContent = '';
-  document.getElementById('grid-meta-text').textContent =
-    `Showing ${Math.min(start + 1, total)}–${Math.min(start + page.length, total)} vendors`;
+  // Update header count
+  const countEl = document.getElementById('result-count');
+  if (countEl) countEl.textContent = total ? ` (${total})` : '';
 
   const grid = document.getElementById('vendor-grid');
   if (page.length === 0) {
@@ -569,12 +576,24 @@ function renderGrid() {
     grid.innerHTML = page.map(renderCard).join('');
   }
 
-  renderPagination(total);
+  renderPagination(total, start, page.length);
 }
 
-function renderPagination(total) {
-  const pg = document.getElementById('pagination');
+function renderPagination(total, start, pageLen) {
+  const wrap  = document.getElementById('pagination-wrap');
+  const meta  = document.getElementById('pagination-meta');
+  const pg    = document.getElementById('pagination');
   const totalPages = Math.max(1, Math.ceil(total / PER_PAGE));
+
+  // Always show the wrap when there are results
+  wrap.style.display = total > 0 ? '' : 'none';
+
+  // Result count line
+  const from = total > 0 ? start + 1 : 0;
+  const to   = start + pageLen;
+  meta.innerHTML = `Showing <strong>${from}–${to}</strong> of <strong>${total}</strong> vendor${total === 1 ? '' : 's'}`;
+
+  // Only show page buttons if more than one page
   if (totalPages <= 1) { pg.innerHTML = ''; return; }
 
   let html = `<button class="pg-btn page-prev" onclick="goPage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>← Prev</button>`;
