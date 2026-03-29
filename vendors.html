@@ -507,7 +507,11 @@ function getFiltered() {
   } else if (sort === 'za') {
     list.sort((a, b) => b.name.localeCompare(a.name));
   } else {
+    // Real DB accounts first, then by plan tier, then static demo vendors last
     list.sort((a, b) => {
+      const realA = a._dbUserId ? 1 : 0;
+      const realB = b._dbUserId ? 1 : 0;
+      if (realB !== realA) return realB - realA; // real DB accounts first
       const rank = v => v.isGrowth ? 0 : v.isPro ? 1 : 2;
       return rank(a) - rank(b);
     });
