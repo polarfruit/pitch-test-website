@@ -811,11 +811,16 @@ app.get('/api/events/:slug', async (req, res) => {
 // ── API: Public vendors ────────────────────────────────────────────────────
 
 app.get('/api/vendors', apiCached('vendors', 60000, async () => {
-  const rows = await stmts.publicVendors.all();
-  return { vendors: rows.map(v => ({
-    ...v,
-    cuisine_tags: (() => { try { return JSON.parse(v.cuisine_tags || '[]'); } catch { return []; } })(),
-  })) };
+  try {
+    const rows = await stmts.publicVendors.all();
+    return { vendors: rows.map(v => ({
+      ...v,
+      cuisine_tags: (() => { try { return JSON.parse(v.cuisine_tags || '[]'); } catch { return []; } })(),
+    })) };
+  } catch(e) {
+    console.error('[/api/vendors] query failed:', e.message, e.stack);
+    return { vendors: [], error: e.message };
+  }
 }));
 
 app.get('/api/vendors/:userId', async (req, res) => {
