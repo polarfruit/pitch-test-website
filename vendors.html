@@ -383,7 +383,7 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
 let VENDORS = (window.PITCH_VENDORS || []).map(function(v){ return Object.assign({}, v); });
 
 let currentPage = 1;
-const PER_PAGE = 9;
+const PER_PAGE = 12;
 
 // Fetch DB vendors and overlay/add real registered vendors
 fetch('/api/vendors').then(function(r){ return r.json(); }).then(function(data) {
