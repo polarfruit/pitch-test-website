@@ -1096,9 +1096,10 @@ export const stmts = {
   publicVendors: prepare(`
     SELECT v.user_id,v.trading_name,v.suburb,v.state,v.bio,v.cuisine_tags,
            v.setup_type,v.stall_w,v.stall_d,v.power,v.water,v.price_range,
-           v.instagram,v.plan,u.status,u.avatar_url
+           v.instagram,v.plan,u.status,u.avatar_url,u.email_verified
     FROM vendors v JOIN users u ON v.user_id=u.id
     WHERE u.status='active' ORDER BY
+      u.email_verified DESC,
       CASE v.plan WHEN 'growth' THEN 0 WHEN 'pro' THEN 1 ELSE 2 END ASC,
       v.created_at ASC
   `),
