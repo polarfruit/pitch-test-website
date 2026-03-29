@@ -296,16 +296,17 @@ body::before {
 .tw-empty { padding: 20px 0; font-size: 13px; color: var(--text-lo); }
 
 /* ── VENDOR MARQUEE ──────────────────────────────────────────────────────── */
+.marquee-outer { position: relative; }
 .marquee-wrap {
-  position: relative; overflow: hidden;
-  mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+  overflow: hidden;
+  mask-image: linear-gradient(to right, transparent 0%, black 8%, black 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8%, black 100%);
 }
-.marquee-wrap::after {
-  content: '';
-  position: absolute; top: 0; right: 0; bottom: 0; width: 120px;
-  background: linear-gradient(to right, transparent, #1A1612);
-  pointer-events: none; z-index: 2;
+/* Right-edge fade sits OUTSIDE the masked wrapper so it isn't clipped */
+.marquee-rfade {
+  position: absolute; top: 0; right: 0; bottom: 0; width: 140px;
+  background: linear-gradient(to right, transparent, #231E19);
+  pointer-events: none; z-index: 10;
 }
 .marquee-track {
   display: flex; gap: 18px;
@@ -847,8 +848,9 @@ body::before {
   letter-spacing: 0.08em; text-transform: uppercase; font-family: var(--fb);
   flex-shrink: 0; align-self: flex-start;
 }
-.bdg-pro   { background: #E8500A12; color: var(--ember); border: 1px solid #E8500A22; }
-.bdg-basic { background: #2B5BA812; color: var(--slate); border: 1px solid #2B5BA822; }
+.bdg-pro    { background: #E8500A12; color: var(--ember); border: 1px solid #E8500A22; }
+.bdg-growth { background: #E8500A20; color: var(--ember); border: 1px solid #E8500A40; }
+.bdg-basic  { background: #2B5BA812; color: var(--slate); border: 1px solid #2B5BA822; }
 
 .vc-stars { color: var(--ember); font-size: 12px; margin-bottom: 2px; }
 .vc-stars span { color: #9A8870; font-size: 11px; font-family: var(--fb); margin-left: 4px; }
@@ -2066,6 +2068,59 @@ fetch('/api/stats').then(r => r.json()).then(d => {
   set('stat-apps-count',    fmtStat(Math.max(d.applications || 0, 340)));
   if (d.rating && d.rating > 0) set('stat-rating', d.rating.toFixed(1) + '★');
 }).catch(() => {});
+
+// Dynamic vendor marquee — replace hardcoded cards with real DB data
+(function() {
+  const AVATAR_COLORS = ['av-a','av-b','av-c','av-d','av-e','av-f','av-g','av-h'];
+  const FALLBACK_TAGS = [['Food','Market','Adelaide'],['Gourmet','Local','SA'],['Events','Catering','Fresh']];
+
+  function initials(name) {
+    if (!name) return '??';
+    const parts = name.trim().split(/\s+/);
+    return parts.length >= 2
+      ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+      : name.slice(0,2).toUpperCase();
+  }
+
+  function planBadge(plan) {
+    if (plan === 'growth') return `<span class="vc-plan-badge bdg-growth">🔥 Growth</span>`;
+    if (plan === 'pro')    return `<span class="vc-plan-badge bdg-pro">⭐ Pro</span>`;
+    return `<span class="vc-plan-badge bdg-basic">Starter</span>`;
+  }
+
+  function buildCard(v, idx) {
+    const tags = (() => {
+      try { const t = JSON.parse(v.cuisine_tags); return Array.isArray(t) && t.length ? t : FALLBACK_TAGS[idx % FALLBACK_TAGS.length]; }
+      catch(e) { return FALLBACK_TAGS[idx % FALLBACK_TAGS.length]; }
+    })();
+    const avCls  = AVATAR_COLORS[idx % AVATAR_COLORS.length];
+    const sub    = [v.setup_type, v.suburb && v.state ? v.suburb + ', ' + v.state : v.suburb || v.state].filter(Boolean).join(' · ');
+    const tagHtml = tags.slice(0,3).map(t => `<span class="vc-tag">${t}</span>`).join('');
+    return `<a href="/vendors/${v.user_id}" class="vendor-card">
+      <div class="vc-head">
+        <div class="vc-avatar ${avCls}">${initials(v.trading_name)}</div>
+        <div class="vc-info">
+          <div class="vc-name">${v.trading_name} <span class="vc-verified">✓</span></div>
+          <div class="vc-sub">${sub || 'Adelaide, SA'}</div>
+        </div>
+        ${planBadge(v.plan)}
+      </div>
+      <div class="vc-tags">${tagHtml}</div>
+    </a>`;
+  }
+
+  fetch('/api/vendors').then(r => r.json()).then(data => {
+    const vendors = (data.vendors || data || []).filter(v => v.trading_name);
+    if (!vendors.length) return; // keep static fallback
+    const marquee = document.getElementById('vendor-marquee');
+    if (!marquee) return;
+    // Need at least ~8 cards for smooth infinite scroll; repeat if needed
+    let pool = vendors;
+    while (pool.length < 8) pool = pool.concat(vendors);
+    const html = pool.map((v, i) => buildCard(v, i)).join('');
+    marquee.innerHTML = html + html; // duplicate for seamless loop
+  }).catch(() => {}); // silently keep static on error
+})();
 
 // Hero search — redirect to events page with all three segment params
 function heroSearch(e) {
