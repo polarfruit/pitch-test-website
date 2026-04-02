@@ -2027,8 +2027,9 @@
     };
   }
 
-  const _vendorSorter = makeSorter('vsort-', ['name','abn','plan','joined','status']);
+  let _vendorSorter;
   function sortVendors(key) {
+    if (!_vendorSorter) _vendorSorter = makeSorter('vsort-', ['name','abn','plan','joined','status']);
     const { dir } = _vendorSorter(key);
     const base = _vendorStatusFilter ? _vendorsCache.filter(v => v.status === _vendorStatusFilter) : _vendorsCache;
     const q = (document.getElementById('vendor-search').value || '').toLowerCase();
@@ -2047,8 +2048,9 @@
     renderVendorsTable(list);
   }
 
-  const _orgSorter = makeSorter('osort-', ['name','abn','joined','status']);
+  let _orgSorter;
   function sortOrgs(key) {
+    if (!_orgSorter) _orgSorter = makeSorter('osort-', ['name','abn','joined','status']);
     const { dir } = _orgSorter(key);
     const base = _orgStatusFilter ? _orgsCache.filter(o => o.status === _orgStatusFilter) : _orgsCache;
     const q = (document.getElementById('org-search').value || '').toLowerCase();
@@ -2066,8 +2068,9 @@
     renderOrgsTable(list);
   }
 
-  const _userSorter = makeSorter('usort-', ['name','role','joined','status']);
+  let _userSorter;
   function sortUsers(key) {
+    if (!_userSorter) _userSorter = makeSorter('usort-', ['name','role','joined','status']);
     const { dir } = _userSorter(key);
     const q = document.getElementById('users-search').value.toLowerCase();
     let list = q ? _usersCache.filter(u => (u.first_name+' '+u.last_name).toLowerCase().includes(q) || (u.email||'').toLowerCase().includes(q)) : [..._usersCache];
