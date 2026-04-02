@@ -649,9 +649,9 @@ app.post('/api/profile/plan', requireAuth, async (req, res) => {
     if (!['free', 'pro', 'growth'].includes(plan)) {
       return res.status(400).json({ error: 'Invalid plan' });
     }
-    const vendor = db.prepare('SELECT id FROM vendors WHERE user_id = ?').get(req.session.userId);
+    const vendor = await stmts.getVendorByUserId.get(req.session.userId);
     if (!vendor) return res.status(403).json({ error: 'Not a vendor account' });
-    db.prepare('UPDATE vendors SET plan = ? WHERE user_id = ?').run(plan, req.session.userId);
+    await stmts.updateVendorPlan.run(plan, req.session.userId);
     _apiCache.delete('vendors'); _apiCache.delete('stats');
     res.json({ ok: true, plan });
   } catch (e) {
@@ -775,28 +775,12 @@ app.get('/api/events', apiCached('events', 60000, async () => ({
 
 app.get('/api/featured-events', apiCached('featured-events', 120000, async () => {
   const today = new Date().toISOString().slice(0, 10);
-  return db.prepare(`
-    SELECT e.id, e.name, e.slug, e.category, e.suburb, e.state, e.date_sort, e.featured,
-           COUNT(ea.id) AS vendor_count
-    FROM events e
-    LEFT JOIN event_applications ea ON ea.event_id = e.id AND ea.status = 'approved'
-    WHERE e.status = 'published'
-      AND e.date_sort >= ?
-    GROUP BY e.id
-    HAVING vendor_count > 0
-    ORDER BY e.featured DESC, e.date_sort ASC, vendor_count DESC
-    LIMIT 6
-  `).all(today);
+  return stmts.featuredEvents.all(today);
 }));
 
 app.get('/api/category-counts', apiCached('category-counts', 120000, async () => {
   const today = new Date().toISOString().slice(0, 10);
-  const rows = db.prepare(`
-    SELECT category, COUNT(*) AS count
-    FROM events
-    WHERE status = 'published' AND date_sort >= ?
-    GROUP BY category
-  `).all(today);
+  const rows = await stmts.categoryCounts.all(today);
   const counts = {};
   rows.forEach(r => { counts[r.category] = r.count; });
   return counts;
@@ -1246,13 +1230,15 @@ app.get('/api/notifications', requireAuth, async (req, res) => {
 
 app.get('/api/admin/notifications', requireAdmin, async (req, res) => {
   try {
-    const db = await getDb();
-    const pending = db.prepare(`SELECT COUNT(*) as c FROM users WHERE status='pending'`).get();
-    const recentVendors = db.prepare(`SELECT u.id, v.trading_name, u.created_at FROM vendors v JOIN users u ON u.id=v.user_id WHERE u.status='pending' ORDER BY u.created_at DESC LIMIT 5`).all();
-    const recentOrgs = db.prepare(`SELECT u.id, o.org_name, u.created_at FROM organisers o JOIN users u ON u.id=o.user_id WHERE u.status='pending' ORDER BY u.created_at DESC LIMIT 5`).all();
+    const [pending, recentVendors, recentOrgs] = await Promise.all([
+      stmts.countPending.get(),
+      stmts.recentPendingVendors.all(),
+      stmts.recentPendingOrgs.all(),
+    ]);
     const notifs = [];
-    if (pending && pending.c > 0) {
-      notifs.push({ id:'pending', icon:'⏳', iconCls:'gold', title:`${pending.c} account${pending.c>1?'s':''} awaiting approval`, desc:'Pending vendors and organisers need review.', time:'now', unread:true });
+    if (pending && (pending.c ?? pending.n) > 0) {
+      const pc = pending.c ?? pending.n;
+      notifs.push({ id:'pending', icon:'⏳', iconCls:'gold', title:`${pc} account${pc>1?'s':''} awaiting approval`, desc:'Pending vendors and organisers need review.', time:'now', unread:true });
     }
     for (const v of recentVendors) {
       notifs.push({ id:`v-${v.id}`, icon:'🍽', iconCls:'ember', title:`New vendor: ${v.trading_name}`, desc:'Vendor account pending approval.', time: v.created_at ? new Date(v.created_at).toLocaleDateString('en-AU') : '', unread:true });
