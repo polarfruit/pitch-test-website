@@ -1954,8 +1954,14 @@
     try {
       const r = await fetch('/api/admin/vendors');
       const { vendors } = await r.json();
-      _vendorsCache = vendors;
-      const filtered = _vendorStatusFilter ? vendors.filter(v => v.status === _vendorStatusFilter) : vendors;
+      _vendorsCache = vendors.map(v => {
+        const mockAbn = v.abn || ((51 + (v.user_id % 40)) + ' ' + String(100 + (v.user_id % 900)).padStart(3,'0') + ' ' + String(100 + (v.user_id * 7 % 900)).padStart(3,'0') + ' ' + String(100 + (v.user_id * 13 % 900)).padStart(3,'0'));
+        return Object.assign({}, v, {
+          _abn_display: mockAbn,
+          _abn_num: parseInt(mockAbn.replace(/\s/g, '')) || 0,
+        });
+      });
+      const filtered = _vendorStatusFilter ? _vendorsCache.filter(v => v.status === _vendorStatusFilter) : _vendorsCache;
       renderVendorsTable(filtered);
       renderPendingQueue();
     } catch(e) { console.warn('Vendors load failed', e); }
@@ -1999,7 +2005,7 @@
 
       return `<tr>
         <td><strong>${v.trading_name}</strong><br><span style="font-size:12px;color:#4A3C30;">${v.email}</span></td>
-        <td><span style="font-size:12px;">${v.abn || '—'}</span></td>
+        <td><span style="font-size:12px;">${v._abn_display || v.abn || '—'}</span></td>
         <td>${(() => {
           const total = 3;
           const uploaded = [v.food_safety_url, v.pli_url, v.council_url].filter(Boolean).length;
@@ -2043,7 +2049,7 @@
     list.sort((a, b) => {
       let av, bv;
       if (key === 'name')   { av = (a.trading_name||'').toLowerCase(); bv = (b.trading_name||'').toLowerCase(); }
-      else if (key === 'abn')    { av = parseInt((a.abn||'').replace(/\s/g,'')) || 0; bv = parseInt((b.abn||'').replace(/\s/g,'')) || 0; }
+      else if (key === 'abn')    { av = a._abn_num || 0; bv = b._abn_num || 0; }
       else if (key === 'docs')   { av = [a.food_safety_url,a.pli_url,a.council_url].filter(Boolean).length; bv = [b.food_safety_url,b.pli_url,b.council_url].filter(Boolean).length; }
       else if (key === 'plan')   { av = PLAN_ORDER[a.plan] ?? 9; bv = PLAN_ORDER[b.plan] ?? 9; }
       else if (key === 'joined') { av = a.joined || ''; bv = b.joined || ''; }
@@ -2065,7 +2071,7 @@
     list.sort((a, b) => {
       let av, bv;
       if (key === 'name')        { av = (a.org_name||'').toLowerCase(); bv = (b.org_name||'').toLowerCase(); }
-      else if (key === 'abn')    { av = a._abn_num || parseInt((a.abn||'').replace(/\s/g,'')) || 0; bv = b._abn_num || parseInt((b.abn||'').replace(/\s/g,'')) || 0; }
+      else if (key === 'abn')    { av = a._abn_num || 0; bv = b._abn_num || 0; }
       else if (key === 'events') { av = a._events || 0; bv = b._events || 0; }
       else if (key === 'stalls') { av = a._stalls || 0; bv = b._stalls || 0; }
       else if (key === 'joined') { av = a.joined || ''; bv = b.joined || ''; }
@@ -2161,7 +2167,8 @@
       _orgsCache = organisers.map(o => Object.assign({}, o, {
         _events: 2 + (o.user_id % 4),
         _stalls: (2 + (o.user_id % 4)) * (8 + (o.user_id % 12)),
-        _abn_num: parseInt((o.abn || '').replace(/\s/g, '')) || 0,
+        _mock_abn: o.abn || ((51 + (o.user_id % 40)) + ' ' + String(100 + (o.user_id % 900)).padStart(3,'0') + ' ' + String(100 + (o.user_id * 7 % 900)).padStart(3,'0')),
+        _abn_num: parseInt((o.abn || ((51 + (o.user_id % 40)) + '' + String(100 + (o.user_id % 900)).padStart(3,'0') + String(100 + (o.user_id * 7 % 900)).padStart(3,'0'))).replace(/\s/g, '')) || 0,
       }));
       const filtered = _orgStatusFilter ? _orgsCache.filter(o => o.status === _orgStatusFilter) : _orgsCache;
       renderOrgsTable(filtered);
@@ -2207,7 +2214,7 @@
 
       const mockEvents = o._events !== undefined ? o._events : (2 + (o.user_id % 4));
       const mockStalls = o._stalls !== undefined ? o._stalls : mockEvents * (8 + (o.user_id % 12));
-      const mockAbn = o.abn || (51 + (o.user_id % 40)).toString() + ' ' + String(100 + (o.user_id % 900)).padStart(3,'0') + ' ' + String(100 + (o.user_id*7 % 900)).padStart(3,'0');
+      const mockAbn = o._mock_abn || o.abn || '—';
       return `<tr>
         <td><strong>${o.org_name}</strong><br><span style="font-size:12px;color:#4A3C30;">${o.email}</span></td>
         <td><span style="font-size:12px;">${mockAbn}</span></td>
