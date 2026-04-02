@@ -810,27 +810,6 @@ app.get('/api/events/:slug', async (req, res) => {
 
 // ── API: Public vendors ────────────────────────────────────────────────────
 
-app.get('/api/vendors-debug', async (_req, res) => {
-  try {
-    if (!process.env.TURSO_DATABASE_URL) return res.json({ error: 'no turso' });
-    const { createClient } = await import('@libsql/client/web');
-    const c = createClient({ url: process.env.TURSO_DATABASE_URL, authToken: process.env.TURSO_AUTH_TOKEN });
-    const [uCount, vCount, uSample, vSample] = await Promise.all([
-      c.execute(`SELECT COUNT(*) as n FROM users`),
-      c.execute(`SELECT COUNT(*) as n FROM vendors`),
-      c.execute(`SELECT id,role,status,email FROM users LIMIT 5`),
-      c.execute(`SELECT user_id,trading_name,plan FROM vendors LIMIT 5`),
-    ]);
-    res.json({
-      userCount: uCount.rows[0]?.n,
-      vendorCount: vCount.rows[0]?.n,
-      userSample: uSample.rows,
-      vendorSample: vSample.rows,
-    });
-  } catch(e) {
-    res.json({ error: e.message, stack: e.stack });
-  }
-});
 
 app.get('/api/vendors', apiCached('vendors', 60000, async () => {
   try {
