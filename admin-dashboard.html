@@ -792,14 +792,14 @@
     <div class="two-col" style="align-items:start;">
       <div class="card">
         <div class="filter-bar" style="padding:12px 20px;">
-          <button class="filter-chip active">All <span style="margin-left:4px;background:#E8500A;color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700;">7</span></button>
-          <button class="filter-chip">Vendor complaint</button>
-          <button class="filter-chip">Organiser complaint</button>
-          <button class="filter-chip">Content</button>
-          <button class="filter-chip">Resolved</button>
+          <button class="filter-chip active" onclick="setReportFilter(this,'all')">All <span style="margin-left:4px;background:#E8500A;color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700;">7</span></button>
+          <button class="filter-chip" onclick="setReportFilter(this,'vendor-complaint')">Vendor complaint</button>
+          <button class="filter-chip" onclick="setReportFilter(this,'organiser-complaint')">Organiser complaint</button>
+          <button class="filter-chip" onclick="setReportFilter(this,'content')">Content</button>
+          <button class="filter-chip" onclick="setReportFilter(this,'resolved')">Resolved</button>
         </div>
 
-        <div class="report-card">
+        <div class="report-card" data-report-type="vendor-complaint">
           <div class="report-header">
             <span class="badge badge-red"><span class="report-type">Vendor complaint</span></span>
             <span style="font-size:12px;color:#6B5A4A;margin-left:auto;">Report #1048 · Mar 7, 2026</span>
@@ -815,7 +815,7 @@
           </div>
         </div>
 
-        <div class="report-card">
+        <div class="report-card" data-report-type="organiser-complaint">
           <div class="report-header">
             <span class="badge badge-amber"><span class="report-type">Organiser complaint</span></span>
             <span style="font-size:12px;color:#6B5A4A;margin-left:auto;">Report #1047 · Mar 6, 2026</span>
@@ -831,7 +831,7 @@
           </div>
         </div>
 
-        <div class="report-card">
+        <div class="report-card" data-report-type="content">
           <div class="report-header">
             <span class="badge badge-blue"><span class="report-type">Content report</span></span>
             <span style="font-size:12px;color:#6B5A4A;margin-left:auto;">Report #1046 · Mar 5, 2026</span>
@@ -847,7 +847,7 @@
           </div>
         </div>
 
-        <div class="report-card" style="opacity:0.55;">
+        <div class="report-card" data-report-type="resolved" style="opacity:0.55;">
           <div class="report-header">
             <span class="badge badge-grey"><span class="report-type" style="color:#6B5A4A;">Resolved</span></span>
             <span style="font-size:12px;color:#6B5A4A;margin-left:auto;">Report #1045 · Mar 3, 2026</span>
@@ -2345,6 +2345,15 @@
     _orgStatusFilter = (filter === 'all') ? null : filter;
     const filtered = _orgStatusFilter ? _orgsCache.filter(o => o.status === _orgStatusFilter) : _orgsCache;
     renderOrgsTable(filtered);
+  }
+
+  function setReportFilter(btn, filter) {
+    document.querySelectorAll('#panel-reports .filter-chip').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('#panel-reports .report-card').forEach(card => {
+      const type = card.dataset.reportType;
+      card.style.display = (filter === 'all' || type === filter) ? '' : 'none';
+    });
   }
 
   // Pending suspend/ban target
