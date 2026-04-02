@@ -818,7 +818,12 @@ app.get('/api/vendors-debug', async (_req, res) => {
     let publicRows = [], publicErr = null;
     try { publicRows = await stmts.publicVendors.all(); }
     catch(e2) { publicErr = e2.message; }
-    res.json({ publicCount: publicRows.length, publicErr, allCount: allVendors.length, statuses });
+    // Raw simple query to test WHERE clause
+    let simpleRows = [], simpleErr = null;
+    try {
+      simpleRows = await stmts.vendorsByStatus.all('active');
+    } catch(e3) { simpleErr = e3.message; }
+    res.json({ publicCount: publicRows.length, publicErr, simpleCount: simpleRows.length, simpleErr, allCount: allVendors.length, statuses });
   } catch(e) {
     res.json({ error: e.message, stack: e.stack });
   }
