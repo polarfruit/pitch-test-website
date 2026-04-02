@@ -786,7 +786,8 @@ export const stmts = {
     VALUES (@user_id,@trading_name,@abn,@abn_verified,@mobile,@state,@suburb,@bio,
       @cuisine_tags,@setup_type,@stall_w,@stall_d,@power,@water,@price_range,@instagram,@plan)
   `),
-  getVendorByUserId: prepare(`SELECT * FROM vendors WHERE user_id = ?`),
+  getVendorByUserId:  prepare(`SELECT * FROM vendors WHERE user_id = ?`),
+  updateVendorPlan:   prepare(`UPDATE vendors SET plan = ? WHERE user_id = ?`),
   allVendors: prepare(`SELECT u.id as user_id, COALESCE(v.trading_name, u.first_name||' '||u.last_name) as trading_name, u.email, u.first_name, u.last_name, u.status, u.created_at as joined, v.abn, COALESCE(v.plan,'free') as plan, v.suburb, v.state, v.id as vid, v.created_at FROM users u LEFT JOIN vendors v ON v.user_id=u.id AND v.id=(SELECT MIN(id) FROM vendors WHERE user_id=u.id) WHERE u.role='vendor' ORDER BY u.id DESC`),
   vendorsByStatus: prepare(`SELECT u.id as user_id, COALESCE(v.trading_name, u.first_name||' '||u.last_name) as trading_name, u.email, u.first_name, u.last_name, u.status, u.created_at as joined, v.abn, COALESCE(v.plan,'free') as plan, v.suburb, v.state, v.id as vid, v.created_at FROM users u LEFT JOIN vendors v ON v.user_id=u.id AND v.id=(SELECT MIN(id) FROM vendors WHERE user_id=u.id) WHERE u.role='vendor' AND u.status=? ORDER BY u.id DESC`),
 
@@ -903,8 +904,30 @@ export const stmts = {
   allApplications:          prepare(`SELECT ea.id,ea.event_id,ea.vendor_user_id,ea.status,ea.message,ea.created_at,ea.spot_number,e.name as event_name,e.slug,e.category,e.date_sort,e.organiser_name,u.email as vendor_email,v.trading_name FROM event_applications ea JOIN events e ON ea.event_id=e.id JOIN users u ON ea.vendor_user_id=u.id JOIN vendors v ON v.user_id=u.id ORDER BY ea.created_at DESC`),
   applicationsByStatus:     prepare(`SELECT ea.id,ea.event_id,ea.vendor_user_id,ea.status,ea.message,ea.created_at,ea.spot_number,e.name as event_name,e.slug,e.category,e.date_sort,e.organiser_name,u.email as vendor_email,v.trading_name FROM event_applications ea JOIN events e ON ea.event_id=e.id JOIN users u ON ea.vendor_user_id=u.id JOIN vendors v ON v.user_id=u.id WHERE ea.status=? ORDER BY ea.created_at DESC`),
 
-  // featured
-  featuredEvents:    prepare(`SELECT id,name,slug,category,suburb,state,date_sort,organiser_name,featured FROM events WHERE featured=1 ORDER BY date_sort ASC`),
+  // featured / homepage queries
+  featuredEvents: prepare(`
+    SELECT e.id,e.name,e.slug,e.category,e.suburb,e.state,e.date_sort,e.featured,
+           COUNT(ea.id) AS vendor_count
+    FROM events e
+    LEFT JOIN event_applications ea ON ea.event_id=e.id AND ea.status='approved'
+    WHERE e.status='published' AND e.date_sort >= ?
+    GROUP BY e.id HAVING vendor_count > 0
+    ORDER BY e.featured DESC, e.date_sort ASC, vendor_count DESC LIMIT 6
+  `),
+  categoryCounts: prepare(`
+    SELECT category, COUNT(*) AS count FROM events
+    WHERE status='published' AND date_sort >= ? GROUP BY category
+  `),
+  recentPendingVendors: prepare(`
+    SELECT u.id, v.trading_name, u.created_at
+    FROM vendors v JOIN users u ON u.id=v.user_id
+    WHERE u.status='pending' ORDER BY u.created_at DESC LIMIT 5
+  `),
+  recentPendingOrgs: prepare(`
+    SELECT u.id, o.org_name, u.created_at
+    FROM organisers o JOIN users u ON u.id=o.user_id
+    WHERE u.status='pending' ORDER BY u.created_at DESC LIMIT 5
+  `),
   featuredVendors:   prepare(`SELECT v.user_id,v.trading_name,v.cuisine_tags,v.suburb,v.state,v.featured FROM vendors v JOIN users u ON v.user_id=u.id WHERE v.featured=1 AND u.status='active' ORDER BY v.trading_name ASC`),
   setEventFeatured:  prepare(`UPDATE events SET featured=? WHERE id=?`),
   setVendorFeatured: prepare(`UPDATE vendors SET featured=? WHERE user_id=?`),
