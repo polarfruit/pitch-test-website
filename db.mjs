@@ -1099,7 +1099,6 @@ export const stmts = {
            v.instagram,v.plan,u.status,u.avatar_url,u.email_verified
     FROM vendors v JOIN users u ON v.user_id=u.id
     WHERE u.status='active' ORDER BY
-      u.email_verified DESC,
       CASE v.plan WHEN 'growth' THEN 0 WHEN 'pro' THEN 1 ELSE 2 END ASC,
       v.created_at ASC
   `),
