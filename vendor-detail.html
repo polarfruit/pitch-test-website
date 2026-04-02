@@ -582,10 +582,8 @@ footer {
 </style>
 </head>
 <script>
-// Runs before any paint — hide page for numeric-id (real account) routes
-if (/^\d+$/.test(window.location.pathname.replace(/^\/vendors\//, '').replace(/\/$/, ''))) {
-  document.documentElement.classList.add('vd-loading');
-}
+// Always hide until JS applies the correct vendor data
+document.documentElement.classList.add('vd-loading');
 </script>
 <body>
 
@@ -1448,6 +1446,8 @@ if (isNumericId) {
       var vals = [five, four, three, two, one];
       counts.forEach(function(el, i){ el.textContent = vals[i]; });
     }, 200);
+
+    document.documentElement.classList.remove('vd-loading');
 
     // Overlay live DB data on top of static data
     fetch('/api/vendors').then(function(r){ return r.json(); }).then(function(data) {
