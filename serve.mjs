@@ -812,18 +812,18 @@ app.get('/api/events/:slug', async (req, res) => {
 
 app.get('/api/vendors-debug', async (_req, res) => {
   try {
-    const allVendors = await stmts.allVendors.all();
-    const statuses = {};
-    allVendors.forEach(v => { statuses[v.status] = (statuses[v.status] || 0) + 1; });
-    let publicRows = [], publicErr = null;
-    try { publicRows = await stmts.publicVendors.all(); }
-    catch(e2) { publicErr = e2.message; }
-    // Raw simple query to test WHERE clause
-    let simpleRows = [], simpleErr = null;
+    if (!process.env.TURSO_DATABASE_URL) return res.json({ error: 'no turso' });
+    const { createClient } = await import('@libsql/client/web');
+    const c = createClient({ url: process.env.TURSO_DATABASE_URL, authToken: process.env.TURSO_AUTH_TOKEN });
+    // Check what role/status users have for vendor user_ids
+    const roleCheck = await c.execute(`SELECT u.id,u.role,u.status,v.trading_name FROM vendors v LEFT JOIN users u ON u.id=v.user_id LIMIT 10`);
+    // Full public query
+    let pubRows = [], pubErr = null;
     try {
-      simpleRows = await stmts.vendorsByStatus.all('active');
-    } catch(e3) { simpleErr = e3.message; }
-    res.json({ publicCount: publicRows.length, publicErr, simpleCount: simpleRows.length, simpleErr, allCount: allVendors.length, statuses });
+      const pr = await c.execute(`SELECT v.user_id,v.trading_name,v.plan,u.role,u.status FROM vendors v LEFT JOIN users u ON u.id=v.user_id WHERE u.role='vendor' AND u.status='active' LIMIT 5`);
+      pubRows = pr.rows;
+    } catch(e2) { pubErr = e2.message; }
+    res.json({ roleCheck: roleCheck.rows, pubCount: pubRows.length, pubErr, pubSample: pubRows.slice(0,3) });
   } catch(e) {
     res.json({ error: e.message, stack: e.stack });
   }
