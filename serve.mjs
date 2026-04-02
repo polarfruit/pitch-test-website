@@ -815,15 +815,18 @@ app.get('/api/vendors-debug', async (_req, res) => {
     if (!process.env.TURSO_DATABASE_URL) return res.json({ error: 'no turso' });
     const { createClient } = await import('@libsql/client/web');
     const c = createClient({ url: process.env.TURSO_DATABASE_URL, authToken: process.env.TURSO_AUTH_TOKEN });
-    // Check what role/status users have for vendor user_ids
-    const roleCheck = await c.execute(`SELECT u.id,u.role,u.status,v.trading_name FROM vendors v LEFT JOIN users u ON u.id=v.user_id LIMIT 10`);
-    // Full public query
-    let pubRows = [], pubErr = null;
-    try {
-      const pr = await c.execute(`SELECT v.user_id,v.trading_name,v.plan,u.role,u.status FROM vendors v LEFT JOIN users u ON u.id=v.user_id WHERE u.role='vendor' AND u.status='active' LIMIT 5`);
-      pubRows = pr.rows;
-    } catch(e2) { pubErr = e2.message; }
-    res.json({ roleCheck: roleCheck.rows, pubCount: pubRows.length, pubErr, pubSample: pubRows.slice(0,3) });
+    const [uCount, vCount, uSample, vSample] = await Promise.all([
+      c.execute(`SELECT COUNT(*) as n FROM users`),
+      c.execute(`SELECT COUNT(*) as n FROM vendors`),
+      c.execute(`SELECT id,role,status,email FROM users LIMIT 5`),
+      c.execute(`SELECT user_id,trading_name,plan FROM vendors LIMIT 5`),
+    ]);
+    res.json({
+      userCount: uCount.rows[0]?.n,
+      vendorCount: vCount.rows[0]?.n,
+      userSample: uSample.rows,
+      vendorSample: vSample.rows,
+    });
   } catch(e) {
     res.json({ error: e.message, stack: e.stack });
   }
