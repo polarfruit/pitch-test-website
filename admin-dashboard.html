@@ -1989,19 +1989,23 @@
         ? `<div class="act-group">
              <button class="act-btn act-approve" onclick="setUserStatus(${v.user_id},'active',this)">Approve</button>
              <button class="act-btn act-reject" onclick="openRejectModal('${vSafeName}')">Reject</button>
+             <button class="act-btn act-view" onclick="window.open('/vendors/${v.user_id}','_blank')">Profile</button>
            </div>`
         : v.status === 'suspended'
         ? `<div class="act-group">
              <button class="act-btn act-approve" onclick="_doSetUserStatus(${v.user_id},'active',null)">Reinstate</button>
              <button class="act-btn act-reject" onclick="openBanModal(${v.user_id},'${vSafeName}')">Ban</button>
+             <button class="act-btn act-view" onclick="window.open('/vendors/${v.user_id}','_blank')">Profile</button>
            </div>`
         : v.status === 'banned'
         ? `<div class="act-group">
              <button class="act-btn act-view" onclick="openVendorDetail(${v.user_id})">View</button>
+             <button class="act-btn act-view" onclick="window.open('/vendors/${v.user_id}','_blank')">Profile</button>
            </div>`
         : `<div class="act-group">
              <button class="act-btn act-suspend" onclick="openSuspendModal(${v.user_id},'${vSafeName}')">Suspend</button>
              <button class="act-btn act-view" onclick="openVendorDetail(${v.user_id})">View</button>
+             <button class="act-btn act-view" onclick="window.open('/vendors/${v.user_id}','_blank')">Profile</button>
            </div>`;
 
       return `<tr>
@@ -2819,6 +2823,7 @@
           ${a.status !== 'approved' ? `<button class="act-btn act-approve" onclick="overrideApp(${a.id},'approved',this)">Approve</button>` : ''}
           ${a.status !== 'declined' ? `<button class="act-btn act-reject" onclick="overrideApp(${a.id},'declined',this)">Decline</button>` : ''}
           ${a.status !== 'pending'  ? `<button class="act-btn act-view" onclick="overrideApp(${a.id},'pending',this)">Reset</button>` : ''}
+          <button class="act-btn act-view" onclick="window.open('/vendors/${a.vendor_user_id}','_blank')">Profile</button>
         </div></td>
       </tr>`;
     }).join('');
