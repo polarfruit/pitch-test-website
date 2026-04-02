@@ -1255,10 +1255,11 @@ function applyAndReveal(v) {
   }).catch(function(){});
 
   // What they sell — use cuisine_tags from DB vendor
-  renderWhatTheySell(cuisines, db.price_range || null, []);
+  var _cuisines = Array.isArray(v.cuisine_tags) ? v.cuisine_tags : [];
+  renderWhatTheySell(_cuisines, v.price_range || null, []);
 
   // Menu — fetch and render
-  loadPublicMenu(db.user_id);
+  loadPublicMenu(v.user_id);
 
   document.documentElement.classList.remove('vd-loading');
 }
