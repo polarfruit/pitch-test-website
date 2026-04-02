@@ -33,6 +33,7 @@
   --fb:         'Instrument Sans', 'Helvetica Neue', sans-serif;
 }
 
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
 html { scroll-behavior: smooth; }
 body { background: var(--coal); color: var(--text-hi); font-family: var(--fb); line-height: 1.5; overflow-x: hidden; }
 
@@ -379,29 +380,39 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
 
 <script src="/data.js"></script>
 <script>
-// Start with static data; API overlays mutable fields when available
-let VENDORS = (window.PITCH_VENDORS || []).map(function(v){ return Object.assign({}, v); });
-
+let VENDORS = [];
 let currentPage = 1;
 const PER_PAGE = 12;
 
-// Fetch DB vendors and overlay/add real registered vendors
+// Show skeleton while API loads — never render stale static data first
+(function showSkeleton() {
+  const grid = document.getElementById('vendor-grid');
+  if (!grid) return;
+  grid.innerHTML = Array(8).fill(0).map(() => `
+    <div style="background:var(--char);border-radius:16px;overflow:hidden;animation:pulse 1.4s ease-in-out infinite;">
+      <div style="height:160px;background:#ffffff0a;"></div>
+      <div style="padding:16px 18px 18px;display:flex;flex-direction:column;gap:10px;">
+        <div style="height:16px;width:60%;background:#ffffff0a;border-radius:6px;"></div>
+        <div style="height:12px;width:40%;background:#ffffff07;border-radius:6px;"></div>
+        <div style="height:12px;width:80%;background:#ffffff07;border-radius:6px;"></div>
+      </div>
+    </div>`).join('');
+})();
+
 fetch('/api/vendors').then(function(r){ return r.json(); }).then(function(data) {
   var dbVendors = data.vendors || [];
-  var staticNames = new Set(VENDORS.map(function(v){ return v.name.toLowerCase(); }));
+  var staticVendors = (window.PITCH_VENDORS || []).map(function(v){ return Object.assign({}, v); });
+  var staticNames = new Set(staticVendors.map(function(v){ return v.name.toLowerCase(); }));
 
-  // Build a set of DB trading names for quick lookup
-  var dbNames = new Set(dbVendors.map(function(d){ return d.trading_name ? d.trading_name.toLowerCase() : ''; }));
-
-  // Overlay matching static entries; strip plan badge from unmatched static vendors
-  VENDORS = VENDORS.map(function(v) {
+  // Overlay matching static entries with live DB plan/bio data
+  var merged = staticVendors.map(function(v) {
     var db = dbVendors.find(function(d) {
       return d.trading_name && d.trading_name.toLowerCase() === v.name.toLowerCase();
     });
     if (!db) {
-      // No real DB account — remove any hardcoded Pro/Growth badge
-      return Object.assign({}, v, { isPro: false, isGrowth: false });
+      return Object.assign({}, v, { isPro: false, isGrowth: false, _tier: 3 });
     }
+    var tier = db.plan === 'growth' ? 0 : db.plan === 'pro' ? 1 : 2;
     return Object.assign({}, v, {
       name:       db.trading_name || v.name,
       suburb:     db.suburb       || v.suburb,
@@ -413,48 +424,48 @@ fetch('/api/vendors').then(function(r){ return r.json(); }).then(function(data) 
       isGrowth:   db.plan === 'growth',
       avatar_url: db.avatar_url   || null,
       _dbUserId:  db.user_id,
-      _real:      db.user_id > 100, // seeded demo accounts have low IDs
+      _tier:      tier,
+      _real:      db.user_id > 50,
     });
   });
 
-  // Add DB vendors not in static list
+  // Add DB-only vendors (real signups not in static list)
   dbVendors.forEach(function(db) {
     if (!db.trading_name) return;
     if (staticNames.has(db.trading_name.toLowerCase())) return;
     var tags = db.cuisine_tags || [];
-    VENDORS.push({
-      id:             String(db.user_id),
-      name:           db.trading_name,
-      suburb:         db.suburb    || 'Adelaide',
-      state:          db.state     || 'SA',
-      bio:            db.bio       || '',
-      cuisines:       tags.length ? tags : ['Food'],
-      setup:          db.setup_type || 'Market Stall',
-      rating:         0,
-      reviews:        0,
-      events:         0,
-      isPro:          db.plan === 'pro' || db.plan === 'growth',
-      isGrowth:       db.plan === 'growth',
-      emoji:          '🍽',
-      bg:             'linear-gradient(135deg,#1A1612,#2A1A0A)',
-      avatar_url:     db.avatar_url  || null,
-      _dbUserId:      db.user_id,
-      _emailVerified: db.email_verified ? 1 : 0,
-      _real:          true,
+    var tier = db.plan === 'growth' ? 0 : db.plan === 'pro' ? 1 : 2;
+    merged.push({
+      id:         String(db.user_id),
+      name:       db.trading_name,
+      suburb:     db.suburb    || 'Adelaide',
+      state:      db.state     || 'SA',
+      bio:        db.bio       || '',
+      cuisines:   tags.length ? tags : ['Food'],
+      setup:      db.setup_type || 'Market Stall',
+      rating:     0,
+      reviews:    0,
+      events:     0,
+      isPro:      db.plan === 'pro' || db.plan === 'growth',
+      isGrowth:   db.plan === 'growth',
+      emoji:      '🍽',
+      bg:         'linear-gradient(135deg,#1A1612,#2A1A0A)',
+      avatar_url: db.avatar_url  || null,
+      _dbUserId:  db.user_id,
+      _tier:      tier,
+      _real:      true,
     });
   });
 
-  // Tag email_verified onto overlaid static entries
-  VENDORS = VENDORS.map(function(v) {
-    if (v._dbUserId && !('_emailVerified' in v)) {
-      var db = dbVendors.find(function(d){ return d.user_id === v._dbUserId; });
-      return Object.assign({}, v, { _emailVerified: db ? (db.email_verified ? 1 : 0) : 0 });
-    }
-    return v;
-  });
-
+  VENDORS = merged;
   renderGrid();
-}).catch(function() { /* use static data as fallback */ });
+}).catch(function() {
+  // Fallback: load static data if API fails
+  VENDORS = (window.PITCH_VENDORS || []).map(function(v){
+    return Object.assign({}, v, { isPro: false, isGrowth: false, _tier: 3 });
+  });
+  renderGrid();
+});
 
 
 function stars(r) {
@@ -525,14 +536,12 @@ function getFiltered() {
   } else if (sort === 'za') {
     list.sort((a, b) => b.name.localeCompare(a.name));
   } else {
-    // Sort: real user-created accounts first, then plan tier
-    // _real = true means the account was created via signup (not a seeded demo vendor)
+    // Default: Growth → Pro → Free (tier 0→1→2→3)
     list.sort((a, b) => {
-      const realA = a._real ? 0 : 1;  // 0 = real signup, 1 = demo
-      const realB = b._real ? 0 : 1;
-      if (realA !== realB) return realA - realB;
-      const rank = v => v.isGrowth ? 0 : v.isPro ? 1 : 2;
-      return rank(a) - rank(b);
+      const ta = a._tier !== undefined ? a._tier : (a.isGrowth ? 0 : a.isPro ? 1 : 2);
+      const tb = b._tier !== undefined ? b._tier : (b.isGrowth ? 0 : b.isPro ? 1 : 2);
+      if (ta !== tb) return ta - tb;
+      return a.name.localeCompare(b.name);
     });
   }
   return list;
@@ -643,7 +652,7 @@ function goPage(n) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-renderGrid();
+// renderGrid() is called by the fetch above — not here
 </script>
 <script src="/location-autocomplete.js"></script>
 <script>
