@@ -1548,6 +1548,101 @@
 </div>
 
 <!-- ── Detail drawer ── -->
+<!-- ── Event edit modal ── -->
+<div class="modal-overlay" id="eventEditModal">
+  <div class="modal" style="max-width:560px;width:100%;">
+    <div class="modal-header">
+      <span style="font-size:18px;">✏️</span>
+      <span class="modal-title">Edit Event</span>
+      <button class="modal-close" onclick="closeModal('eventEditModal')">✕</button>
+    </div>
+    <div class="modal-body" style="display:grid;gap:14px;">
+      <input type="hidden" id="eem-id" />
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div>
+          <label class="field-label-sm">Event name</label>
+          <input class="field-sm" id="eem-name" type="text" placeholder="Event name" />
+        </div>
+        <div>
+          <label class="field-label-sm">Category</label>
+          <select class="field-sm" id="eem-category" style="appearance:none;">
+            <option value="">— Select —</option>
+            <option>Food & Drink</option>
+            <option>Farmers Market</option>
+            <option>Night Market</option>
+            <option>Artisan Market</option>
+            <option>Festival</option>
+            <option>Pop-up</option>
+            <option>Other</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div>
+          <label class="field-label-sm">Start date</label>
+          <input class="field-sm" id="eem-date-start" type="date" />
+        </div>
+        <div>
+          <label class="field-label-sm">End date</label>
+          <input class="field-sm" id="eem-date-end" type="date" />
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div>
+          <label class="field-label-sm">Suburb</label>
+          <input class="field-sm" id="eem-suburb" type="text" placeholder="Suburb" />
+        </div>
+        <div>
+          <label class="field-label-sm">State</label>
+          <select class="field-sm" id="eem-state" style="appearance:none;">
+            <option value="">— Select —</option>
+            <option>SA</option><option>VIC</option><option>NSW</option>
+            <option>QLD</option><option>WA</option><option>TAS</option>
+            <option>ACT</option><option>NT</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label class="field-label-sm">Venue name</label>
+        <input class="field-sm" id="eem-venue" type="text" placeholder="Venue name" />
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div>
+          <label class="field-label-sm">Stalls available</label>
+          <input class="field-sm" id="eem-stalls" type="number" min="0" placeholder="e.g. 30" />
+        </div>
+        <div>
+          <label class="field-label-sm">Application deadline</label>
+          <input class="field-sm" id="eem-deadline" type="date" />
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div>
+          <label class="field-label-sm">Stall fee min ($)</label>
+          <input class="field-sm" id="eem-fee-min" type="number" min="0" placeholder="e.g. 50" />
+        </div>
+        <div>
+          <label class="field-label-sm">Stall fee max ($)</label>
+          <input class="field-sm" id="eem-fee-max" type="number" min="0" placeholder="e.g. 200" />
+        </div>
+      </div>
+      <div>
+        <label class="field-label-sm">Description</label>
+        <textarea class="field-sm" id="eem-description" rows="3" placeholder="Event description…" style="resize:vertical;"></textarea>
+      </div>
+      <div>
+        <label class="field-label-sm">Organiser name</label>
+        <input class="field-sm" id="eem-organiser" type="text" placeholder="Organiser name" />
+      </div>
+      <div id="eem-error" style="display:none;color:#C0392B;font-size:13px;"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sm-outline" onclick="closeModal('eventEditModal')">Cancel</button>
+      <button class="btn-sm-primary" id="eem-save-btn" onclick="saveEventEdit()">Save changes</button>
+    </div>
+  </div>
+</div>
+
 <div class="detail-overlay" id="detail-overlay" onclick="closeDetailDrawer()"></div>
 <div class="detail-drawer" id="detail-drawer">
   <div class="detail-header">
@@ -2361,6 +2456,7 @@
             ? `<button class="act-btn act-suspend" onclick="archiveEvent(${ev.id})">Archive</button>`
             : `<button class="act-btn act-approve" onclick="publishEvent(${ev.id})">Publish</button>`}
           <button class="act-btn act-feature" title="${ev.featured ? 'Unfeature' : 'Feature on homepage'}" onclick="toggleEventFeatured(${ev.id},${ev.featured?1:0},this)" style="font-size:13px;padding:4px 8px;">${ev.featured ? '★' : '☆'}</button>
+          <button class="act-btn act-view" onclick="openEventEditModal(${ev.id})">Edit</button>
           <button class="act-btn act-view" onclick="window.open('/events/${ev.slug}','_blank')">View</button>
           <button class="act-btn act-reject" onclick="deleteAdminEvent(${ev.id})">Delete</button>
         </div></td>
@@ -2409,6 +2505,66 @@
     if (!confirm('Permanently delete this event? It will be removed from all pages immediately.')) return;
     await fetch(`/api/admin/events/${id}`, { method: 'DELETE' });
     loadAdminEvents();
+  }
+
+  // ── Event edit modal ─────────────────────────────────────────────────────
+  function openEventEditModal(id) {
+    const ev = _eventsCache.find(e => e.id === id);
+    if (!ev) return;
+    document.getElementById('eem-id').value          = ev.id;
+    document.getElementById('eem-name').value        = ev.name || '';
+    document.getElementById('eem-category').value    = ev.category || '';
+    document.getElementById('eem-date-start').value  = ev.date_sort || '';
+    document.getElementById('eem-date-end').value    = ev.date_end || '';
+    document.getElementById('eem-suburb').value      = ev.suburb || '';
+    document.getElementById('eem-state').value       = ev.state || '';
+    document.getElementById('eem-venue').value       = ev.venue_name || '';
+    document.getElementById('eem-stalls').value      = ev.stalls_available || '';
+    document.getElementById('eem-deadline').value    = ev.deadline || '';
+    document.getElementById('eem-fee-min').value     = ev.stall_fee_min || '';
+    document.getElementById('eem-fee-max').value     = ev.stall_fee_max || '';
+    document.getElementById('eem-description').value = ev.description || '';
+    document.getElementById('eem-organiser').value   = ev.organiser_name || '';
+    document.getElementById('eem-error').style.display = 'none';
+    document.getElementById('eventEditModal').classList.add('open');
+  }
+
+  async function saveEventEdit() {
+    const id = document.getElementById('eem-id').value;
+    const btn = document.getElementById('eem-save-btn');
+    const errEl = document.getElementById('eem-error');
+    const name = document.getElementById('eem-name').value.trim();
+    if (!name) { errEl.textContent = 'Event name is required.'; errEl.style.display = ''; return; }
+    btn.disabled = true; btn.textContent = 'Saving…';
+    try {
+      const r = await fetch(`/api/admin/events/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name,
+          category:        document.getElementById('eem-category').value || null,
+          date_sort:       document.getElementById('eem-date-start').value || null,
+          date_end:        document.getElementById('eem-date-end').value || null,
+          suburb:          document.getElementById('eem-suburb').value.trim() || null,
+          state:           document.getElementById('eem-state').value || null,
+          venue_name:      document.getElementById('eem-venue').value.trim() || null,
+          stalls_available: parseInt(document.getElementById('eem-stalls').value) || null,
+          deadline:        document.getElementById('eem-deadline').value || null,
+          stall_fee_min:   parseInt(document.getElementById('eem-fee-min').value) || null,
+          stall_fee_max:   parseInt(document.getElementById('eem-fee-max').value) || null,
+          description:     document.getElementById('eem-description').value.trim() || null,
+          organiser_name:  document.getElementById('eem-organiser').value.trim() || null,
+        }),
+      });
+      if (!r.ok) throw new Error(await r.text());
+      closeModal('eventEditModal');
+      loadAdminEvents();
+    } catch(e) {
+      errEl.textContent = 'Save failed: ' + e.message;
+      errEl.style.display = '';
+    } finally {
+      btn.disabled = false; btn.textContent = 'Save changes';
+    }
   }
 
   // ── Detail drawer ─────────────────────────────────────────────────────────

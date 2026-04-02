@@ -940,7 +940,7 @@ export const stmts = {
   getApprovedVendorsByEvent: prepare(`SELECT v.user_id,v.trading_name,v.cuisine_tags,v.setup_type FROM event_applications ea JOIN vendors v ON v.user_id=ea.vendor_user_id WHERE ea.event_id=? AND ea.status='approved' ORDER BY ea.approved_at ASC`),
   countOrgEvents:    prepare(`SELECT COUNT(*) as n FROM events WHERE organiser_user_id=? AND status='published'`),
   updateEventStatus: prepare(`UPDATE events SET status=? WHERE id=?`),
-  updateEvent:       prepare(`UPDATE events SET name=@name,category=@category,suburb=@suburb,state=@state,venue_name=@venue_name,date_sort=@date_sort,date_end=@date_end,date_text=@date_text,description=@description,stalls_available=@stalls_available,stall_fee_min=@stall_fee_min,stall_fee_max=@stall_fee_max,deadline=@deadline,cover_image=@cover_image WHERE id=@id`),
+  updateEvent:       prepare(`UPDATE events SET name=@name,category=@category,suburb=@suburb,state=@state,venue_name=@venue_name,date_sort=@date_sort,date_end=@date_end,date_text=@date_text,description=@description,stalls_available=@stalls_available,stall_fee_min=@stall_fee_min,stall_fee_max=@stall_fee_max,deadline=@deadline,cover_image=@cover_image,organiser_name=@organiser_name WHERE id=@id`),
   deleteEvent:       prepare(`DELETE FROM events WHERE id=?`),
   countEvents:       prepare(`SELECT COUNT(*) as n FROM events WHERE status='published'`),
   countEventsByCategory: prepare(`SELECT COALESCE(category,'Other') as category, COUNT(*) as n FROM events WHERE status='published' GROUP BY category ORDER BY n DESC`),
