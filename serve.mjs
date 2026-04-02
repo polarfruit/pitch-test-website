@@ -813,7 +813,8 @@ app.get('/api/events/:slug', async (req, res) => {
 app.get('/api/vendors-debug', async (_req, res) => {
   try {
     const rows = await stmts.publicVendors.all();
-    res.json({ count: rows.length, vendors: rows });
+    const allStatuses = await db.prepare('SELECT status, COUNT(*) as n FROM users WHERE role=? GROUP BY status').all('vendor');
+    res.json({ count: rows.length, vendors: rows, statuses: allStatuses });
   } catch(e) {
     res.json({ error: e.message, stack: e.stack });
   }
