@@ -717,12 +717,12 @@
       <table class="data-table">
         <thead>
           <tr>
-            <th>Organisation</th>
-            <th>ABN</th>
+            <th onclick="sortOrgs('name')" style="cursor:pointer;user-select:none;">Organisation <span id="osort-name" style="font-size:10px;color:#6B5A4A;"></span></th>
+            <th onclick="sortOrgs('abn')" style="cursor:pointer;user-select:none;">ABN <span id="osort-abn" style="font-size:10px;color:#6B5A4A;"></span></th>
             <th>Events</th>
             <th>Stalls sold</th>
-            <th>Joined</th>
-            <th>Status</th>
+            <th onclick="sortOrgs('joined')" style="cursor:pointer;user-select:none;">Joined <span id="osort-joined" style="font-size:10px;color:#6B5A4A;"></span></th>
+            <th onclick="sortOrgs('status')" style="cursor:pointer;user-select:none;">Status <span id="osort-status" style="font-size:10px;color:#6B5A4A;"></span></th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -1095,11 +1095,11 @@
       <table class="data-table">
         <thead>
           <tr>
-            <th>User</th>
-            <th>Role</th>
+            <th onclick="sortUsers('name')" style="cursor:pointer;user-select:none;">User <span id="usort-name" style="font-size:10px;color:#6B5A4A;"></span></th>
+            <th onclick="sortUsers('role')" style="cursor:pointer;user-select:none;">Role <span id="usort-role" style="font-size:10px;color:#6B5A4A;"></span></th>
             <th>Verified</th>
-            <th>Joined</th>
-            <th>Status</th>
+            <th onclick="sortUsers('joined')" style="cursor:pointer;user-select:none;">Joined <span id="usort-joined" style="font-size:10px;color:#6B5A4A;"></span></th>
+            <th onclick="sortUsers('status')" style="cursor:pointer;user-select:none;">Status <span id="usort-status" style="font-size:10px;color:#6B5A4A;"></span></th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -2007,6 +2007,81 @@
         <td>${actions}</td>
       </tr>`;
     }).join('');
+  }
+
+  // ── Sortable table helpers ────────────────────────────────────────────────
+  const PLAN_ORDER = { growth: 0, pro: 1, starter: 2, free: 3 };
+  const STATUS_ORDER = { active: 0, pending: 1, suspended: 2, banned: 3 };
+
+  function makeSorter(prefix, keys) {
+    const state = { key: null, dir: 1 };
+    return function(key) {
+      if (state.key === key) { state.dir *= -1; } else { state.key = key; state.dir = 1; }
+      keys.forEach(k => {
+        const el = document.getElementById(prefix + k);
+        if (el) el.textContent = '';
+      });
+      const el = document.getElementById(prefix + key);
+      if (el) el.textContent = state.dir === 1 ? ' ▲' : ' ▼';
+      return state;
+    };
+  }
+
+  const _vendorSorter = makeSorter('vsort-', ['name','abn','plan','joined','status']);
+  function sortVendors(key) {
+    const { dir } = _vendorSorter(key);
+    const base = _vendorStatusFilter ? _vendorsCache.filter(v => v.status === _vendorStatusFilter) : _vendorsCache;
+    const q = (document.getElementById('vendor-search').value || '').toLowerCase();
+    let list = q ? base.filter(v => (v.trading_name||'').toLowerCase().includes(q) || (v.email||'').toLowerCase().includes(q)) : [...base];
+    list.sort((a, b) => {
+      let av, bv;
+      if (key === 'name')   { av = (a.trading_name||'').toLowerCase(); bv = (b.trading_name||'').toLowerCase(); }
+      else if (key === 'abn')    { av = (a.abn||''); bv = (b.abn||''); }
+      else if (key === 'plan')   { av = PLAN_ORDER[a.plan] ?? 9; bv = PLAN_ORDER[b.plan] ?? 9; }
+      else if (key === 'joined') { av = a.joined || ''; bv = b.joined || ''; }
+      else if (key === 'status') { av = STATUS_ORDER[a.status] ?? 9; bv = STATUS_ORDER[b.status] ?? 9; }
+      if (av < bv) return -dir;
+      if (av > bv) return dir;
+      return 0;
+    });
+    renderVendorsTable(list);
+  }
+
+  const _orgSorter = makeSorter('osort-', ['name','abn','joined','status']);
+  function sortOrgs(key) {
+    const { dir } = _orgSorter(key);
+    const base = _orgStatusFilter ? _orgsCache.filter(o => o.status === _orgStatusFilter) : _orgsCache;
+    const q = (document.getElementById('org-search').value || '').toLowerCase();
+    let list = q ? base.filter(o => (o.org_name||'').toLowerCase().includes(q) || (o.email||'').toLowerCase().includes(q)) : [...base];
+    list.sort((a, b) => {
+      let av, bv;
+      if (key === 'name')   { av = (a.org_name||'').toLowerCase(); bv = (b.org_name||'').toLowerCase(); }
+      else if (key === 'abn')    { av = (a.abn||''); bv = (b.abn||''); }
+      else if (key === 'joined') { av = a.joined || ''; bv = b.joined || ''; }
+      else if (key === 'status') { av = STATUS_ORDER[a.status] ?? 9; bv = STATUS_ORDER[b.status] ?? 9; }
+      if (av < bv) return -dir;
+      if (av > bv) return dir;
+      return 0;
+    });
+    renderOrgsTable(list);
+  }
+
+  const _userSorter = makeSorter('usort-', ['name','role','joined','status']);
+  function sortUsers(key) {
+    const { dir } = _userSorter(key);
+    const q = document.getElementById('users-search').value.toLowerCase();
+    let list = q ? _usersCache.filter(u => (u.first_name+' '+u.last_name).toLowerCase().includes(q) || (u.email||'').toLowerCase().includes(q)) : [..._usersCache];
+    list.sort((a, b) => {
+      let av, bv;
+      if (key === 'name')   { av = ((a.first_name||'')+' '+(a.last_name||'')).toLowerCase(); bv = ((b.first_name||'')+' '+(b.last_name||'')).toLowerCase(); }
+      else if (key === 'role')   { av = (a.role||''); bv = (b.role||''); }
+      else if (key === 'joined') { av = a.created_at || ''; bv = b.created_at || ''; }
+      else if (key === 'status') { av = STATUS_ORDER[a.status] ?? 9; bv = STATUS_ORDER[b.status] ?? 9; }
+      if (av < bv) return -dir;
+      if (av > bv) return dir;
+      return 0;
+    });
+    renderUsersTable(list);
   }
 
   function filterVendorsTable() {
