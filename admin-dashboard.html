@@ -810,8 +810,8 @@
           <div class="report-meta">Reported by: <strong style="color:#A89880;">Adelaide City Council Events</strong> · Against: <strong style="color:#A89880;">Street Bao Co.</strong></div>
           <div class="report-actions" style="margin-top:12px;">
             <button class="act-btn act-reject" onclick="openDisputeModal('Street Bao Co.','#1048')">Resolve</button>
-            <button class="act-btn act-suspend">Request info</button>
-            <button class="act-btn act-view">Dismiss</button>
+            <button class="act-btn act-suspend" onclick="reportRequestInfo(this)">Request info</button>
+            <button class="act-btn act-view" onclick="reportDismiss(this)">Dismiss</button>
           </div>
         </div>
 
@@ -825,9 +825,9 @@
           </div>
           <div class="report-meta">Reported by: <strong style="color:#A89880;">Smoky Joe's BBQ</strong> · Against: <strong style="color:#A89880;">Hackney Night Market (org)</strong></div>
           <div class="report-actions" style="margin-top:12px;">
-            <button class="act-btn act-approve" onclick="approveItem(this)">Mark resolved</button>
-            <button class="act-btn act-suspend">Request info</button>
-            <button class="act-btn act-view">Dismiss</button>
+            <button class="act-btn act-approve" onclick="reportResolve(this)">Mark resolved</button>
+            <button class="act-btn act-suspend" onclick="reportRequestInfo(this)">Request info</button>
+            <button class="act-btn act-view" onclick="reportDismiss(this)">Dismiss</button>
           </div>
         </div>
 
@@ -841,9 +841,9 @@
           </div>
           <div class="report-meta">Reported by: 3 vendors · Against: <strong style="color:#A89880;">Hackney Night Market listing</strong></div>
           <div class="report-actions" style="margin-top:12px;">
-            <button class="act-btn act-reject">Hide event</button>
-            <button class="act-btn act-suspend">Warn organiser</button>
-            <button class="act-btn act-view">Dismiss</button>
+            <button class="act-btn act-reject" onclick="reportHideContent(this)">Hide event</button>
+            <button class="act-btn act-suspend" onclick="reportRequestInfo(this)">Warn organiser</button>
+            <button class="act-btn act-view" onclick="reportDismiss(this)">Dismiss</button>
           </div>
         </div>
 
@@ -1121,14 +1121,14 @@
     <div class="two-col" style="align-items:start;">
       <div class="card">
         <div class="filter-bar" style="padding:12px 20px;">
-          <button class="filter-chip active">All flags <span style="margin-left:4px;background:#C0392B;color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700;">3</span></button>
-          <button class="filter-chip">Photos</button>
-          <button class="filter-chip">Listings</button>
-          <button class="filter-chip">Profiles</button>
-          <button class="filter-chip">Resolved</button>
+          <button class="filter-chip active" onclick="setModFilter(this,'all')">All flags <span style="margin-left:4px;background:#C0392B;color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700;">3</span></button>
+          <button class="filter-chip" onclick="setModFilter(this,'photo')">Photos</button>
+          <button class="filter-chip" onclick="setModFilter(this,'listing')">Listings</button>
+          <button class="filter-chip" onclick="setModFilter(this,'profile')">Profiles</button>
+          <button class="filter-chip" onclick="setModFilter(this,'resolved')">Resolved</button>
         </div>
 
-        <div class="mod-item">
+        <div class="mod-item" data-mod-type="photo">
           <div class="mod-thumb">📸</div>
           <div class="mod-body">
             <div class="mod-title">Inappropriate photo — Hackney Night Market</div>
@@ -1145,7 +1145,7 @@
           </div>
         </div>
 
-        <div class="mod-item">
+        <div class="mod-item" data-mod-type="listing">
           <div class="mod-thumb">📋</div>
           <div class="mod-body">
             <div class="mod-title">Misleading listing — "Council Run Street Fair"</div>
@@ -1162,7 +1162,7 @@
           </div>
         </div>
 
-        <div class="mod-item">
+        <div class="mod-item" data-mod-type="profile">
           <div class="mod-thumb">👤</div>
           <div class="mod-body">
             <div class="mod-title">Suspicious vendor profile — "Best Kebabs AU"</div>
@@ -1194,8 +1194,8 @@
           <div class="card-header"><span style="font-size:16px;">⚡</span><span class="card-title">Quick actions</span></div>
           <div style="padding:16px;display:flex;flex-direction:column;gap:8px;">
             <button class="act-btn act-view" style="width:100%;padding:10px;text-align:left;" onclick="openAnnouncementModal()">📢 Post platform notice</button>
-            <button class="act-btn act-view" style="width:100%;padding:10px;text-align:left;">📤 Export flag log</button>
-            <button class="act-btn act-reject" style="width:100%;padding:10px;text-align:left;">🧹 Clear resolved flags</button>
+            <button class="act-btn act-view" style="width:100%;padding:10px;text-align:left;" onclick="this.textContent='📤 Exported!';this.disabled=true;setTimeout(()=>{this.textContent='📤 Export flag log';this.disabled=false;},2000)">📤 Export flag log</button>
+            <button class="act-btn act-reject" style="width:100%;padding:10px;text-align:left;" onclick="clearResolvedFlags(this)">🧹 Clear resolved flags</button>
           </div>
         </div>
       </div>
@@ -1248,7 +1248,7 @@
           <div style="text-align:right;font-size:11px;color:#6B5A4A;margin-bottom:12px;" id="ann-char-count">0 / 500 chars</div>
           <div style="display:flex;gap:10px;">
             <button class="btn-sm-primary" onclick="sendAnnouncement()">Send announcement</button>
-            <button class="btn-sm-outline">Save draft</button>
+            <button class="btn-sm-outline" onclick="saveAnnouncementDraft(this)">Save draft</button>
           </div>
           <div id="ann-msg" style="margin-top:10px;font-size:13px;color:#2D8B55;display:none;"></div>
         </div>
@@ -3490,6 +3490,73 @@
   }
 
   // ── Moderation helpers ────────────────────────────────────────────────────
+  // ── Reports panel actions ────────────────────────────────────────────────
+  function reportResolve(btn) {
+    const card = btn.closest('.report-card');
+    if (!card) return;
+    card.dataset.reportType = 'resolved';
+    card.style.opacity = '0.55';
+    card.style.transition = 'opacity 0.3s';
+    const badge = card.querySelector('.report-type');
+    if (badge) { badge.textContent = 'Resolved'; badge.closest('.badge').className = 'badge badge-grey'; }
+    const actions = card.querySelector('.report-actions');
+    if (actions) actions.innerHTML = '<span style="font-size:12px;color:#2D8B55;">✓ Marked as resolved</span>';
+  }
+
+  function reportRequestInfo(btn) {
+    btn.textContent = '✓ Requested';
+    btn.disabled = true;
+    btn.classList.remove('act-suspend');
+    btn.classList.add('act-approve');
+  }
+
+  function reportDismiss(btn) {
+    const card = btn.closest('.report-card');
+    if (!card) return;
+    card.style.transition = 'opacity 0.3s, transform 0.3s';
+    card.style.opacity = '0';
+    card.style.transform = 'translateX(12px)';
+    setTimeout(() => card.remove(), 320);
+  }
+
+  function reportHideContent(btn) {
+    btn.textContent = '✓ Hidden';
+    btn.disabled = true;
+  }
+
+  // ── Moderation filter ─────────────────────────────────────────────────────
+  function setModFilter(btn, filter) {
+    document.querySelectorAll('#panel-moderation .filter-chip').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('#panel-moderation .mod-item').forEach(item => {
+      const type = item.dataset.modType;
+      const isResolved = item.style.opacity === '0.4' || item.style.pointerEvents === 'none';
+      if (filter === 'all') { item.style.display = isResolved ? 'none' : ''; }
+      else if (filter === 'resolved') { item.style.display = isResolved ? '' : 'none'; }
+      else { item.style.display = (type === filter && !isResolved) ? '' : 'none'; }
+    });
+  }
+
+  function clearResolvedFlags(btn) {
+    const removed = [...document.querySelectorAll('#panel-moderation .mod-item')].filter(
+      i => i.style.opacity === '0.4' || i.style.pointerEvents === 'none'
+    );
+    removed.forEach(i => i.remove());
+    btn.textContent = `🧹 Cleared ${removed.length} resolved`;
+    btn.disabled = true;
+    setTimeout(() => { btn.textContent = '🧹 Clear resolved flags'; btn.disabled = false; }, 2500);
+  }
+
+  // ── Announcements ─────────────────────────────────────────────────────────
+  function saveAnnouncementDraft(btn) {
+    const subject = document.getElementById('ann-subject')?.value?.trim();
+    const body = document.getElementById('ann-body')?.value?.trim();
+    if (!subject && !body) { btn.textContent = 'Nothing to save'; setTimeout(() => btn.textContent = 'Save draft', 1500); return; }
+    btn.textContent = '✓ Draft saved';
+    btn.disabled = true;
+    setTimeout(() => { btn.textContent = 'Save draft'; btn.disabled = false; }, 2000);
+  }
+
   function removeFlaggedContent(btn) {
     const item = btn.closest('.mod-item');
     if (item) { item.style.opacity = '0.4'; btn.textContent = '✓ Removed'; btn.disabled = true; }
