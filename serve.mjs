@@ -813,9 +813,10 @@ app.get('/api/events/:slug', async (req, res) => {
 app.get('/api/vendors-debug', async (_req, res) => {
   try {
     const rows = await stmts.publicVendors.all();
-    const statusStmt = prepare('SELECT status, COUNT(*) as n FROM users WHERE role=? GROUP BY status');
-    const allStatuses = await statusStmt.all('vendor');
-    res.json({ count: rows.length, vendors: rows, statuses: allStatuses });
+    const allVendors = await stmts.allVendors.all();
+    const statuses = {};
+    allVendors.forEach(v => { statuses[v.status] = (statuses[v.status] || 0) + 1; });
+    res.json({ publicCount: rows.length, allCount: allVendors.length, statuses });
   } catch(e) {
     res.json({ error: e.message, stack: e.stack });
   }
