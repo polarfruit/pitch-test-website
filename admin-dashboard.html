@@ -677,7 +677,7 @@
           <tr>
             <th onclick="sortVendors('name')" style="cursor:pointer;user-select:none;">Vendor <span id="vsort-name" style="font-size:10px;color:#6B5A4A;"></span></th>
             <th onclick="sortVendors('abn')" style="cursor:pointer;user-select:none;">ABN <span id="vsort-abn" style="font-size:10px;color:#6B5A4A;"></span></th>
-            <th>Docs</th>
+            <th onclick="sortVendors('docs')" style="cursor:pointer;user-select:none;">Docs <span id="vsort-docs" style="font-size:10px;color:#6B5A4A;"></span></th>
             <th onclick="sortVendors('plan')" style="cursor:pointer;user-select:none;">Plan <span id="vsort-plan" style="font-size:10px;color:#6B5A4A;"></span></th>
             <th onclick="sortVendors('joined')" style="cursor:pointer;user-select:none;">Joined <span id="vsort-joined" style="font-size:10px;color:#6B5A4A;"></span></th>
             <th onclick="sortVendors('status')" style="cursor:pointer;user-select:none;">Status <span id="vsort-status" style="font-size:10px;color:#6B5A4A;"></span></th>
@@ -1097,7 +1097,7 @@
           <tr>
             <th onclick="sortUsers('name')" style="cursor:pointer;user-select:none;">User <span id="usort-name" style="font-size:10px;color:#6B5A4A;"></span></th>
             <th onclick="sortUsers('role')" style="cursor:pointer;user-select:none;">Role <span id="usort-role" style="font-size:10px;color:#6B5A4A;"></span></th>
-            <th>Verified</th>
+            <th onclick="sortUsers('verified')" style="cursor:pointer;user-select:none;">Verified <span id="usort-verified" style="font-size:10px;color:#6B5A4A;"></span></th>
             <th onclick="sortUsers('joined')" style="cursor:pointer;user-select:none;">Joined <span id="usort-joined" style="font-size:10px;color:#6B5A4A;"></span></th>
             <th onclick="sortUsers('status')" style="cursor:pointer;user-select:none;">Status <span id="usort-status" style="font-size:10px;color:#6B5A4A;"></span></th>
             <th>Actions</th>
@@ -2035,7 +2035,7 @@
 
   let _vendorSorter;
   function sortVendors(key) {
-    if (!_vendorSorter) _vendorSorter = makeSorter('vsort-', ['name','abn','plan','joined','status']);
+    if (!_vendorSorter) _vendorSorter = makeSorter('vsort-', ['name','abn','docs','plan','joined','status']);
     const { dir } = _vendorSorter(key);
     const base = _vendorStatusFilter ? _vendorsCache.filter(v => v.status === _vendorStatusFilter) : _vendorsCache;
     const q = (document.getElementById('vendor-search').value || '').toLowerCase();
@@ -2044,6 +2044,7 @@
       let av, bv;
       if (key === 'name')   { av = (a.trading_name||'').toLowerCase(); bv = (b.trading_name||'').toLowerCase(); }
       else if (key === 'abn')    { av = parseInt((a.abn||'').replace(/\s/g,'')) || 0; bv = parseInt((b.abn||'').replace(/\s/g,'')) || 0; }
+      else if (key === 'docs')   { av = [a.food_safety_url,a.pli_url,a.council_url].filter(Boolean).length; bv = [b.food_safety_url,b.pli_url,b.council_url].filter(Boolean).length; }
       else if (key === 'plan')   { av = PLAN_ORDER[a.plan] ?? 9; bv = PLAN_ORDER[b.plan] ?? 9; }
       else if (key === 'joined') { av = a.joined || ''; bv = b.joined || ''; }
       else if (key === 'status') { av = STATUS_ORDER[a.status] ?? 9; bv = STATUS_ORDER[b.status] ?? 9; }
@@ -2078,16 +2079,17 @@
 
   let _userSorter;
   function sortUsers(key) {
-    if (!_userSorter) _userSorter = makeSorter('usort-', ['name','role','joined','status']);
+    if (!_userSorter) _userSorter = makeSorter('usort-', ['name','role','verified','joined','status']);
     const { dir } = _userSorter(key);
     const q = document.getElementById('users-search').value.toLowerCase();
     let list = q ? _usersCache.filter(u => (u.first_name+' '+u.last_name).toLowerCase().includes(q) || (u.email||'').toLowerCase().includes(q)) : [..._usersCache];
     list.sort((a, b) => {
       let av, bv;
       if (key === 'name')   { av = ((a.first_name||'')+' '+(a.last_name||'')).toLowerCase(); bv = ((b.first_name||'')+' '+(b.last_name||'')).toLowerCase(); }
-      else if (key === 'role')   { av = (a.role||''); bv = (b.role||''); }
-      else if (key === 'joined') { av = a.created_at || ''; bv = b.created_at || ''; }
-      else if (key === 'status') { av = STATUS_ORDER[a.status] ?? 9; bv = STATUS_ORDER[b.status] ?? 9; }
+      else if (key === 'role')     { av = (a.role||''); bv = (b.role||''); }
+      else if (key === 'verified') { av = (a.email_verified ? 1 : 0) + (a.phone_verified ? 1 : 0); bv = (b.email_verified ? 1 : 0) + (b.phone_verified ? 1 : 0); }
+      else if (key === 'joined')   { av = a.created_at || ''; bv = b.created_at || ''; }
+      else if (key === 'status')   { av = STATUS_ORDER[a.status] ?? 9; bv = STATUS_ORDER[b.status] ?? 9; }
       if (av < bv) return -dir;
       if (av > bv) return dir;
       return 0;
