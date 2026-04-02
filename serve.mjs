@@ -1037,6 +1037,35 @@ app.delete('/api/admin/events/:id', requireAdmin, async (req, res) => {
   res.json({ ok: true });
 });
 
+app.put('/api/admin/events/:id', requireAdmin, async (req, res) => {
+  const { id } = req.params;
+  const { name, category, date_sort, date_end, suburb, state, venue_name,
+          stalls_available, deadline, stall_fee_min, stall_fee_max,
+          description, organiser_name } = req.body;
+  if (!name) return res.status(400).json({ error: 'Event name is required' });
+  // Get existing event to preserve fields not in the edit modal (cover_image, date_text)
+  const existing = await stmts.getEventById.get(id).catch(() => null);
+  await stmts.updateEvent.run({
+    id,
+    name,
+    category:         category ?? null,
+    date_sort:        date_sort ?? null,
+    date_end:         date_end ?? null,
+    suburb:           suburb ?? null,
+    state:            state ?? null,
+    venue_name:       venue_name ?? null,
+    stalls_available: stalls_available ?? null,
+    deadline:         deadline ?? null,
+    stall_fee_min:    stall_fee_min ?? null,
+    stall_fee_max:    stall_fee_max ?? null,
+    description:      description ?? null,
+    organiser_name:   organiser_name ?? null,
+    date_text:        existing?.date_text ?? null,
+    cover_image:      existing?.cover_image ?? null,
+  });
+  res.json({ ok: true });
+});
+
 app.get('/api/admin/vendors/:userId', requireAdmin, async (req, res) => {
   const row = await stmts.getVendorDetail.get(req.params.userId);
   if (!row) return res.status(404).json({ error: 'Not found' });
