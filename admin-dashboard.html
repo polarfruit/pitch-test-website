@@ -2000,7 +2000,13 @@
       return `<tr>
         <td><strong>${v.trading_name}</strong><br><span style="font-size:12px;color:#4A3C30;">${v.email}</span></td>
         <td><span style="font-size:12px;">${v.abn || '—'}</span></td>
-        <td><span class="badge badge-grey">—</span></td>
+        <td>${(() => {
+          const total = 3;
+          const uploaded = [v.food_safety_url, v.pli_url, v.council_url].filter(Boolean).length;
+          if (uploaded === total) return `<span class="badge badge-green" title="Food Safety · PLI · Council Permit">✓ All docs</span>`;
+          if (uploaded === 0)    return `<span class="badge badge-grey">No docs</span>`;
+          return `<span class="badge badge-amber" title="${uploaded}/${total} uploaded">${uploaded}/${total} docs</span>`;
+        })()}</td>
         <td>${planBadge(v.plan)}</td>
         <td><span style="font-size:12px;">${fmtDate(v.joined)}</span></td>
         <td>${statusBadge(v.status)}</td>
