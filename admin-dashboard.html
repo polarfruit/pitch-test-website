@@ -759,11 +759,11 @@
       <table class="data-table">
         <thead>
           <tr>
-            <th>Event</th>
-            <th>Organiser</th>
-            <th>Date</th>
-            <th>Category</th>
-            <th>Status</th>
+            <th onclick="sortEvents('name')" style="cursor:pointer;user-select:none;">Event <span id="evsort-name" style="font-size:10px;color:#6B5A4A;"></span></th>
+            <th onclick="sortEvents('organiser')" style="cursor:pointer;user-select:none;">Organiser <span id="evsort-organiser" style="font-size:10px;color:#6B5A4A;"></span></th>
+            <th onclick="sortEvents('date')" style="cursor:pointer;user-select:none;">Date <span id="evsort-date" style="font-size:10px;color:#6B5A4A;"></span></th>
+            <th onclick="sortEvents('category')" style="cursor:pointer;user-select:none;">Category <span id="evsort-category" style="font-size:10px;color:#6B5A4A;"></span></th>
+            <th onclick="sortEvents('status')" style="cursor:pointer;user-select:none;">Status <span id="evsort-status" style="font-size:10px;color:#6B5A4A;"></span></th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -1061,11 +1061,11 @@
       <table class="data-table">
         <thead>
           <tr>
-            <th>Vendor</th>
-            <th>Event</th>
-            <th>Category</th>
-            <th>Applied</th>
-            <th>Status</th>
+            <th onclick="sortApps('vendor')" style="cursor:pointer;user-select:none;">Vendor <span id="apsort-vendor" style="font-size:10px;color:#6B5A4A;"></span></th>
+            <th onclick="sortApps('event')" style="cursor:pointer;user-select:none;">Event <span id="apsort-event" style="font-size:10px;color:#6B5A4A;"></span></th>
+            <th onclick="sortApps('category')" style="cursor:pointer;user-select:none;">Category <span id="apsort-category" style="font-size:10px;color:#6B5A4A;"></span></th>
+            <th onclick="sortApps('applied')" style="cursor:pointer;user-select:none;">Applied <span id="apsort-applied" style="font-size:10px;color:#6B5A4A;"></span></th>
+            <th onclick="sortApps('status')" style="cursor:pointer;user-select:none;">Status <span id="apsort-status" style="font-size:10px;color:#6B5A4A;"></span></th>
             <th>Admin override</th>
           </tr>
         </thead>
@@ -2093,6 +2093,48 @@
       return 0;
     });
     renderUsersTable(list);
+  }
+
+  let _eventSorter;
+  function sortEvents(key) {
+    if (!_eventSorter) _eventSorter = makeSorter('evsort-', ['name','organiser','date','category','status']);
+    const { dir } = _eventSorter(key);
+    const base = _eventsStatusFilter ? _eventsCache.filter(ev => ev.status === _eventsStatusFilter) : _eventsCache;
+    const q = (document.getElementById('events-search').value || '').toLowerCase();
+    let list = q ? base.filter(ev => (ev.name||'').toLowerCase().includes(q) || (ev.organiser_name||'').toLowerCase().includes(q)) : [...base];
+    list.sort((a, b) => {
+      let av, bv;
+      if (key === 'name')       { av = (a.name||'').toLowerCase(); bv = (b.name||'').toLowerCase(); }
+      else if (key === 'organiser') { av = (a.organiser_name||'').toLowerCase(); bv = (b.organiser_name||'').toLowerCase(); }
+      else if (key === 'date')      { av = a.date_sort || ''; bv = b.date_sort || ''; }
+      else if (key === 'category')  { av = (a.category||'').toLowerCase(); bv = (b.category||'').toLowerCase(); }
+      else if (key === 'status')    { av = STATUS_ORDER[a.status] ?? 9; bv = STATUS_ORDER[b.status] ?? 9; }
+      if (av < bv) return -dir;
+      if (av > bv) return dir;
+      return 0;
+    });
+    renderEventsTable(list);
+  }
+
+  const APP_STATUS_ORDER = { approved: 0, pending: 1, declined: 2, withdrawn: 3 };
+  let _appSorter;
+  function sortApps(key) {
+    if (!_appSorter) _appSorter = makeSorter('apsort-', ['vendor','event','category','applied','status']);
+    const { dir } = _appSorter(key);
+    const q = (document.getElementById('app-search') ? document.getElementById('app-search').value.toLowerCase() : '');
+    let list = q ? _appsCache.filter(a => (a.trading_name||'').toLowerCase().includes(q) || (a.event_name||'').toLowerCase().includes(q)) : [..._appsCache];
+    list.sort((a, b) => {
+      let av, bv;
+      if (key === 'vendor')     { av = (a.trading_name||'').toLowerCase(); bv = (b.trading_name||'').toLowerCase(); }
+      else if (key === 'event')    { av = (a.event_name||'').toLowerCase(); bv = (b.event_name||'').toLowerCase(); }
+      else if (key === 'category') { av = (a.category||'').toLowerCase(); bv = (b.category||'').toLowerCase(); }
+      else if (key === 'applied')  { av = a.created_at || ''; bv = b.created_at || ''; }
+      else if (key === 'status')   { av = APP_STATUS_ORDER[a.status] ?? 9; bv = APP_STATUS_ORDER[b.status] ?? 9; }
+      if (av < bv) return -dir;
+      if (av > bv) return dir;
+      return 0;
+    });
+    renderAppsTable(list);
   }
 
   function filterVendorsTable() {
