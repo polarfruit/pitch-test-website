@@ -140,7 +140,8 @@
     }
     .data-table tr:last-child td { border-bottom: none; }
     .data-table tr:hover td { background: rgba(255,255,255,0.015); }
-    .data-table td strong { color: #FDF4E7; font-weight: 600; }
+    .data-table td strong { color: #FDF4E7; font-weight: 600; text-decoration: none; }
+    .data-table td[onclick] strong { text-decoration: none; }
 
     /* ── Badges ────────────────────────────────── */
     .badge { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 20px; font-size: 11.5px; font-weight: 600; }
@@ -2004,7 +2005,7 @@
            </div>`;
 
       return `<tr>
-        <td onclick="openVendorDetail(${v.user_id})" style="cursor:pointer;" title="View vendor"><strong style="">${v.trading_name}</strong><br><span style="font-size:12px;color:#4A3C30;">${v.email}</span></td>
+        <td onclick="openVendorDetail(${v.user_id})" style="cursor:pointer;" title="View vendor"><strong>${v.trading_name}</strong><br><span style="font-size:12px;color:#4A3C30;">${v.email}</span></td>
         <td><span style="font-size:12px;">${v._abn_display || v.abn || '—'}</span></td>
         <td>${(() => {
           const total = 3;
@@ -2216,7 +2217,7 @@
       const mockStalls = o._stalls !== undefined ? o._stalls : mockEvents * (8 + (o.user_id % 12));
       const mockAbn = o._mock_abn || o.abn || '—';
       return `<tr>
-        <td onclick="openOrganiserDetail(${o.user_id})" style="cursor:pointer;" title="View organiser"><strong style="">${o.org_name}</strong><br><span style="font-size:12px;color:#4A3C30;">${o.email}</span></td>
+        <td onclick="openOrganiserDetail(${o.user_id})" style="cursor:pointer;" title="View organiser"><strong>${o.org_name}</strong><br><span style="font-size:12px;color:#4A3C30;">${o.email}</span></td>
         <td><span style="font-size:12px;">${mockAbn}</span></td>
         <td><strong>${mockEvents}</strong></td>
         <td><strong>${mockStalls}</strong></td>
@@ -2346,7 +2347,7 @@
       const statusCls = ev.status === 'published' ? 'badge-green' : 'badge-grey';
       const d = ev.date_sort ? new Date(ev.date_sort + 'T00:00:00').toLocaleDateString('en-AU', { day:'numeric', month:'short', year:'numeric' }) : '—';
       return `<tr style="${ev.status !== 'published' ? 'opacity:0.5;' : ''}">
-        <td onclick="window.open('/events/${ev.slug}','_blank')" style="cursor:pointer;" title="View event"><strong style="">${ev.name}</strong><br><span style="font-size:12px;color:#4A3C30;">${ev.suburb || ''}, ${ev.state || ''}</span></td>
+        <td onclick="window.open('/events/${ev.slug}','_blank')" style="cursor:pointer;" title="View event"><strong>${ev.name}</strong><br><span style="font-size:12px;color:#4A3C30;">${ev.suburb || ''}, ${ev.state || ''}</span></td>
         <td><span style="font-size:13px;">${ev.organiser_name || '—'}</span></td>
         <td><span style="font-size:12px;">${d}</span></td>
         <td><span class="badge badge-grey" style="font-size:11px;">${ev.category || '—'}</span></td>
@@ -2809,7 +2810,7 @@
       const d = a.date_sort ? new Date(a.date_sort + 'T00:00:00').toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'}) : '—';
       const applied = a.created_at ? new Date(a.created_at).toLocaleDateString('en-AU',{day:'numeric',month:'short'}) : '—';
       return `<tr>
-        <td onclick="openVendorDetail(${a.vendor_user_id})" style="cursor:pointer;" title="View vendor"><strong style="">${a.trading_name || '—'}</strong><br><span style="font-size:12px;color:#4A3C30;">${a.vendor_email || ''}</span></td>
+        <td onclick="openVendorDetail(${a.vendor_user_id})" style="cursor:pointer;" title="View vendor"><strong>${a.trading_name || '—'}</strong><br><span style="font-size:12px;color:#4A3C30;">${a.vendor_email || ''}</span></td>
         <td><strong>${a.event_name || '—'}</strong><br><span style="font-size:12px;color:#4A3C30;">${d}</span></td>
         <td><span class="badge badge-grey" style="font-size:11px;">${a.category || '—'}</span></td>
         <td><span style="font-size:12px;">${applied}</span></td>
