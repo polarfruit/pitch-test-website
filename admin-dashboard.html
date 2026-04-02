@@ -719,8 +719,8 @@
           <tr>
             <th onclick="sortOrgs('name')" style="cursor:pointer;user-select:none;">Organisation <span id="osort-name" style="font-size:10px;color:#6B5A4A;"></span></th>
             <th onclick="sortOrgs('abn')" style="cursor:pointer;user-select:none;">ABN <span id="osort-abn" style="font-size:10px;color:#6B5A4A;"></span></th>
-            <th>Events</th>
-            <th>Stalls sold</th>
+            <th onclick="sortOrgs('events')" style="cursor:pointer;user-select:none;">Events <span id="osort-events" style="font-size:10px;color:#6B5A4A;"></span></th>
+            <th onclick="sortOrgs('stalls')" style="cursor:pointer;user-select:none;">Stalls sold <span id="osort-stalls" style="font-size:10px;color:#6B5A4A;"></span></th>
             <th onclick="sortOrgs('joined')" style="cursor:pointer;user-select:none;">Joined <span id="osort-joined" style="font-size:10px;color:#6B5A4A;"></span></th>
             <th onclick="sortOrgs('status')" style="cursor:pointer;user-select:none;">Status <span id="osort-status" style="font-size:10px;color:#6B5A4A;"></span></th>
             <th>Actions</th>
@@ -2043,7 +2043,7 @@
     list.sort((a, b) => {
       let av, bv;
       if (key === 'name')   { av = (a.trading_name||'').toLowerCase(); bv = (b.trading_name||'').toLowerCase(); }
-      else if (key === 'abn')    { av = (a.abn||''); bv = (b.abn||''); }
+      else if (key === 'abn')    { av = parseInt((a.abn||'').replace(/\s/g,'')) || 0; bv = parseInt((b.abn||'').replace(/\s/g,'')) || 0; }
       else if (key === 'plan')   { av = PLAN_ORDER[a.plan] ?? 9; bv = PLAN_ORDER[b.plan] ?? 9; }
       else if (key === 'joined') { av = a.joined || ''; bv = b.joined || ''; }
       else if (key === 'status') { av = STATUS_ORDER[a.status] ?? 9; bv = STATUS_ORDER[b.status] ?? 9; }
@@ -2056,15 +2056,17 @@
 
   let _orgSorter;
   function sortOrgs(key) {
-    if (!_orgSorter) _orgSorter = makeSorter('osort-', ['name','abn','joined','status']);
+    if (!_orgSorter) _orgSorter = makeSorter('osort-', ['name','abn','events','stalls','joined','status']);
     const { dir } = _orgSorter(key);
     const base = _orgStatusFilter ? _orgsCache.filter(o => o.status === _orgStatusFilter) : _orgsCache;
     const q = (document.getElementById('org-search').value || '').toLowerCase();
     let list = q ? base.filter(o => (o.org_name||'').toLowerCase().includes(q) || (o.email||'').toLowerCase().includes(q)) : [...base];
     list.sort((a, b) => {
       let av, bv;
-      if (key === 'name')   { av = (a.org_name||'').toLowerCase(); bv = (b.org_name||'').toLowerCase(); }
-      else if (key === 'abn')    { av = (a.abn||''); bv = (b.abn||''); }
+      if (key === 'name')        { av = (a.org_name||'').toLowerCase(); bv = (b.org_name||'').toLowerCase(); }
+      else if (key === 'abn')    { av = a._abn_num || parseInt((a.abn||'').replace(/\s/g,'')) || 0; bv = b._abn_num || parseInt((b.abn||'').replace(/\s/g,'')) || 0; }
+      else if (key === 'events') { av = a._events || 0; bv = b._events || 0; }
+      else if (key === 'stalls') { av = a._stalls || 0; bv = b._stalls || 0; }
       else if (key === 'joined') { av = a.joined || ''; bv = b.joined || ''; }
       else if (key === 'status') { av = STATUS_ORDER[a.status] ?? 9; bv = STATUS_ORDER[b.status] ?? 9; }
       if (av < bv) return -dir;
@@ -2112,8 +2114,12 @@
     try {
       const r = await fetch('/api/admin/organisers');
       const { organisers } = await r.json();
-      _orgsCache = organisers;
-      const filtered = _orgStatusFilter ? organisers.filter(o => o.status === _orgStatusFilter) : organisers;
+      _orgsCache = organisers.map(o => Object.assign({}, o, {
+        _events: 2 + (o.user_id % 4),
+        _stalls: (2 + (o.user_id % 4)) * (8 + (o.user_id % 12)),
+        _abn_num: parseInt((o.abn || '').replace(/\s/g, '')) || 0,
+      }));
+      const filtered = _orgStatusFilter ? _orgsCache.filter(o => o.status === _orgStatusFilter) : _orgsCache;
       renderOrgsTable(filtered);
       renderPendingQueue();
     } catch(e) { console.warn('Organisers load failed', e); }
@@ -2155,8 +2161,8 @@
              <button class="act-btn act-view" onclick="openOrganiserDetail(${o.user_id})">View</button>
            </div>`;
 
-      const mockEvents = 2 + (o.user_id % 4);
-      const mockStalls = mockEvents * (8 + (o.user_id % 12));
+      const mockEvents = o._events !== undefined ? o._events : (2 + (o.user_id % 4));
+      const mockStalls = o._stalls !== undefined ? o._stalls : mockEvents * (8 + (o.user_id % 12));
       const mockAbn = o.abn || (51 + (o.user_id % 40)).toString() + ' ' + String(100 + (o.user_id % 900)).padStart(3,'0') + ' ' + String(100 + (o.user_id*7 % 900)).padStart(3,'0');
       return `<tr>
         <td><strong>${o.org_name}</strong><br><span style="font-size:12px;color:#4A3C30;">${o.email}</span></td>
