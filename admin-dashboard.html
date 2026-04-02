@@ -2004,7 +2004,7 @@
            </div>`;
 
       return `<tr>
-        <td onclick="openVendorDetail(${v.user_id})" style="cursor:pointer;" title="View vendor"><strong style="text-decoration:underline;text-underline-offset:3px;">${v.trading_name}</strong><br><span style="font-size:12px;color:#4A3C30;">${v.email}</span></td>
+        <td onclick="openVendorDetail(${v.user_id})" style="cursor:pointer;" title="View vendor"><strong style="">${v.trading_name}</strong><br><span style="font-size:12px;color:#4A3C30;">${v.email}</span></td>
         <td><span style="font-size:12px;">${v._abn_display || v.abn || '—'}</span></td>
         <td>${(() => {
           const total = 3;
@@ -2216,7 +2216,7 @@
       const mockStalls = o._stalls !== undefined ? o._stalls : mockEvents * (8 + (o.user_id % 12));
       const mockAbn = o._mock_abn || o.abn || '—';
       return `<tr>
-        <td onclick="openOrganiserDetail(${o.user_id})" style="cursor:pointer;" title="View organiser"><strong style="text-decoration:underline;text-underline-offset:3px;">${o.org_name}</strong><br><span style="font-size:12px;color:#4A3C30;">${o.email}</span></td>
+        <td onclick="openOrganiserDetail(${o.user_id})" style="cursor:pointer;" title="View organiser"><strong style="">${o.org_name}</strong><br><span style="font-size:12px;color:#4A3C30;">${o.email}</span></td>
         <td><span style="font-size:12px;">${mockAbn}</span></td>
         <td><strong>${mockEvents}</strong></td>
         <td><strong>${mockStalls}</strong></td>
@@ -2346,7 +2346,7 @@
       const statusCls = ev.status === 'published' ? 'badge-green' : 'badge-grey';
       const d = ev.date_sort ? new Date(ev.date_sort + 'T00:00:00').toLocaleDateString('en-AU', { day:'numeric', month:'short', year:'numeric' }) : '—';
       return `<tr style="${ev.status !== 'published' ? 'opacity:0.5;' : ''}">
-        <td onclick="window.open('/events/${ev.slug}','_blank')" style="cursor:pointer;" title="View event"><strong style="text-decoration:underline;text-underline-offset:3px;">${ev.name}</strong><br><span style="font-size:12px;color:#4A3C30;">${ev.suburb || ''}, ${ev.state || ''}</span></td>
+        <td onclick="window.open('/events/${ev.slug}','_blank')" style="cursor:pointer;" title="View event"><strong style="">${ev.name}</strong><br><span style="font-size:12px;color:#4A3C30;">${ev.suburb || ''}, ${ev.state || ''}</span></td>
         <td><span style="font-size:13px;">${ev.organiser_name || '—'}</span></td>
         <td><span style="font-size:12px;">${d}</span></td>
         <td><span class="badge badge-grey" style="font-size:11px;">${ev.category || '—'}</span></td>
@@ -2809,7 +2809,7 @@
       const d = a.date_sort ? new Date(a.date_sort + 'T00:00:00').toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'}) : '—';
       const applied = a.created_at ? new Date(a.created_at).toLocaleDateString('en-AU',{day:'numeric',month:'short'}) : '—';
       return `<tr>
-        <td onclick="openVendorDetail(${a.vendor_user_id})" style="cursor:pointer;" title="View vendor"><strong style="text-decoration:underline;text-underline-offset:3px;">${a.trading_name || '—'}</strong><br><span style="font-size:12px;color:#4A3C30;">${a.vendor_email || ''}</span></td>
+        <td onclick="openVendorDetail(${a.vendor_user_id})" style="cursor:pointer;" title="View vendor"><strong style="">${a.trading_name || '—'}</strong><br><span style="font-size:12px;color:#4A3C30;">${a.vendor_email || ''}</span></td>
         <td><strong>${a.event_name || '—'}</strong><br><span style="font-size:12px;color:#4A3C30;">${d}</span></td>
         <td><span class="badge badge-grey" style="font-size:11px;">${a.category || '—'}</span></td>
         <td><span style="font-size:12px;">${applied}</span></td>
@@ -2885,7 +2885,7 @@
         : new Date(2026, 2, 1 + (u.id % 20)).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'});
       const verified = (u.email_verified ? '✉️' : '') + (u.phone_verified ? ' 📱' : '') || '—';
       return `<tr>
-        <td onclick="${u.role==='vendor'?`openVendorDetail(${u.id})`:u.role==='organiser'?`openOrganiserDetail(${u.id})`:''}" style="${u.role==='vendor'||u.role==='organiser'?'cursor:pointer;':''}" title="${u.role==='vendor'?'View vendor':u.role==='organiser'?'View organiser':''}"><strong style="${u.role==='vendor'||u.role==='organiser'?'text-decoration:underline;text-underline-offset:3px;':''}">${u.first_name} ${u.last_name}</strong><br><span style="font-size:12px;color:#4A3C30;">${u.email}</span></td>
+        <td onclick="${u.role==='vendor'?`openVendorDetail(${u.id})`:u.role==='organiser'?`openOrganiserDetail(${u.id})`:''}" style="${u.role==='vendor'||u.role==='organiser'?'cursor:pointer;':''}" title="${u.role==='vendor'?'View vendor':u.role==='organiser'?'View organiser':''}"><strong style="${u.role==='vendor'||u.role==='organiser'?'':''}">${u.first_name} ${u.last_name}</strong><br><span style="font-size:12px;color:#4A3C30;">${u.email}</span></td>
         <td>
           ${roleBadge(u.role)}
           <select class="filter-chip" style="margin-left:6px;padding:4px 8px;font-size:12px;appearance:none;border-radius:6px;cursor:pointer;background:#2A2018;border:1px solid #3A2E24;color:#A89880;" onchange="changeUserRole(${u.id},this.value,this)">
