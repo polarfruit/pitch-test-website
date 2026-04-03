@@ -142,7 +142,7 @@ if (process.env.TURSO_DATABASE_URL) {
 
 // ── Schema version — bump this whenever migrations are added ─────────────────
 // On a versioned DB the entire migration block is skipped (1 read vs 50+ calls).
-const SCHEMA_VERSION = 10;
+const SCHEMA_VERSION = 11;
 let _schemaVersion = 0;
 try {
   const _ver = await prepare(`SELECT v FROM _schema_meta LIMIT 1`).get();
@@ -605,11 +605,10 @@ await _safeExec(`
   )
 `);
 
-// Seed sample flags (always-run, INSERT OR IGNORE keeps them idempotent)
-await _safeExec(`INSERT OR IGNORE INTO content_flags (id,type,target_name,reason,reporter_count,status,created_at) VALUES
-  (1,'photo','Smoky Joe''s BBQ','Photo contains competitor branding and misleading claims',2,'pending',datetime('now','-2 hours')),
-  (2,'listing','Adelaide City Council Events','Listing description contains inaccurate stall availability claims',3,'pending',datetime('now','-1 day')),
-  (3,'profile','Best Kebabs AU','Profile photos appear to be stock images. No genuine event history.',1,'pending',datetime('now','-3 days'))`);
+// Seed sample flags — split into individual INSERTs for Turso/libsql compatibility
+await _safeExec(`INSERT OR IGNORE INTO content_flags (id,type,target_name,reason,reporter_count,status,created_at) VALUES (1,'photo','Smoky Joe''s BBQ','Photo contains competitor branding and misleading claims',2,'pending',datetime('now','-2 hours'))`);
+await _safeExec(`INSERT OR IGNORE INTO content_flags (id,type,target_name,reason,reporter_count,status,created_at) VALUES (2,'listing','Adelaide City Council Events','Listing description contains inaccurate stall availability claims',3,'pending',datetime('now','-1 day'))`);
+await _safeExec(`INSERT OR IGNORE INTO content_flags (id,type,target_name,reason,reporter_count,status,created_at) VALUES (3,'profile','Best Kebabs AU','Profile photos appear to be stock images. No genuine event history.',1,'pending',datetime('now','-3 days'))`);
 
 // ── Event coordinates (for map view) ─────────────────────────────────────────
 await _safeExec(`ALTER TABLE events ADD COLUMN lat REAL`);
