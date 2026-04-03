@@ -499,7 +499,7 @@
     <div class="sidebar-section-label">Moderation</div>
     <div class="nav-item" onclick="showPanel('reports',this)">
       <span class="nav-icon">🚩</span> Reports
-      <span class="nav-badge">7</span>
+      <span class="nav-badge" id="sb-reports-badge" style="display:none;"></span>
     </div>
     <div class="nav-item" onclick="showPanel('moderation',this)">
       <span class="nav-icon">🛡</span> Content
@@ -507,6 +507,9 @@
     </div>
     <div class="nav-item" onclick="showPanel('announcements',this)">
       <span class="nav-icon">📢</span> Announcements
+    </div>
+    <div class="nav-item" onclick="showPanel('messages',this)">
+      <span class="nav-icon">✉️</span> Messages
     </div>
   </div>
 
@@ -858,6 +861,61 @@
             <button class="act-btn act-view" style="width:100%;padding:10px;text-align:left;" onclick="openAnnouncementModal()">📢 Post announcement</button>
             <button class="act-btn act-view" style="width:100%;padding:10px;text-align:left;">📤 Export report log</button>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════ MESSAGES ════════════ -->
+  <div class="panel" id="panel-messages">
+    <div class="page-header">
+      <h1>Messages</h1>
+      <p>Contact any vendor or organiser on the platform directly.</p>
+    </div>
+    <div class="two-col" style="align-items:start;">
+      <!-- Compose -->
+      <div class="card">
+        <div class="card-header">
+          <span style="font-size:16px;">✉️</span>
+          <span class="card-title">Compose message</span>
+        </div>
+        <div style="padding:20px;display:flex;flex-direction:column;gap:14px;">
+          <div>
+            <label class="field-label-sm">To</label>
+            <div style="position:relative;">
+              <input id="msg-to-input" type="text" class="field-sm" placeholder="Search by name or email…" autocomplete="off" oninput="msgUserSearch()" />
+              <div id="msg-to-suggestions" style="display:none;position:absolute;top:100%;left:0;right:0;background:#2A2018;border:1px solid rgba(255,255,255,0.08);border-radius:8px;z-index:100;max-height:200px;overflow-y:auto;margin-top:4px;"></div>
+            </div>
+            <div id="msg-to-selected" style="display:none;margin-top:8px;padding:10px 12px;background:#1A1612;border-radius:8px;display:flex;align-items:center;justify-content:space-between;">
+              <span id="msg-to-label" style="font-size:13px;color:#FDF4E7;"></span>
+              <button onclick="msgClearRecipient()" style="background:none;border:none;color:#6B5A4A;cursor:pointer;font-size:14px;">✕</button>
+            </div>
+          </div>
+          <div>
+            <label class="field-label-sm">Subject</label>
+            <input id="msg-subject" type="text" class="field-sm" placeholder="e.g. Account query, Event update…" />
+          </div>
+          <div>
+            <label class="field-label-sm">Message</label>
+            <textarea id="msg-body" class="field-sm" style="min-height:160px;resize:vertical;" placeholder="Write your message here…"></textarea>
+          </div>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <div style="font-size:12px;color:#6B5A4A;">Delivery:</div>
+            <button id="msg-del-platform" onclick="setMsgDelivery('platform')" style="padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;border:none;background:#E8500A;color:#fff;">Platform</button>
+            <button id="msg-del-email" onclick="setMsgDelivery('email')" style="padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;border:none;background:rgba(255,255,255,0.06);color:#A89880;">Email</button>
+          </div>
+          <button onclick="sendAdminMessage()" style="background:#E8500A;color:#fff;border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='#FF6B2B'" onmouseout="this.style.background='#E8500A'">Send message</button>
+        </div>
+      </div>
+
+      <!-- Sent history -->
+      <div class="card">
+        <div class="card-header">
+          <span style="font-size:16px;">📋</span>
+          <span class="card-title">Sent history</span>
+        </div>
+        <div id="msg-history" style="min-height:60px;">
+          <div style="padding:20px;text-align:center;font-size:13px;color:#4A3C30;">No messages sent yet this session.</div>
         </div>
       </div>
     </div>
@@ -1661,6 +1719,7 @@
     featured:      { title: 'Featured Content',      sub: 'Pin events and vendors' },
     analytics:     { title: 'Analytics',             sub: 'Key platform trends' },
     settings:      { title: 'Platform Settings',     sub: 'Feature flags and config' },
+    messages:      { title: 'Messages',              sub: 'Contact vendors and organisers' },
   };
 
   function showPanel(id, navEl) {
@@ -1679,6 +1738,7 @@
     if (id === 'analytics')      loadAnalytics();
     if (id === 'announcements')  loadAnnouncementHistory();
     if (id === 'reports')        loadReports();
+    if (id === 'messages')       loadMsgUsers();
   }
 
   function toggleExpand(id) {
@@ -3501,6 +3561,9 @@
     const list = document.getElementById('reports-list');
     const open = _reportsCache.filter(r => r.status !== 'resolved' && r.status !== 'dismissed');
     document.getElementById('rfilter-count').textContent = open.length;
+    const badge = document.getElementById('sb-reports-badge');
+    if (open.length > 0) { badge.textContent = open.length; badge.style.display = ''; }
+    else { badge.style.display = 'none'; }
 
     const filtered = _reportFilter === 'all'
       ? _reportsCache.filter(r => r.status !== 'resolved' && r.status !== 'dismissed')
@@ -3602,6 +3665,109 @@
     toast.innerHTML = msg;
     toast.classList.add('show');
     setTimeout(() => toast.classList.remove('show'), 4000);
+  }
+
+  // ── Admin Messages ────────────────────────────────────────────────────────
+  let _msgUsers = [];
+  let _msgRecipient = null; // { id, email, name, role }
+  let _msgDelivery = 'platform';
+  let _msgHistory = [];
+
+  async function loadMsgUsers() {
+    if (_msgUsers.length) return;
+    try {
+      const r = await fetch('/api/admin/users-all');
+      const data = await r.json();
+      _msgUsers = (data.users || []).filter(u => u.role !== 'admin');
+    } catch {}
+  }
+
+  function msgUserSearch() {
+    const q = document.getElementById('msg-to-input').value.trim().toLowerCase();
+    const box = document.getElementById('msg-to-suggestions');
+    if (!q) { box.style.display = 'none'; return; }
+    const matches = _msgUsers.filter(u =>
+      (u.first_name + ' ' + u.last_name).toLowerCase().includes(q) ||
+      (u.email || '').toLowerCase().includes(q)
+    ).slice(0, 8);
+    if (!matches.length) { box.style.display = 'none'; return; }
+    box.innerHTML = matches.map(u => `
+      <div onclick="msgSelectUser(${u.id})" style="padding:10px 14px;cursor:pointer;font-size:13px;color:#FDF4E7;border-bottom:1px solid rgba(255,255,255,0.04);" onmouseover="this.style.background='rgba(232,80,10,0.08)'" onmouseout="this.style.background=''">
+        <strong>${escHtml(u.first_name + ' ' + u.last_name)}</strong>
+        <span style="color:#6B5A4A;margin-left:8px;">${escHtml(u.email)}</span>
+        <span style="float:right;font-size:11px;background:rgba(255,255,255,0.06);padding:2px 7px;border-radius:10px;color:#A89880;">${u.role}</span>
+      </div>`).join('');
+    box.style.display = 'block';
+  }
+
+  function msgSelectUser(id) {
+    const u = _msgUsers.find(x => x.id === id);
+    if (!u) return;
+    _msgRecipient = u;
+    document.getElementById('msg-to-input').value = '';
+    document.getElementById('msg-to-suggestions').style.display = 'none';
+    const sel = document.getElementById('msg-to-selected');
+    document.getElementById('msg-to-label').textContent = `${u.first_name} ${u.last_name}  ·  ${u.email}  (${u.role})`;
+    sel.style.display = 'flex';
+  }
+
+  function msgClearRecipient() {
+    _msgRecipient = null;
+    document.getElementById('msg-to-selected').style.display = 'none';
+    document.getElementById('msg-to-input').value = '';
+  }
+
+  function setMsgDelivery(mode) {
+    _msgDelivery = mode;
+    document.getElementById('msg-del-platform').style.background = mode === 'platform' ? '#E8500A' : 'rgba(255,255,255,0.06)';
+    document.getElementById('msg-del-platform').style.color = mode === 'platform' ? '#fff' : '#A89880';
+    document.getElementById('msg-del-email').style.background = mode === 'email' ? '#E8500A' : 'rgba(255,255,255,0.06)';
+    document.getElementById('msg-del-email').style.color = mode === 'email' ? '#fff' : '#A89880';
+  }
+
+  async function sendAdminMessage() {
+    if (!_msgRecipient) { showToast('Please select a recipient.'); return; }
+    const subject = document.getElementById('msg-subject').value.trim();
+    const body = document.getElementById('msg-body').value.trim();
+    if (!body) { showToast('Please write a message.'); return; }
+
+    try {
+      const r = await fetch('/api/admin/messages/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ to_user_id: _msgRecipient.id, subject, body, delivery: _msgDelivery }),
+      });
+      if (!r.ok) throw new Error((await r.json()).error || 'Send failed');
+
+      // Add to local history
+      _msgHistory.unshift({ recipient: _msgRecipient, subject, body, delivery: _msgDelivery, ts: new Date() });
+      renderMsgHistory();
+
+      // Clear form
+      document.getElementById('msg-subject').value = '';
+      document.getElementById('msg-body').value = '';
+      msgClearRecipient();
+      showToast(`✉️ Message sent to <strong>${_msgRecipient.first_name} ${_msgRecipient.last_name}</strong>`);
+    } catch (e) {
+      showToast('Error: ' + e.message);
+    }
+  }
+
+  function renderMsgHistory() {
+    const el = document.getElementById('msg-history');
+    if (!_msgHistory.length) {
+      el.innerHTML = '<div style="padding:20px;text-align:center;font-size:13px;color:#4A3C30;">No messages sent yet this session.</div>';
+      return;
+    }
+    el.innerHTML = _msgHistory.map(m => `
+      <div style="padding:14px 20px;border-bottom:1px solid #1E1916;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+          <strong style="font-size:13px;color:#FDF4E7;">${escHtml(m.recipient.first_name + ' ' + m.recipient.last_name)}</strong>
+          <span style="font-size:11px;color:#4A3C30;">${m.ts.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'})} · ${m.delivery}</span>
+        </div>
+        ${m.subject ? `<div style="font-size:12px;color:#A89880;margin-bottom:4px;">${escHtml(m.subject)}</div>` : ''}
+        <div style="font-size:12px;color:#6B5A4A;white-space:pre-line;">${escHtml(m.body.slice(0, 120))}${m.body.length > 120 ? '…' : ''}</div>
+      </div>`).join('');
   }
 
   function reportResolve(btn) {
