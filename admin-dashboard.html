@@ -460,6 +460,11 @@
     /* ── Temp password toast ───────────────────── */
     .toast { position: fixed; bottom: 24px; right: 24px; background: #2A2018; border: 1px solid #3A2E26; border-radius: 10px; padding: 14px 20px; font-size: 13px; color: #FDF4E7; z-index: 9999; max-width: 340px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); display: none; }
     .toast.show { display: block; }
+    /* ── Success banner ────────────────────────── */
+    #success-banner { position:fixed; top:0; left:0; right:0; bottom:0; z-index:10000; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,0.55); }
+    #success-banner.show { display:flex; animation:sbFadeIn 0.2s ease; }
+    #success-banner-inner { background:#0F2E1A; border:1.5px solid #2D8B55; border-radius:20px; padding:36px 48px; display:flex; flex-direction:column; align-items:center; gap:14px; box-shadow:0 24px 80px rgba(0,0,0,0.6); max-width:400px; text-align:center; }
+    @keyframes sbFadeIn { from { opacity:0; transform:scale(0.92); } to { opacity:1; transform:scale(1); } }
   </style>
 </head>
 <body>
@@ -1392,6 +1397,17 @@
 
 <!-- ── Temp password toast ── -->
 <div class="toast" id="pw-toast"></div>
+
+<!-- ── Success banner ── -->
+<div id="success-banner" onclick="this.classList.remove('show')">
+  <div id="success-banner-inner">
+    <div style="width:56px;height:56px;border-radius:50%;background:#2D8B55;display:flex;align-items:center;justify-content:center;">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+    </div>
+    <div id="success-banner-title" style="font-size:18px;font-weight:700;color:#FDF4E7;font-family:'Fraunces',serif;"></div>
+    <div id="success-banner-sub" style="font-size:13px;color:#5BAF7A;line-height:1.6;"></div>
+  </div>
+</div>
 
 <!-- ── Reject modal ── -->
 <div class="modal-overlay" id="rejectModal">
@@ -3684,6 +3700,14 @@
     setTimeout(() => toast.classList.remove('show'), 4000);
   }
 
+  function showSuccessBanner(title, sub, duration = 3000) {
+    document.getElementById('success-banner-title').textContent = title;
+    document.getElementById('success-banner-sub').innerHTML = sub;
+    const banner = document.getElementById('success-banner');
+    banner.classList.add('show');
+    setTimeout(() => banner.classList.remove('show'), duration);
+  }
+
   // ── Admin Messages ────────────────────────────────────────────────────────
   let _msgUsers = [];
   let _msgRecipient = null;
@@ -4062,11 +4086,17 @@
     // Close modal first
     closeReqInfoModal();
 
-    // Show success toast
-    showToast(`✉️ Message sent to <strong>${recipientName}</strong>`);
+    // Show prominent green success banner
+    const deliveryNote = _rimDelivery === 'email' ? 'Sent via email' : 'Delivered to their platform inbox';
+    showSuccessBanner(
+      'Message sent',
+      `Your request for information has been sent to <strong>${recipientName}</strong>.<br>${deliveryNote}.${threadKey ? '<br>Opening conversation thread…' : ''}`,
+      threadKey ? 4000 : 3000
+    );
 
     // Navigate to Messages tab and open the thread
     if (threadKey) {
+      await new Promise(r => setTimeout(r, 600)); // brief pause so banner is seen
       showPanel('messages', document.querySelector('.nav-item[onclick*="messages"]'));
       await _openRequestInfoThread(threadKey, recipientName);
     }

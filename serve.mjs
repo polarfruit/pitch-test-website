@@ -1140,14 +1140,25 @@ app.post('/api/admin/reports/:id/request-info', requireAdmin, async (req, res) =
     let recipientName = report.against_name;
     let recipientEmail = null;
 
-    // Always create a platform message thread with the against_user if we know them
-    const targetUserId = to_user_id || report.against_user_id || null;
+    // Resolve target user: prefer explicit to_user_id, then stored against_user_id,
+    // then look up by trading_name or org_name from the against_name field
+    let targetUserId = to_user_id || report.against_user_id || null;
+    if (!targetUserId && report.against_name) {
+      const cleanName = report.against_name.replace(/\s*\(org\)\s*$/i, '').replace(/\s+listing\s*$/i, '').trim();
+      const byVendor = await stmts.findUserByTradingName.get(cleanName).catch(() => null);
+      if (byVendor) targetUserId = byVendor.user_id;
+      if (!targetUserId) {
+        const byOrg = await stmts.findUserByOrgName.get(cleanName).catch(() => null);
+        if (byOrg) targetUserId = byOrg.user_id;
+      }
+    }
+
     if (targetUserId) {
       const targetUser = await stmts.getUserById.get(targetUserId).catch(() => null);
       if (targetUser) {
         recipientName = targetUser.first_name + ' ' + targetUser.last_name;
         recipientEmail = targetUser.email;
-        // Admin sits on the "organiser" side of the thread (organiser_user_id = adminId)
+        // Admin sits on the "organiser" side of the thread
         threadKey = `report_${report.ref_number}_user_${targetUserId}`;
         await stmts.createOrGetThread.run(threadKey, targetUserId, adminId);
         await stmts.sendMessage.run(threadKey, adminId, msgBody || '');
