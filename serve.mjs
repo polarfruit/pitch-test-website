@@ -1129,22 +1129,45 @@ app.post('/api/admin/reports/:id/dismiss', requireAdmin, async (req, res) => {
 
 app.post('/api/admin/reports/:id/request-info', requireAdmin, async (req, res) => {
   const { id } = req.params;
-  const { delivery, subject, body: msgBody, to_email } = req.body;
+  const { delivery, subject, body: msgBody, to_user_id } = req.body;
+  const adminId = req.session.userId;
   try {
     const report = await stmts.getReportById.get(id);
     if (!report) return res.status(404).json({ error: 'Not found' });
     await stmts.requestInfoReport.run(id);
-    // Send message/email to the "against" party if we have contact info
-    const targetEmail = to_email || null;
-    if (delivery === 'email' && targetEmail) {
-      await sendAdminEmail(
-        targetEmail,
-        subject || `Re: Report #${report.ref_number}`,
-        `<p>${(msgBody || '').replace(/\n/g, '<br>')}</p>`,
-        msgBody || ''
-      ).catch(() => {});
+
+    let threadKey = null;
+    let recipientName = report.against_name;
+    let recipientEmail = null;
+
+    // Always create a platform message thread with the against_user if we know them
+    const targetUserId = to_user_id || report.against_user_id || null;
+    if (targetUserId) {
+      const targetUser = await stmts.getUserById.get(targetUserId).catch(() => null);
+      if (targetUser) {
+        recipientName = targetUser.first_name + ' ' + targetUser.last_name;
+        recipientEmail = targetUser.email;
+        // Admin sits on the "organiser" side of the thread (organiser_user_id = adminId)
+        threadKey = `report_${report.ref_number}_user_${targetUserId}`;
+        await stmts.createOrGetThread.run(threadKey, targetUserId, adminId);
+        await stmts.sendMessage.run(threadKey, adminId, msgBody || '');
+      }
     }
-    // Also notify reporter that info has been requested
+
+    // Email delivery: send an email in addition to (or instead of) platform message
+    if (delivery === 'email') {
+      const emailTarget = recipientEmail || report.reporter_email;
+      if (emailTarget) {
+        await sendAdminEmail(
+          emailTarget,
+          subject || `Re: Report #${report.ref_number}`,
+          `<p>${(msgBody || '').replace(/\n/g, '<br>')}</p>`,
+          msgBody || ''
+        ).catch(() => {});
+      }
+    }
+
+    // Notify reporter that info has been requested
     if (report.reporter_email) {
       await sendAdminEmail(
         report.reporter_email,
@@ -1153,7 +1176,8 @@ app.post('/api/admin/reports/:id/request-info', requireAdmin, async (req, res) =
         `We've reached out to the other party regarding your report #${report.ref_number} and requested additional information.`
       ).catch(() => {});
     }
-    res.json({ ok: true });
+
+    res.json({ ok: true, thread_key: threadKey, recipient_name: recipientName });
   } catch (e) {
     console.error('[reports request-info]', e);
     res.status(500).json({ error: e.message });
@@ -1540,7 +1564,7 @@ app.get('/api/vendor/subscription-info', requireAuth, async (req, res) => {
 app.get('/api/messages', requireAuth, async (req, res) => {
   try {
     const userId = req.session.userId;
-    const threads = await stmts.getThreadsForUser.all(userId, userId);
+    const threads = await stmts.getThreadsForUser.all(userId, userId, userId);
     const enriched = await Promise.all(threads.map(async t => {
       const row = await stmts.getUnreadByThread.get(t.thread_key, userId);
       return { ...t, unread_count: row ? Number(row.count) : 0 };
@@ -2115,22 +2139,13 @@ app.post('/api/admin/messages/send', requireAdmin, async (req, res) => {
         body
       );
     } else {
-      // Platform message: find or create a thread with admin user
+      // Platform message: admin sits on the organiser side of the thread
       const adminId = req.session.userId;
-      // Admin always uses the "organiser" side of the thread for simplicity
-      // Thread key: admin_{adminId}_user_{to_user_id}
       const threadKey = `admin_${adminId}_user_${to_user_id}`;
       await stmts.createOrGetThread.run(threadKey, to_user_id, adminId);
       await stmts.sendMessage.run(threadKey, adminId, body);
+      return res.json({ ok: true, thread_key: threadKey, recipient_name: user.first_name + ' ' + user.last_name });
     }
-
-    // Log to announcements table so there's a record
-    await stmts.createAnnouncement.run({
-      subject: subject || `Admin message to ${user.first_name} ${user.last_name}`,
-      body,
-      audience: `user:${to_user_id}`,
-      created_by: req.session.userId,
-    }).catch(() => {});
 
     res.json({ ok: true });
   } catch (e) {
