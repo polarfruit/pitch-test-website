@@ -3902,7 +3902,6 @@
   // Called from sendReqInfo — adds thread to list and opens it
   async function _openRequestInfoThread(threadKey, recipientName) {
     if (!threadKey) return;
-    await _loadThreadList();
     await openThread(threadKey, recipientName, recipientName, 'Pitch. Admin', 0);
   }
 
@@ -4005,55 +4004,72 @@
 
   async function sendReqInfo() {
     const toText = document.getElementById('rim-to').textContent;
-    const name = toText.replace('To: ', '').split('·')[0].trim();
-    const toEmail = toText.includes('·') ? toText.split('·').pop().trim() : null;
+    const recipientLabel = toText.replace('To: ', '').split('·')[0].trim();
     const subject = document.getElementById('rim-subject').value;
     const msgBody = document.getElementById('rim-body').value;
+    if (!msgBody.trim()) { showToast('Please write a message first.'); return; }
 
-    // Call API if we have a report ID
+    const sendBtn = document.querySelector('#reqInfoModal button[onclick="sendReqInfo()"]');
+    if (sendBtn) { sendBtn.disabled = true; sendBtn.textContent = 'Sending…'; }
+
+    let threadKey = null;
+    let recipientName = recipientLabel;
+
     if (_rimReportId) {
       try {
         const report = _reportsCache.find(x => x.id === _rimReportId);
+
+        // Resolve against_user_id: use stored value or match by name against known users
+        let toUserId = report?.against_user_id || null;
+        if (!toUserId && report?.against_name && _msgUsers.length) {
+          const against = report.against_name.toLowerCase();
+          const match = _msgUsers.find(u =>
+            (u.first_name + ' ' + u.last_name).toLowerCase() === against ||
+            (u.trading_name || '').toLowerCase() === against ||
+            (u.email || '').toLowerCase() === against
+          );
+          if (match) toUserId = match.id;
+        }
+        // If still no match, load users now and try again
+        if (!toUserId) {
+          await loadMsgUsers();
+          const against = (report?.against_name || '').toLowerCase();
+          const match = _msgUsers.find(u =>
+            (u.first_name + ' ' + u.last_name).toLowerCase() === against ||
+            (u.email || '').toLowerCase() === against
+          );
+          if (match) toUserId = match.id;
+        }
+
         const resp = await fetch(`/api/admin/reports/${_rimReportId}/request-info`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            delivery: _rimDelivery,
-            subject,
-            body: msgBody,
-            to_user_id: report?.against_user_id || null,
-          }),
+          body: JSON.stringify({ delivery: _rimDelivery, subject, body: msgBody, to_user_id: toUserId }),
         });
         const data = await resp.json();
         const idx = _reportsCache.findIndex(x => x.id === _rimReportId);
         if (idx >= 0) { _reportsCache[idx].status = 'info-requested'; }
         renderReports();
-        // If a thread was created, open it in the Messages panel
-        if (data.thread_key) {
-          const recipientName = data.recipient_name || report?.against_name || 'Unknown';
-          _openRequestInfoThread(data.thread_key, recipientName);
-        }
-      } catch {}
-    } else if (_rimBtn) {
-      // Fallback: in-memory update
-      const card = _rimBtn.closest('.report-card');
-      let label = card.querySelector('.rim-status-label');
-      if (!label) {
-        label = document.createElement('div');
-        label.className = 'rim-status-label';
-        label.style.cssText = 'font-size:11px;color:#C9840A;margin-top:8px;';
-        card.querySelector('.report-actions').after(label);
+        threadKey = data.thread_key || null;
+        recipientName = data.recipient_name || report?.against_name || recipientLabel;
+      } catch (e) {
+        if (sendBtn) { sendBtn.disabled = false; sendBtn.textContent = 'Send'; }
+        showToast('Error sending message: ' + e.message);
+        return;
       }
-      const now = new Date().toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
-      label.textContent = `Info requested · ${now}`;
-      _rimBtn.textContent = 'Follow up';
-      _rimBtn.classList.remove('act-approve');
-      _rimBtn.classList.add('act-suspend');
-      _rimBtn.disabled = false;
     }
 
-    showToast(`✉️ Message sent to <strong>${name}</strong>`);
+    // Close modal first
     closeReqInfoModal();
+
+    // Show success toast
+    showToast(`✉️ Message sent to <strong>${recipientName}</strong>`);
+
+    // Navigate to Messages tab and open the thread
+    if (threadKey) {
+      showPanel('messages', document.querySelector('.nav-item[onclick*="messages"]'));
+      await _openRequestInfoThread(threadKey, recipientName);
+    }
   }
 
   function reportDismiss(btn) {
