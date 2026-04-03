@@ -1285,9 +1285,7 @@ footer {
     <div class="tw-subtitle" id="tw-date-range"></div>
   </div>
   <div class="tw-scroll-wrap">
-    <div class="tw-scroll" id="tw-scroll">
-      <div class="tw-empty">Loading…</div>
-    </div>
+    <div class="tw-scroll" id="tw-scroll"></div>
   </div>
 </div>
 </div>
@@ -1966,39 +1964,29 @@ function filterByCat(cat, btn) {
     }).join('');
   }
 
+  // Render immediately from static data so carousel is never blank on load
+  const _staticEvents = (window.PITCH_EVENTS || []).slice(0, 3);
+  if (_staticEvents.length) {
+    if (dateEl) dateEl.textContent = '';
+    renderTWCards(_staticEvents);
+  }
+
+  // Silently update with real data once API responds
   fetch('/api/events').then(r => r.json()).then(data => {
     const weekendEvents = (data.events || []).filter(e => {
       if (!e.date_sort) return false;
       return e.date_sort >= friStr && e.date_sort <= sunStr;
     });
-    const el = document.getElementById('tw-scroll');
-    if (!el) return;
     if (weekendEvents.length) {
+      if (dateEl) dateEl.textContent = '· ' + fmt(fri) + ' – ' + fmt(sun);
       const allEvents = window.PITCH_EVENTS || [];
       const evMap = {};
       allEvents.forEach(e => { evMap[e.id] = e; });
-      // Merge API data with demo data for spot counts
       renderTWCards(weekendEvents.map(ev => ({ ...evMap[ev.slug], ...ev })));
-    } else {
-      // No real weekend events — show first 3 from static data as "coming up"
-      const upcoming = (window.PITCH_EVENTS || []).slice(0, 3);
-      if (upcoming.length) {
-        if (dateEl) dateEl.textContent = '';
-        renderTWCards(upcoming);
-      } else {
-        el.innerHTML = '<div class="tw-empty">No markets this weekend — <a href="/events" style="color:var(--ember);">browse all upcoming →</a></div>';
-      }
     }
+    // If no weekend events, static cards already showing — leave them
   }).catch(() => {
-    // On error, fall back to static data
-    const upcoming = (window.PITCH_EVENTS || []).slice(0, 3);
-    if (upcoming.length) {
-      if (dateEl) dateEl.textContent = '';
-      renderTWCards(upcoming);
-    } else {
-      const el = document.getElementById('tw-scroll');
-      if (el) el.innerHTML = '<div class="tw-empty"><a href="/events" style="color:var(--ember);">Browse all upcoming events →</a></div>';
-    }
+    // Static cards already showing — nothing to do
   });
 })();
 
