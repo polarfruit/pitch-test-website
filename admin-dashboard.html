@@ -3737,10 +3737,11 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ to_user_id: _msgRecipient.id, subject, body, delivery: _msgDelivery }),
       });
-      if (!r.ok) throw new Error((await r.json()).error || 'Send failed');
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || 'Send failed');
 
       // Add to local history
-      _msgHistory.unshift({ recipient: _msgRecipient, subject, body, delivery: _msgDelivery, ts: new Date() });
+      _msgHistory.unshift({ recipient: _msgRecipient, subject, body, delivery: _msgDelivery, ts: new Date(), thread_key: data.thread_key || null });
       renderMsgHistory();
 
       // Clear form
@@ -3759,15 +3760,19 @@
       el.innerHTML = '<div style="padding:20px;text-align:center;font-size:13px;color:#4A3C30;">No messages sent yet this session.</div>';
       return;
     }
-    el.innerHTML = _msgHistory.map(m => `
-      <div style="padding:14px 20px;border-bottom:1px solid #1E1916;">
-        <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
-          <strong style="font-size:13px;color:#FDF4E7;">${escHtml(m.recipient.first_name + ' ' + m.recipient.last_name)}</strong>
-          <span style="font-size:11px;color:#4A3C30;">${m.ts.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'})} · ${m.delivery}</span>
+    el.innerHTML = _msgHistory.map(m => {
+      const recipientDisplay = (m.recipient.first_name + ' ' + m.recipient.last_name).trim() || m.recipient.email || 'Unknown';
+      return `<div style="padding:14px 20px;border-bottom:1px solid #1E1916;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px;gap:8px;">
+          <strong style="font-size:13px;color:#FDF4E7;">${escHtml(recipientDisplay)}</strong>
+          <span style="font-size:11px;color:#4A3C30;white-space:nowrap;">${m.ts.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'})} · ${m.delivery}</span>
         </div>
+        ${m.context ? `<div style="font-size:11px;color:#E8500A;margin-bottom:4px;">📋 ${escHtml(m.context)}</div>` : ''}
         ${m.subject ? `<div style="font-size:12px;color:#A89880;margin-bottom:4px;">${escHtml(m.subject)}</div>` : ''}
         <div style="font-size:12px;color:#6B5A4A;white-space:pre-line;">${escHtml(m.body.slice(0, 120))}${m.body.length > 120 ? '…' : ''}</div>
-      </div>`).join('');
+        ${m.thread_key ? `<div style="font-size:11px;color:#2D8B55;margin-top:6px;">✓ Platform thread created — visible in user's inbox</div>` : ''}
+      </div>`;
+    }).join('');
   }
 
   function reportResolve(btn) {
@@ -3877,14 +3882,33 @@
     // Call API if we have a report ID
     if (_rimReportId) {
       try {
-        await fetch(`/api/admin/reports/${_rimReportId}/request-info`, {
+        const report = _reportsCache.find(x => x.id === _rimReportId);
+        const resp = await fetch(`/api/admin/reports/${_rimReportId}/request-info`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ delivery: _rimDelivery, subject, body: msgBody, to_email: _rimDelivery === 'email' ? toEmail : null }),
+          body: JSON.stringify({
+            delivery: _rimDelivery,
+            subject,
+            body: msgBody,
+            to_user_id: report?.against_user_id || null,
+          }),
         });
+        const data = await resp.json();
         const idx = _reportsCache.findIndex(x => x.id === _rimReportId);
         if (idx >= 0) { _reportsCache[idx].status = 'info-requested'; }
         renderReports();
+        // Add to Messages tab history so it appears there too
+        const recipientName = data.recipient_name || report?.against_name || 'Unknown';
+        _msgHistory.unshift({
+          recipient: { first_name: recipientName, last_name: '', email: '' },
+          subject,
+          body: msgBody,
+          delivery: _rimDelivery,
+          ts: new Date(),
+          thread_key: data.thread_key || null,
+          context: `Re: Report #${report?.ref_number}`,
+        });
+        renderMsgHistory();
       } catch {}
     } else if (_rimBtn) {
       // Fallback: in-memory update
