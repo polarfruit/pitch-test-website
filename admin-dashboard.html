@@ -4024,6 +4024,8 @@
   function closeReqInfoModal() {
     document.getElementById('reqInfoModal').style.display = 'none';
     _rimBtn = null;
+    const sendBtn = document.querySelector('#reqInfoModal button[onclick="sendReqInfo()"]');
+    if (sendBtn) { sendBtn.disabled = false; sendBtn.textContent = 'Send'; }
   }
 
   async function sendReqInfo() {
@@ -4071,6 +4073,7 @@
           body: JSON.stringify({ delivery: _rimDelivery, subject, body: msgBody, to_user_id: toUserId }),
         });
         const data = await resp.json();
+        if (!resp.ok) throw new Error(data.error || 'Server error');
         const idx = _reportsCache.findIndex(x => x.id === _rimReportId);
         if (idx >= 0) { _reportsCache[idx].status = 'info-requested'; }
         renderReports();
