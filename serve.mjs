@@ -2099,6 +2099,46 @@ app.patch('/api/admin/applications/:id/status', requireAdmin, async (req, res) =
 });
 
 // ── Admin — all users ──────────────────────────────────────────────────────
+// ── Admin: send message to any user ──────────────────────────────────────────
+app.post('/api/admin/messages/send', requireAdmin, async (req, res) => {
+  const { to_user_id, subject, body, delivery } = req.body;
+  if (!to_user_id || !body) return res.status(400).json({ error: 'Missing recipient or body' });
+  try {
+    const user = await stmts.getUserById.get(to_user_id);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    if (delivery === 'email') {
+      await sendAdminEmail(
+        user.email,
+        subject || 'Message from Pitch. Admin',
+        `<p>${body.replace(/\n/g, '<br>')}</p>`,
+        body
+      );
+    } else {
+      // Platform message: find or create a thread with admin user
+      const adminId = req.session.userId;
+      // Admin always uses the "organiser" side of the thread for simplicity
+      // Thread key: admin_{adminId}_user_{to_user_id}
+      const threadKey = `admin_${adminId}_user_${to_user_id}`;
+      await stmts.createOrGetThread.run(threadKey, to_user_id, adminId);
+      await stmts.sendMessage.run(threadKey, adminId, body);
+    }
+
+    // Log to announcements table so there's a record
+    await stmts.createAnnouncement.run({
+      subject: subject || `Admin message to ${user.first_name} ${user.last_name}`,
+      body,
+      audience: `user:${to_user_id}`,
+      created_by: req.session.userId,
+    }).catch(() => {});
+
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('[admin messages send]', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 app.get('/api/admin/users-all', requireAdmin, async (req, res) => {
   const { role } = req.query;
   const users = (role && role !== 'all')
