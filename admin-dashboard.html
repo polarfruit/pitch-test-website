@@ -1149,54 +1149,8 @@
           <button class="filter-chip" onclick="setModFilter(this,'resolved')">Resolved</button>
         </div>
 
-        <div class="mod-item" data-mod-type="photo">
-          <div class="mod-thumb">📸</div>
-          <div class="mod-body">
-            <div class="mod-title">Inappropriate photo — Hackney Night Market</div>
-            <div class="mod-reason">🚩 Flagged: "Photo contains competitor branding and misleading claims"</div>
-            <div class="mod-meta">Reported by 2 vendors · Listing photo #3 · Mar 8, 2026</div>
-          </div>
-          <div class="queue-actions">
-            <div class="act-group">
-              <button class="act-btn act-reject" onclick="removeFlaggedContent(this)">Remove</button>
-              <button class="act-btn act-suspend" onclick="warnFlaggedAccount(this)">Warn</button>
-              <button class="act-btn act-view" onclick="dismissFlag(this)">Dismiss</button>
-            </div>
-            <span class="queue-time">1h ago</span>
-          </div>
-        </div>
-
-        <div class="mod-item" data-mod-type="listing">
-          <div class="mod-thumb">📋</div>
-          <div class="mod-body">
-            <div class="mod-title">Misleading listing — "Council Run Street Fair"</div>
-            <div class="mod-reason">🚩 Flagged: "Not affiliated with council. Misleading safety claims."</div>
-            <div class="mod-meta">Reported by 3 vendors · Event listing · Mar 7, 2026</div>
-          </div>
-          <div class="queue-actions">
-            <div class="act-group">
-              <button class="act-btn act-reject" onclick="removeFlaggedContent(this)">Hide listing</button>
-              <button class="act-btn act-suspend" onclick="warnFlaggedAccount(this)">Warn org</button>
-              <button class="act-btn act-view" onclick="dismissFlag(this)">Dismiss</button>
-            </div>
-            <span class="queue-time">3h ago</span>
-          </div>
-        </div>
-
-        <div class="mod-item" data-mod-type="profile">
-          <div class="mod-thumb">👤</div>
-          <div class="mod-body">
-            <div class="mod-title">Suspicious vendor profile — "Best Kebabs AU"</div>
-            <div class="mod-reason">🚩 Flagged: "Profile photos appear to be stock images. No genuine event history."</div>
-            <div class="mod-meta">Reported by 1 organiser · Vendor profile · Mar 6, 2026</div>
-          </div>
-          <div class="queue-actions">
-            <div class="act-group">
-              <button class="act-btn act-suspend" onclick="warnFlaggedAccount(this)">Request review</button>
-              <button class="act-btn act-view" onclick="dismissFlag(this)">Dismiss</button>
-            </div>
-            <span class="queue-time">1d ago</span>
-          </div>
+        <div id="mod-list">
+          <div style="padding:40px;text-align:center;color:#4A3C30;font-size:13px;">Loading…</div>
         </div>
       </div>
 
@@ -1204,18 +1158,17 @@
         <div class="card">
           <div class="card-header"><span style="font-size:16px;">🛡</span><span class="card-title">Moderation stats</span></div>
           <div style="padding:16px 20px;display:flex;flex-direction:column;gap:12px;">
-            <div class="analytics-bar-row"><span class="analytics-bar-label">Photos flagged</span><div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:40%;background:#C0392B;"></div></div><span class="analytics-bar-val">8</span></div>
-            <div class="analytics-bar-row"><span class="analytics-bar-label">Listings flagged</span><div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:60%;background:#C9840A;"></div></div><span class="analytics-bar-val">12</span></div>
-            <div class="analytics-bar-row"><span class="analytics-bar-label">Profiles flagged</span><div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:25%;background:#2B5BA8;"></div></div><span class="analytics-bar-val">5</span></div>
-            <div class="analytics-bar-row"><span class="analytics-bar-label">Resolved</span><div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:85%;background:#2D8B55;"></div></div><span class="analytics-bar-val">22</span></div>
-            <div style="padding-top:8px;border-top:1px solid #2A2018;font-size:13px;color:#A89880;">Avg resolution: <strong style="color:#2D8B55;">1.2 days</strong></div>
+            <div class="analytics-bar-row"><span class="analytics-bar-label">Photos flagged</span><div class="analytics-bar-track"><div id="ms-photo-bar" class="analytics-bar-fill" style="width:0%;background:#C0392B;"></div></div><span class="analytics-bar-val" id="ms-photo">0</span></div>
+            <div class="analytics-bar-row"><span class="analytics-bar-label">Listings flagged</span><div class="analytics-bar-track"><div id="ms-listing-bar" class="analytics-bar-fill" style="width:0%;background:#C9840A;"></div></div><span class="analytics-bar-val" id="ms-listing">0</span></div>
+            <div class="analytics-bar-row"><span class="analytics-bar-label">Profiles flagged</span><div class="analytics-bar-track"><div id="ms-profile-bar" class="analytics-bar-fill" style="width:0%;background:#2B5BA8;"></div></div><span class="analytics-bar-val" id="ms-profile">0</span></div>
+            <div class="analytics-bar-row"><span class="analytics-bar-label">Resolved</span><div class="analytics-bar-track"><div id="ms-resolved-bar" class="analytics-bar-fill" style="width:0%;background:#2D8B55;"></div></div><span class="analytics-bar-val" id="ms-resolved">0</span></div>
           </div>
         </div>
         <div class="card">
           <div class="card-header"><span style="font-size:16px;">⚡</span><span class="card-title">Quick actions</span></div>
           <div style="padding:16px;display:flex;flex-direction:column;gap:8px;">
             <button class="act-btn act-view" style="width:100%;padding:10px;text-align:left;" onclick="openAnnouncementModal()">📢 Post platform notice</button>
-            <button class="act-btn act-view" style="width:100%;padding:10px;text-align:left;" onclick="this.textContent='📤 Exported!';this.disabled=true;setTimeout(()=>{this.textContent='📤 Export flag log';this.disabled=false;},2000)">📤 Export flag log</button>
+            <button class="act-btn act-view" style="width:100%;padding:10px;text-align:left;" onclick="exportFlagLog()">📤 Export flag log</button>
             <button class="act-btn act-reject" style="width:100%;padding:10px;text-align:left;" onclick="clearResolvedFlags(this)">🧹 Clear resolved flags</button>
           </div>
         </div>
@@ -1776,6 +1729,7 @@
     if (id === 'analytics')      loadAnalytics();
     if (id === 'announcements')  loadAnnouncementHistory();
     if (id === 'reports')        loadReports();
+    if (id === 'moderation')     loadFlags();
     if (id === 'messages')       loadMsgUsers();
   }
 
@@ -4201,27 +4155,163 @@
     btn.disabled = true;
   }
 
-  // ── Moderation filter ─────────────────────────────────────────────────────
+  // ── Moderation ────────────────────────────────────────────────────────────
+  let _flagsCache = [];
+
+  async function loadFlags() {
+    try {
+      const r = await fetch('/api/admin/flags');
+      if (!r.ok) return;
+      const { flags } = await r.json();
+      _flagsCache = flags || [];
+      renderFlags();
+    } catch (e) { console.error('[flags]', e); }
+  }
+
+  function _flagRelTime(iso) {
+    if (!iso) return '—';
+    const s = iso.includes('T') || iso.endsWith('Z') ? iso : iso.replace(' ','T')+'Z';
+    const diff = Math.floor((Date.now() - new Date(s)) / 1000);
+    if (diff < 60) return 'just now';
+    if (diff < 3600) return Math.floor(diff/60) + 'm ago';
+    if (diff < 86400) return Math.floor(diff/3600) + 'h ago';
+    return Math.floor(diff/86400) + 'd ago';
+  }
+
+  function _flagFmtDate(iso) {
+    if (!iso) return '—';
+    const s = iso.includes('T') || iso.endsWith('Z') ? iso : iso.replace(' ','T')+'Z';
+    return new Date(s).toLocaleDateString('en-AU', { day:'numeric', month:'short', year:'numeric' });
+  }
+
+  function renderFlags() {
+    const list = document.getElementById('mod-list');
+    if (!list) return;
+
+    // Update stats
+    const photoC   = _flagsCache.filter(f => f.type === 'photo').length;
+    const listingC = _flagsCache.filter(f => f.type === 'listing').length;
+    const profileC = _flagsCache.filter(f => f.type === 'profile').length;
+    const resolvedC = _flagsCache.filter(f => f.status !== 'pending').length;
+    const total = _flagsCache.length || 1;
+    const pct = n => Math.min(100, Math.round(n / total * 100)) + '%';
+    [['photo',photoC,'#C0392B'],['listing',listingC,'#C9840A'],['profile',profileC,'#2B5BA8'],['resolved',resolvedC,'#2D8B55']].forEach(([k,n]) => {
+      const el = document.getElementById('ms-'+k); if (el) el.textContent = n;
+      const bar = document.getElementById('ms-'+k+'-bar'); if (bar) bar.style.width = pct(n);
+    });
+
+    // Update pending count badge on "All flags" chip
+    const pendingC = _flagsCache.filter(f => f.status === 'pending').length;
+    const badge = document.querySelector('#panel-moderation .filter-chip:first-child span');
+    if (badge) badge.textContent = pendingC;
+
+    if (!_flagsCache.length) {
+      list.innerHTML = '<div style="padding:40px;text-align:center;color:#4A3C30;font-size:13px;">No flagged content.</div>';
+      return;
+    }
+
+    const ICON  = { photo:'📸', listing:'📋', profile:'👤' };
+    const LABEL = { photo:'Photo', listing:'Listing', profile:'Profile' };
+    const STATUS_LABEL = { removed:'Removed', warned:'Warned', dismissed:'Dismissed' };
+
+    list.innerHTML = _flagsCache.map(f => {
+      const resolved = f.status !== 'pending';
+      let buttons = '';
+      if (!resolved) {
+        if (f.type === 'photo') {
+          buttons = `<button class="act-btn act-reject" onclick="flagAction(${f.id},'remove',this)">Remove</button>
+                     <button class="act-btn act-suspend" onclick="flagAction(${f.id},'warn',this)">Warn</button>
+                     <button class="act-btn act-view" onclick="flagAction(${f.id},'dismiss',this)">Dismiss</button>`;
+        } else if (f.type === 'listing') {
+          buttons = `<button class="act-btn act-reject" onclick="flagAction(${f.id},'remove',this)">Hide listing</button>
+                     <button class="act-btn act-suspend" onclick="flagAction(${f.id},'warn',this)">Warn org</button>
+                     <button class="act-btn act-view" onclick="flagAction(${f.id},'dismiss',this)">Dismiss</button>`;
+        } else {
+          buttons = `<button class="act-btn act-suspend" onclick="flagAction(${f.id},'warn',this)">Request review</button>
+                     <button class="act-btn act-view" onclick="flagAction(${f.id},'dismiss',this)">Dismiss</button>`;
+        }
+      } else {
+        buttons = `<span style="font-size:11px;font-weight:700;color:#4A3C30;">${STATUS_LABEL[f.status] || f.status}</span>`;
+      }
+      return `<div class="mod-item" data-mod-id="${f.id}" data-mod-type="${f.type}" data-mod-status="${f.status}" style="${resolved ? 'opacity:0.45;' : ''}">
+        <div class="mod-thumb">${ICON[f.type] || '📋'}</div>
+        <div class="mod-body">
+          <div class="mod-title">${escHtml(f.target_name || '—')}</div>
+          <div class="mod-reason">🚩 Flagged: "${escHtml(f.reason || '—')}"</div>
+          <div class="mod-meta">Reported by ${f.reporter_count} · ${LABEL[f.type]} · ${_flagFmtDate(f.created_at)}</div>
+        </div>
+        <div class="queue-actions">
+          <div class="act-group">${buttons}</div>
+          <span class="queue-time">${_flagRelTime(f.created_at)}</span>
+        </div>
+      </div>`;
+    }).join('');
+
+    // Re-apply active filter
+    const activeChip = document.querySelector('#panel-moderation .filter-chip.active');
+    if (activeChip) {
+      const m = activeChip.getAttribute('onclick')?.match(/'([^']+)'\)$/);
+      if (m) _applyModFilter(m[1]);
+    }
+  }
+
+  async function flagAction(id, action, btn) {
+    btn.disabled = true;
+    const orig = btn.textContent;
+    btn.textContent = '…';
+    try {
+      const r = await fetch(`/api/admin/flags/${id}/${action}`, { method: 'POST' });
+      if (!r.ok) throw new Error((await r.json()).error || 'Failed');
+      await loadFlags();
+    } catch (e) {
+      btn.disabled = false;
+      btn.textContent = orig;
+      showToast('Action failed: ' + e.message);
+    }
+  }
+
   function setModFilter(btn, filter) {
     document.querySelectorAll('#panel-moderation .filter-chip').forEach(c => c.classList.remove('active'));
     btn.classList.add('active');
+    _applyModFilter(filter);
+  }
+
+  function _applyModFilter(filter) {
     document.querySelectorAll('#panel-moderation .mod-item').forEach(item => {
       const type = item.dataset.modType;
-      const isResolved = item.style.opacity === '0.4' || item.style.pointerEvents === 'none';
-      if (filter === 'all') { item.style.display = isResolved ? 'none' : ''; }
-      else if (filter === 'resolved') { item.style.display = isResolved ? '' : 'none'; }
-      else { item.style.display = (type === filter && !isResolved) ? '' : 'none'; }
+      const resolved = item.dataset.modStatus !== 'pending';
+      if (filter === 'all')           item.style.display = resolved ? 'none' : '';
+      else if (filter === 'resolved') item.style.display = resolved ? '' : 'none';
+      else                            item.style.display = (type === filter && !resolved) ? '' : 'none';
     });
   }
 
-  function clearResolvedFlags(btn) {
-    const removed = [...document.querySelectorAll('#panel-moderation .mod-item')].filter(
-      i => i.style.opacity === '0.4' || i.style.pointerEvents === 'none'
-    );
-    removed.forEach(i => i.remove());
-    btn.textContent = `🧹 Cleared ${removed.length} resolved`;
+  async function clearResolvedFlags(btn) {
     btn.disabled = true;
-    setTimeout(() => { btn.textContent = '🧹 Clear resolved flags'; btn.disabled = false; }, 2500);
+    btn.textContent = '🧹 Clearing…';
+    try {
+      const r = await fetch('/api/admin/flags/clear-resolved', { method: 'POST' });
+      if (!r.ok) throw new Error((await r.json()).error || 'Failed');
+      await loadFlags();
+      btn.textContent = '🧹 Cleared!';
+      setTimeout(() => { btn.textContent = '🧹 Clear resolved flags'; btn.disabled = false; }, 2000);
+    } catch (e) {
+      btn.textContent = '🧹 Clear resolved flags';
+      btn.disabled = false;
+      showToast('Failed: ' + e.message);
+    }
+  }
+
+  function exportFlagLog() {
+    if (!_flagsCache.length) { showToast('No flags to export.'); return; }
+    const cols = ['id','type','target_name','reason','reporter_count','status','created_at','resolved_at'];
+    const header = cols.join(',');
+    const rows = _flagsCache.map(f => cols.map(c => JSON.stringify(f[c] ?? '')).join(','));
+    const csv = [header, ...rows].join('\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+    a.download = `pitch-flags-${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
   }
 
   // ── Announcements ─────────────────────────────────────────────────────────
@@ -4232,19 +4322,6 @@
     btn.textContent = '✓ Draft saved';
     btn.disabled = true;
     setTimeout(() => { btn.textContent = 'Save draft'; btn.disabled = false; }, 2000);
-  }
-
-  function removeFlaggedContent(btn) {
-    const item = btn.closest('.mod-item');
-    if (item) { item.style.opacity = '0.4'; btn.textContent = '✓ Removed'; btn.disabled = true; }
-  }
-  function warnFlaggedAccount(btn) {
-    const item = btn.closest('.mod-item');
-    if (item) { btn.textContent = '✓ Warned'; btn.disabled = true; }
-  }
-  function dismissFlag(btn) {
-    const item = btn.closest('.mod-item');
-    if (item) { item.style.opacity = '0.3'; item.style.pointerEvents = 'none'; }
   }
 
   // ── Logout ────────────────────────────────────────────────────────────────
