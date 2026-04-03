@@ -561,6 +561,16 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 </head>
 <body>
 
+<!-- Announcement banner -->
+<div id="ann-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:8000;background:linear-gradient(90deg,#3D1A06,#C9840A 60%,#E8500A);padding:11px 20px;align-items:center;gap:12px;box-shadow:0 2px 16px rgba(0,0,0,0.5);">
+  <span style="font-size:16px;flex-shrink:0;">📢</span>
+  <div style="flex:1;min-width:0;">
+    <span style="font-size:13px;font-weight:700;color:#fff;" id="ann-banner-subject"></span>
+    <span style="font-size:12px;color:rgba(255,255,255,0.75);margin-left:8px;" id="ann-banner-body"></span>
+  </div>
+  <button onclick="dismissAnnBanner()" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.3);color:#fff;font-size:11px;font-weight:600;padding:4px 10px;border-radius:6px;cursor:pointer;flex-shrink:0;font-family:inherit;">Dismiss</button>
+</div>
+
 <!-- SIDEBAR -->
 <aside class="sidebar">
   <div class="sidebar-logo">
@@ -2703,7 +2713,30 @@ async function loadNotifications() {
     _notifs = data.notifications || [];
     const dot = document.getElementById('notif-dot');
     if (dot) dot.style.display = data.unreadCount > 0 ? '' : 'none';
+    // Show announcement banner for new announcements
+    const anns = _notifs.filter(n => n.isAnnouncement);
+    if (anns.length) {
+      const lastDismissed = localStorage.getItem('pitch_ann_dismissed') || '0';
+      const newest = anns.reduce((a, b) => (a.id > b.id ? a : b));
+      if (String(newest.id) !== lastDismissed) {
+        const banner = document.getElementById('ann-banner');
+        document.getElementById('ann-banner-subject').textContent = newest.title;
+        const bodySnippet = newest.desc.length > 80 ? newest.desc.slice(0, 80) + '…' : newest.desc;
+        document.getElementById('ann-banner-body').textContent = bodySnippet;
+        if (banner) banner.style.display = 'flex';
+      }
+    }
   } catch(e) { console.error('[notifications]', e); }
+}
+
+function dismissAnnBanner() {
+  const banner = document.getElementById('ann-banner');
+  if (banner) banner.style.display = 'none';
+  const anns = (_notifs || []).filter(n => n.isAnnouncement);
+  if (anns.length) {
+    const newest = anns.reduce((a, b) => (a.id > b.id ? a : b));
+    localStorage.setItem('pitch_ann_dismissed', String(newest.id));
+  }
 }
 
 function renderNotifList() {
