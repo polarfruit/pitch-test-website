@@ -867,56 +867,71 @@
   </div>
 
   <!-- ════════════ MESSAGES ════════════ -->
-  <div class="panel" id="panel-messages">
-    <div class="page-header">
-      <h1>Messages</h1>
-      <p>Contact any vendor or organiser on the platform directly.</p>
-    </div>
-    <div class="two-col" style="align-items:start;">
-      <!-- Compose -->
-      <div class="card">
-        <div class="card-header">
-          <span style="font-size:16px;">✉️</span>
-          <span class="card-title">Compose message</span>
+  <div class="panel" id="panel-messages" style="padding:0;display:flex;flex-direction:column;height:calc(100vh - 56px);overflow:hidden;">
+    <!-- Messages layout: thread list + conversation -->
+    <div style="display:flex;height:100%;overflow:hidden;">
+
+      <!-- Left: thread list -->
+      <div style="width:300px;flex-shrink:0;border-right:1px solid #1E1916;display:flex;flex-direction:column;overflow:hidden;">
+        <div style="padding:16px;border-bottom:1px solid #1E1916;display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:14px;font-weight:700;color:#FDF4E7;">Conversations</span>
+          <button onclick="openNewMsgCompose()" style="background:#E8500A;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;" title="New message">+ New</button>
         </div>
-        <div style="padding:20px;display:flex;flex-direction:column;gap:14px;">
-          <div>
-            <label class="field-label-sm">To</label>
-            <div style="position:relative;">
-              <input id="msg-to-input" type="text" class="field-sm" placeholder="Search by name or email…" autocomplete="off" oninput="msgUserSearch()" />
-              <div id="msg-to-suggestions" style="display:none;position:absolute;top:100%;left:0;right:0;background:#2A2018;border:1px solid rgba(255,255,255,0.08);border-radius:8px;z-index:100;max-height:200px;overflow-y:auto;margin-top:4px;"></div>
-            </div>
-            <div id="msg-to-selected" style="display:none;margin-top:8px;padding:10px 12px;background:#1A1612;border-radius:8px;display:flex;align-items:center;justify-content:space-between;">
-              <span id="msg-to-label" style="font-size:13px;color:#FDF4E7;"></span>
-              <button onclick="msgClearRecipient()" style="background:none;border:none;color:#6B5A4A;cursor:pointer;font-size:14px;">✕</button>
-            </div>
-          </div>
-          <div>
-            <label class="field-label-sm">Subject</label>
-            <input id="msg-subject" type="text" class="field-sm" placeholder="e.g. Account query, Event update…" />
-          </div>
-          <div>
-            <label class="field-label-sm">Message</label>
-            <textarea id="msg-body" class="field-sm" style="min-height:160px;resize:vertical;" placeholder="Write your message here…"></textarea>
-          </div>
-          <div style="display:flex;gap:10px;align-items:center;">
-            <div style="font-size:12px;color:#6B5A4A;">Delivery:</div>
-            <button id="msg-del-platform" onclick="setMsgDelivery('platform')" style="padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;border:none;background:#E8500A;color:#fff;">Platform</button>
-            <button id="msg-del-email" onclick="setMsgDelivery('email')" style="padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;border:none;background:rgba(255,255,255,0.06);color:#A89880;">Email</button>
-          </div>
-          <button onclick="sendAdminMessage()" style="background:#E8500A;color:#fff;border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='#FF6B2B'" onmouseout="this.style.background='#E8500A'">Send message</button>
+        <div id="msg-thread-list" style="flex:1;overflow-y:auto;">
+          <div style="padding:20px;text-align:center;color:#4A3C30;font-size:13px;">Loading…</div>
         </div>
       </div>
 
-      <!-- Sent history -->
-      <div class="card">
-        <div class="card-header">
-          <span style="font-size:16px;">📋</span>
-          <span class="card-title">Sent history</span>
+      <!-- Right: active conversation or empty state -->
+      <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;" id="msg-convo-area">
+        <div id="msg-empty-state" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:#4A3C30;">
+          <div style="font-size:36px;">✉️</div>
+          <div style="font-size:14px;font-weight:600;color:#6B5A4A;">Select a conversation or start a new one</div>
+          <button onclick="openNewMsgCompose()" style="margin-top:8px;background:#E8500A;color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;">New message</button>
         </div>
-        <div id="msg-history" style="min-height:60px;">
-          <div style="padding:20px;text-align:center;font-size:13px;color:#4A3C30;">No messages sent yet this session.</div>
+        <div id="msg-convo-inner" style="display:none;flex:1;flex-direction:column;overflow:hidden;">
+          <!-- Convo header -->
+          <div id="msg-convo-header" style="padding:14px 20px;border-bottom:1px solid #1E1916;display:flex;align-items:center;gap:12px;">
+            <div id="msg-convo-avatar" style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#3D1A06,#6B2E08);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0;"></div>
+            <div>
+              <div id="msg-convo-name" style="font-size:14px;font-weight:700;color:#FDF4E7;"></div>
+              <div id="msg-convo-role" style="font-size:11px;color:#6B5A4A;"></div>
+            </div>
+          </div>
+          <!-- Messages -->
+          <div id="msg-convo-messages" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;"></div>
+          <!-- Reply box -->
+          <div style="padding:12px 16px;border-top:1px solid #1E1916;display:flex;gap:10px;align-items:flex-end;">
+            <textarea id="msg-reply-box" placeholder="Write a reply…" style="flex:1;background:#1A1612;border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:10px 12px;font-size:13px;color:#FDF4E7;font-family:'Instrument Sans',sans-serif;resize:none;line-height:1.5;max-height:120px;min-height:42px;" rows="1" oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px'" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMsgReply();}"></textarea>
+            <button onclick="sendMsgReply()" style="background:#E8500A;color:#fff;border:none;border-radius:10px;padding:10px 16px;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;white-space:nowrap;">Send</button>
+          </div>
         </div>
+      </div>
+    </div>
+
+    <!-- New message compose overlay -->
+    <div id="msg-compose-overlay" style="display:none;position:absolute;inset:0;z-index:200;background:rgba(0,0,0,0.6);align-items:center;justify-content:center;" onclick="if(event.target===this)closeMsgCompose()">
+      <div style="background:#231E19;border-radius:16px;padding:28px;max-width:480px;width:100%;box-shadow:0 24px 80px rgba(0,0,0,0.6);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+          <span style="font-size:16px;font-weight:700;color:#FDF4E7;font-family:'Fraunces',serif;">New message</span>
+          <button onclick="closeMsgCompose()" style="background:none;border:none;color:#6B5A4A;font-size:18px;cursor:pointer;">✕</button>
+        </div>
+        <div style="margin-bottom:14px;">
+          <label class="field-label-sm">To</label>
+          <div style="position:relative;">
+            <input id="msg-to-input" type="text" class="field-sm" placeholder="Search by name or email…" autocomplete="off" oninput="msgUserSearch()" />
+            <div id="msg-to-suggestions" style="display:none;position:absolute;top:100%;left:0;right:0;background:#2A2018;border:1px solid rgba(255,255,255,0.08);border-radius:8px;z-index:300;max-height:200px;overflow-y:auto;margin-top:4px;"></div>
+          </div>
+          <div id="msg-to-selected" style="display:none;margin-top:8px;padding:10px 12px;background:#1A1612;border-radius:8px;align-items:center;justify-content:space-between;">
+            <span id="msg-to-label" style="font-size:13px;color:#FDF4E7;"></span>
+            <button onclick="msgClearRecipient()" style="background:none;border:none;color:#6B5A4A;cursor:pointer;font-size:14px;">✕</button>
+          </div>
+        </div>
+        <div style="margin-bottom:14px;">
+          <label class="field-label-sm">Message</label>
+          <textarea id="msg-body" class="field-sm" style="min-height:120px;resize:vertical;" placeholder="Write your message…"></textarea>
+        </div>
+        <button onclick="sendAdminMessage()" style="width:100%;background:#E8500A;color:#fff;border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:700;font-family:inherit;cursor:pointer;" onmouseover="this.style.background='#FF6B2B'" onmouseout="this.style.background='#E8500A'">Send message</button>
       </div>
     </div>
   </div>
@@ -1723,6 +1738,8 @@
   };
 
   function showPanel(id, navEl) {
+    // Stop message polling when leaving messages panel
+    if (id !== 'messages' && _msgPollTimer) { clearInterval(_msgPollTimer); _msgPollTimer = null; }
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     document.getElementById('panel-' + id).classList.add('active');
@@ -3669,17 +3686,153 @@
 
   // ── Admin Messages ────────────────────────────────────────────────────────
   let _msgUsers = [];
-  let _msgRecipient = null; // { id, email, name, role }
-  let _msgDelivery = 'platform';
-  let _msgHistory = [];
+  let _msgRecipient = null;
+  let _activeThreadKey = null;
+  let _msgPollTimer = null;
+  let _msgAdminId = null; // resolved lazily from session
 
+  // Called when switching to messages panel
   async function loadMsgUsers() {
-    if (_msgUsers.length) return;
+    // Load user list for search (once)
+    if (!_msgUsers.length) {
+      try {
+        const r = await fetch('/api/admin/users-all');
+        const data = await r.json();
+        _msgUsers = (data.users || []).filter(u => u.role !== 'admin');
+      } catch {}
+    }
+    // Load thread list from server every time panel opens
+    await _loadThreadList();
+  }
+
+  async function _loadThreadList() {
     try {
-      const r = await fetch('/api/admin/users-all');
+      const r = await fetch('/api/messages');
       const data = await r.json();
-      _msgUsers = (data.users || []).filter(u => u.role !== 'admin');
+      _renderThreadList(data.threads || []);
+    } catch {
+      document.getElementById('msg-thread-list').innerHTML = '<div style="padding:16px;color:#C0392B;font-size:12px;">Failed to load.</div>';
+    }
+  }
+
+  function _renderThreadList(threads) {
+    const list = document.getElementById('msg-thread-list');
+    if (!threads.length) {
+      list.innerHTML = '<div style="padding:24px;text-align:center;color:#4A3C30;font-size:13px;">No conversations yet.</div>';
+      return;
+    }
+    list.innerHTML = threads.map(t => {
+      const name = t.organiser_name === 'Pitch. Admin' ? t.vendor_name : (t.organiser_name || t.vendor_name || 'Unknown');
+      const init = (name || '?').charAt(0).toUpperCase();
+      const preview = t.last_body ? t.last_body.slice(0, 55) + (t.last_body.length > 55 ? '…' : '') : 'No messages yet';
+      const unread = Number(t.unread_count || 0);
+      const isActive = t.thread_key === _activeThreadKey;
+      return `<div onclick="openThread('${t.thread_key}','${escHtml(name).replace(/'/g,"\\'")}','${(t.vendor_name||'').replace(/'/g,"\\'")}','${(t.organiser_name||'').replace(/'/g,"\\'")}',${unread})"
+        style="padding:12px 14px;cursor:pointer;border-bottom:1px solid #1E1916;display:flex;gap:10px;align-items:center;${isActive?'background:rgba(232,80,10,0.08);':''}"
+        onmouseover="if('${t.thread_key}'!==_activeThreadKey)this.style.background='rgba(255,255,255,0.03)'" onmouseout="if('${t.thread_key}'!==_activeThreadKey)this.style.background=''">
+        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#3D1A06,#6B2E08);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0;">${init}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <strong style="font-size:13px;color:#FDF4E7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:140px;">${escHtml(name)}</strong>
+            ${unread > 0 ? `<span style="background:#E8500A;color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700;flex-shrink:0;">${unread}</span>` : ''}
+          </div>
+          <div style="font-size:12px;color:#6B5A4A;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(preview)}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  async function openThread(threadKey, displayName, vendorName, organiserName, unreadCount) {
+    _activeThreadKey = threadKey;
+    // Stop any existing poll
+    if (_msgPollTimer) clearInterval(_msgPollTimer);
+
+    // Show convo area
+    document.getElementById('msg-empty-state').style.display = 'none';
+    const inner = document.getElementById('msg-convo-inner');
+    inner.style.display = 'flex';
+
+    // Set header
+    document.getElementById('msg-convo-avatar').textContent = displayName.charAt(0).toUpperCase();
+    document.getElementById('msg-convo-name').textContent = displayName;
+    const roleHint = organiserName === 'Pitch. Admin' ? 'vendor' : (organiserName ? 'organiser' : 'user');
+    document.getElementById('msg-convo-role').textContent = roleHint;
+
+    // Re-render thread list to highlight active
+    await _loadThreadList();
+
+    // Load messages
+    await _fetchAndRenderMessages(threadKey);
+
+    // Poll for new messages every 5s while thread is open
+    _msgPollTimer = setInterval(() => {
+      if (_activeThreadKey === threadKey) _fetchAndRenderMessages(threadKey, true);
+    }, 5000);
+  }
+
+  async function _fetchAndRenderMessages(threadKey, silent = false) {
+    try {
+      const r = await fetch(`/api/messages/${threadKey}`);
+      const data = await r.json();
+      const msgs = data.messages || [];
+      const container = document.getElementById('msg-convo-messages');
+      const wasAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 40;
+
+      // Resolve admin's own user ID once
+      if (!_msgAdminId) {
+        try {
+          const me = await fetch('/api/me').then(r => r.json()).catch(() => null);
+          if (me && me.user) _msgAdminId = me.user.id;
+        } catch {}
+      }
+
+      container.innerHTML = msgs.length ? msgs.map(m => {
+        const mine = _msgAdminId && Number(m.sender_user_id) === Number(_msgAdminId);
+        const time = m.created_at ? new Date(m.created_at).toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'}) : '';
+        return `<div style="display:flex;flex-direction:column;align-items:${mine?'flex-end':'flex-start'};gap:2px;">
+          <div style="max-width:72%;padding:10px 14px;border-radius:${mine?'16px 16px 4px 16px':'16px 16px 16px 4px'};background:${mine?'#E8500A':'#2A2018'};color:${mine?'#fff':'#FDF4E7'};font-size:13px;line-height:1.55;white-space:pre-wrap;word-break:break-word;">${escHtml(m.body)}</div>
+          <div style="font-size:10px;color:#4A3C30;padding:0 4px;">${mine?'You':'Them'} · ${time}</div>
+        </div>`;
+      }).join('') : '<div style="text-align:center;color:#4A3C30;font-size:13px;padding:24px;">No messages yet. Send the first one.</div>';
+
+      if (!silent || wasAtBottom) container.scrollTop = container.scrollHeight;
     } catch {}
+  }
+
+  async function sendMsgReply() {
+    if (!_activeThreadKey) return;
+    const box = document.getElementById('msg-reply-box');
+    const body = box.value.trim();
+    if (!body) return;
+    box.value = '';
+    box.style.height = 'auto';
+    try {
+      const r = await fetch(`/api/messages/${_activeThreadKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ body }),
+      });
+      if (!r.ok) throw new Error((await r.json()).error);
+      // Immediately re-render
+      await _fetchAndRenderMessages(_activeThreadKey);
+      // Refresh thread list (updates preview + unread)
+      _loadThreadList();
+    } catch (e) {
+      showToast('Send failed: ' + e.message);
+      box.value = body; // restore on failure
+    }
+  }
+
+  // Compose new message
+  function openNewMsgCompose() {
+    msgClearRecipient();
+    document.getElementById('msg-body').value = '';
+    document.getElementById('msg-compose-overlay').style.display = 'flex';
+    setTimeout(() => document.getElementById('msg-to-input').focus(), 50);
+  }
+
+  function closeMsgCompose() {
+    document.getElementById('msg-compose-overlay').style.display = 'none';
   }
 
   function msgUserSearch() {
@@ -3694,7 +3847,7 @@
     box.innerHTML = matches.map(u => `
       <div onclick="msgSelectUser(${u.id})" style="padding:10px 14px;cursor:pointer;font-size:13px;color:#FDF4E7;border-bottom:1px solid rgba(255,255,255,0.04);" onmouseover="this.style.background='rgba(232,80,10,0.08)'" onmouseout="this.style.background=''">
         <strong>${escHtml(u.first_name + ' ' + u.last_name)}</strong>
-        <span style="color:#6B5A4A;margin-left:8px;">${escHtml(u.email)}</span>
+        <span style="color:#6B5A4A;margin-left:8px;font-size:12px;">${escHtml(u.email)}</span>
         <span style="float:right;font-size:11px;background:rgba(255,255,255,0.06);padding:2px 7px;border-radius:10px;color:#A89880;">${u.role}</span>
       </div>`).join('');
     box.style.display = 'block';
@@ -3706,9 +3859,9 @@
     _msgRecipient = u;
     document.getElementById('msg-to-input').value = '';
     document.getElementById('msg-to-suggestions').style.display = 'none';
-    const sel = document.getElementById('msg-to-selected');
     document.getElementById('msg-to-label').textContent = `${u.first_name} ${u.last_name}  ·  ${u.email}  (${u.role})`;
-    sel.style.display = 'flex';
+    document.getElementById('msg-to-selected').style.display = 'flex';
+    document.getElementById('msg-body').focus();
   }
 
   function msgClearRecipient() {
@@ -3717,17 +3870,8 @@
     document.getElementById('msg-to-input').value = '';
   }
 
-  function setMsgDelivery(mode) {
-    _msgDelivery = mode;
-    document.getElementById('msg-del-platform').style.background = mode === 'platform' ? '#E8500A' : 'rgba(255,255,255,0.06)';
-    document.getElementById('msg-del-platform').style.color = mode === 'platform' ? '#fff' : '#A89880';
-    document.getElementById('msg-del-email').style.background = mode === 'email' ? '#E8500A' : 'rgba(255,255,255,0.06)';
-    document.getElementById('msg-del-email').style.color = mode === 'email' ? '#fff' : '#A89880';
-  }
-
   async function sendAdminMessage() {
     if (!_msgRecipient) { showToast('Please select a recipient.'); return; }
-    const subject = document.getElementById('msg-subject').value.trim();
     const body = document.getElementById('msg-body').value.trim();
     if (!body) { showToast('Please write a message.'); return; }
 
@@ -3735,44 +3879,31 @@
       const r = await fetch('/api/admin/messages/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ to_user_id: _msgRecipient.id, subject, body, delivery: _msgDelivery }),
+        body: JSON.stringify({ to_user_id: _msgRecipient.id, body, delivery: 'platform' }),
       });
       const data = await r.json();
       if (!r.ok) throw new Error(data.error || 'Send failed');
 
-      // Add to local history
-      _msgHistory.unshift({ recipient: _msgRecipient, subject, body, delivery: _msgDelivery, ts: new Date(), thread_key: data.thread_key || null });
-      renderMsgHistory();
-
-      // Clear form
-      document.getElementById('msg-subject').value = '';
-      document.getElementById('msg-body').value = '';
-      msgClearRecipient();
+      closeMsgCompose();
       showToast(`✉️ Message sent to <strong>${_msgRecipient.first_name} ${_msgRecipient.last_name}</strong>`);
+
+      // Open the thread immediately
+      if (data.thread_key) {
+        const name = `${_msgRecipient.first_name} ${_msgRecipient.last_name}`;
+        await openThread(data.thread_key, name, name, 'Pitch. Admin', 0);
+      } else {
+        await _loadThreadList();
+      }
     } catch (e) {
       showToast('Error: ' + e.message);
     }
   }
 
-  function renderMsgHistory() {
-    const el = document.getElementById('msg-history');
-    if (!_msgHistory.length) {
-      el.innerHTML = '<div style="padding:20px;text-align:center;font-size:13px;color:#4A3C30;">No messages sent yet this session.</div>';
-      return;
-    }
-    el.innerHTML = _msgHistory.map(m => {
-      const recipientDisplay = (m.recipient.first_name + ' ' + m.recipient.last_name).trim() || m.recipient.email || 'Unknown';
-      return `<div style="padding:14px 20px;border-bottom:1px solid #1E1916;">
-        <div style="display:flex;justify-content:space-between;margin-bottom:4px;gap:8px;">
-          <strong style="font-size:13px;color:#FDF4E7;">${escHtml(recipientDisplay)}</strong>
-          <span style="font-size:11px;color:#4A3C30;white-space:nowrap;">${m.ts.toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'})} · ${m.delivery}</span>
-        </div>
-        ${m.context ? `<div style="font-size:11px;color:#E8500A;margin-bottom:4px;">📋 ${escHtml(m.context)}</div>` : ''}
-        ${m.subject ? `<div style="font-size:12px;color:#A89880;margin-bottom:4px;">${escHtml(m.subject)}</div>` : ''}
-        <div style="font-size:12px;color:#6B5A4A;white-space:pre-line;">${escHtml(m.body.slice(0, 120))}${m.body.length > 120 ? '…' : ''}</div>
-        ${m.thread_key ? `<div style="font-size:11px;color:#2D8B55;margin-top:6px;">✓ Platform thread created — visible in user's inbox</div>` : ''}
-      </div>`;
-    }).join('');
+  // Called from sendReqInfo — adds thread to list and opens it
+  async function _openRequestInfoThread(threadKey, recipientName) {
+    if (!threadKey) return;
+    await _loadThreadList();
+    await openThread(threadKey, recipientName, recipientName, 'Pitch. Admin', 0);
   }
 
   function reportResolve(btn) {
@@ -3897,18 +4028,11 @@
         const idx = _reportsCache.findIndex(x => x.id === _rimReportId);
         if (idx >= 0) { _reportsCache[idx].status = 'info-requested'; }
         renderReports();
-        // Add to Messages tab history so it appears there too
-        const recipientName = data.recipient_name || report?.against_name || 'Unknown';
-        _msgHistory.unshift({
-          recipient: { first_name: recipientName, last_name: '', email: '' },
-          subject,
-          body: msgBody,
-          delivery: _rimDelivery,
-          ts: new Date(),
-          thread_key: data.thread_key || null,
-          context: `Re: Report #${report?.ref_number}`,
-        });
-        renderMsgHistory();
+        // If a thread was created, open it in the Messages panel
+        if (data.thread_key) {
+          const recipientName = data.recipient_name || report?.against_name || 'Unknown';
+          _openRequestInfoThread(data.thread_key, recipientName);
+        }
       } catch {}
     } else if (_rimBtn) {
       // Fallback: in-memory update
