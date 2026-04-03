@@ -2047,6 +2047,7 @@
   async function loadStats() {
     try {
       const [sr, ar] = await Promise.all([fetch('/api/admin/stats'), fetch('/api/admin/analytics')]);
+      if (sr.status === 401 || sr.status === 403) { window.location.replace('/admin/login'); return; }
       const stats  = await sr.json();
       const { vendors, organisers, pending,
               newVendors7d = 0, newOrgs7d = 0,
@@ -3578,12 +3579,18 @@
   // ── Reports: load from API ────────────────────────────────────────────────
   let _reportsCache = [];
   let _reportFilter = 'all';
+  let _reportsCacheMs = 0;
 
-  async function loadReports() {
+  async function loadReports(force = false) {
+    // Don't refetch if data is less than 30s old and not forced
+    if (!force && _reportsCache.length && Date.now() - _reportsCacheMs < 30000) {
+      renderReports(); return;
+    }
     try {
       const r = await fetch('/api/admin/reports');
       const data = await r.json();
       _reportsCache = data.reports || [];
+      _reportsCacheMs = Date.now();
       renderReports();
     } catch (e) {
       document.getElementById('reports-list').innerHTML = '<div style="padding:20px;color:#C0392B;font-size:13px;">Failed to load reports.</div>';
@@ -4464,24 +4471,18 @@
     if (qp && qp.style.display !== 'none' && !qp.contains(e.target) && !qb.contains(e.target)) qp.style.display = 'none';
   });
 
-  // ── Auth guard — verify admin session before rendering anything ────────────
+  // ── Boot: fire all data loads in parallel, redirect if auth fails ────────────
+  // loadStats() itself hits /api/admin/stats — no separate auth-check round trip needed
   (async () => {
-    try {
-      const r = await fetch('/api/admin/stats');
-      if (r.status === 401 || r.status === 403) {
-        window.location.replace('/admin/login');
-        return;
-      }
-    } catch(e) {
-      window.location.replace('/admin/login');
-      return;
-    }
-    // Session confirmed — boot dashboard
-    loadStats();
-    loadVendors();
-    loadOrganisers();
-    loadActivityFeed();
-    loadAdminNotifs();
+    // Fire everything at once; loadStats handles the 401→redirect case
+    await Promise.all([
+      loadStats(),        // auth gate — redirects if 401/403
+      loadVendors(),
+      loadOrganisers(),
+      loadActivityFeed(),
+      loadAdminNotifs(),
+      loadReports(),      // populates sidebar badge immediately
+    ]);
   })();
 </script>
 </body>
