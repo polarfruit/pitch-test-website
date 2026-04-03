@@ -2750,7 +2750,10 @@ window.addEventListener('popstate', e => {
 
 function _fmtTime(iso) {
   if (!iso) return '';
-  try { return new Date(iso).toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' }); } catch { return ''; }
+  try {
+    const s = iso.includes('T') || iso.endsWith('Z') ? iso : iso.replace(' ', 'T') + 'Z';
+    return new Date(s).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+  } catch { return ''; }
 }
 
 // ── Open a conversation — called from onclick or deep-link ────────────────
