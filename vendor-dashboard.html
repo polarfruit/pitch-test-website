@@ -2477,6 +2477,23 @@ body::before {
           </div>
         </div>
 
+        <!-- Display preferences -->
+        <div class="settings-section">
+          <div class="settings-section-title">Display preferences</div>
+          <div class="card">
+            <div class="settings-row">
+              <div class="settings-row-left">
+                <div class="settings-row-label">Time format</div>
+                <div class="settings-row-desc">Choose how times appear in messages.</div>
+              </div>
+              <div style="display:flex;gap:6px;">
+                <button id="btn-time-12" onclick="setTimeFormat('12')" style="font-family:var(--fb);font-size:12px;font-weight:700;padding:7px 16px;border-radius:8px;cursor:pointer;transition:background 0.15s,color 0.15s;">12h</button>
+                <button id="btn-time-24" onclick="setTimeFormat('24')" style="font-family:var(--fb);font-size:12px;font-weight:700;padding:7px 16px;border-radius:8px;cursor:pointer;transition:background 0.15s,color 0.15s;">24h</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Pause profile -->
         <div class="settings-section">
           <div class="settings-section-title">Pause profile</div>
@@ -2752,7 +2769,8 @@ function _fmtTime(iso) {
   if (!iso) return '';
   try {
     const s = iso.includes('T') || iso.endsWith('Z') ? iso : iso.replace(' ', 'T') + 'Z';
-    return new Date(s).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+    const use12 = (localStorage.getItem('pitch_time_fmt') || '12') === '12';
+    return new Date(s).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: use12 });
   } catch { return ''; }
 }
 
@@ -2881,7 +2899,7 @@ function openThread(threadKey) {
       if (!anns.length) {
         c.innerHTML = `<div style="text-align:center;padding:48px 24px;font-size:13px;color:var(--text-lo);">No announcements yet.</div>`;
       } else {
-        c.innerHTML = anns.map(a => `
+        c.innerHTML = [...anns].reverse().map(a => `
           <div>
             <div class="msg-bubble-wrap">
               <div class="msg-avatar" style="background:linear-gradient(135deg,#3D1A06,#C9840A);font-size:16px;">📢</div>
@@ -5059,6 +5077,7 @@ function initSettingsPanel(user, vendor) {
       pauseBtn.classList.toggle('active', !!vendor.paused);
     }
   }
+  _applyTimeFormatBtns();
 }
 
 async function saveAccountSettings() {
@@ -5101,6 +5120,26 @@ async function savePassword() {
   } else {
     const d = await r.json().catch(() => ({}));
     errEl.textContent = d.error || 'Failed to update password.'; errEl.style.display = 'inline';
+  }
+}
+
+function _applyTimeFormatBtns() {
+  const fmt = localStorage.getItem('pitch_time_fmt') || '12';
+  const b12 = document.getElementById('btn-time-12');
+  const b24 = document.getElementById('btn-time-24');
+  if (b12) { b12.style.background = fmt === '12' ? '#E8500A' : 'transparent'; b12.style.color = fmt === '12' ? '#fff' : '#A89880'; b12.style.border = fmt === '12' ? '1.5px solid #E8500A' : '1.5px solid rgba(255,255,255,0.12)'; }
+  if (b24) { b24.style.background = fmt === '24' ? '#E8500A' : 'transparent'; b24.style.color = fmt === '24' ? '#fff' : '#A89880'; b24.style.border = fmt === '24' ? '1.5px solid #E8500A' : '1.5px solid rgba(255,255,255,0.12)'; }
+}
+
+function setTimeFormat(fmt) {
+  localStorage.setItem('pitch_time_fmt', fmt);
+  _applyTimeFormatBtns();
+  if (!_activeThread) return;
+  if (_activeThread === '__announcements__') {
+    openThread('__announcements__');
+  } else {
+    const cached = _threadCache[_activeThread];
+    if (cached) _renderMessages(cached.messages || []);
   }
 }
 
