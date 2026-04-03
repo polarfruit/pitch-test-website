@@ -3947,43 +3947,41 @@
   let _rimDelivery = 'platform';
   let _rimReportId = null;
 
-  function reportRequestInfo(btn) {
+  async function reportRequestInfo(btn) {
     const card = btn.closest('.report-card');
     if (!card) return;
     _rimBtn = btn;
-    _rimReportId = parseInt(btn.dataset.reportId || btn.closest('.report-card')?.dataset?.reportId) || null;
+    _rimReportId = parseInt(btn.dataset.reportId || card.dataset.reportId) || null;
     const isFollowUp = btn.textContent.trim() === 'Follow up';
-    const type = card.dataset.reportType;
-    const refEl = card.querySelector('.report-header span:last-child');
-    const ref = refEl ? refEl.textContent.split('·')[0].trim() : '';
-    const num = ref.replace('Report ', '');
+
+    // Use report data from cache — never scrape DOM for names
+    const report = _reportsCache.find(x => x.id === _rimReportId);
+    if (!report) return;
+
+    const type = report.type;
+    const ref = `Report ${report.ref_number}`;
     const typeLabel = type === 'vendor-complaint' ? 'Vendor Complaint' : type === 'organiser-complaint' ? 'Organiser Complaint' : 'Content Report';
+    const toName = report.against_name || 'Unknown';
+    const bodyText = report.body || '';
 
-    // Extract names from card
-    const bodyStrongs = card.querySelectorAll('.report-body strong');
-    const metaStrongs = card.querySelectorAll('.report-meta strong');
-    const subjectName = bodyStrongs[0]?.textContent || 'Unknown';
-    const bodyText = card.querySelector('.report-body')?.innerText?.replace(subjectName, '').trim() || '';
-
-    // Determine recipient
-    let toName = '', toEmail = '';
-    if (type === 'vendor-complaint') {
-      toName = metaStrongs[1]?.textContent || subjectName;
-      toEmail = 'vendor@example.com';
-    } else {
-      toName = metaStrongs[1]?.textContent || subjectName;
-      toEmail = 'organiser@example.com';
+    // Look up real email from _msgUsers if we have their user_id
+    let toEmail = '';
+    if (report.against_user_id) {
+      if (!_msgUsers.length) await loadMsgUsers();
+      const user = _msgUsers.find(u => u.id === report.against_user_id);
+      if (user) toEmail = user.email || '';
     }
 
-    // Event name from body
-    const eventMatch = bodyText.match(/[""]([^"""]+)[""]/);
-    const eventName = eventMatch ? eventMatch[1] : 'this event';
+    // Event name from report body
+    const eventMatch = bodyText.match(/[""\u201c\u201d]([^"""]+)[""\u201c\u201d]/);
+    const eventName = report.event_name || (eventMatch ? eventMatch[1] : 'this event');
 
-    // Subtitle
+    // Populate modal
     document.getElementById('rim-subtitle').textContent = `${ref} · ${typeLabel}`;
-    document.getElementById('rim-to').textContent = `To: ${toName}  ·  ${toEmail}`;
+    document.getElementById('rim-to').textContent = toEmail
+      ? `To: ${toName}  ·  ${toEmail}`
+      : `To: ${toName}  ·  Platform message`;
 
-    // Subject
     const subjects = {
       'vendor-complaint':    `Re: ${ref} — Your recent event activity`,
       'organiser-complaint': `Re: ${ref} — Vendor application dispute`,
@@ -3991,9 +3989,8 @@
     };
     document.getElementById('rim-subject').value = subjects[type] || `Re: ${ref}`;
 
-    // Message body
-    let msg = '';
     const firstName = toName.split(' ')[0];
+    let msg = '';
     if (isFollowUp) {
       msg = `Hi ${firstName},\n\nWe're following up on our previous message regarding ${ref}.\n\nWe haven't received a response yet. Please reply within 24 hours or we may need to proceed with a resolution.\n\nPitch Admin Team`;
     } else if (type === 'vendor-complaint') {
@@ -4001,13 +3998,10 @@
     } else if (type === 'organiser-complaint') {
       msg = `Hi ${firstName},\n\nA vendor has raised a concern regarding their application to ${eventName}.\n\nThe concern raised: ${bodyText}\n\nWe ask that you review this and respond within 48 hours. If a rejection was made, please provide the reason so we can resolve this fairly.\n\nPitch Admin Team`;
     } else {
-      const reporterMatch = card.querySelector('.report-meta')?.textContent?.match(/Reported by[:\s]+(\d+)/);
-      const reporterCount = reporterMatch ? reporterMatch[1] : 'multiple';
-      msg = `Hi ${firstName},\n\nYour event listing '${eventName}' has been flagged by ${reporterCount} vendors for the following reason:\n\n${bodyText}\n\nPlease review your listing and either update the information or respond to clarify. Failure to address this within 48 hours may result in the listing being temporarily hidden.\n\nPitch Admin Team`;
+      msg = `Hi ${firstName},\n\nYour event listing '${eventName}' has been flagged for the following reason:\n\n${bodyText}\n\nPlease review your listing and either update the information or respond to clarify within 48 hours.\n\nPitch Admin Team`;
     }
     document.getElementById('rim-body').value = msg;
 
-    // Reset delivery to platform
     setRimDelivery('platform');
     document.getElementById('reqInfoModal').style.display = 'flex';
   }
