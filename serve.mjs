@@ -1399,7 +1399,15 @@ app.get('/api/notifications', requireAuth, async (req, res) => {
     // Prepend admin announcements targeted at this role
     try {
       const audience = role === 'vendor' ? 'vendors' : role === 'organiser' ? 'organisers' : 'all';
-      const announcements = await stmts.getRecentAnnouncements.all(audience);
+      let planAudience = '';   // e.g. 'pro', 'growth', 'free_vendors'
+      let groupAudience = '';  // 'paid' for pro/growth, '' otherwise
+      if (role === 'vendor') {
+        const vr = await stmts.getVendorByUserId.get(req.session.userId).catch(() => null);
+        const plan = vr?.plan || 'free';
+        planAudience = plan === 'free' ? 'free_vendors' : plan; // 'pro' or 'growth'
+        groupAudience = (plan === 'pro' || plan === 'growth') ? 'paid' : '';
+      }
+      const announcements = await stmts.getRecentAnnouncements.all(audience, planAudience, groupAudience);
       for (const a of announcements) {
         notifs.unshift({ id:`ann-${a.id}`, icon:'📢', iconCls:'gold',
           title: a.subject, desc: a.body,
@@ -1465,7 +1473,15 @@ app.get('/api/announcements', requireAuth, async (req, res) => {
   try {
     const { role } = req.session;
     const audience = role === 'vendor' ? 'vendors' : role === 'organiser' ? 'organisers' : 'all';
-    const rows = await stmts.getRecentAnnouncements.all(audience);
+    let planAudience = '';
+    let groupAudience = '';
+    if (role === 'vendor') {
+      const vr = await stmts.getVendorByUserId.get(req.session.userId).catch(() => null);
+      const plan = vr?.plan || 'free';
+      planAudience = plan === 'free' ? 'free_vendors' : plan;
+      groupAudience = (plan === 'pro' || plan === 'growth') ? 'paid' : '';
+    }
+    const rows = await stmts.getRecentAnnouncements.all(audience, planAudience, groupAudience);
     res.json({ announcements: rows });
   } catch (e) { res.json({ announcements: [] }); }
 });

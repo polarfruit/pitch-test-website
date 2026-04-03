@@ -1145,7 +1145,7 @@ export const stmts = {
   createAnnouncement:   prepare(`INSERT INTO announcements (subject,body,audience,delivery,created_by) VALUES (@subject,@body,@audience,@delivery,@created_by)`),
   getAnnouncements:     prepare(`SELECT * FROM announcements ORDER BY created_at DESC LIMIT 50`),
   getAnnouncementsFor:  prepare(`SELECT * FROM announcements WHERE audience='all' OR audience=? ORDER BY created_at DESC LIMIT 20`),
-  getRecentAnnouncements: prepare(`SELECT * FROM announcements WHERE (audience='all' OR audience=?) AND created_at > datetime('now','-30 days') ORDER BY created_at DESC`),
+  getRecentAnnouncements: prepare(`SELECT * FROM announcements WHERE (audience='all' OR audience=? OR audience=? OR audience=?) AND created_at > datetime('now','-30 days') ORDER BY created_at DESC`),
 
   // menu items
   getMenuItems:       prepare(`SELECT * FROM menu_items WHERE vendor_user_id=? ORDER BY is_signature DESC, sort_order ASC, id ASC`),
