@@ -1069,6 +1069,45 @@ app.put('/api/admin/events/:id', requireAdmin, async (req, res) => {
   res.json({ ok: true });
 });
 
+// ── Admin Content Flags API ───────────────────────────────────────────────────
+app.get('/api/admin/flags', requireAdmin, async (_req, res) => {
+  try {
+    const flags = await stmts.getFlags.all();
+    res.json({ flags });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/admin/flags/:id/remove', requireAdmin, async (req, res) => {
+  try {
+    const adminId = req.session.userId || 1000;
+    await stmts.updateFlagStatus.run('removed', adminId, Number(req.params.id));
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/admin/flags/:id/warn', requireAdmin, async (req, res) => {
+  try {
+    const adminId = req.session.userId || 1000;
+    await stmts.updateFlagStatus.run('warned', adminId, Number(req.params.id));
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/admin/flags/:id/dismiss', requireAdmin, async (req, res) => {
+  try {
+    const adminId = req.session.userId || 1000;
+    await stmts.updateFlagStatus.run('dismissed', adminId, Number(req.params.id));
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/admin/flags/clear-resolved', requireAdmin, async (_req, res) => {
+  try {
+    await stmts.deleteResolvedFlags.run();
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 // ── Admin Reports API ─────────────────────────────────────────────────────────
 app.get('/api/admin/reports', requireAdmin, async (req, res) => {
   try {

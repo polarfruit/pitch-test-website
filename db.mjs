@@ -588,6 +588,29 @@ await _safeExec(`
 await _safeExec(`CREATE INDEX IF NOT EXISTS idx_saved_events_user ON saved_events(user_id)`);
 await _safeExec(`CREATE INDEX IF NOT EXISTS idx_followed_vendors_user ON followed_vendors(user_id)`);
 
+// ── Content flags ──────────────────────────────────────────────────────────────
+await _safeExec(`
+  CREATE TABLE IF NOT EXISTS content_flags (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    type           TEXT NOT NULL CHECK(type IN ('photo','listing','profile')),
+    target_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    target_name    TEXT,
+    reason         TEXT,
+    reporter_count INTEGER DEFAULT 1,
+    status         TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','removed','warned','dismissed')),
+    admin_notes    TEXT,
+    created_at     DATETIME DEFAULT (datetime('now')),
+    resolved_at    DATETIME,
+    resolved_by    INTEGER REFERENCES users(id)
+  )
+`);
+
+// Seed sample flags (always-run, INSERT OR IGNORE keeps them idempotent)
+await _safeExec(`INSERT OR IGNORE INTO content_flags (id,type,target_name,reason,reporter_count,status,created_at) VALUES
+  (1,'photo','Smoky Joe''s BBQ','Photo contains competitor branding and misleading claims',2,'pending',datetime('now','-2 hours')),
+  (2,'listing','Adelaide City Council Events','Listing description contains inaccurate stall availability claims',3,'pending',datetime('now','-1 day')),
+  (3,'profile','Best Kebabs AU','Profile photos appear to be stock images. No genuine event history.',1,'pending',datetime('now','-3 days'))`);
+
 // ── Event coordinates (for map view) ─────────────────────────────────────────
 await _safeExec(`ALTER TABLE events ADD COLUMN lat REAL`);
 await _safeExec(`ALTER TABLE events ADD COLUMN lng REAL`);
@@ -1140,6 +1163,12 @@ export const stmts = {
   incrementAppsThisMonth:    prepare(`UPDATE vendors SET apps_this_month=apps_this_month+1, apps_reset_month=? WHERE user_id=?`),
   resetAndIncrementApps:     prepare(`UPDATE vendors SET apps_this_month=1, apps_reset_month=? WHERE user_id=?`),
   resetAppsCounter:          prepare(`UPDATE vendors SET apps_this_month=0, apps_reset_month=? WHERE user_id=?`),
+
+  // content flags
+  getFlags:            prepare(`SELECT cf.*, COALESCE(u.first_name||' '||u.last_name, '') as target_user_name, COALESCE(u.email,'') as target_email FROM content_flags cf LEFT JOIN users u ON u.id=cf.target_user_id ORDER BY cf.created_at DESC`),
+  getFlagById:         prepare(`SELECT * FROM content_flags WHERE id=?`),
+  updateFlagStatus:    prepare(`UPDATE content_flags SET status=?,resolved_at=datetime('now'),resolved_by=? WHERE id=?`),
+  deleteResolvedFlags: prepare(`DELETE FROM content_flags WHERE status IN ('removed','warned','dismissed')`),
 
   // announcements
   createAnnouncement:   prepare(`INSERT INTO announcements (subject,body,audience,delivery,created_by) VALUES (@subject,@body,@audience,@delivery,@created_by)`),
