@@ -801,6 +801,10 @@ await _safeExec(`INSERT OR IGNORE INTO reports (type,status,ref_number,reporter_
   ('content','open',1046,'Taco Loco','Adelaide Fringe Festival','Event listing "Fringe Food Village 2026" contains misleading information — advertised vendor spots as free but a $120 stall fee was charged on arrival. Multiple vendors flagged this.','Fringe Food Village 2026','2026-03-05 10:00:00'),
   ('vendor-complaint','resolved',1045,'City of Holdfast Bay','Duplicate listing','Duplicate event listing for "Glenelg Summer Sundowner" removed. Original listing retained.',NULL,'2026-03-03 10:00:00')
 `);
+// Fix any stale against_name values from old seeds that don't match real users
+await _safeExec(`UPDATE reports SET against_name='Smoky Joe''s BBQ' WHERE ref_number=1048 AND against_name NOT IN (SELECT trading_name FROM vendors)`);
+await _safeExec(`UPDATE reports SET against_name='Adelaide City Council Events' WHERE ref_number=1047 AND against_name NOT IN (SELECT org_name FROM organisers)`);
+await _safeExec(`UPDATE reports SET against_name='Adelaide Fringe Festival' WHERE ref_number=1046 AND against_name NOT IN (SELECT trading_name FROM vendors) AND against_name NOT IN (SELECT org_name FROM organisers)`);
 
 // Backfill against_user_id for reports where against_name matches a vendor trading_name or org name
 await _safeExec(`UPDATE reports SET against_user_id = (SELECT v.user_id FROM vendors v WHERE LOWER(v.trading_name)=LOWER(reports.against_name) LIMIT 1) WHERE against_user_id IS NULL AND against_name IS NOT NULL`);
