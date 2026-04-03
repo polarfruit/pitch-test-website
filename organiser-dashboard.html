@@ -2157,7 +2157,10 @@ function previewAndUploadAvatar(input) {
 // ── Messaging ─────────────────────────────────────────────────────────────
 function _orgFmtTime(iso) {
   if (!iso) return '';
-  try { return new Date(iso).toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' }); } catch { return ''; }
+  try {
+    const s = iso.includes('T') || iso.endsWith('Z') ? iso : iso.replace(' ', 'T') + 'Z';
+    return new Date(s).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' });
+  } catch { return ''; }
 }
 
 async function startChat(vendorUserId, vendorName) {
