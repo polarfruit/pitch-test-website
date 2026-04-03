@@ -794,13 +794,20 @@ await _safeExec(`
 `);
 await _safeExec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_reports_ref ON reports(ref_number)`);
 
-// Seed the 3 hardcoded reports once (by ref_number uniqueness)
+// Seed the 3 hardcoded reports once (by ref_number uniqueness) — use real vendor/org names
 await _safeExec(`INSERT OR IGNORE INTO reports (type,status,ref_number,reporter_name,against_name,body,event_name,created_at) VALUES
-  ('vendor-complaint','open',1048,'Adelaide City Council Events','Street Bao Co.','Street Bao Co. allegedly misrepresented their menu and setup at the Rundle Mall Night Eats event. Organiser reports vendor set up outside allocated zone and sold items not listed on application.','Rundle Mall Night Eats','2026-03-07 10:00:00'),
-  ('organiser-complaint','open',1047,'Smoky Joe''s BBQ','Hackney Night Market (org)','Smoky Joe''s BBQ reports that their application to Hackney Night Market was rejected despite meeting all stated requirements. No reason was given by the organiser.',NULL,'2026-03-06 10:00:00'),
-  ('content','open',1046,'3 vendors','Hackney Night Market listing','Event listing "Hackney Night Market" contains misleading information — advertised as council-run but appears to be a private commercial event with no council affiliation. Multiple vendors flagged this.','Hackney Night Market','2026-03-05 10:00:00'),
+  ('vendor-complaint','open',1048,'Adelaide City Council Events','Smoky Joe''s BBQ','Smoky Joe''s BBQ allegedly misrepresented their menu and setup at the Rundle Mall Night Eats event. Organiser reports vendor set up outside allocated zone and sold items not listed on application.','Rundle Mall Night Eats','2026-03-07 10:00:00'),
+  ('organiser-complaint','open',1047,'Smoky Joe''s BBQ','Adelaide City Council Events','Smoky Joe''s BBQ reports that their application to Rundle Mall Night Eats was rejected despite meeting all stated requirements. No reason was given by the organiser.',NULL,'2026-03-06 10:00:00'),
+  ('content','open',1046,'Taco Loco','Adelaide Fringe Festival','Event listing "Fringe Food Village 2026" contains misleading information — advertised vendor spots as free but a $120 stall fee was charged on arrival. Multiple vendors flagged this.','Fringe Food Village 2026','2026-03-05 10:00:00'),
   ('vendor-complaint','resolved',1045,'City of Holdfast Bay','Duplicate listing','Duplicate event listing for "Glenelg Summer Sundowner" removed. Original listing retained.',NULL,'2026-03-03 10:00:00')
 `);
+
+// Backfill against_user_id for reports where against_name matches a vendor trading_name or org name
+await _safeExec(`UPDATE reports SET against_user_id = (SELECT v.user_id FROM vendors v WHERE LOWER(v.trading_name)=LOWER(reports.against_name) LIMIT 1) WHERE against_user_id IS NULL AND against_name IS NOT NULL`);
+await _safeExec(`UPDATE reports SET against_user_id = (SELECT o.user_id FROM organisers o WHERE LOWER(o.org_name)=LOWER(reports.against_name) LIMIT 1) WHERE against_user_id IS NULL AND against_name IS NOT NULL`);
+// Backfill reporter_user_id similarly
+await _safeExec(`UPDATE reports SET reporter_user_id = (SELECT v.user_id FROM vendors v WHERE LOWER(v.trading_name)=LOWER(reports.reporter_name) LIMIT 1) WHERE reporter_user_id IS NULL AND reporter_name IS NOT NULL`);
+await _safeExec(`UPDATE reports SET reporter_user_id = (SELECT o.user_id FROM organisers o WHERE LOWER(o.org_name)=LOWER(reports.reporter_name) LIMIT 1) WHERE reporter_user_id IS NULL AND reporter_name IS NOT NULL`);
 
 // ── Prepared statements ──────────────────────────────────────────────────────
 export const stmts = {
@@ -1153,6 +1160,10 @@ export const stmts = {
   unfollowVendor:      prepare(`DELETE FROM followed_vendors WHERE user_id=? AND vendor_user_id=?`),
   isVendorFollowed:    prepare(`SELECT 1 FROM followed_vendors WHERE user_id=? AND vendor_user_id=?`),
   countFollowers:      prepare(`SELECT COUNT(*) as n FROM followed_vendors WHERE vendor_user_id=?`),
+
+  // user lookup by display name (for report against_user resolution)
+  findUserByTradingName: prepare(`SELECT v.user_id, u.first_name, u.last_name, u.email FROM vendors v JOIN users u ON u.id=v.user_id WHERE LOWER(v.trading_name)=LOWER(?) LIMIT 1`),
+  findUserByOrgName:     prepare(`SELECT o.user_id, u.first_name, u.last_name, u.email FROM organisers o JOIN users u ON u.id=o.user_id WHERE LOWER(o.org_name)=LOWER(?) LIMIT 1`),
 
   // reports (admin)
   getAllReports:     prepare(`SELECT * FROM reports ORDER BY created_at DESC`),
