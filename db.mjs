@@ -771,6 +771,37 @@ await _safeExec(`
   )
 `);
 
+// ── Reports table ────────────────────────────────────────────────────────────
+await _safeExec(`
+  CREATE TABLE IF NOT EXISTS reports (
+    id                 INTEGER PRIMARY KEY AUTOINCREMENT,
+    type               TEXT NOT NULL CHECK(type IN ('vendor-complaint','organiser-complaint','content')),
+    status             TEXT NOT NULL DEFAULT 'open'
+                       CHECK(status IN ('open','info-requested','resolved','dismissed')),
+    ref_number         INTEGER UNIQUE NOT NULL,
+    reporter_name      TEXT NOT NULL,
+    reporter_user_id   INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    reporter_email     TEXT,
+    against_name       TEXT NOT NULL,
+    against_user_id    INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    body               TEXT NOT NULL,
+    event_name         TEXT,
+    resolved_by        TEXT,
+    resolved_at        DATETIME,
+    info_requested_at  DATETIME,
+    created_at         DATETIME DEFAULT (datetime('now'))
+  )
+`);
+await _safeExec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_reports_ref ON reports(ref_number)`);
+
+// Seed the 3 hardcoded reports once (by ref_number uniqueness)
+await _safeExec(`INSERT OR IGNORE INTO reports (type,status,ref_number,reporter_name,against_name,body,event_name,created_at) VALUES
+  ('vendor-complaint','open',1048,'Adelaide City Council Events','Street Bao Co.','Street Bao Co. allegedly misrepresented their menu and setup at the Rundle Mall Night Eats event. Organiser reports vendor set up outside allocated zone and sold items not listed on application.','Rundle Mall Night Eats','2026-03-07 10:00:00'),
+  ('organiser-complaint','open',1047,'Smoky Joe''s BBQ','Hackney Night Market (org)','Smoky Joe''s BBQ reports that their application to Hackney Night Market was rejected despite meeting all stated requirements. No reason was given by the organiser.',NULL,'2026-03-06 10:00:00'),
+  ('content','open',1046,'3 vendors','Hackney Night Market listing','Event listing "Hackney Night Market" contains misleading information — advertised as council-run but appears to be a private commercial event with no council affiliation. Multiple vendors flagged this.','Hackney Night Market','2026-03-05 10:00:00'),
+  ('vendor-complaint','resolved',1045,'City of Holdfast Bay','Duplicate listing','Duplicate event listing for "Glenelg Summer Sundowner" removed. Original listing retained.',NULL,'2026-03-03 10:00:00')
+`);
+
 // ── Prepared statements ──────────────────────────────────────────────────────
 export const stmts = {
   // users
@@ -1114,6 +1145,16 @@ export const stmts = {
   unfollowVendor:      prepare(`DELETE FROM followed_vendors WHERE user_id=? AND vendor_user_id=?`),
   isVendorFollowed:    prepare(`SELECT 1 FROM followed_vendors WHERE user_id=? AND vendor_user_id=?`),
   countFollowers:      prepare(`SELECT COUNT(*) as n FROM followed_vendors WHERE vendor_user_id=?`),
+
+  // reports (admin)
+  getAllReports:     prepare(`SELECT * FROM reports ORDER BY created_at DESC`),
+  getReportById:     prepare(`SELECT * FROM reports WHERE id=?`),
+  createReport:      prepare(`INSERT INTO reports (type,ref_number,reporter_name,reporter_user_id,reporter_email,against_name,against_user_id,body,event_name) VALUES (@type,@ref_number,@reporter_name,@reporter_user_id,@reporter_email,@against_name,@against_user_id,@body,@event_name)`),
+  resolveReport:     prepare(`UPDATE reports SET status='resolved',resolved_by=@resolved_by,resolved_at=datetime('now') WHERE id=@id`),
+  dismissReport:     prepare(`UPDATE reports SET status='dismissed',resolved_by=@resolved_by,resolved_at=datetime('now') WHERE id=@id`),
+  requestInfoReport: prepare(`UPDATE reports SET status='info-requested',info_requested_at=datetime('now') WHERE id=?`),
+  hideContentReport: prepare(`UPDATE reports SET status='resolved',resolved_by=@resolved_by,resolved_at=datetime('now') WHERE id=@id`),
+  getNextReportRef:  prepare(`SELECT COALESCE(MAX(ref_number),1049)+1 AS next FROM reports`),
 
   // public vendors
   publicVendors: prepare(`
