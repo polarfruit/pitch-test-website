@@ -3795,23 +3795,22 @@
   }
 
   async function _fetchAndRenderMessages(threadKey, silent = false) {
+    const container = document.getElementById('msg-convo-messages');
     try {
       const r = await fetch(`/api/messages/${threadKey}`);
+      if (!r.ok) throw new Error(`${r.status}`);
       const data = await r.json();
       const msgs = data.messages || [];
-      const container = document.getElementById('msg-convo-messages');
       const wasAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 40;
 
-      // Resolve admin's own user ID once
+      // Resolve admin's own user ID once — admin is always user 1000
       if (!_msgAdminId) {
-        try {
-          const me = await fetch('/api/me').then(r => r.json()).catch(() => null);
-          if (me && me.user) _msgAdminId = me.user.id;
-        } catch {}
+        const me = await fetch('/api/me').then(r => r.ok ? r.json() : null).catch(() => null);
+        _msgAdminId = me?.user?.id || 1000;
       }
 
       container.innerHTML = msgs.length ? msgs.map(m => {
-        const mine = _msgAdminId && Number(m.sender_user_id) === Number(_msgAdminId);
+        const mine = Number(m.sender_user_id) === Number(_msgAdminId);
         const time = m.created_at ? new Date(m.created_at).toLocaleTimeString('en-AU',{hour:'2-digit',minute:'2-digit'}) : '';
         return `<div style="display:flex;flex-direction:column;align-items:${mine?'flex-end':'flex-start'};gap:2px;">
           <div style="max-width:72%;padding:10px 14px;border-radius:${mine?'16px 16px 4px 16px':'16px 16px 16px 4px'};background:${mine?'#E8500A':'#2A2018'};color:${mine?'#fff':'#FDF4E7'};font-size:13px;line-height:1.55;white-space:pre-wrap;word-break:break-word;">${escHtml(m.body)}</div>
@@ -3820,7 +3819,9 @@
       }).join('') : '<div style="text-align:center;color:#4A3C30;font-size:13px;padding:24px;">No messages yet. Send the first one.</div>';
 
       if (!silent || wasAtBottom) container.scrollTop = container.scrollHeight;
-    } catch {}
+    } catch (e) {
+      if (!silent) container.innerHTML = `<div style="text-align:center;color:#C0392B;font-size:12px;padding:24px;">Failed to load messages (${e.message}). Refresh to retry.</div>`;
+    }
   }
 
   async function sendMsgReply() {

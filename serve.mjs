@@ -219,8 +219,10 @@ async function vendorInitData(user) {
 
 // ── Auth helpers ───────────────────────────────────────────────────────────
 function requireAuth(req, res, next) {
-  // Cookie session
+  // Cookie session (regular user or admin with userId set)
   if (req.session.userId) return next();
+  // Admin session without userId — backfill it
+  if (req.session.isAdmin) { req.session.userId = 1000; return next(); }
   // Header token (sent by dashboard pages when cookies don't persist on Vercel)
   const tok = req.headers['x-pitch-auth'];
   if (tok) {
@@ -662,6 +664,7 @@ app.post('/api/profile/plan', requireAuth, async (req, res) => {
 
 // GET /api/me
 app.get('/api/me', async (req, res) => {
+  if (!req.session.userId && req.session.isAdmin) req.session.userId = 1000;
   if (!req.session.userId) return res.json({ user: null });
   const user = await stmts.getUserById.get(req.session.userId);
   if (!user) return res.json({ user: null });
