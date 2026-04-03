@@ -1066,6 +1066,125 @@ app.put('/api/admin/events/:id', requireAdmin, async (req, res) => {
   res.json({ ok: true });
 });
 
+// ── Admin Reports API ─────────────────────────────────────────────────────────
+app.get('/api/admin/reports', requireAdmin, async (req, res) => {
+  try {
+    const reports = await stmts.getAllReports.all();
+    res.json({ reports });
+  } catch (e) {
+    console.error('[reports GET]', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.post('/api/admin/reports/:id/resolve', requireAdmin, async (req, res) => {
+  const { id } = req.params;
+  const adminId = req.session.userId;
+  const adminUser = await stmts.getUserById.get(adminId);
+  const adminName = adminUser ? `${adminUser.first_name} ${adminUser.last_name}` : 'Admin';
+  try {
+    const report = await stmts.getReportById.get(id);
+    if (!report) return res.status(404).json({ error: 'Not found' });
+    await stmts.resolveReport.run({ id, resolved_by: adminName });
+    // Notify reporter by email if we have their email
+    if (report.reporter_email) {
+      await sendAdminEmail(
+        report.reporter_email,
+        `Your report #${report.ref_number} has been resolved`,
+        `<p>Hi ${report.reporter_name},</p><p>Your report #${report.ref_number} has been reviewed and resolved by our admin team.</p><p>Thank you for helping keep Pitch. safe and fair.</p><p>Pitch Admin Team</p>`,
+        `Your report #${report.ref_number} has been reviewed and resolved. Thank you for helping keep Pitch. safe.`
+      ).catch(() => {});
+    }
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('[reports resolve]', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.post('/api/admin/reports/:id/dismiss', requireAdmin, async (req, res) => {
+  const { id } = req.params;
+  const adminId = req.session.userId;
+  const adminUser = await stmts.getUserById.get(adminId);
+  const adminName = adminUser ? `${adminUser.first_name} ${adminUser.last_name}` : 'Admin';
+  try {
+    const report = await stmts.getReportById.get(id);
+    if (!report) return res.status(404).json({ error: 'Not found' });
+    await stmts.dismissReport.run({ id, resolved_by: adminName });
+    // Notify reporter
+    if (report.reporter_email) {
+      await sendAdminEmail(
+        report.reporter_email,
+        `Your report #${report.ref_number} has been reviewed`,
+        `<p>Hi ${report.reporter_name},</p><p>We've reviewed your report #${report.ref_number} and determined that no further action is required at this time.</p><p>If you believe this decision is in error, please contact support@getpitch.com.au.</p><p>Pitch Admin Team</p>`,
+        `We reviewed your report #${report.ref_number} and no further action is required at this time.`
+      ).catch(() => {});
+    }
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('[reports dismiss]', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.post('/api/admin/reports/:id/request-info', requireAdmin, async (req, res) => {
+  const { id } = req.params;
+  const { delivery, subject, body: msgBody, to_email } = req.body;
+  try {
+    const report = await stmts.getReportById.get(id);
+    if (!report) return res.status(404).json({ error: 'Not found' });
+    await stmts.requestInfoReport.run(id);
+    // Send message/email to the "against" party if we have contact info
+    const targetEmail = to_email || null;
+    if (delivery === 'email' && targetEmail) {
+      await sendAdminEmail(
+        targetEmail,
+        subject || `Re: Report #${report.ref_number}`,
+        `<p>${(msgBody || '').replace(/\n/g, '<br>')}</p>`,
+        msgBody || ''
+      ).catch(() => {});
+    }
+    // Also notify reporter that info has been requested
+    if (report.reporter_email) {
+      await sendAdminEmail(
+        report.reporter_email,
+        `Update on your report #${report.ref_number}`,
+        `<p>Hi ${report.reporter_name},</p><p>We've reached out to the other party regarding your report #${report.ref_number} and have requested additional information. We'll follow up once we've received a response.</p><p>Pitch Admin Team</p>`,
+        `We've reached out to the other party regarding your report #${report.ref_number} and requested additional information.`
+      ).catch(() => {});
+    }
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('[reports request-info]', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+app.post('/api/admin/reports/:id/hide-content', requireAdmin, async (req, res) => {
+  const { id } = req.params;
+  const adminId = req.session.userId;
+  const adminUser = await stmts.getUserById.get(adminId);
+  const adminName = adminUser ? `${adminUser.first_name} ${adminUser.last_name}` : 'Admin';
+  try {
+    const report = await stmts.getReportById.get(id);
+    if (!report) return res.status(404).json({ error: 'Not found' });
+    await stmts.hideContentReport.run({ id, resolved_by: adminName });
+    // Notify reporter that the content has been hidden
+    if (report.reporter_email) {
+      await sendAdminEmail(
+        report.reporter_email,
+        `Update on your report #${report.ref_number}`,
+        `<p>Hi ${report.reporter_name},</p><p>Thank you for flagging report #${report.ref_number}. The content in question has been hidden pending further review.</p><p>Pitch Admin Team</p>`,
+        `The content flagged in report #${report.ref_number} has been hidden pending further review.`
+      ).catch(() => {});
+    }
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('[reports hide-content]', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 app.get('/api/admin/vendors/:userId', requireAdmin, async (req, res) => {
   const row = await stmts.getVendorDetail.get(req.params.userId);
   if (!row) return res.status(404).json({ error: 'Not found' });

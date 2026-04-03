@@ -792,70 +792,15 @@
     <div class="two-col" style="align-items:start;">
       <div class="card">
         <div class="filter-bar" style="padding:12px 20px;">
-          <button class="filter-chip active" onclick="setReportFilter(this,'all')">All <span style="margin-left:4px;background:#E8500A;color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700;">7</span></button>
+          <button class="filter-chip active" id="rfilter-all" onclick="setReportFilter(this,'all')">All <span id="rfilter-count" style="margin-left:4px;background:#E8500A;color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700;">…</span></button>
           <button class="filter-chip" onclick="setReportFilter(this,'vendor-complaint')">Vendor complaint</button>
           <button class="filter-chip" onclick="setReportFilter(this,'organiser-complaint')">Organiser complaint</button>
           <button class="filter-chip" onclick="setReportFilter(this,'content')">Content</button>
           <button class="filter-chip" onclick="setReportFilter(this,'resolved')">Resolved</button>
+          <button class="filter-chip" onclick="setReportFilter(this,'dismissed')">Dismissed</button>
         </div>
-
-        <div class="report-card" data-report-type="vendor-complaint">
-          <div class="report-header">
-            <span class="badge badge-red"><span class="report-type">Vendor complaint</span></span>
-            <span style="font-size:12px;color:#6B5A4A;margin-left:auto;">Report #1048 · Mar 7, 2026</span>
-          </div>
-          <div class="report-body">
-            <strong style="color:#FDF4E7;">Street Bao Co.</strong> allegedly misrepresented their menu and setup at the Rundle Mall Night Eats event. Organiser reports vendor set up outside allocated zone and sold items not listed on application.
-          </div>
-          <div class="report-meta">Reported by: <strong style="color:#A89880;">Adelaide City Council Events</strong> · Against: <strong style="color:#A89880;">Street Bao Co.</strong></div>
-          <div class="report-actions" style="margin-top:12px;">
-            <button class="act-btn act-reject" onclick="openDisputeModal('Street Bao Co.','#1048')">Resolve</button>
-            <button class="act-btn act-suspend" onclick="reportRequestInfo(this)">Request info</button>
-            <button class="act-btn act-view" onclick="reportDismiss(this)">Dismiss</button>
-          </div>
-        </div>
-
-        <div class="report-card" data-report-type="organiser-complaint">
-          <div class="report-header">
-            <span class="badge badge-amber"><span class="report-type">Organiser complaint</span></span>
-            <span style="font-size:12px;color:#6B5A4A;margin-left:auto;">Report #1047 · Mar 6, 2026</span>
-          </div>
-          <div class="report-body">
-            <strong style="color:#FDF4E7;">Smoky Joe's BBQ</strong> reports that their application to Hackney Night Market was rejected despite meeting all stated requirements. No reason was given by the organiser.
-          </div>
-          <div class="report-meta">Reported by: <strong style="color:#A89880;">Smoky Joe's BBQ</strong> · Against: <strong style="color:#A89880;">Hackney Night Market (org)</strong></div>
-          <div class="report-actions" style="margin-top:12px;">
-            <button class="act-btn act-approve" onclick="reportResolve(this)">Mark resolved</button>
-            <button class="act-btn act-suspend" onclick="reportRequestInfo(this)">Request info</button>
-            <button class="act-btn act-view" onclick="reportDismiss(this)">Dismiss</button>
-          </div>
-        </div>
-
-        <div class="report-card" data-report-type="content">
-          <div class="report-header">
-            <span class="badge badge-blue"><span class="report-type">Content report</span></span>
-            <span style="font-size:12px;color:#6B5A4A;margin-left:auto;">Report #1046 · Mar 5, 2026</span>
-          </div>
-          <div class="report-body">
-            Event listing "Hackney Night Market" contains misleading information — advertised as council-run but appears to be a private commercial event with no council affiliation. Multiple vendors flagged this.
-          </div>
-          <div class="report-meta">Reported by: 3 vendors · Against: <strong style="color:#A89880;">Hackney Night Market listing</strong></div>
-          <div class="report-actions" style="margin-top:12px;">
-            <button class="act-btn act-reject" onclick="reportHideContent(this)">Hide event</button>
-            <button class="act-btn act-suspend" onclick="reportRequestInfo(this)">Warn organiser</button>
-            <button class="act-btn act-view" onclick="reportDismiss(this)">Dismiss</button>
-          </div>
-        </div>
-
-        <div class="report-card" data-report-type="resolved" style="opacity:0.55;">
-          <div class="report-header">
-            <span class="badge badge-grey"><span class="report-type" style="color:#6B5A4A;">Resolved</span></span>
-            <span style="font-size:12px;color:#6B5A4A;margin-left:auto;">Report #1045 · Mar 3, 2026</span>
-          </div>
-          <div class="report-body">
-            Duplicate event listing for "Glenelg Summer Sundowner" removed. Original listing retained.
-          </div>
-          <div class="report-meta">Resolved by: <strong style="color:#A89880;">Leroy Morales</strong> · Mar 4, 2026</div>
+        <div id="reports-list" style="min-height:80px;display:flex;align-items:center;justify-content:center;">
+          <span style="color:#4A3C30;font-size:13px;">Loading reports…</span>
         </div>
       </div>
 
@@ -1733,6 +1678,7 @@
     if (id === 'featured')       loadFeatured();
     if (id === 'analytics')      loadAnalytics();
     if (id === 'announcements')  loadAnnouncementHistory();
+    if (id === 'reports')        loadReports();
   }
 
   function toggleExpand(id) {
@@ -2397,10 +2343,8 @@
   function setReportFilter(btn, filter) {
     document.querySelectorAll('#panel-reports .filter-chip').forEach(c => c.classList.remove('active'));
     btn.classList.add('active');
-    document.querySelectorAll('#panel-reports .report-card').forEach(card => {
-      const type = card.dataset.reportType;
-      card.style.display = (filter === 'all' || type === filter) ? '' : 'none';
-    });
+    _reportFilter = filter;
+    renderReports();
   }
 
   // Pending suspend/ban target
@@ -3538,9 +3482,133 @@
 
   // ── Moderation helpers ────────────────────────────────────────────────────
   // ── Reports panel actions ────────────────────────────────────────────────
+  // ── Reports: load from API ────────────────────────────────────────────────
+  let _reportsCache = [];
+  let _reportFilter = 'all';
+
+  async function loadReports() {
+    try {
+      const r = await fetch('/api/admin/reports');
+      const data = await r.json();
+      _reportsCache = data.reports || [];
+      renderReports();
+    } catch (e) {
+      document.getElementById('reports-list').innerHTML = '<div style="padding:20px;color:#C0392B;font-size:13px;">Failed to load reports.</div>';
+    }
+  }
+
+  function renderReports() {
+    const list = document.getElementById('reports-list');
+    const open = _reportsCache.filter(r => r.status !== 'resolved' && r.status !== 'dismissed');
+    document.getElementById('rfilter-count').textContent = open.length;
+
+    const filtered = _reportFilter === 'all'
+      ? _reportsCache.filter(r => r.status !== 'resolved' && r.status !== 'dismissed')
+      : _reportFilter === 'resolved'
+        ? _reportsCache.filter(r => r.status === 'resolved')
+        : _reportFilter === 'dismissed'
+          ? _reportsCache.filter(r => r.status === 'dismissed')
+          : _reportsCache.filter(r => r.type === _reportFilter && r.status !== 'resolved' && r.status !== 'dismissed');
+
+    if (!filtered.length) {
+      list.innerHTML = '<div style="padding:24px;text-align:center;color:#4A3C30;font-size:13px;">No reports in this category.</div>';
+      return;
+    }
+
+    list.innerHTML = filtered.map(r => {
+      const typeLabel = r.type === 'vendor-complaint' ? 'Vendor complaint'
+        : r.type === 'organiser-complaint' ? 'Organiser complaint' : 'Content report';
+      const badgeClass = r.type === 'vendor-complaint' ? 'badge-red'
+        : r.type === 'organiser-complaint' ? 'badge-amber' : 'badge-blue';
+      const isResolved = r.status === 'resolved';
+      const isDismissed = r.status === 'dismissed';
+      const isInfoReq = r.status === 'info-requested';
+      const date = r.created_at ? new Date(r.created_at).toLocaleDateString('en-AU', { day:'numeric', month:'short', year:'numeric' }) : '';
+
+      let statusBadge = '';
+      if (isInfoReq) statusBadge = `<span style="font-size:11px;color:#C9840A;margin-top:8px;display:block;">Info requested · awaiting response</span>`;
+      if (isResolved) statusBadge = `<span style="font-size:12px;color:#2D8B55;">✓ Resolved${r.resolved_by ? ' by ' + r.resolved_by : ''}${r.resolved_at ? ' · ' + new Date(r.resolved_at).toLocaleDateString('en-AU',{day:'numeric',month:'short'}) : ''}</span>`;
+      if (isDismissed) statusBadge = `<span style="font-size:12px;color:#6B5A4A;">Dismissed</span>`;
+
+      let actions = '';
+      if (!isResolved && !isDismissed) {
+        if (r.type === 'content') {
+          actions = `
+            <button class="act-btn act-reject" onclick="apiReportHideContent(${r.id},this)">Hide content</button>
+            <button class="act-btn act-suspend" onclick="reportRequestInfo(this)" data-report-id="${r.id}">Request info</button>
+            <button class="act-btn act-view" onclick="apiReportDismiss(${r.id},this)">Dismiss</button>`;
+        } else {
+          actions = `
+            <button class="act-btn act-approve" onclick="apiReportResolve(${r.id},this)">Mark resolved</button>
+            <button class="act-btn act-suspend" onclick="reportRequestInfo(this)" data-report-id="${r.id}">Request info</button>
+            <button class="act-btn act-view" onclick="apiReportDismiss(${r.id},this)">Dismiss</button>`;
+        }
+      }
+
+      return `<div class="report-card" data-report-id="${r.id}" data-report-type="${r.type}" style="${isResolved||isDismissed ? 'opacity:0.55;' : ''}">
+        <div class="report-header">
+          <span class="badge ${isResolved||isDismissed ? 'badge-grey' : badgeClass}"><span class="report-type">${isResolved ? 'Resolved' : isDismissed ? 'Dismissed' : typeLabel}</span></span>
+          <span style="font-size:12px;color:#6B5A4A;margin-left:auto;">Report #${r.ref_number} · ${date}</span>
+        </div>
+        <div class="report-body">${escHtml(r.body)}</div>
+        <div class="report-meta">Reported by: <strong style="color:#A89880;">${escHtml(r.reporter_name)}</strong> · Against: <strong style="color:#A89880;">${escHtml(r.against_name)}</strong></div>
+        ${actions ? `<div class="report-actions" style="margin-top:12px;">${actions}</div>` : `<div style="margin-top:10px;">${statusBadge}</div>`}
+      </div>`;
+    }).join('');
+  }
+
+  function escHtml(s) {
+    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  async function apiReportResolve(id, btn) {
+    btn.disabled = true; btn.textContent = 'Resolving…';
+    try {
+      const r = await fetch(`/api/admin/reports/${id}/resolve`, { method:'POST' });
+      if (!r.ok) throw new Error((await r.json()).error);
+      const idx = _reportsCache.findIndex(x => x.id === id);
+      if (idx >= 0) { _reportsCache[idx].status = 'resolved'; }
+      renderReports();
+      showToast('✓ Report resolved — reporter will be notified');
+    } catch (e) { btn.disabled = false; btn.textContent = 'Mark resolved'; showToast('Error: ' + e.message); }
+  }
+
+  async function apiReportDismiss(id, btn) {
+    btn.disabled = true; btn.textContent = 'Dismissing…';
+    try {
+      const r = await fetch(`/api/admin/reports/${id}/dismiss`, { method:'POST' });
+      if (!r.ok) throw new Error((await r.json()).error);
+      const idx = _reportsCache.findIndex(x => x.id === id);
+      if (idx >= 0) { _reportsCache[idx].status = 'dismissed'; }
+      renderReports();
+      showToast('Report dismissed');
+    } catch (e) { btn.disabled = false; btn.textContent = 'Dismiss'; showToast('Error: ' + e.message); }
+  }
+
+  async function apiReportHideContent(id, btn) {
+    btn.disabled = true; btn.textContent = 'Hiding…';
+    try {
+      const r = await fetch(`/api/admin/reports/${id}/hide-content`, { method:'POST' });
+      if (!r.ok) throw new Error((await r.json()).error);
+      const idx = _reportsCache.findIndex(x => x.id === id);
+      if (idx >= 0) { _reportsCache[idx].status = 'resolved'; }
+      renderReports();
+      showToast('✓ Content hidden — reporter notified');
+    } catch (e) { btn.disabled = false; btn.textContent = 'Hide content'; showToast('Error: ' + e.message); }
+  }
+
+  function showToast(msg) {
+    const toast = document.getElementById('pw-toast');
+    toast.innerHTML = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 4000);
+  }
+
   function reportResolve(btn) {
     const card = btn.closest('.report-card');
     if (!card) return;
+    const id = parseInt(card.dataset.reportId);
+    if (id) { apiReportResolve(id, btn); return; }
     card.dataset.reportType = 'resolved';
     card.style.opacity = '0.55';
     card.style.transition = 'opacity 0.3s';
@@ -3552,11 +3620,13 @@
 
   let _rimBtn = null;
   let _rimDelivery = 'platform';
+  let _rimReportId = null;
 
   function reportRequestInfo(btn) {
     const card = btn.closest('.report-card');
     if (!card) return;
     _rimBtn = btn;
+    _rimReportId = parseInt(btn.dataset.reportId || btn.closest('.report-card')?.dataset?.reportId) || null;
     const isFollowUp = btn.textContent.trim() === 'Follow up';
     const type = card.dataset.reportType;
     const refEl = card.querySelector('.report-header span:last-child');
@@ -3631,15 +3701,28 @@
     _rimBtn = null;
   }
 
-  function sendReqInfo() {
+  async function sendReqInfo() {
     const toText = document.getElementById('rim-to').textContent;
     const name = toText.replace('To: ', '').split('·')[0].trim();
-    const now = new Date().toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
+    const toEmail = toText.includes('·') ? toText.split('·').pop().trim() : null;
+    const subject = document.getElementById('rim-subject').value;
+    const msgBody = document.getElementById('rim-body').value;
 
-    // Update the report card
-    if (_rimBtn) {
+    // Call API if we have a report ID
+    if (_rimReportId) {
+      try {
+        await fetch(`/api/admin/reports/${_rimReportId}/request-info`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ delivery: _rimDelivery, subject, body: msgBody, to_email: _rimDelivery === 'email' ? toEmail : null }),
+        });
+        const idx = _reportsCache.findIndex(x => x.id === _rimReportId);
+        if (idx >= 0) { _reportsCache[idx].status = 'info-requested'; }
+        renderReports();
+      } catch {}
+    } else if (_rimBtn) {
+      // Fallback: in-memory update
       const card = _rimBtn.closest('.report-card');
-      // Add "Info requested" label
       let label = card.querySelector('.rim-status-label');
       if (!label) {
         label = document.createElement('div');
@@ -3647,26 +3730,23 @@
         label.style.cssText = 'font-size:11px;color:#C9840A;margin-top:8px;';
         card.querySelector('.report-actions').after(label);
       }
+      const now = new Date().toLocaleTimeString('en-AU', { hour: '2-digit', minute: '2-digit' });
       label.textContent = `Info requested · ${now}`;
-      // Change button to Follow up
       _rimBtn.textContent = 'Follow up';
       _rimBtn.classList.remove('act-approve');
       _rimBtn.classList.add('act-suspend');
       _rimBtn.disabled = false;
     }
 
-    // Toast
-    const toast = document.getElementById('pw-toast');
-    toast.innerHTML = `✉️ Message sent to <strong>${name}</strong>`;
-    toast.classList.add('show');
-    setTimeout(() => toast.classList.remove('show'), 4000);
-
+    showToast(`✉️ Message sent to <strong>${name}</strong>`);
     closeReqInfoModal();
   }
 
   function reportDismiss(btn) {
     const card = btn.closest('.report-card');
     if (!card) return;
+    const id = parseInt(card.dataset.reportId);
+    if (id) { apiReportDismiss(id, btn); return; }
     card.style.transition = 'opacity 0.3s, transform 0.3s';
     card.style.opacity = '0';
     card.style.transform = 'translateX(12px)';
@@ -3674,6 +3754,9 @@
   }
 
   function reportHideContent(btn) {
+    const card = btn.closest('.report-card');
+    const id = card ? parseInt(card.dataset.reportId) : null;
+    if (id) { apiReportHideContent(id, btn); return; }
     btn.textContent = '✓ Hidden';
     btn.disabled = true;
   }
