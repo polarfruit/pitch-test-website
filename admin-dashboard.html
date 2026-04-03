@@ -4159,13 +4159,21 @@
   let _flagsCache = [];
 
   async function loadFlags() {
+    const list = document.getElementById('mod-list');
     try {
       const r = await fetch('/api/admin/flags');
-      if (!r.ok) return;
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        if (list) list.innerHTML = `<div style="padding:40px;text-align:center;color:#C0392B;font-size:13px;">Failed to load flags (${r.status}): ${err.error || 'Server error'}</div>`;
+        return;
+      }
       const { flags } = await r.json();
       _flagsCache = flags || [];
       renderFlags();
-    } catch (e) { console.error('[flags]', e); }
+    } catch (e) {
+      console.error('[flags]', e);
+      if (list) list.innerHTML = `<div style="padding:40px;text-align:center;color:#C0392B;font-size:13px;">Error loading flags: ${e.message}</div>`;
+    }
   }
 
   function _flagRelTime(iso) {
