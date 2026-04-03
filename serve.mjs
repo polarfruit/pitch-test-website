@@ -527,7 +527,7 @@ app.post('/api/login', async (req, res) => {
   if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
 
   if (email === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-    sessWrite(res, { isAdmin: true });
+    sessWrite(res, { isAdmin: true, userId: 1000 });
     return res.json({ ok: true, redirect: '/admin' });
   }
 
@@ -737,7 +737,7 @@ app.post('/api/admin/login', (req, res) => {
   if (username !== ADMIN_USERNAME || password !== ADMIN_PASSWORD) {
     return res.status(401).json({ error: 'Invalid username or password' });
   }
-  sessWrite(res, { isAdmin: true });
+  sessWrite(res, { isAdmin: true, userId: 1000 });
   res.json({ ok: true });
 });
 

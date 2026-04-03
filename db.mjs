@@ -745,6 +745,10 @@ await _safeExec(`INSERT INTO _schema_meta (v) VALUES (${SCHEMA_VERSION})`);
 
 } // end if (_schemaVersion < SCHEMA_VERSION)
 
+// ── Always: ensure admin user row exists (id=1000, role='admin') ─────────────
+// The admin dashboard session stores this userId so messaging threads work.
+await _safeExec(`INSERT OR IGNORE INTO users (id,email,password_hash,first_name,last_name,role,status) VALUES (1000,'admin@pitch.com.au','$2b$08$unusable_hash_admin','Pitch','Admin','admin','active')`);
+
 // ── Always: ensure every vendor user has a vendors row (idempotent) ──────────
 // Runs on every cold start — INSERT OR IGNORE is a no-op when record exists.
 await _safeExec(`
