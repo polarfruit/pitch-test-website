@@ -1142,7 +1142,7 @@ export const stmts = {
   resetAppsCounter:          prepare(`UPDATE vendors SET apps_this_month=0, apps_reset_month=? WHERE user_id=?`),
 
   // announcements
-  createAnnouncement:   prepare(`INSERT INTO announcements (subject,body,audience,created_by) VALUES (@subject,@body,@audience,@created_by)`),
+  createAnnouncement:   prepare(`INSERT INTO announcements (subject,body,audience,delivery,created_by) VALUES (@subject,@body,@audience,@delivery,@created_by)`),
   getAnnouncements:     prepare(`SELECT * FROM announcements ORDER BY created_at DESC LIMIT 50`),
   getAnnouncementsFor:  prepare(`SELECT * FROM announcements WHERE audience='all' OR audience=? ORDER BY created_at DESC LIMIT 20`),
   getRecentAnnouncements: prepare(`SELECT * FROM announcements WHERE (audience='all' OR audience=?) AND created_at > datetime('now','-30 days') ORDER BY created_at DESC`),

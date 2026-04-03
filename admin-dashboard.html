@@ -1603,25 +1603,26 @@
     <div class="modal-body">
       <div style="margin-bottom:14px;">
         <label class="field-label-sm">Audience</label>
-        <select class="field-sm" style="appearance:none;">
-          <option>All users</option>
-          <option>Vendors only</option>
-          <option>Organisers only</option>
-          <option>Pro vendors only</option>
+        <select class="field-sm" id="ann-modal-audience" style="appearance:none;">
+          <option value="all">All users</option>
+          <option value="vendors">Vendors only</option>
+          <option value="organisers">Organisers only</option>
+          <option value="pro">Pro vendors only</option>
         </select>
       </div>
       <div style="margin-bottom:14px;">
         <label class="field-label-sm">Subject</label>
-        <input class="field-sm" type="text" placeholder="e.g. Platform update — March 2026" />
+        <input class="field-sm" id="ann-modal-subject" type="text" placeholder="e.g. Platform update — March 2026" />
       </div>
       <div>
         <label class="field-label-sm">Message body</label>
-        <textarea class="field-sm" style="min-height:110px;" placeholder="Write your announcement here…"></textarea>
+        <textarea class="field-sm" id="ann-modal-body" style="min-height:110px;" placeholder="Write your announcement here…"></textarea>
       </div>
+      <div id="ann-modal-err" style="display:none;margin-top:10px;font-size:13px;color:#C0392B;"></div>
     </div>
     <div class="modal-footer">
       <button class="btn-sm-outline" onclick="closeModal('announcementModal')">Cancel</button>
-      <button class="btn-sm-primary" onclick="closeModal('announcementModal')">Send announcement</button>
+      <button class="btn-sm-primary" id="ann-modal-send-btn" onclick="sendAnnouncementModal()">Send announcement</button>
     </div>
   </div>
 </div>
@@ -1811,6 +1812,40 @@
   function openBanModal() { openRejectModal('Ban user'); }
   function openAnnouncementModal() {
     document.getElementById('announcementModal').classList.add('open');
+    document.getElementById('ann-modal-subject').value = '';
+    document.getElementById('ann-modal-body').value = '';
+    document.getElementById('ann-modal-err').style.display = 'none';
+    const btn = document.getElementById('ann-modal-send-btn');
+    if (btn) { btn.disabled = false; btn.textContent = 'Send announcement'; }
+  }
+
+  async function sendAnnouncementModal() {
+    const subject  = document.getElementById('ann-modal-subject').value.trim();
+    const body     = document.getElementById('ann-modal-body').value.trim();
+    const audience = document.getElementById('ann-modal-audience').value;
+    const errEl    = document.getElementById('ann-modal-err');
+    if (!subject || !body) {
+      errEl.textContent = 'Subject and message are required.';
+      errEl.style.display = 'block'; return;
+    }
+    const btn = document.getElementById('ann-modal-send-btn');
+    btn.disabled = true; btn.textContent = 'Sending…';
+    errEl.style.display = 'none';
+    try {
+      const r = await fetch('/api/admin/announce', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subject, body, audience, delivery: 'inapp' }),
+      });
+      if (!r.ok) throw new Error((await r.json()).error || 'Failed');
+      closeModal('announcementModal');
+      const audienceLabel = { all:'All users', vendors:'Vendors', organisers:'Organisers', pro:'Pro vendors' }[audience] || audience;
+      showSuccessBanner('Announcement sent', `"${subject}" has been delivered to <strong>${audienceLabel}</strong>.<br>It will appear in their notification panel.`);
+      loadAnnouncementHistory();
+    } catch (e) {
+      btn.disabled = false; btn.textContent = 'Send announcement';
+      errEl.textContent = 'Failed to send: ' + e.message;
+      errEl.style.display = 'block';
+    }
   }
 
   function closeModal(id) {
