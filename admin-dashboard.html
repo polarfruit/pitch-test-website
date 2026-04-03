@@ -821,34 +821,34 @@
             <div>
               <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px;">
                 <span style="color:#A89880;">Vendor complaints</span>
-                <span style="color:#FDF4E7;font-weight:600;">12</span>
+                <span id="rstat-vendor" style="color:#FDF4E7;font-weight:600;">—</span>
               </div>
               <div style="height:6px;background:#2A2018;border-radius:3px;">
-                <div style="width:70%;height:100%;background:#C0392B;border-radius:3px;"></div>
+                <div id="rstat-vendor-bar" style="width:0%;height:100%;background:#C0392B;border-radius:3px;transition:width 0.4s ease;"></div>
               </div>
             </div>
             <div>
               <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px;">
                 <span style="color:#A89880;">Organiser complaints</span>
-                <span style="color:#FDF4E7;font-weight:600;">7</span>
+                <span id="rstat-org" style="color:#FDF4E7;font-weight:600;">—</span>
               </div>
               <div style="height:6px;background:#2A2018;border-radius:3px;">
-                <div style="width:41%;height:100%;background:#C9840A;border-radius:3px;"></div>
+                <div id="rstat-org-bar" style="width:0%;height:100%;background:#C9840A;border-radius:3px;transition:width 0.4s ease;"></div>
               </div>
             </div>
             <div>
               <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:5px;">
                 <span style="color:#A89880;">Content reports</span>
-                <span style="color:#FDF4E7;font-weight:600;">5</span>
+                <span id="rstat-content" style="color:#FDF4E7;font-weight:600;">—</span>
               </div>
               <div style="height:6px;background:#2A2018;border-radius:3px;">
-                <div style="width:29%;height:100%;background:#2B5BA8;border-radius:3px;"></div>
+                <div id="rstat-content-bar" style="width:0%;height:100%;background:#2B5BA8;border-radius:3px;transition:width 0.4s ease;"></div>
               </div>
             </div>
             <div style="padding-top:8px;border-top:1px solid #2A2018;">
               <div style="display:flex;justify-content:space-between;font-size:13px;">
                 <span style="color:#A89880;">Avg resolution time</span>
-                <span style="color:#2D8B55;font-weight:600;">1.4 days</span>
+                <span id="rstat-avg-time" style="color:#2D8B55;font-weight:600;">—</span>
               </div>
             </div>
           </div>
@@ -860,9 +860,9 @@
             <span class="card-title">Quick actions</span>
           </div>
           <div style="padding:16px;display:flex;flex-direction:column;gap:8px;">
-            <button class="act-btn act-view" style="width:100%;padding:10px;text-align:left;" onclick="openBanModal()">🚫 Ban a user</button>
+            <button class="act-btn act-view" style="width:100%;padding:10px;text-align:left;" onclick="showPanel('users',document.querySelectorAll('.nav-item')[5])">🚫 Ban a user</button>
             <button class="act-btn act-view" style="width:100%;padding:10px;text-align:left;" onclick="openAnnouncementModal()">📢 Post announcement</button>
-            <button class="act-btn act-view" style="width:100%;padding:10px;text-align:left;">📤 Export report log</button>
+            <button class="act-btn act-view" style="width:100%;padding:10px;text-align:left;" onclick="exportReportLog()">📤 Export report log</button>
           </div>
         </div>
       </div>
@@ -3603,6 +3603,25 @@
     if (open.length > 0) { badge.textContent = open.length; badge.style.display = ''; }
     else { badge.style.display = 'none'; }
 
+    // ── Live report stats ──────────────────────────────────────────────────────
+    const vendorC   = _reportsCache.filter(r => r.type === 'vendor-complaint').length;
+    const orgC      = _reportsCache.filter(r => r.type === 'organiser-complaint').length;
+    const contentC  = _reportsCache.filter(r => r.type === 'content').length;
+    const total     = vendorC + orgC + contentC || 1; // avoid /0
+    const pct = n => Math.round(n / total * 100) + '%';
+    const sv = document.getElementById('rstat-vendor');   if (sv) { sv.textContent = vendorC;  document.getElementById('rstat-vendor-bar').style.width  = pct(vendorC); }
+    const so = document.getElementById('rstat-org');      if (so) { so.textContent = orgC;     document.getElementById('rstat-org-bar').style.width     = pct(orgC); }
+    const sc = document.getElementById('rstat-content');  if (sc) { sc.textContent = contentC; document.getElementById('rstat-content-bar').style.width  = pct(contentC); }
+    const resolved = _reportsCache.filter(r => r.resolved_at && r.created_at);
+    const avgEl = document.getElementById('rstat-avg-time');
+    if (avgEl) {
+      if (resolved.length) {
+        const avgMs = resolved.reduce((s, r) => s + (new Date(r.resolved_at) - new Date(r.created_at)), 0) / resolved.length;
+        const avgDays = avgMs / 86400000;
+        avgEl.textContent = avgDays < 1 ? Math.round(avgMs / 3600000) + 'h' : avgDays.toFixed(1) + ' days';
+      } else { avgEl.textContent = 'No data'; }
+    }
+
     const filtered = _reportFilter === 'all'
       ? _reportsCache.filter(r => r.status !== 'resolved' && r.status !== 'dismissed')
       : _reportFilter === 'resolved'
@@ -4019,6 +4038,21 @@
     document.getElementById('rim-tog-email').style.background = mode === 'email' ? '#E8500A' : 'rgba(255,255,255,0.06)';
     document.getElementById('rim-tog-email').style.color = mode === 'email' ? '#fff' : '#A89880';
     document.getElementById('rim-subject-row').style.display = mode === 'email' ? '' : 'none';
+  }
+
+  function exportReportLog() {
+    if (!_reportsCache.length) { showToast('No reports to export.'); return; }
+    const cols = ['ref_number','type','status','reporter_name','against_name','event_name','body','created_at','resolved_at','resolved_by','info_requested_at'];
+    const header = cols.join(',');
+    const esc = v => v == null ? '' : '"' + String(v).replace(/"/g, '""') + '"';
+    const rows = _reportsCache.map(r => cols.map(c => esc(r[c])).join(','));
+    const csv = [header, ...rows].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `pitch-reports-${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
   }
 
   function closeReqInfoModal() {
