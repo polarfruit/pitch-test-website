@@ -1130,7 +1130,8 @@ app.post('/api/admin/reports/:id/dismiss', requireAdmin, async (req, res) => {
 app.post('/api/admin/reports/:id/request-info', requireAdmin, async (req, res) => {
   const { id } = req.params;
   const { delivery, subject, body: msgBody, to_user_id } = req.body;
-  const adminId = req.session.userId;
+  // Fall back to DB lookup in case session predates the userId:1000 fix
+  const adminId = req.session.userId || (await stmts.getUserByEmail.get('admin@pitch.com.au').catch(() => null))?.id || 1000;
   try {
     const report = await stmts.getReportById.get(id);
     if (!report) return res.status(404).json({ error: 'Not found' });
