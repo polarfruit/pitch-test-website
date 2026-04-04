@@ -162,6 +162,7 @@ window.__PITCH_INIT_DATA__ = ${JSON.stringify(initData)};
         html = html.replace('>🔥<', `>${avatarImg}<`);
         html = html.replace('>🏛️<', `>${avatarImg}<`);
       }
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
       res.send(html);
     } catch (e) {
       console.error('[serveDashboard]', e);
@@ -2401,6 +2402,7 @@ app.get('/api/vendors/:id/menu', async (req, res) => {
 function page(file) {
   return (req, res) => {
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.send(readHtml(file));
   };
 }
