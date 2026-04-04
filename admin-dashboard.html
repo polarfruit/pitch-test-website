@@ -4316,32 +4316,29 @@
                    <button class="act-btn act-view" onclick="flagAction(${f.id},'unresolve',this)" style="margin-left:6px;">Unresolve</button>`;
       }
 
-      const hasDetail = f.description || f.evidence_url;
-      const expandBtn = hasDetail ? `<button class="mod-expand-btn" onclick="toggleModDetail(${f.id},this)">Expand</button>` : '';
+      const expandBtn = `<button class="mod-expand-btn" onclick="toggleModDetail(${f.id},this)">Expand</button>`;
 
-      // Build detail panel content
+      // Build detail panel content — always show context, optionally show evidence/description
       let detailInner = '';
-      if (hasDetail) {
-        if (f.evidence_url) {
-          detailInner += `<div class="mod-detail-label">Evidence</div>
-            <div class="mod-detail-evidence"><img src="${escHtml(f.evidence_url)}" alt="Flagged content evidence" loading="lazy" /></div>`;
-        }
-        if (f.description) {
-          detailInner += `<div class="mod-detail-label">Full description</div>
-            <div class="mod-detail-text">${escHtml(f.description)}</div>`;
-        }
-        // Context summary
-        const contextParts = [];
-        if (f.reporter_count > 1) contextParts.push(`<strong>${f.reporter_count} separate reporters</strong> have flagged this content independently`);
-        if (f.target_user_name) contextParts.push(`Account holder: <strong>${escHtml(f.target_user_name)}</strong> (${escHtml(f.target_email || 'no email')})`);
-        contextParts.push(`Flag type: <strong>${LABEL[f.type]}</strong> · Created ${_flagFmtDate(f.created_at)}`);
-        if (f.admin_notes) contextParts.push(`Admin notes: ${escHtml(f.admin_notes)}`);
-
-        detailInner += `<div class="mod-detail-label">Context</div>
-          <div class="mod-detail-context"><p>${contextParts.join('<br>')}</p></div>`;
+      if (f.evidence_url) {
+        detailInner += `<div class="mod-detail-label">Evidence</div>
+          <div class="mod-detail-evidence"><img src="${escHtml(f.evidence_url)}" alt="Flagged content evidence" loading="lazy" /></div>`;
       }
+      if (f.description) {
+        detailInner += `<div class="mod-detail-label">Full description</div>
+          <div class="mod-detail-text">${escHtml(f.description)}</div>`;
+      }
+      detailInner += `<div class="mod-detail-label">Full reason</div>
+        <div class="mod-detail-text">${escHtml(f.reason || '—')}</div>`;
+      const contextParts = [];
+      if (f.reporter_count > 1) contextParts.push(`<strong>${f.reporter_count} separate reporters</strong> have flagged this content independently`);
+      if (f.target_user_name) contextParts.push(`Account holder: <strong>${escHtml(f.target_user_name)}</strong> (${escHtml(f.target_email || 'no email')})`);
+      contextParts.push(`Flag type: <strong>${LABEL[f.type]}</strong> · Created ${_flagFmtDate(f.created_at)}`);
+      if (f.admin_notes) contextParts.push(`Admin notes: ${escHtml(f.admin_notes)}`);
+      detailInner += `<div class="mod-detail-label">Context</div>
+        <div class="mod-detail-context"><p>${contextParts.join('<br>')}</p></div>`;
 
-      const detailPanel = hasDetail ? `<div class="mod-detail-panel" id="mod-detail-${f.id}"><div class="mod-detail-inner">${detailInner}</div></div>` : '';
+      const detailPanel = `<div class="mod-detail-panel" id="mod-detail-${f.id}"><div class="mod-detail-inner">${detailInner}</div></div>`;
 
       return `<div class="mod-item-wrap" data-mod-id="${f.id}" data-mod-type="${f.type}" data-mod-status="${f.status}" style="${resolved ? 'opacity:0.45;' : ''}">
         <div class="mod-item">
