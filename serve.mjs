@@ -19,11 +19,13 @@ const BYPASS_AUTH = true;
 // ── Gzip all responses ──────────────────────────────────────────────────────
 app.use(compression());
 
-// ── In-memory HTML file cache ───────────────────────────────────────────────
-// Reads each HTML file once, then serves from memory. Eliminates disk I/O on
-// every page request. Restart the server to pick up HTML changes.
+// ── HTML file reader ────────────────────────────────────────────────────────
+// Cache locally for performance; skip cache on Vercel so deploys take effect immediately.
 const _htmlCache = new Map();
 function readHtml(file) {
+  if (process.env.VERCEL) {
+    return fs.readFileSync(path.join(__dirname, file), 'utf8');
+  }
   if (!_htmlCache.has(file)) {
     _htmlCache.set(file, fs.readFileSync(path.join(__dirname, file), 'utf8'));
   }
