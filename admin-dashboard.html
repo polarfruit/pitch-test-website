@@ -440,13 +440,30 @@
     .announce-meta { font-size: 12px; color: #6B5A4A; line-height: 1.5; }
 
     /* ── Moderation panel ──────────────────────── */
-    .mod-item { padding: 16px 20px; border-bottom: 1px solid #1E1916; display: flex; gap: 14px; align-items: flex-start; }
+    .mod-item { padding: 16px 20px; border-bottom: 1px solid #1E1916; display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap; }
     .mod-item:last-child { border-bottom: none; }
     .mod-thumb { width: 60px; height: 60px; border-radius: 8px; background: #231E19; border: 1px solid #2A2018; object-fit: cover; overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 24px; }
     .mod-body { flex: 1; min-width: 0; }
     .mod-title { font-size: 13.5px; font-weight: 600; color: #FDF4E7; margin-bottom: 3px; }
-    .mod-reason { font-size: 12px; color: #C0392B; margin-bottom: 4px; }
+    .mod-reason { font-size: 12px; color: #C0392B; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 380px; }
     .mod-meta { font-size: 12px; color: #6B5A4A; }
+
+    /* ── Expandable detail panel ─────────────── */
+    .mod-expand-btn { background: none; border: 1px solid #2A2018; color: #A89880; font-size: 11px; padding: 4px 10px; border-radius: 6px; cursor: pointer; transition: background 0.15s, color 0.15s, border-color 0.15s; margin-top: 6px; display: inline-flex; align-items: center; gap: 5px; }
+    .mod-expand-btn:hover { background: #2A2018; color: #FDF4E7; border-color: #3A3028; }
+    .mod-expand-btn.expanded { background: #2A2018; color: #FDF4E7; border-color: #E8500A; }
+    .mod-expand-btn svg { width: 12px; height: 12px; transition: transform 0.2s; }
+    .mod-expand-btn.expanded svg { transform: rotate(180deg); }
+    .mod-detail-panel { width: 100%; max-height: 0; overflow: hidden; transition: max-height 0.3s ease, opacity 0.25s ease, margin 0.2s ease; opacity: 0; margin-top: 0; }
+    .mod-detail-panel.open { max-height: 800px; opacity: 1; margin-top: 12px; }
+    .mod-detail-inner { background: #1A1612; border: 1px solid #2A2018; border-radius: 10px; padding: 20px; }
+    .mod-detail-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #6B5A4A; margin-bottom: 6px; }
+    .mod-detail-text { font-size: 13px; color: #D4C8B8; line-height: 1.7; margin-bottom: 16px; }
+    .mod-detail-text:last-child { margin-bottom: 0; }
+    .mod-detail-evidence { border-radius: 8px; overflow: hidden; border: 1px solid #2A2018; margin-bottom: 16px; max-width: 420px; }
+    .mod-detail-evidence img { width: 100%; height: auto; display: block; }
+    .mod-detail-context { background: #231E19; border-radius: 8px; padding: 14px 16px; border-left: 3px solid #E8500A; }
+    .mod-detail-context p { font-size: 12px; color: #A89880; line-height: 1.65; margin: 0; }
 
     /* ── Users panel ───────────────────────────── */
     .role-chip { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
@@ -4241,17 +4258,47 @@
       } else {
         buttons = `<span style="font-size:11px;font-weight:700;color:#4A3C30;">${STATUS_LABEL[f.status] || f.status}</span>`;
       }
+
+      const hasDetail = f.description || f.evidence_url;
+      const expandBtn = hasDetail ? `<button class="mod-expand-btn" onclick="toggleModDetail(${f.id},this)"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 4.5L6 7.5L9 4.5"/></svg>View details</button>` : '';
+
+      // Build detail panel content
+      let detailInner = '';
+      if (hasDetail) {
+        if (f.evidence_url) {
+          detailInner += `<div class="mod-detail-label">Evidence</div>
+            <div class="mod-detail-evidence"><img src="${escHtml(f.evidence_url)}" alt="Flagged content evidence" loading="lazy" /></div>`;
+        }
+        if (f.description) {
+          detailInner += `<div class="mod-detail-label">Full description</div>
+            <div class="mod-detail-text">${escHtml(f.description)}</div>`;
+        }
+        // Context summary
+        const contextParts = [];
+        if (f.reporter_count > 1) contextParts.push(`<strong>${f.reporter_count} separate reporters</strong> have flagged this content independently`);
+        if (f.target_user_name) contextParts.push(`Account holder: <strong>${escHtml(f.target_user_name)}</strong> (${escHtml(f.target_email || 'no email')})`);
+        contextParts.push(`Flag type: <strong>${LABEL[f.type]}</strong> · Created ${_flagFmtDate(f.created_at)}`);
+        if (f.admin_notes) contextParts.push(`Admin notes: ${escHtml(f.admin_notes)}`);
+
+        detailInner += `<div class="mod-detail-label">Context</div>
+          <div class="mod-detail-context"><p>${contextParts.join('<br>')}</p></div>`;
+      }
+
+      const detailPanel = hasDetail ? `<div class="mod-detail-panel" id="mod-detail-${f.id}"><div class="mod-detail-inner">${detailInner}</div></div>` : '';
+
       return `<div class="mod-item" data-mod-id="${f.id}" data-mod-type="${f.type}" data-mod-status="${f.status}" style="${resolved ? 'opacity:0.45;' : ''}">
         <div class="mod-thumb">${ICON[f.type] || '📋'}</div>
         <div class="mod-body">
           <div class="mod-title">${escHtml(f.target_name || '—')}</div>
           <div class="mod-reason">🚩 Flagged: "${escHtml(f.reason || '—')}"</div>
           <div class="mod-meta">Reported by ${f.reporter_count} · ${LABEL[f.type]} · ${_flagFmtDate(f.created_at)}</div>
+          ${expandBtn}
         </div>
         <div class="queue-actions">
           <div class="act-group">${buttons}</div>
           <span class="queue-time">${_flagRelTime(f.created_at)}</span>
         </div>
+        ${detailPanel}
       </div>`;
     }).join('');
 
@@ -4260,6 +4307,20 @@
     if (activeChip) {
       const m = activeChip.getAttribute('onclick')?.match(/'([^']+)'\)$/);
       if (m) _applyModFilter(m[1]);
+    }
+  }
+
+  function toggleModDetail(id, btn) {
+    const panel = document.getElementById('mod-detail-' + id);
+    if (!panel) return;
+    const isOpen = panel.classList.contains('open');
+    panel.classList.toggle('open');
+    btn.classList.toggle('expanded');
+    btn.querySelector('svg'); // ensure arrow exists
+    if (isOpen) {
+      btn.innerHTML = '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 4.5L6 7.5L9 4.5"/></svg>View details';
+    } else {
+      btn.innerHTML = '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 4.5L6 7.5L9 4.5"/></svg>Hide details';
     }
   }
 
