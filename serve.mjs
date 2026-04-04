@@ -1176,6 +1176,18 @@ app.post('/api/admin/reports/:id/dismiss', requireAdmin, async (req, res) => {
   }
 });
 
+app.post('/api/admin/reports/:id/unresolve', requireAdmin, async (req, res) => {
+  try {
+    const report = await stmts.getReportById.get(req.params.id);
+    if (!report) return res.status(404).json({ error: 'Not found' });
+    await stmts.unresolveReport.run({ id: Number(req.params.id) });
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('[reports unresolve]', e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
 app.post('/api/admin/reports/:id/request-info', requireAdmin, async (req, res) => {
   const { id } = req.params;
   const { delivery, subject, body: msgBody, to_user_id } = req.body;
