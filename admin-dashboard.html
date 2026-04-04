@@ -440,8 +440,9 @@
     .announce-meta { font-size: 12px; color: #6B5A4A; line-height: 1.5; }
 
     /* ── Moderation panel ──────────────────────── */
-    .mod-item { padding: 16px 20px; border-bottom: 1px solid #1E1916; display: flex; gap: 14px; align-items: flex-start; flex-wrap: wrap; }
-    .mod-item:last-child { border-bottom: none; }
+    .mod-item-wrap { border-bottom: 1px solid #1E1916; }
+    .mod-item-wrap:last-child { border-bottom: none; }
+    .mod-item { padding: 16px 20px; display: flex; gap: 14px; align-items: flex-start; }
     .mod-thumb { width: 60px; height: 60px; border-radius: 8px; background: #231E19; border: 1px solid #2A2018; object-fit: cover; overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 24px; }
     .mod-body { flex: 1; min-width: 0; }
     .mod-title { font-size: 13.5px; font-weight: 600; color: #FDF4E7; margin-bottom: 3px; }
@@ -449,13 +450,13 @@
     .mod-meta { font-size: 12px; color: #6B5A4A; }
 
     /* ── Expandable detail panel ─────────────── */
-    .mod-expand-btn { background: none; border: 1px solid #2A2018; color: #A89880; font-size: 11px; padding: 4px 10px; border-radius: 6px; cursor: pointer; transition: background 0.15s, color 0.15s, border-color 0.15s; margin-top: 6px; display: inline-flex; align-items: center; gap: 5px; }
-    .mod-expand-btn:hover { background: #2A2018; color: #FDF4E7; border-color: #3A3028; }
-    .mod-expand-btn.expanded { background: #2A2018; color: #FDF4E7; border-color: #E8500A; }
+    .mod-expand-btn { background: #2A2018; border: 1px solid #3A3028; color: #E8500A; font-size: 12px; font-weight: 600; padding: 6px 14px; border-radius: 6px; cursor: pointer; transition: background 0.15s, color 0.15s, border-color 0.15s; margin-top: 8px; display: inline-flex; align-items: center; gap: 6px; }
+    .mod-expand-btn:hover { background: #3A3028; color: #FF6B2B; border-color: #E8500A; }
+    .mod-expand-btn.expanded { background: #3A2A1A; color: #FF6B2B; border-color: #E8500A; }
     .mod-expand-btn svg { width: 12px; height: 12px; transition: transform 0.2s; }
     .mod-expand-btn.expanded svg { transform: rotate(180deg); }
-    .mod-detail-panel { width: 100%; max-height: 0; overflow: hidden; transition: max-height 0.3s ease, opacity 0.25s ease, margin 0.2s ease; opacity: 0; margin-top: 0; }
-    .mod-detail-panel.open { max-height: 800px; opacity: 1; margin-top: 12px; }
+    .mod-detail-panel { display: none; width: 100%; padding: 0 20px 16px; }
+    .mod-detail-panel.open { display: block; }
     .mod-detail-inner { background: #1A1612; border: 1px solid #2A2018; border-radius: 10px; padding: 20px; }
     .mod-detail-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: #6B5A4A; margin-bottom: 6px; }
     .mod-detail-text { font-size: 13px; color: #D4C8B8; line-height: 1.7; margin-bottom: 16px; }
@@ -3659,8 +3660,10 @@
 
       let statusBadge = '';
       if (isInfoReq) statusBadge = `<span style="font-size:11px;color:#C9840A;margin-top:8px;display:block;">Info requested · awaiting response</span>`;
-      if (isResolved) statusBadge = `<span style="font-size:12px;color:#2D8B55;">✓ Resolved${r.resolved_by ? ' by ' + r.resolved_by : ''}${r.resolved_at ? ' · ' + new Date(r.resolved_at).toLocaleDateString('en-AU',{day:'numeric',month:'short'}) : ''}</span>`;
-      if (isDismissed) statusBadge = `<span style="font-size:12px;color:#6B5A4A;">Dismissed</span>`;
+      if (isResolved) statusBadge = `<span style="font-size:12px;color:#2D8B55;">✓ Resolved${r.resolved_by ? ' by ' + r.resolved_by : ''}${r.resolved_at ? ' · ' + new Date(r.resolved_at).toLocaleDateString('en-AU',{day:'numeric',month:'short'}) : ''}</span>
+        <button class="act-btn act-view" style="margin-left:8px;" onclick="apiReportUnresolve(${r.id},this)">Unresolve</button>`;
+      if (isDismissed) statusBadge = `<span style="font-size:12px;color:#6B5A4A;">Dismissed</span>
+        <button class="act-btn act-view" style="margin-left:8px;" onclick="apiReportUnresolve(${r.id},this)">Unresolve</button>`;
 
       let actions = '';
       if (!isResolved && !isDismissed) {
@@ -3715,6 +3718,18 @@
       renderReports();
       showToast('Report dismissed');
     } catch (e) { btn.disabled = false; btn.textContent = 'Dismiss'; showToast('Error: ' + e.message); }
+  }
+
+  async function apiReportUnresolve(id, btn) {
+    btn.disabled = true; btn.textContent = 'Reopening…';
+    try {
+      const r = await fetch(`/api/admin/reports/${id}/unresolve`, { method:'POST' });
+      if (!r.ok) throw new Error((await r.json()).error);
+      const idx = _reportsCache.findIndex(x => x.id === id);
+      if (idx >= 0) { _reportsCache[idx].status = 'open'; _reportsCache[idx].resolved_by = null; _reportsCache[idx].resolved_at = null; }
+      renderReports();
+      showToast('Report reopened');
+    } catch (e) { btn.disabled = false; btn.textContent = 'Unresolve'; showToast('Error: ' + e.message); }
   }
 
   async function apiReportHideContent(id, btn) {
@@ -4287,17 +4302,19 @@
 
       const detailPanel = hasDetail ? `<div class="mod-detail-panel" id="mod-detail-${f.id}"><div class="mod-detail-inner">${detailInner}</div></div>` : '';
 
-      return `<div class="mod-item" data-mod-id="${f.id}" data-mod-type="${f.type}" data-mod-status="${f.status}" style="${resolved ? 'opacity:0.45;' : ''}">
-        <div class="mod-thumb">${ICON[f.type] || '📋'}</div>
-        <div class="mod-body">
-          <div class="mod-title">${escHtml(f.target_name || '—')}</div>
-          <div class="mod-reason">🚩 Flagged: "${escHtml(f.reason || '—')}"</div>
-          <div class="mod-meta">Reported by ${f.reporter_count} · ${LABEL[f.type]} · ${_flagFmtDate(f.created_at)}</div>
-          ${expandBtn}
-        </div>
-        <div class="queue-actions">
-          <div class="act-group">${buttons}</div>
-          <span class="queue-time">${_flagRelTime(f.created_at)}</span>
+      return `<div class="mod-item-wrap" data-mod-id="${f.id}" data-mod-type="${f.type}" data-mod-status="${f.status}" style="${resolved ? 'opacity:0.45;' : ''}">
+        <div class="mod-item">
+          <div class="mod-thumb">${ICON[f.type] || '📋'}</div>
+          <div class="mod-body">
+            <div class="mod-title">${escHtml(f.target_name || '—')}</div>
+            <div class="mod-reason">🚩 Flagged: "${escHtml(f.reason || '—')}"</div>
+            <div class="mod-meta">Reported by ${f.reporter_count} · ${LABEL[f.type]} · ${_flagFmtDate(f.created_at)}</div>
+            ${expandBtn}
+          </div>
+          <div class="queue-actions">
+            <div class="act-group">${buttons}</div>
+            <span class="queue-time">${_flagRelTime(f.created_at)}</span>
+          </div>
         </div>
         ${detailPanel}
       </div>`;
@@ -4347,7 +4364,7 @@
   }
 
   function _applyModFilter(filter) {
-    document.querySelectorAll('#panel-moderation .mod-item').forEach(item => {
+    document.querySelectorAll('#panel-moderation .mod-item-wrap').forEach(item => {
       const type = item.dataset.modType;
       const resolved = item.dataset.modStatus !== 'pending';
       if (filter === 'all')           item.style.display = resolved ? 'none' : '';

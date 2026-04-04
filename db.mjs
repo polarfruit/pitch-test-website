@@ -1212,6 +1212,7 @@ export const stmts = {
   createReport:      prepare(`INSERT INTO reports (type,ref_number,reporter_name,reporter_user_id,reporter_email,against_name,against_user_id,body,event_name) VALUES (@type,@ref_number,@reporter_name,@reporter_user_id,@reporter_email,@against_name,@against_user_id,@body,@event_name)`),
   resolveReport:     prepare(`UPDATE reports SET status='resolved',resolved_by=@resolved_by,resolved_at=datetime('now') WHERE id=@id`),
   dismissReport:     prepare(`UPDATE reports SET status='dismissed',resolved_by=@resolved_by,resolved_at=datetime('now') WHERE id=@id`),
+  unresolveReport:   prepare(`UPDATE reports SET status='open',resolved_by=NULL,resolved_at=NULL WHERE id=@id`),
   requestInfoReport: prepare(`UPDATE reports SET status='info-requested',info_requested_at=datetime('now') WHERE id=?`),
   hideContentReport: prepare(`UPDATE reports SET status='resolved',resolved_by=@resolved_by,resolved_at=datetime('now') WHERE id=@id`),
   getNextReportRef:  prepare(`SELECT COALESCE(MAX(ref_number),1049)+1 AS next FROM reports`),
