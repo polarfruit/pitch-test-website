@@ -2097,17 +2097,23 @@ fetch('/api/stats').then(r => r.json()).then(d => {
     </a>`;
   }
 
-  fetch('/api/vendors').then(r => r.json()).then(data => {
-    const vendors = (data.vendors || data || []).filter(v => v.trading_name);
+  // Fetch featured vendors first, then fill with all vendors
+  Promise.all([
+    fetch('/api/featured-vendors').then(r => r.ok ? r.json() : []).catch(() => []),
+    fetch('/api/vendors').then(r => r.json()).then(d => (d.vendors || d || []).filter(v => v.trading_name)).catch(() => [])
+  ]).then(([featured, all]) => {
+    const featIds = new Set((featured || []).map(v => v.user_id));
+    // Featured vendors first, then remaining vendors (no duplicates)
+    const remaining = all.filter(v => !featIds.has(v.user_id));
+    const vendors = [...(featured || []), ...remaining];
     if (!vendors.length) return; // keep static fallback
     const marquee = document.getElementById('vendor-marquee');
     if (!marquee) return;
-    // Need at least ~8 cards for smooth infinite scroll; repeat if needed
     let pool = vendors;
     while (pool.length < 8) pool = pool.concat(vendors);
     const html = pool.map((v, i) => buildCard(v, i)).join('');
     marquee.innerHTML = html + html; // duplicate for seamless loop
-  }).catch(() => {}); // silently keep static on error
+  });
 })();
 
 // Hero search — redirect to events page with all three segment params

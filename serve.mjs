@@ -784,6 +784,10 @@ app.get('/api/featured-events', apiCached('featured-events', 120000, async () =>
   return stmts.featuredEvents.all(today);
 }));
 
+app.get('/api/featured-vendors', apiCached('featured-vendors', 120000, async () => {
+  return stmts.featuredVendors.all();
+}));
+
 app.get('/api/category-counts', apiCached('category-counts', 120000, async () => {
   const today = new Date().toISOString().slice(0, 10);
   const rows = await stmts.categoryCounts.all(today);
@@ -2301,7 +2305,7 @@ app.get('/api/admin/analytics', requireAdmin, async (req, res) => {
 // ── Admin — featured ──────────────────────────────────────────────────────
 app.get('/api/admin/featured', requireAdmin, async (req, res) => {
   const [events, vendors] = await Promise.all([
-    stmts.featuredEvents.all(),
+    stmts.adminFeaturedEvents.all(),
     stmts.featuredVendors.all(),
   ]);
   res.json({ events, vendors });
@@ -2309,11 +2313,13 @@ app.get('/api/admin/featured', requireAdmin, async (req, res) => {
 
 app.patch('/api/admin/events/:id/featured', requireAdmin, async (req, res) => {
   await stmts.setEventFeatured.run(req.body.featured ? 1 : 0, req.params.id);
+  _apiCache.delete('featured-events');
   res.json({ ok: true });
 });
 
 app.patch('/api/admin/vendors/:id/featured', requireAdmin, async (req, res) => {
   await stmts.setVendorFeatured.run(req.body.featured ? 1 : 0, req.params.id);
+  _apiCache.delete('featured-vendors');
   res.json({ ok: true });
 });
 

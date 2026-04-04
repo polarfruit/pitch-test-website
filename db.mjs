@@ -983,7 +983,7 @@ export const stmts = {
     FROM events e
     LEFT JOIN event_applications ea ON ea.event_id=e.id AND ea.status='approved'
     WHERE e.status='published' AND e.date_sort >= ?
-    GROUP BY e.id HAVING vendor_count > 0
+    GROUP BY e.id
     ORDER BY e.featured DESC, e.date_sort ASC, vendor_count DESC LIMIT 6
   `),
   categoryCounts: prepare(`
@@ -1001,6 +1001,7 @@ export const stmts = {
     WHERE u.status='pending' ORDER BY u.created_at DESC LIMIT 5
   `),
   featuredVendors:   prepare(`SELECT v.user_id,v.trading_name,v.cuisine_tags,v.suburb,v.state,v.featured FROM vendors v JOIN users u ON v.user_id=u.id WHERE v.featured=1 AND u.status='active' ORDER BY v.trading_name ASC`),
+  adminFeaturedEvents: prepare(`SELECT e.id,e.name,e.slug,e.category,e.suburb,e.state,e.date_sort,e.featured FROM events e WHERE e.featured=1 AND e.status='published' ORDER BY e.date_sort ASC`),
   setEventFeatured:  prepare(`UPDATE events SET featured=? WHERE id=?`),
   setVendorFeatured: prepare(`UPDATE vendors SET featured=? WHERE user_id=?`),
 
