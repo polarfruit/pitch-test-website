@@ -449,6 +449,7 @@
     .feat-chip:hover:not(.active) { background: #3A3028; color: #FDF4E7; }
     /* Rec badge */
     .feat-rec-badge { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; margin-left: auto; flex-shrink: 0; }
+    .feat-rec-badge.growth { background: #2D8B5522; color: #2D8B55; }
     .feat-rec-badge.pro { background: #E8500A22; color: #E8500A; }
     .feat-rec-badge.basic { background: #C9840A22; color: #C9840A; }
     .feat-rec-badge.free { background: #2A201855; color: #6B5A4A; }
@@ -3326,10 +3327,15 @@
   }
 
   // ── Featured ──────────────────────────────────────────────────────────────
+  let _featEventCount = 0;
+  let _featVendorCount = 0;
+
   async function loadFeatured() {
     try {
       const r = await fetch('/api/admin/featured');
       const { events, vendors } = await r.json();
+      _featEventCount = (events || []).length;
+      _featVendorCount = (vendors || []).length;
       renderFeaturedEvents(events || []);
       renderFeaturedVendors(vendors || []);
     } catch(e) { console.warn('Featured load failed', e); }
@@ -3410,8 +3416,26 @@
   let _featAddItems    = [];       // full list for current mode
   let _featAllEvents   = [];       // pre-loaded
   let _featAllVendors  = [];       // pre-loaded
-  let _featSelected    = null;     // { id, name }
+  let _featSelected    = [];       // [{ id, name }] — multi-select
   let _featKbdIdx      = -1;
+
+  function _featSlotsLeft() {
+    const current = _featAddMode === 'vendor' ? _featVendorCount : _featEventCount;
+    return Math.max(0, FEAT_MAX - current - _featSelected.length);
+  }
+
+  function _updateConfirmBtn() {
+    const btn = document.getElementById('feat-add-confirm');
+    if (_featSelected.length > 0) {
+      btn.classList.add('show');
+      btn.textContent = _featSelected.length === 1
+        ? 'Feature this →'
+        : `Feature ${_featSelected.length} selected →`;
+      btn.disabled = false;
+    } else {
+      btn.classList.remove('show');
+    }
+  }
 
   // Pre-load both lists as soon as page is ready
   (async function prefetchFeatLists() {
@@ -3425,7 +3449,7 @@
   })();
 
   function _openFeatPopup() {
-    _featSelected = null;
+    _featSelected = [];
     _featKbdIdx = -1;
     _featActiveTab = 'search';
     document.getElementById('feat-tab-search').classList.add('active');
@@ -3434,7 +3458,7 @@
     document.getElementById('feat-panel-recommend').style.display = 'none';
     const inp = document.getElementById('feat-add-input');
     inp.value = '';
-    document.getElementById('feat-add-confirm').classList.remove('show');
+    _updateConfirmBtn();
     _renderFeatSuggestions('');
     document.getElementById('feat-add-overlay').classList.add('open');
     setTimeout(() => inp.focus(), 60);
@@ -3464,21 +3488,26 @@
       el._matches = [];
       return;
     }
+    const slotsLeft = _featSlotsLeft();
     const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-    el.innerHTML = matches.map((item, idx) => `
-      <div class="feat-sugg-item" data-idx="${idx}" onclick="featAddSelect(${idx})">
+    el.innerHTML = matches.map((item, idx) => {
+      const isSelected = _featSelected.some(s => s.id === item.id);
+      const isFull = !isSelected && slotsLeft <= 0;
+      return `<div class="feat-sugg-item" data-idx="${idx}" onclick="featAddSelect(${idx})" style="${isSelected ? 'background:#3A2E26;' : ''}${isFull ? 'opacity:0.35;pointer-events:none;' : ''}">
         <div class="feat-sugg-icon">${item.icon}</div>
-        <div>
+        <div style="flex:1;min-width:0;">
           <div class="feat-sugg-name">${q ? item.name.replace(new RegExp('('+esc(q)+')', 'gi'), '<strong>$1</strong>') : item.name}</div>
           ${item.sub ? `<div class="feat-sugg-sub">${item.sub}</div>` : ''}
         </div>
-      </div>`).join('');
+        ${isSelected ? '<span style="font-size:11px;font-weight:700;color:#E8500A;flex-shrink:0;">✓ Selected</span>' : ''}
+      </div>`;
+    }).join('');
     el._matches = matches;
   }
 
   function closeFeatAddPopup() {
     document.getElementById('feat-add-overlay').classList.remove('open');
-    _featSelected = null;
+    _featSelected = [];
   }
 
   function featAddSearch() {
@@ -3494,14 +3523,17 @@
     const matches = el._matches || [];
     const item = matches[idx];
     if (!item) return;
-    _featSelected = item;
-    document.getElementById('feat-add-input').value = item.name;
-    el.innerHTML = `<div class="feat-sugg-item" style="background:#3A2E26;">
-      <div class="feat-sugg-icon">${item.icon}</div>
-      <div><div class="feat-sugg-name">${item.name}</div>${item.sub ? `<div class="feat-sugg-sub">${item.sub}</div>` : ''}</div>
-      <span style="margin-left:auto;font-size:11px;font-weight:700;color:#E8500A;">Selected</span>
-    </div>`;
-    document.getElementById('feat-add-confirm').classList.add('show');
+    // Toggle selection
+    const existIdx = _featSelected.findIndex(s => s.id === item.id);
+    if (existIdx >= 0) {
+      _featSelected.splice(existIdx, 1);
+    } else {
+      if (_featSlotsLeft() <= 0) return; // no slots left
+      _featSelected.push(item);
+    }
+    // Re-render to show checkmarks
+    _renderFeatSuggestions((document.getElementById('feat-add-input').value || '').toLowerCase().trim());
+    _updateConfirmBtn();
   }
 
   function featAddKeyNav(e) {
@@ -3526,19 +3558,22 @@
   }
 
   async function confirmFeatAdd() {
-    if (!_featSelected) return;
+    if (!_featSelected.length) return;
     const btn = document.getElementById('feat-add-confirm');
     btn.textContent = 'Featuring…';
     btn.disabled = true;
     try {
-      const url = _featAddMode === 'vendor'
-        ? `/api/admin/vendors/${_featSelected.id}/featured`
-        : `/api/admin/events/${_featSelected.id}/featured`;
-      await fetch(url, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ featured: true }) });
+      const promises = _featSelected.map(item => {
+        const url = _featAddMode === 'vendor'
+          ? `/api/admin/vendors/${item.id}/featured`
+          : `/api/admin/events/${item.id}/featured`;
+        return fetch(url, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ featured: true }) });
+      });
+      await Promise.all(promises);
       closeFeatAddPopup();
       loadFeatured();
     } catch (e) {
-      btn.textContent = 'Feature this →';
+      btn.textContent = 'Feature selected →';
       btn.disabled = false;
     }
   }
@@ -3558,24 +3593,29 @@
       _buildCriteriaChips();
       _loadRecommendations();
     }
-    // Reset selection
-    _featSelected = null;
-    document.getElementById('feat-add-confirm').classList.remove('show');
+    _featSelected = [];
+    _updateConfirmBtn();
   }
 
   function _buildCriteriaChips() {
     const el = document.getElementById('feat-criteria');
+    const slotsLeft = _featSlotsLeft();
+    const autofillBtn = slotsLeft > 0
+      ? `<button class="feat-chip" style="background:#E8500A22;border-color:#E8500A;color:#E8500A;" onclick="_autoFillRecs()">Auto-fill top ${slotsLeft} →</button>`
+      : '';
     if (_featAddMode === 'vendor') {
       el.innerHTML = `
         <button class="feat-chip active" data-sort="plan" onclick="_setRecSort(this,'plan')">Highest plan</button>
         <button class="feat-chip" data-sort="events" onclick="_setRecSort(this,'events')">Most events</button>
-        <button class="feat-chip" data-sort="name" onclick="_setRecSort(this,'name')">Alphabetical</button>`;
+        <button class="feat-chip" data-sort="name" onclick="_setRecSort(this,'name')">Alphabetical</button>
+        ${autofillBtn}`;
       _featRecSort = 'plan';
     } else {
       el.innerHTML = `
         <button class="feat-chip active" data-sort="apps" onclick="_setRecSort(this,'apps')">Most applications</button>
         <button class="feat-chip" data-sort="organiser" onclick="_setRecSort(this,'organiser')">Top organisers</button>
-        <button class="feat-chip" data-sort="newest" onclick="_setRecSort(this,'newest')">Soonest date</button>`;
+        <button class="feat-chip" data-sort="newest" onclick="_setRecSort(this,'newest')">Soonest date</button>
+        ${autofillBtn}`;
       _featRecSort = 'apps';
     }
   }
@@ -3606,29 +3646,34 @@
       el.innerHTML = '<div class="feat-sugg-empty">No recommendations available</div>';
       return;
     }
+    const slotsLeft = _featSlotsLeft();
     el.innerHTML = _featRecCache.map((item, idx) => {
+      const id = _featAddMode === 'vendor' ? item.user_id : item.id;
+      const isSelected = _featSelected.some(s => s.id === id);
+      const isFull = !isSelected && slotsLeft <= 0;
       if (_featAddMode === 'vendor') {
         let tags = [];
         try { tags = JSON.parse(item.cuisine_tags || '[]'); } catch {}
         const loc = [item.suburb, item.state].filter(Boolean).join(', ');
-        const planLabel = (item.plan || 'free').charAt(0).toUpperCase() + (item.plan || 'free').slice(1);
-        return `<div class="feat-sugg-item" onclick="_selectRec(${idx})">
+        const plan = item.plan || 'free';
+        const planLabel = plan.charAt(0).toUpperCase() + plan.slice(1);
+        return `<div class="feat-sugg-item" onclick="_selectRec(${idx})" style="${isSelected ? 'background:#3A2E26;' : ''}${isFull ? 'opacity:0.35;pointer-events:none;' : ''}">
           <div class="feat-sugg-icon">🍔</div>
           <div style="flex:1;min-width:0;">
             <div class="feat-sugg-name">${item.trading_name}</div>
             <div class="feat-sugg-sub">${tags.slice(0,2).join(', ') || '—'} · ${loc || '—'} · ${item.event_count} events</div>
           </div>
-          <span class="feat-rec-badge ${item.plan || 'free'}">${planLabel}</span>
+          ${isSelected ? '<span style="font-size:11px;font-weight:700;color:#E8500A;flex-shrink:0;">✓</span>' : `<span class="feat-rec-badge ${plan}">${planLabel}</span>`}
         </div>`;
       } else {
         const d = item.date_sort ? new Date(item.date_sort + 'T00:00:00').toLocaleDateString('en-AU',{day:'numeric',month:'short'}) : '—';
-        return `<div class="feat-sugg-item" onclick="_selectRec(${idx})">
+        return `<div class="feat-sugg-item" onclick="_selectRec(${idx})" style="${isSelected ? 'background:#3A2E26;' : ''}${isFull ? 'opacity:0.35;pointer-events:none;' : ''}">
           <div class="feat-sugg-icon">🎪</div>
           <div style="flex:1;min-width:0;">
             <div class="feat-sugg-name">${item.name}</div>
-            <div class="feat-sugg-sub">${d} · ${item.category || '—'} · ${item.app_count} apps · by ${item.org_name || '—'} (${item.org_event_count} events)</div>
+            <div class="feat-sugg-sub">${d} · ${item.category || '—'} · ${item.app_count} apps · by ${item.org_name || '—'}</div>
           </div>
-          <span class="feat-rec-stat">${item.app_count} apps</span>
+          ${isSelected ? '<span style="font-size:11px;font-weight:700;color:#E8500A;flex-shrink:0;">✓</span>' : `<span class="feat-rec-stat">${item.app_count} apps</span>`}
         </div>`;
       }
     }).join('');
@@ -3639,13 +3684,37 @@
     if (!item) return;
     const id = _featAddMode === 'vendor' ? item.user_id : item.id;
     const name = _featAddMode === 'vendor' ? item.trading_name : item.name;
-    _featSelected = { id, name };
-    // Highlight selected
-    const el = document.getElementById('feat-rec-list');
-    el.querySelectorAll('.feat-sugg-item').forEach((el, i) => {
-      el.style.background = i === idx ? '#3A2E26' : '';
-    });
-    document.getElementById('feat-add-confirm').classList.add('show');
+    // Toggle
+    const existIdx = _featSelected.findIndex(s => s.id === id);
+    if (existIdx >= 0) {
+      _featSelected.splice(existIdx, 1);
+    } else {
+      if (_featSlotsLeft() <= 0) return;
+      _featSelected.push({ id, name });
+    }
+    _renderRecommendations();
+    _updateConfirmBtn();
+    // Update auto-fill button count
+    _buildCriteriaChips();
+  }
+
+  function _autoFillRecs() {
+    const slotsLeft = _featSlotsLeft();
+    if (slotsLeft <= 0 || !_featRecCache.length) return;
+    // Pick top N from recommendations that aren't already selected
+    let added = 0;
+    for (const item of _featRecCache) {
+      if (added >= slotsLeft) break;
+      const id = _featAddMode === 'vendor' ? item.user_id : item.id;
+      const name = _featAddMode === 'vendor' ? item.trading_name : item.name;
+      if (!_featSelected.some(s => s.id === id)) {
+        _featSelected.push({ id, name });
+        added++;
+      }
+    }
+    _renderRecommendations();
+    _updateConfirmBtn();
+    _buildCriteriaChips();
   }
 
   document.addEventListener('keydown', e => {

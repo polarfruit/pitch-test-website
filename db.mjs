@@ -1012,7 +1012,7 @@ export const stmts = {
     WHERE u.status='active' AND v.featured=0
     GROUP BY v.user_id
     ORDER BY
-      CASE COALESCE(v.plan,'free') WHEN 'pro' THEN 3 WHEN 'basic' THEN 2 ELSE 1 END DESC,
+      CASE COALESCE(v.plan,'free') WHEN 'growth' THEN 4 WHEN 'pro' THEN 3 WHEN 'basic' THEN 2 ELSE 1 END DESC,
       event_count DESC,
       v.trading_name ASC
     LIMIT 10
