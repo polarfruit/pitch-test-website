@@ -1171,6 +1171,7 @@ export const stmts = {
   getFlags:            prepare(`SELECT cf.*, COALESCE(u.first_name||' '||u.last_name, '') as target_user_name, COALESCE(u.email,'') as target_email FROM content_flags cf LEFT JOIN users u ON u.id=cf.target_user_id ORDER BY cf.created_at DESC`),
   getFlagById:         prepare(`SELECT * FROM content_flags WHERE id=?`),
   updateFlagStatus:    prepare(`UPDATE content_flags SET status=?,resolved_at=datetime('now'),resolved_by=? WHERE id=?`),
+  unresolveFlagStatus: prepare(`UPDATE content_flags SET status='pending',resolved_at=NULL,resolved_by=NULL WHERE id=?`),
   deleteResolvedFlags: prepare(`DELETE FROM content_flags WHERE status IN ('removed','warned','dismissed')`),
 
   // announcements

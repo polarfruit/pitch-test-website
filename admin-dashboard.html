@@ -4256,7 +4256,8 @@
                      <button class="act-btn act-view" onclick="flagAction(${f.id},'dismiss',this)">Dismiss</button>`;
         }
       } else {
-        buttons = `<span style="font-size:11px;font-weight:700;color:#4A3C30;">${STATUS_LABEL[f.status] || f.status}</span>`;
+        buttons = `<span style="font-size:11px;font-weight:700;color:#4A3C30;">${STATUS_LABEL[f.status] || f.status}</span>
+                   <button class="act-btn act-view" onclick="flagAction(${f.id},'unresolve',this)" style="margin-left:6px;">Unresolve</button>`;
       }
 
       const hasDetail = f.description || f.evidence_url;

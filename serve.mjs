@@ -1101,6 +1101,13 @@ app.post('/api/admin/flags/:id/dismiss', requireAdmin, async (req, res) => {
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+app.post('/api/admin/flags/:id/unresolve', requireAdmin, async (req, res) => {
+  try {
+    await stmts.unresolveFlagStatus.run(Number(req.params.id));
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 app.post('/api/admin/flags/clear-resolved', requireAdmin, async (_req, res) => {
   try {
     await stmts.deleteResolvedFlags.run();
