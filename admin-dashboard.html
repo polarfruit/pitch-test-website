@@ -450,11 +450,9 @@
     .mod-meta { font-size: 12px; color: #6B5A4A; }
 
     /* ── Expandable detail panel ─────────────── */
-    .mod-expand-btn { background: #2A2018; border: 1px solid #3A3028; color: #A89880; width: 32px; height: 32px; border-radius: 6px; cursor: pointer; transition: background 0.15s, color 0.15s, border-color 0.15s; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-left: 8px; }
+    .mod-expand-btn { background: none; border: 1px solid #3A3028; color: #E8500A; font-size: 11px; font-weight: 600; padding: 5px 12px; border-radius: 6px; cursor: pointer; transition: background 0.15s, color 0.15s, border-color 0.15s; }
     .mod-expand-btn:hover { background: #3A3028; color: #FF6B2B; border-color: #E8500A; }
     .mod-expand-btn.expanded { background: #3A2A1A; color: #FF6B2B; border-color: #E8500A; }
-    .mod-expand-btn svg { width: 14px; height: 14px; transition: transform 0.2s; }
-    .mod-expand-btn.expanded svg { transform: rotate(180deg); }
     .mod-detail-panel { display: none; width: 100%; padding: 0 20px 16px; }
     .mod-detail-panel.open { display: block; }
     .mod-detail-inner { background: #1A1612; border: 1px solid #2A2018; border-radius: 10px; padding: 20px; }
@@ -4276,7 +4274,7 @@
       }
 
       const hasDetail = f.description || f.evidence_url;
-      const expandBtn = hasDetail ? `<button class="mod-expand-btn" onclick="toggleModDetail(${f.id},this)" title="View details"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 4.5L6 7.5L9 4.5"/></svg></button>` : '';
+      const expandBtn = hasDetail ? `<button class="mod-expand-btn" onclick="toggleModDetail(${f.id},this)">Expand</button>` : '';
 
       // Build detail panel content
       let detailInner = '';
@@ -4311,10 +4309,9 @@
             <div class="mod-meta">Reported by ${f.reporter_count} · ${LABEL[f.type]} · ${_flagFmtDate(f.created_at)}</div>
           </div>
           <div class="queue-actions">
-            <div class="act-group">${buttons}</div>
+            <div class="act-group">${buttons}${expandBtn}</div>
             <span class="queue-time">${_flagRelTime(f.created_at)}</span>
           </div>
-          ${expandBtn}
         </div>
         ${detailPanel}
       </div>`;
@@ -4331,8 +4328,9 @@
   function toggleModDetail(id, btn) {
     const panel = document.getElementById('mod-detail-' + id);
     if (!panel) return;
-    panel.classList.toggle('open');
+    const isOpen = panel.classList.toggle('open');
     btn.classList.toggle('expanded');
+    btn.textContent = isOpen ? 'Collapse' : 'Expand';
   }
 
   async function flagAction(id, action, btn) {
