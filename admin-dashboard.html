@@ -442,7 +442,7 @@
     /* ── Moderation panel ──────────────────────── */
     .mod-item-wrap { border-bottom: 1px solid #1E1916; }
     .mod-item-wrap:last-child { border-bottom: none; }
-    .mod-item { padding: 16px 20px; display: flex; gap: 14px; align-items: flex-start; }
+    .mod-item { padding: 16px 20px; display: flex; gap: 14px; align-items: center; }
     .mod-thumb { width: 60px; height: 60px; border-radius: 8px; background: #231E19; border: 1px solid #2A2018; object-fit: cover; overflow: hidden; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 24px; }
     .mod-body { flex: 1; min-width: 0; }
     .mod-title { font-size: 13.5px; font-weight: 600; color: #FDF4E7; margin-bottom: 3px; }
@@ -450,10 +450,10 @@
     .mod-meta { font-size: 12px; color: #6B5A4A; }
 
     /* ── Expandable detail panel ─────────────── */
-    .mod-expand-btn { background: #2A2018; border: 1px solid #3A3028; color: #E8500A; font-size: 12px; font-weight: 600; padding: 6px 14px; border-radius: 6px; cursor: pointer; transition: background 0.15s, color 0.15s, border-color 0.15s; margin-top: 8px; display: inline-flex; align-items: center; gap: 6px; }
+    .mod-expand-btn { background: #2A2018; border: 1px solid #3A3028; color: #A89880; width: 32px; height: 32px; border-radius: 6px; cursor: pointer; transition: background 0.15s, color 0.15s, border-color 0.15s; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-left: 8px; }
     .mod-expand-btn:hover { background: #3A3028; color: #FF6B2B; border-color: #E8500A; }
     .mod-expand-btn.expanded { background: #3A2A1A; color: #FF6B2B; border-color: #E8500A; }
-    .mod-expand-btn svg { width: 12px; height: 12px; transition: transform 0.2s; }
+    .mod-expand-btn svg { width: 14px; height: 14px; transition: transform 0.2s; }
     .mod-expand-btn.expanded svg { transform: rotate(180deg); }
     .mod-detail-panel { display: none; width: 100%; padding: 0 20px 16px; }
     .mod-detail-panel.open { display: block; }
@@ -4276,7 +4276,7 @@
       }
 
       const hasDetail = f.description || f.evidence_url;
-      const expandBtn = hasDetail ? `<button class="mod-expand-btn" onclick="toggleModDetail(${f.id},this)"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 4.5L6 7.5L9 4.5"/></svg>View details</button>` : '';
+      const expandBtn = hasDetail ? `<button class="mod-expand-btn" onclick="toggleModDetail(${f.id},this)" title="View details"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 4.5L6 7.5L9 4.5"/></svg></button>` : '';
 
       // Build detail panel content
       let detailInner = '';
@@ -4309,12 +4309,12 @@
             <div class="mod-title">${escHtml(f.target_name || '—')}</div>
             <div class="mod-reason">🚩 Flagged: "${escHtml(f.reason || '—')}"</div>
             <div class="mod-meta">Reported by ${f.reporter_count} · ${LABEL[f.type]} · ${_flagFmtDate(f.created_at)}</div>
-            ${expandBtn}
           </div>
           <div class="queue-actions">
             <div class="act-group">${buttons}</div>
             <span class="queue-time">${_flagRelTime(f.created_at)}</span>
           </div>
+          ${expandBtn}
         </div>
         ${detailPanel}
       </div>`;
@@ -4331,15 +4331,8 @@
   function toggleModDetail(id, btn) {
     const panel = document.getElementById('mod-detail-' + id);
     if (!panel) return;
-    const isOpen = panel.classList.contains('open');
     panel.classList.toggle('open');
     btn.classList.toggle('expanded');
-    btn.querySelector('svg'); // ensure arrow exists
-    if (isOpen) {
-      btn.innerHTML = '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 4.5L6 7.5L9 4.5"/></svg>View details';
-    } else {
-      btn.innerHTML = '<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 4.5L6 7.5L9 4.5"/></svg>Hide details';
-    }
   }
 
   async function flagAction(id, action, btn) {
