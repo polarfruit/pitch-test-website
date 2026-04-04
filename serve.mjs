@@ -2551,19 +2551,6 @@ app.use(express.static(__dirname, {
   },
 }));
 
-// DEBUG: Temporary endpoint to diagnose Vercel file serving
-app.get('/api/debug-files', (req, res) => {
-  const htmlFiles = fs.readdirSync(__dirname).filter(f => f.endsWith('.html'));
-  const hasAdmin = fs.existsSync(path.join(__dirname, 'admin-dashboard.html'));
-  let snippet = '';
-  if (hasAdmin) {
-    const content = fs.readFileSync(path.join(__dirname, 'admin-dashboard.html'), 'utf8');
-    snippet = content.includes('mod-expand-btn') ? 'HAS mod-expand-btn' : 'MISSING mod-expand-btn';
-    snippet += ' | ' + (content.includes('>Expand<') ? 'HAS Expand button text' : 'MISSING Expand button text');
-  }
-  res.json({ __dirname, htmlFiles, hasAdmin, snippet, cached: _htmlCache.has('admin-dashboard.html') });
-});
-
 // ── Start ──────────────────────────────────────────────────────────────────
 export default app;
 if (!process.env.VERCEL) {
