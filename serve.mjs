@@ -2332,13 +2332,15 @@ app.get('/api/admin/featured/recommendations', requireAdmin, async (req, res) =>
 });
 
 app.patch('/api/admin/events/:id/featured', requireAdmin, async (req, res) => {
-  await stmts.setEventFeatured.run(req.body.featured ? 1 : 0, req.params.id);
+  const val = req.body.featured ? 1 : 0;
+  await stmts.setEventFeatured.run(val, val, req.params.id);
   _apiCache.delete('featured-events');
   res.json({ ok: true });
 });
 
 app.patch('/api/admin/vendors/:id/featured', requireAdmin, async (req, res) => {
-  await stmts.setVendorFeatured.run(req.body.featured ? 1 : 0, req.params.id);
+  const val = req.body.featured ? 1 : 0;
+  await stmts.setVendorFeatured.run(val, val, req.params.id);
   _apiCache.delete('featured-vendors');
   res.json({ ok: true });
 });
