@@ -227,9 +227,18 @@
     .report-card:last-child { border-bottom: none; }
     .report-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
     .report-type { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; }
-    .report-body { font-size: 13px; color: #A89880; line-height: 1.6; margin-bottom: 10px; }
+    .report-body { font-size: 13px; color: #A89880; line-height: 1.6; margin-bottom: 10px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
     .report-meta { font-size: 12px; color: #4A3C30; }
-    .report-actions { display: flex; gap: 8px; }
+    .report-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+    .report-expand-btn { background: none; border: 1px solid #3A3028; color: #E8500A; font-size: 11px; font-weight: 600; padding: 5px 12px; border-radius: 6px; cursor: pointer; transition: background 0.15s, color 0.15s, border-color 0.15s; }
+    .report-expand-btn:hover { background: #3A3028; color: #FF6B2B; border-color: #E8500A; }
+    .report-expand-btn.expanded { background: #3A2A1A; color: #FF6B2B; border-color: #E8500A; }
+    .report-detail-panel { display: none; margin-top: 12px; }
+    .report-detail-panel.open { display: block; }
+    .report-detail-inner { background: #1A1612; border: 1px solid #2A2018; border-radius: 10px; padding: 20px; }
+    .report-detail-inner .report-full-body { font-size: 13px; color: #D4C8B8; line-height: 1.7; margin-bottom: 16px; }
+    .report-detail-inner .report-context { background: #231E19; border-radius: 8px; padding: 14px 16px; border-left: 3px solid #E8500A; }
+    .report-detail-inner .report-context p { font-size: 12px; color: #A89880; line-height: 1.65; margin: 0; }
 
     /* ── Settings ──────────────────────────────── */
     .settings-section { padding: 24px; border-bottom: 1px solid #2A2018; }
@@ -3678,6 +3687,25 @@
         }
       }
 
+      // Build context for the detail panel
+      const contextParts = [];
+      contextParts.push(`Reported by: <strong>${escHtml(r.reporter_name)}</strong>`);
+      contextParts.push(`Against: <strong>${escHtml(r.against_name)}</strong>`);
+      if (r.event_name) contextParts.push(`Event: <strong>${escHtml(r.event_name)}</strong>`);
+      contextParts.push(`Type: <strong>${typeLabel}</strong> · Filed ${date}`);
+      if (r.info_requested_at) contextParts.push(`Info requested: ${new Date(r.info_requested_at).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'})}`);
+
+      const expandBtn = `<button class="report-expand-btn" onclick="toggleReportDetail(${r.id},this)">Expand</button>`;
+
+      const detailPanel = `<div class="report-detail-panel" id="report-detail-${r.id}">
+        <div class="report-detail-inner">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#6B5A4A;margin-bottom:6px;">Full report</div>
+          <div class="report-full-body">${escHtml(r.body)}</div>
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#6B5A4A;margin-bottom:6px;">Context</div>
+          <div class="report-context"><p>${contextParts.join('<br>')}</p></div>
+        </div>
+      </div>`;
+
       return `<div class="report-card" data-report-id="${r.id}" data-report-type="${r.type}" style="${isResolved||isDismissed ? 'opacity:0.55;' : ''}">
         <div class="report-header">
           <span class="badge ${isResolved||isDismissed ? 'badge-grey' : badgeClass}"><span class="report-type">${isResolved ? 'Resolved' : isDismissed ? 'Dismissed' : typeLabel}</span></span>
@@ -3685,9 +3713,24 @@
         </div>
         <div class="report-body">${escHtml(r.body)}</div>
         <div class="report-meta">Reported by: <strong style="color:#A89880;">${escHtml(r.reporter_name)}</strong> · Against: <strong style="color:#A89880;">${escHtml(r.against_name)}</strong></div>
-        ${actions ? `<div class="report-actions" style="margin-top:12px;">${actions}</div>` : `<div style="margin-top:10px;">${statusBadge}</div>`}
+        ${actions ? `<div class="report-actions" style="margin-top:12px;">${actions}${expandBtn}</div>` : `<div class="report-actions" style="margin-top:10px;">${statusBadge}${expandBtn}</div>`}
+        ${detailPanel}
       </div>`;
     }).join('');
+  }
+
+  function toggleReportDetail(id, btn) {
+    const panel = document.getElementById('report-detail-' + id);
+    if (!panel) return;
+    const isOpen = panel.classList.toggle('open');
+    btn.classList.toggle('expanded');
+    btn.textContent = isOpen ? 'Collapse' : 'Expand';
+    // When expanded, remove the body clamp so user sees full text flows into the detail panel
+    const card = btn.closest('.report-card');
+    if (card) {
+      const body = card.querySelector('.report-body');
+      if (body) body.style.display = isOpen ? 'none' : '';
+    }
   }
 
   function escHtml(s) {
