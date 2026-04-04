@@ -2311,6 +2311,26 @@ app.get('/api/admin/featured', requireAdmin, async (req, res) => {
   res.json({ events, vendors });
 });
 
+app.get('/api/admin/featured/recommendations', requireAdmin, async (req, res) => {
+  const { type, sort } = req.query; // type=vendor|event, sort=plan|events|apps|newest
+  try {
+    if (type === 'event') {
+      const events = await stmts.recommendedEvents.all();
+      // Re-sort based on criteria
+      if (sort === 'apps') events.sort((a,b) => b.app_count - a.app_count);
+      else if (sort === 'organiser') events.sort((a,b) => b.org_event_count - a.org_event_count);
+      else if (sort === 'newest') events.sort((a,b) => (a.date_sort||'').localeCompare(b.date_sort||''));
+      res.json({ recommendations: events });
+    } else {
+      const vendors = await stmts.recommendedVendors.all();
+      if (sort === 'events') vendors.sort((a,b) => b.event_count - a.event_count);
+      else if (sort === 'plan') {} // already sorted by plan
+      else if (sort === 'name') vendors.sort((a,b) => a.trading_name.localeCompare(b.trading_name));
+      res.json({ recommendations: vendors });
+    }
+  } catch(e) { console.error('[recommendations]', e); res.json({ recommendations: [] }); }
+});
+
 app.patch('/api/admin/events/:id/featured', requireAdmin, async (req, res) => {
   await stmts.setEventFeatured.run(req.body.featured ? 1 : 0, req.params.id);
   _apiCache.delete('featured-events');

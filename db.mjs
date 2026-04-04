@@ -1002,6 +1002,34 @@ export const stmts = {
   `),
   featuredVendors:   prepare(`SELECT v.user_id,v.trading_name,v.cuisine_tags,v.suburb,v.state,v.featured FROM vendors v JOIN users u ON v.user_id=u.id WHERE v.featured=1 AND u.status='active' ORDER BY v.trading_name ASC`),
   adminFeaturedEvents: prepare(`SELECT e.id,e.name,e.slug,e.category,e.suburb,e.state,e.date_sort,e.featured FROM events e WHERE e.featured=1 AND e.status='published' ORDER BY e.date_sort ASC`),
+  recommendedVendors: prepare(`
+    SELECT v.user_id, v.trading_name, v.cuisine_tags, v.suburb, v.state,
+           COALESCE(v.plan,'free') AS plan, v.featured,
+           COUNT(DISTINCT ea.id) AS event_count
+    FROM vendors v
+    JOIN users u ON v.user_id=u.id
+    LEFT JOIN event_applications ea ON ea.vendor_user_id=v.user_id AND ea.status='approved'
+    WHERE u.status='active' AND v.featured=0
+    GROUP BY v.user_id
+    ORDER BY
+      CASE COALESCE(v.plan,'free') WHEN 'pro' THEN 3 WHEN 'basic' THEN 2 ELSE 1 END DESC,
+      event_count DESC,
+      v.trading_name ASC
+    LIMIT 10
+  `),
+  recommendedEvents: prepare(`
+    SELECT e.id, e.name, e.category, e.suburb, e.state, e.date_sort, e.featured,
+           o.org_name,
+           COUNT(DISTINCT ea.id) AS app_count,
+           (SELECT COUNT(*) FROM events e2 WHERE e2.organiser_user_id=e.organiser_user_id AND e2.status='published') AS org_event_count
+    FROM events e
+    LEFT JOIN organisers o ON o.user_id=e.organiser_user_id
+    LEFT JOIN event_applications ea ON ea.event_id=e.id
+    WHERE e.status='published' AND e.featured=0 AND e.date_sort >= date('now')
+    GROUP BY e.id
+    ORDER BY app_count DESC, org_event_count DESC, e.date_sort ASC
+    LIMIT 10
+  `),
   setEventFeatured:  prepare(`UPDATE events SET featured=? WHERE id=?`),
   setVendorFeatured: prepare(`UPDATE vendors SET featured=? WHERE user_id=?`),
 
