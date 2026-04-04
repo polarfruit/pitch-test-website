@@ -142,7 +142,7 @@ if (process.env.TURSO_DATABASE_URL) {
 
 // ── Schema version — bump this whenever migrations are added ─────────────────
 // On a versioned DB the entire migration block is skipped (1 read vs 50+ calls).
-const SCHEMA_VERSION = 11;
+const SCHEMA_VERSION = 12;
 let _schemaVersion = 0;
 try {
   const _ver = await prepare(`SELECT v FROM _schema_meta LIMIT 1`).get();
@@ -605,10 +605,14 @@ await _safeExec(`
   )
 `);
 
+// Add description + evidence columns for expandable detail view
+await _safeExec(`ALTER TABLE content_flags ADD COLUMN description TEXT`);
+await _safeExec(`ALTER TABLE content_flags ADD COLUMN evidence_url TEXT`);
+
 // Seed sample flags — split into individual INSERTs for Turso/libsql compatibility
-await _safeExec(`INSERT OR IGNORE INTO content_flags (id,type,target_name,reason,reporter_count,status,created_at) VALUES (1,'photo','Smoky Joe''s BBQ','Photo contains competitor branding and misleading claims',2,'pending',datetime('now','-2 hours'))`);
-await _safeExec(`INSERT OR IGNORE INTO content_flags (id,type,target_name,reason,reporter_count,status,created_at) VALUES (2,'listing','Adelaide City Council Events','Listing description contains inaccurate stall availability claims',3,'pending',datetime('now','-1 day'))`);
-await _safeExec(`INSERT OR IGNORE INTO content_flags (id,type,target_name,reason,reporter_count,status,created_at) VALUES (3,'profile','Best Kebabs AU','Profile photos appear to be stock images. No genuine event history.',1,'pending',datetime('now','-3 days'))`);
+await _safeExec(`INSERT OR IGNORE INTO content_flags (id,type,target_name,reason,description,evidence_url,reporter_count,status,created_at) VALUES (1,'photo','Smoky Joe''s BBQ','Photo contains competitor branding and misleading claims','The uploaded hero photo for Smoky Joe''s BBQ stall includes a clearly visible banner from "Flame Masters Catering" in the background, which is a competing vendor on the platform. Additionally, the photo shows a "Best BBQ in SA — voted #1" claim overlaid on the image, but no such award exists in any verifiable directory. Two separate vendors reported this within 24 hours, both citing concerns about misleading marketing that could confuse event organisers browsing vendor profiles.','https://placehold.co/600x400/1A1612/C0392B?text=Flagged+Photo+Evidence',2,'pending',datetime('now','-2 hours'))`);
+await _safeExec(`INSERT OR IGNORE INTO content_flags (id,type,target_name,reason,description,evidence_url,reporter_count,status,created_at) VALUES (2,'listing','Adelaide City Council Events','Listing description contains inaccurate stall availability claims','The event listing for "Adelaide Fringe Food Fair 2026" states there are "50+ stalls available, first come first served" but the actual council-approved site plan only permits 28 vendor stalls. Three vendors have reported this after paying application fees and being told the event was oversubscribed. The listing also mentions "free power hookups for all vendors" which contradicts the organiser''s own terms document (uploaded during verification) that lists a $45/day power fee. This is a repeat issue — the same organiser had a similar complaint on a December 2025 listing that was resolved with a warning.','https://placehold.co/600x400/1A1612/C9840A?text=Listing+Screenshot',3,'pending',datetime('now','-1 day'))`);
+await _safeExec(`INSERT OR IGNORE INTO content_flags (id,type,target_name,reason,description,evidence_url,reporter_count,status,created_at) VALUES (3,'profile','Best Kebabs AU','Profile photos appear to be stock images. No genuine event history.','The vendor profile for "Best Kebabs AU" uses what appear to be stock photography images — a reverse image search on two of the three uploaded photos returns results from Shutterstock and Adobe Stock. The profile claims to have operated at "over 30 events across Adelaide" but the account was created 5 days ago and has zero verified event participations on the platform. The bio text also contains copy that matches a template found on multiple generic food truck websites. One reporter flagged this as a potential impersonation of a legitimate kebab vendor operating in the northern suburbs under a similar name.',NULL,1,'pending',datetime('now','-3 days'))`);
 
 // ── Event coordinates (for map view) ─────────────────────────────────────────
 await _safeExec(`ALTER TABLE events ADD COLUMN lat REAL`);
