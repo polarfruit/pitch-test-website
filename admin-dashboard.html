@@ -437,6 +437,22 @@
     }
     .feat-add-confirm:hover { background: #FF6B2B; }
     .feat-add-confirm.show { display: block; }
+    /* Tabs */
+    .feat-tabs { display: flex; gap: 0; margin-bottom: 14px; border-radius: 8px; overflow: hidden; border: 1px solid #2A2018; }
+    .feat-tab { flex: 1; padding: 9px 0; text-align: center; font-size: 12px; font-weight: 700; color: #6B5A4A; background: #1E1916; cursor: pointer; border: none; transition: background 0.12s, color 0.12s; }
+    .feat-tab.active { background: #E8500A; color: #fff; }
+    .feat-tab:hover:not(.active) { background: #2A2018; color: #A89880; }
+    /* Criteria chips */
+    .feat-criteria { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+    .feat-chip { padding: 5px 12px; border-radius: 14px; font-size: 11px; font-weight: 600; background: #2A2018; border: 1px solid #3A3028; color: #A89880; cursor: pointer; transition: all 0.12s; }
+    .feat-chip.active { background: #3A2A1A; border-color: #E8500A; color: #E8500A; }
+    .feat-chip:hover:not(.active) { background: #3A3028; color: #FDF4E7; }
+    /* Rec badge */
+    .feat-rec-badge { font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 4px; margin-left: auto; flex-shrink: 0; }
+    .feat-rec-badge.pro { background: #E8500A22; color: #E8500A; }
+    .feat-rec-badge.basic { background: #C9840A22; color: #C9840A; }
+    .feat-rec-badge.free { background: #2A201855; color: #6B5A4A; }
+    .feat-rec-stat { font-size: 10px; color: #6B5A4A; margin-left: auto; flex-shrink: 0; white-space: nowrap; }
 
     /* ── Announcements panel ───────────────────── */
     .announce-compose { padding: 24px; border-bottom: 1px solid #2A2018; }
@@ -1562,12 +1578,26 @@
       <button class="feat-add-close" onclick="closeFeatAddPopup()">✕</button>
     </div>
     <div class="feat-add-body">
-      <div class="feat-search-wrap">
-        <span class="feat-search-icon">🔍</span>
-        <input class="feat-add-input" id="feat-add-input" type="text" placeholder="Start typing a name…" oninput="featAddSearch()" onkeydown="featAddKeyNav(event)" autocomplete="off" />
+      <div class="feat-tabs">
+        <button class="feat-tab active" id="feat-tab-search" onclick="featSwitchTab('search')">Search</button>
+        <button class="feat-tab" id="feat-tab-recommend" onclick="featSwitchTab('recommend')">Recommended</button>
       </div>
-      <div class="feat-suggestions" id="feat-suggestions">
-        <div class="feat-sugg-empty">Type to search…</div>
+      <!-- Search tab -->
+      <div id="feat-panel-search">
+        <div class="feat-search-wrap">
+          <span class="feat-search-icon">🔍</span>
+          <input class="feat-add-input" id="feat-add-input" type="text" placeholder="Start typing a name…" oninput="featAddSearch()" onkeydown="featAddKeyNav(event)" autocomplete="off" />
+        </div>
+        <div class="feat-suggestions" id="feat-suggestions">
+          <div class="feat-sugg-empty">Type to search…</div>
+        </div>
+      </div>
+      <!-- Recommendations tab -->
+      <div id="feat-panel-recommend" style="display:none;">
+        <div class="feat-criteria" id="feat-criteria"></div>
+        <div class="feat-suggestions" id="feat-rec-list">
+          <div class="feat-sugg-empty">Loading recommendations…</div>
+        </div>
       </div>
       <button class="feat-add-confirm" id="feat-add-confirm" onclick="confirmFeatAdd()">Feature this →</button>
     </div>
@@ -3397,6 +3427,11 @@
   function _openFeatPopup() {
     _featSelected = null;
     _featKbdIdx = -1;
+    _featActiveTab = 'search';
+    document.getElementById('feat-tab-search').classList.add('active');
+    document.getElementById('feat-tab-recommend').classList.remove('active');
+    document.getElementById('feat-panel-search').style.display = '';
+    document.getElementById('feat-panel-recommend').style.display = 'none';
     const inp = document.getElementById('feat-add-input');
     inp.value = '';
     document.getElementById('feat-add-confirm').classList.remove('show');
@@ -3506,6 +3541,111 @@
       btn.textContent = 'Feature this →';
       btn.disabled = false;
     }
+  }
+
+  // ── Tabs: Search vs Recommendations ──────────────────────────────────────
+  let _featActiveTab = 'search';
+  let _featRecSort = '';
+  let _featRecCache = [];
+
+  function featSwitchTab(tab) {
+    _featActiveTab = tab;
+    document.getElementById('feat-tab-search').classList.toggle('active', tab === 'search');
+    document.getElementById('feat-tab-recommend').classList.toggle('active', tab === 'recommend');
+    document.getElementById('feat-panel-search').style.display = tab === 'search' ? '' : 'none';
+    document.getElementById('feat-panel-recommend').style.display = tab === 'recommend' ? '' : 'none';
+    if (tab === 'recommend') {
+      _buildCriteriaChips();
+      _loadRecommendations();
+    }
+    // Reset selection
+    _featSelected = null;
+    document.getElementById('feat-add-confirm').classList.remove('show');
+  }
+
+  function _buildCriteriaChips() {
+    const el = document.getElementById('feat-criteria');
+    if (_featAddMode === 'vendor') {
+      el.innerHTML = `
+        <button class="feat-chip active" data-sort="plan" onclick="_setRecSort(this,'plan')">Highest plan</button>
+        <button class="feat-chip" data-sort="events" onclick="_setRecSort(this,'events')">Most events</button>
+        <button class="feat-chip" data-sort="name" onclick="_setRecSort(this,'name')">Alphabetical</button>`;
+      _featRecSort = 'plan';
+    } else {
+      el.innerHTML = `
+        <button class="feat-chip active" data-sort="apps" onclick="_setRecSort(this,'apps')">Most applications</button>
+        <button class="feat-chip" data-sort="organiser" onclick="_setRecSort(this,'organiser')">Top organisers</button>
+        <button class="feat-chip" data-sort="newest" onclick="_setRecSort(this,'newest')">Soonest date</button>`;
+      _featRecSort = 'apps';
+    }
+  }
+
+  function _setRecSort(chip, sort) {
+    _featRecSort = sort;
+    document.querySelectorAll('#feat-criteria .feat-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    _loadRecommendations();
+  }
+
+  async function _loadRecommendations() {
+    const el = document.getElementById('feat-rec-list');
+    el.innerHTML = '<div class="feat-sugg-empty">Loading…</div>';
+    try {
+      const r = await fetch(`/api/admin/featured/recommendations?type=${_featAddMode}&sort=${_featRecSort}`);
+      const { recommendations } = await r.json();
+      _featRecCache = recommendations || [];
+      _renderRecommendations();
+    } catch(e) {
+      el.innerHTML = '<div class="feat-sugg-empty">Failed to load recommendations</div>';
+    }
+  }
+
+  function _renderRecommendations() {
+    const el = document.getElementById('feat-rec-list');
+    if (!_featRecCache.length) {
+      el.innerHTML = '<div class="feat-sugg-empty">No recommendations available</div>';
+      return;
+    }
+    el.innerHTML = _featRecCache.map((item, idx) => {
+      if (_featAddMode === 'vendor') {
+        let tags = [];
+        try { tags = JSON.parse(item.cuisine_tags || '[]'); } catch {}
+        const loc = [item.suburb, item.state].filter(Boolean).join(', ');
+        const planLabel = (item.plan || 'free').charAt(0).toUpperCase() + (item.plan || 'free').slice(1);
+        return `<div class="feat-sugg-item" onclick="_selectRec(${idx})">
+          <div class="feat-sugg-icon">🍔</div>
+          <div style="flex:1;min-width:0;">
+            <div class="feat-sugg-name">${item.trading_name}</div>
+            <div class="feat-sugg-sub">${tags.slice(0,2).join(', ') || '—'} · ${loc || '—'} · ${item.event_count} events</div>
+          </div>
+          <span class="feat-rec-badge ${item.plan || 'free'}">${planLabel}</span>
+        </div>`;
+      } else {
+        const d = item.date_sort ? new Date(item.date_sort + 'T00:00:00').toLocaleDateString('en-AU',{day:'numeric',month:'short'}) : '—';
+        return `<div class="feat-sugg-item" onclick="_selectRec(${idx})">
+          <div class="feat-sugg-icon">🎪</div>
+          <div style="flex:1;min-width:0;">
+            <div class="feat-sugg-name">${item.name}</div>
+            <div class="feat-sugg-sub">${d} · ${item.category || '—'} · ${item.app_count} apps · by ${item.org_name || '—'} (${item.org_event_count} events)</div>
+          </div>
+          <span class="feat-rec-stat">${item.app_count} apps</span>
+        </div>`;
+      }
+    }).join('');
+  }
+
+  function _selectRec(idx) {
+    const item = _featRecCache[idx];
+    if (!item) return;
+    const id = _featAddMode === 'vendor' ? item.user_id : item.id;
+    const name = _featAddMode === 'vendor' ? item.trading_name : item.name;
+    _featSelected = { id, name };
+    // Highlight selected
+    const el = document.getElementById('feat-rec-list');
+    el.querySelectorAll('.feat-sugg-item').forEach((el, i) => {
+      el.style.background = i === idx ? '#3A2E26' : '';
+    });
+    document.getElementById('feat-add-confirm').classList.add('show');
   }
 
   document.addEventListener('keydown', e => {
