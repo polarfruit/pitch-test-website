@@ -142,7 +142,7 @@ if (process.env.TURSO_DATABASE_URL) {
 
 // ── Schema version — bump this whenever migrations are added ─────────────────
 // On a versioned DB the entire migration block is skipped (1 read vs 50+ calls).
-const SCHEMA_VERSION = 14;
+const SCHEMA_VERSION = 15;
 let _schemaVersion = 0;
 try {
   const _ver = await prepare(`SELECT v FROM _schema_meta LIMIT 1`).get();
@@ -786,6 +786,10 @@ await _safeExec(`INSERT OR IGNORE INTO platform_settings (key,value) VALUES ('li
 await _safeExec(`INSERT OR IGNORE INTO platform_settings (key,value) VALUES ('limit_events_per_org','50')`);
 await _safeExec(`INSERT OR IGNORE INTO platform_settings (key,value) VALUES ('limit_stalls_per_event','200')`);
 
+// ── OAuth columns on users ──────────────────────────────────────────────────
+await _safeExec(`ALTER TABLE users ADD COLUMN oauth_provider TEXT`);       // 'google' | 'apple' | null
+await _safeExec(`ALTER TABLE users ADD COLUMN oauth_sub TEXT`);            // provider's unique subject ID
+
 // ── Mark schema as current so migrations are skipped on next boot ─────────────
 await _safeExec(`CREATE TABLE IF NOT EXISTS _schema_meta (v INTEGER)`);
 await _safeExec(`DELETE FROM _schema_meta`);
@@ -868,10 +872,13 @@ await _safeExec(`UPDATE reports SET reporter_user_id = (SELECT o.user_id FROM or
 // ── Prepared statements ──────────────────────────────────────────────────────
 export const stmts = {
   // users
-  createUser:     prepare(`INSERT INTO users (email,password_hash,first_name,last_name,role) VALUES (@email,@password_hash,@first_name,@last_name,@role)`),
-  getUserByEmail: prepare(`SELECT * FROM users WHERE email = ?`),
-  getUserById:    prepare(`SELECT * FROM users WHERE id = ?`),
-  setUserStatus:  prepare(`UPDATE users SET status = ? WHERE id = ?`),
+  createUser:      prepare(`INSERT INTO users (email,password_hash,first_name,last_name,role) VALUES (@email,@password_hash,@first_name,@last_name,@role)`),
+  createOAuthUser: prepare(`INSERT INTO users (email,password_hash,first_name,last_name,role,oauth_provider,oauth_sub,status,email_verified) VALUES (@email,'__oauth__',@first_name,@last_name,@role,@oauth_provider,@oauth_sub,'active',1)`),
+  getUserByEmail:    prepare(`SELECT * FROM users WHERE email = ?`),
+  getUserById:       prepare(`SELECT * FROM users WHERE id = ?`),
+  getUserByOAuth:    prepare(`SELECT * FROM users WHERE oauth_provider = ? AND oauth_sub = ?`),
+  setUserStatus:     prepare(`UPDATE users SET status = ? WHERE id = ?`),
+  setUserOAuth:      prepare(`UPDATE users SET oauth_provider = ?, oauth_sub = ? WHERE id = ?`),
 
   // vendors
   createVendor: prepare(`
