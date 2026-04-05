@@ -1073,6 +1073,7 @@ app.put('/api/admin/events/:id', requireAdmin, async (req, res) => {
     date_text:        existing?.date_text ?? null,
     cover_image:      existing?.cover_image ?? null,
   });
+  _apiCache.delete('featured-events');
   res.json({ ok: true });
 });
 
@@ -1320,6 +1321,7 @@ app.put('/api/admin/users/:userId/profile', requireAdmin, async (req, res) => {
 app.put('/api/admin/vendors/:userId', requireAdmin, async (req, res) => {
   const { trading_name, mobile, suburb, state, bio, plan, instagram, setup_type, stall_w, stall_d, power, water, price_range, abn } = req.body;
   await stmts.updateVendorProfile.run({ trading_name, mobile: mobile||null, suburb: suburb||null, state: state||null, bio: bio||null, plan: plan||'free', instagram: instagram||null, setup_type: setup_type||null, stall_w: stall_w||null, stall_d: stall_d||null, power: power?1:0, water: water?1:0, price_range: price_range||null, abn: abn||null, user_id: req.params.userId });
+  _apiCache.delete('featured-vendors');
   res.json({ ok: true });
 });
 
@@ -2341,6 +2343,22 @@ app.patch('/api/admin/events/:id/featured', requireAdmin, async (req, res) => {
 app.patch('/api/admin/vendors/:id/featured', requireAdmin, async (req, res) => {
   const val = req.body.featured ? 1 : 0;
   await stmts.setVendorFeatured.run(val, val, req.params.id);
+  _apiCache.delete('featured-vendors');
+  res.json({ ok: true });
+});
+
+app.patch('/api/admin/events/:id/rename', requireAdmin, async (req, res) => {
+  const { name } = req.body;
+  if (!name || !name.trim()) return res.status(400).json({ error: 'Name required' });
+  await stmts.renameEvent.run(name.trim(), req.params.id);
+  _apiCache.delete('featured-events');
+  res.json({ ok: true });
+});
+
+app.patch('/api/admin/vendors/:id/rename', requireAdmin, async (req, res) => {
+  const { name } = req.body;
+  if (!name || !name.trim()) return res.status(400).json({ error: 'Name required' });
+  await stmts.renameVendor.run(name.trim(), req.params.id);
   _apiCache.delete('featured-vendors');
   res.json({ ok: true });
 });

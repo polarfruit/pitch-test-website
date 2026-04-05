@@ -1032,6 +1032,8 @@ export const stmts = {
   `),
   setEventFeatured:  prepare(`UPDATE events SET featured=?, featured_at=CASE WHEN ?=1 THEN datetime('now') ELSE NULL END WHERE id=?`),
   setVendorFeatured: prepare(`UPDATE vendors SET featured=?, featured_at=CASE WHEN ?=1 THEN datetime('now') ELSE NULL END WHERE user_id=?`),
+  renameEvent:       prepare(`UPDATE events SET name=? WHERE id=?`),
+  renameVendor:      prepare(`UPDATE vendors SET trading_name=? WHERE user_id=?`),
 
   // events
   allEvents:         prepare(`SELECT * FROM events WHERE status != 'deleted' ORDER BY date_sort ASC`),
