@@ -2634,11 +2634,23 @@ app.get('/api/vendors/:id/menu', async (req, res) => {
 });
 
 // ── Static page routes ─────────────────────────────────────────────────────
-function page(file) {
+function injectBanner(html) {
+  const bannerDiv = `<div id="site-banner" style="display:none;background:#E8500A;color:#fff;text-align:center;padding:10px 48px 10px 20px;font-size:13px;font-weight:600;position:relative;z-index:999;letter-spacing:0.01em;font-family:'Instrument Sans',sans-serif;"><span id="site-banner-msg"></span><button onclick="this.parentElement.style.display='none'" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:#fff;font-size:16px;cursor:pointer;opacity:0.7;line-height:1;">✕</button></div>`;
+  const bannerScript = `<script>fetch('/api/banner').then(r=>r.json()).then(d=>{if(d.show&&d.message){document.getElementById('site-banner-msg').textContent=d.message;document.getElementById('site-banner').style.display='block';}}).catch(()=>{});<\/script>`;
+  if (html.includes('<body>')) html = html.replace('<body>', '<body>' + bannerDiv);
+  else if (html.includes('<body ')) html = html.replace(/<body[^>]*>/, '$&' + bannerDiv);
+  if (html.includes('</body>')) html = html.replace('</body>', bannerScript + '</body>');
+  return html;
+}
+
+function page(file, opts) {
+  const skipBanner = opts && opts.skipBanner;
   return (req, res) => {
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-    res.send(readHtml(file));
+    let html = readHtml(file);
+    if (!skipBanner) html = injectBanner(html);
+    res.send(html);
   };
 }
 
@@ -2678,13 +2690,14 @@ app.get('/events', async (req, res) => {
 window.__PITCH_MAP_EVENTS__ = ${JSON.stringify(mapData)};
 window.__MAPBOX_TOKEN__ = ${JSON.stringify(token)};
 </script></head>`);
+    html = injectBanner(html);
     _eventsPageCache = html;
     _eventsPageCacheTs = now;
     res.setHeader('Cache-Control', 'public, max-age=60');
     res.send(html);
   } catch (e) {
     console.error('[events page]', e);
-    res.send(readHtml('events.html'));
+    res.send(injectBanner(readHtml('events.html')));
   }
 });
 app.get('/vendors',             page('vendors.html'));
@@ -2766,9 +2779,9 @@ app.get('/dashboard/vendor',           serveDashboard('vendor-dashboard.html',  
 app.get('/dashboard/vendor/*splat',    serveDashboard('vendor-dashboard.html',     'vendor',    vendorInitData));
 app.get('/dashboard/organiser',        serveDashboard('organiser-dashboard.html',  'organiser', orgInitData));
 app.get('/dashboard/organiser/*splat', serveDashboard('organiser-dashboard.html',  'organiser', orgInitData));
-app.get('/admin/login',         page('admin-login.html'));
-app.get('/admin',               requireAdminPage, page('admin-dashboard.html'));
-app.get('/admin/*splat',        requireAdminPage, page('admin-dashboard.html'));
+app.get('/admin/login',         page('admin-login.html', { skipBanner: true }));
+app.get('/admin',               requireAdminPage, page('admin-dashboard.html', { skipBanner: true }));
+app.get('/admin/*splat',        requireAdminPage, page('admin-dashboard.html', { skipBanner: true }));
 
 // Block direct static access to sensitive dashboard HTML files
 app.get('/admin-dashboard.html',      requireAdminPage, (req, res) => res.redirect('/admin'));
