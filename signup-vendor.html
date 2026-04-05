@@ -428,8 +428,8 @@ body { background:var(--coal); color:var(--text-hi); font-family:var(--fb); line
       </div>
       <div class="form-divider"><span>or sign up with</span></div>
       <div style="display:flex;gap:10px;margin-bottom:4px;">
-        <button style="flex:1;height:46px;border-radius:11px;background:#ffffff08;border:1px solid #ffffff10;font-family:var(--fb);font-size:13px;font-weight:600;color:var(--text-mid);cursor:pointer;transition:all 0.14s;" onmouseover="this.style.background='#ffffff12'" onmouseout="this.style.background='#ffffff08'">🔵 Continue with Google</button>
-        <button style="flex:1;height:46px;border-radius:11px;background:#ffffff08;border:1px solid #ffffff10;font-family:var(--fb);font-size:13px;font-weight:600;color:var(--text-mid);cursor:pointer;transition:all 0.14s;" onmouseover="this.style.background='#ffffff12'" onmouseout="this.style.background='#ffffff08'">🍎 Continue with Apple</button>
+        <button id="btn-google" style="flex:1;height:46px;border-radius:11px;background:#ffffff08;border:1px solid #ffffff10;font-family:var(--fb);font-size:13px;font-weight:600;color:var(--text-mid);cursor:pointer;transition:all 0.14s;" onmouseover="this.style.background='#ffffff12'" onmouseout="this.style.background='#ffffff08'" onclick="doGoogleSignup()">🔵 Continue with Google</button>
+        <button id="btn-apple" style="flex:1;height:46px;border-radius:11px;background:#ffffff08;border:1px solid #ffffff10;font-family:var(--fb);font-size:13px;font-weight:600;color:var(--text-mid);cursor:pointer;transition:all 0.14s;" onmouseover="this.style.background='#ffffff12'" onmouseout="this.style.background='#ffffff08'" onclick="doAppleSignup()">🍎 Continue with Apple</button>
       </div>
       <div class="step-nav"><div></div><button class="btn-next" onclick="goStep(2)">Next: Business details →</button></div>
     </div>
@@ -786,10 +786,12 @@ window.selectPlan = function(plan) {
 };
 
 /* ── Collect vendor payload ── */
+let _oauthProvider = null, _oauthSub = null;
+
 function collectVendorPayload() {
   const cuisineTags = Array.from(document.querySelectorAll('#step-3 .tag-opt.sel')).map(t => t.textContent);
   const setupType = document.querySelector('input[name="setup"]:checked')?.value || 'truck';
-  return {
+  const p = {
     first_name:   document.getElementById('v-first-name').value.trim(),
     last_name:    document.getElementById('v-last-name').value.trim(),
     email:        document.getElementById('v-email').value.trim(),
@@ -810,6 +812,8 @@ function collectVendorPayload() {
     instagram:    document.getElementById('v-instagram').value.trim(),
     plan:         selectedPlan,
   };
+  if (_oauthProvider) { p.oauth_provider = _oauthProvider; p.oauth_sub = _oauthSub; }
+  return p;
 }
 
 /* ── Submit vendor signup — triggers email verify modal first ── */
@@ -826,7 +830,7 @@ async function submitVendorSignup() {
     errEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
 
-  if (!payload.first_name || !payload.last_name || !payload.email || !payload.password || !payload.trading_name) {
+  if (!payload.first_name || !payload.last_name || !payload.email || (!payload.password && !_oauthProvider) || !payload.trading_name) {
     showErr('Please fill in your name, email, password, and business name before submitting.');
     return;
   }
@@ -834,6 +838,24 @@ async function submitVendorSignup() {
   if (payload.abn && payload.abn.length !== 11) {
     showErr('ABN must be exactly 11 digits. Please check and try again.');
     document.getElementById('abn-input').focus();
+    return;
+  }
+
+  // OAuth users skip email verification — go straight to account creation
+  if (_oauthProvider) {
+    btn.textContent = 'Creating account…';
+    btn.disabled = true;
+    try {
+      const r = await fetch('/api/signup/vendor', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const d = await r.json();
+      if (!r.ok) { showErr(d.error || 'Could not create account.'); btn.textContent = 'Create my account 🎉'; btn.disabled = false; return; }
+      goStep(6);
+      setTimeout(() => { window.location.href = d.redirect; }, 2500);
+    } catch { showErr('Network error — please try again.'); btn.textContent = 'Create my account 🎉'; btn.disabled = false; }
     return;
   }
 
@@ -978,6 +1000,99 @@ async function resendVerifyCode() {
   // Clear inputs
   [0,1,2,3,4,5].forEach(i => { document.getElementById('vc' + i).value = ''; });
   document.getElementById('vc0').focus();
+}
+
+// ── OAuth ──────────────────────────────────────────────────────
+let _oauthConfig = null;
+(async function loadOAuthConfig() {
+  try {
+    const r = await fetch('/api/auth/oauth-config');
+    _oauthConfig = await r.json();
+    if (_oauthConfig.google) initGoogleSignIn(_oauthConfig.google);
+    if (!_oauthConfig.google) document.getElementById('btn-google').style.display = 'none';
+    if (!_oauthConfig.apple) document.getElementById('btn-apple').style.display = 'none';
+  } catch {}
+})();
+
+function initGoogleSignIn(clientId) {
+  const s = document.createElement('script');
+  s.src = 'https://accounts.google.com/gsi/client';
+  s.onload = () => {
+    google.accounts.id.initialize({ client_id: clientId, callback: handleGoogleCredential, auto_prompt: false });
+  };
+  document.head.appendChild(s);
+}
+
+function doGoogleSignup() {
+  if (!_oauthConfig?.google) return alert('Google Sign-In is not configured.');
+  if (typeof google === 'undefined') return alert('Google Sign-In is loading, please try again.');
+  google.accounts.id.prompt((n) => {
+    if (n.isNotDisplayed() || n.isSkippedMoment()) {
+      const clientId = _oauthConfig.google;
+      const redirect = encodeURIComponent(window.location.origin + '/api/auth/google/callback');
+      window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirect}&response_type=token+id_token&scope=openid+email+profile&nonce=${Date.now()}`;
+    }
+  });
+}
+
+async function handleGoogleCredential(response) {
+  try {
+    const r = await fetch('/api/auth/google', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ credential: response.credential, intent: 'signup', role: 'vendor' }),
+    });
+    const d = await r.json();
+    if (!r.ok) { alert(d.error); return; }
+    if (d.existing && d.redirect) { window.location.href = d.redirect; return; }
+    if (d.prefill) { applyOAuthPrefill(d); return; }
+    if (d.redirect) window.location.href = d.redirect;
+  } catch { alert('Network error — please try again.'); }
+}
+
+function doAppleSignup() {
+  if (!_oauthConfig?.apple) return alert('Apple Sign-In is not configured.');
+  if (typeof AppleID === 'undefined') {
+    const s = document.createElement('script');
+    s.src = 'https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js';
+    s.onload = () => startAppleAuth();
+    document.head.appendChild(s);
+  } else { startAppleAuth(); }
+}
+
+async function startAppleAuth() {
+  try {
+    AppleID.auth.init({ clientId: _oauthConfig.apple, scope: 'name email', redirectURI: window.location.origin + '/signup/vendor', usePopup: true });
+    const response = await AppleID.auth.signIn();
+    const r = await fetch('/api/auth/apple', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id_token: response.authorization.id_token, user: response.user || null, intent: 'signup', role: 'vendor' }),
+    });
+    const d = await r.json();
+    if (!r.ok) { alert(d.error); return; }
+    if (d.existing && d.redirect) { window.location.href = d.redirect; return; }
+    if (d.prefill) { applyOAuthPrefill(d); return; }
+    if (d.redirect) window.location.href = d.redirect;
+  } catch (e) { if (e.error !== 'popup_closed_by_user') alert('Apple Sign-In failed.'); }
+}
+
+function applyOAuthPrefill(d) {
+  _oauthProvider = d.oauth_provider;
+  _oauthSub = d.oauth_sub;
+  if (d.first_name) { const el = document.getElementById('v-first-name'); el.value = d.first_name; el.readOnly = true; el.style.opacity = '0.7'; }
+  if (d.last_name) { const el = document.getElementById('v-last-name'); el.value = d.last_name; el.readOnly = true; el.style.opacity = '0.7'; }
+  if (d.email) { const el = document.getElementById('v-email'); el.value = d.email; el.readOnly = true; el.style.opacity = '0.7'; }
+  // Hide password fields — not needed for OAuth
+  document.getElementById('pw1').closest('.form-group').style.display = 'none';
+  document.getElementById('pw2').closest('.form-group').style.display = 'none';
+  document.querySelector('.form-divider').style.display = 'none';
+  document.getElementById('btn-google').parentElement.style.display = 'none';
+  // Show success badge
+  const badge = document.createElement('div');
+  badge.style.cssText = 'background:#2D8B5520;border:1px solid #2D8B5540;border-radius:10px;padding:10px 14px;font-size:13px;color:#2D8B55;font-weight:600;margin-bottom:12px;text-align:center;';
+  badge.textContent = `✓ Signed in with ${d.oauth_provider === 'apple' ? 'Apple' : 'Google'} — fill in your business details below`;
+  document.getElementById('v-first-name').closest('.form-group').parentElement.prepend(badge);
 }
 </script>
 <script src="/location-autocomplete.js"></script>

@@ -342,28 +342,32 @@ app.post('/api/signup/vendor', async (req, res) => {
     first_name, last_name, email, password,
     trading_name, abn, mobile, state, suburb, bio,
     cuisine_tags, setup_type, stall_w, stall_d, power, water, price_range, instagram,
-    plan,
+    plan, oauth_provider, oauth_sub,
   } = req.body;
+
+  const isOAuth = oauth_provider && oauth_sub;
 
   // If pro applications are disabled, force free plan
   const proFlag = await getPlatformFlag('flag_pro_apps');
   if (proFlag === '0' && plan && plan !== 'free') plan = 'free';
 
-  if (!email || !password || !first_name || !last_name || !trading_name) {
+  if (!email || (!password && !isOAuth) || !first_name || !last_name || !trading_name) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
   const existing = await stmts.getUserByEmail.get(email);
   if (existing) return res.status(409).json({ error: 'An account with that email already exists' });
 
-  // Require pre-verified email (checked in DB — works across Vercel instances)
-  const preEntry = await stmts.getPresignupCode.get(email.toLowerCase());
-  if (!preEntry || !preEntry.verified) {
-    return res.status(400).json({ error: 'Email not verified. Please verify your email first.' });
+  // OAuth users skip email verification; regular users need it
+  if (!isOAuth) {
+    const preEntry = await stmts.getPresignupCode.get(email.toLowerCase());
+    if (!preEntry || !preEntry.verified) {
+      return res.status(400).json({ error: 'Email not verified. Please verify your email first.' });
+    }
   }
 
   try {
-    const password_hash = await bcrypt.hash(password, 10);
+    const password_hash = isOAuth ? '__oauth__' : await bcrypt.hash(password, 10);
     const userId = await txSignupVendor(
       { email, password_hash, first_name, last_name, role: 'vendor' },
       {
@@ -389,7 +393,11 @@ app.post('/api/signup/vendor', async (req, res) => {
     // Activate account immediately — email already verified
     await stmts.setUserStatus.run('active', userId);
     await stmts.setEmailVerified.run(userId);
-    await stmts.deletePresignupCode.run(email.toLowerCase());
+    if (isOAuth) {
+      await stmts.setUserOAuth.run(oauth_provider, oauth_sub, userId);
+    } else {
+      await stmts.deletePresignupCode.run(email.toLowerCase());
+    }
     _apiCache.delete('vendors'); _apiCache.delete('stats');
 
     sessWrite(res, { userId, role: 'vendor', name: `${first_name} ${last_name}` });
@@ -410,22 +418,27 @@ app.post('/api/signup/organiser', async (req, res) => {
     first_name, last_name, email, password,
     org_name, abn, website, state, suburb, phone, bio,
     event_types, event_scale, stall_range, referral,
+    oauth_provider, oauth_sub,
   } = req.body;
 
-  if (!email || !password || !first_name || !last_name || !org_name) {
+  const isOAuth = oauth_provider && oauth_sub;
+
+  if (!email || (!password && !isOAuth) || !first_name || !last_name || !org_name) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
   const existing = await stmts.getUserByEmail.get(email);
   if (existing) return res.status(409).json({ error: 'An account with that email already exists' });
 
-  const preEntry = await stmts.getPresignupCode.get(email.toLowerCase());
-  if (!preEntry || !preEntry.verified) {
-    return res.status(400).json({ error: 'Email not verified. Please verify your email first.' });
+  if (!isOAuth) {
+    const preEntry = await stmts.getPresignupCode.get(email.toLowerCase());
+    if (!preEntry || !preEntry.verified) {
+      return res.status(400).json({ error: 'Email not verified. Please verify your email first.' });
+    }
   }
 
   try {
-    const password_hash = await bcrypt.hash(password, 10);
+    const password_hash = isOAuth ? '__oauth__' : await bcrypt.hash(password, 10);
     const userId = await txSignupOrganiser(
       { email, password_hash, first_name, last_name, role: 'organiser' },
       {
@@ -446,7 +459,11 @@ app.post('/api/signup/organiser', async (req, res) => {
 
     await stmts.setUserStatus.run('active', userId);
     await stmts.setEmailVerified.run(userId);
-    await stmts.deletePresignupCode.run(email.toLowerCase());
+    if (isOAuth) {
+      await stmts.setUserOAuth.run(oauth_provider, oauth_sub, userId);
+    } else {
+      await stmts.deletePresignupCode.run(email.toLowerCase());
+    }
 
     sessWrite(res, { userId, role: 'organiser', name: `${first_name} ${last_name}` });
     res.json({ ok: true, redirect: '/dashboard/organiser' });
@@ -571,6 +588,11 @@ app.post('/api/login', async (req, res) => {
   const user = await stmts.getUserByEmail.get(email);
   if (!user) return res.status(401).json({ error: 'Invalid email or password' });
 
+  if (user.password_hash === '__oauth__') {
+    const provider = user.oauth_provider === 'apple' ? 'Apple' : 'Google';
+    return res.status(401).json({ error: `This account uses ${provider} Sign-In. Please use the "${provider}" button above.` });
+  }
+
   const match = await bcrypt.compare(password, user.password_hash);
   if (!match) return res.status(401).json({ error: 'Invalid email or password' });
 
@@ -591,6 +613,149 @@ app.post('/api/login', async (req, res) => {
   else if (user.role === 'admin')     redirect = '/admin';
 
   res.json({ ok: true, redirect });
+});
+
+// ── OAuth: Google Sign-In ──────────────────────────────────────────────────
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
+
+async function verifyGoogleToken(idToken) {
+  const r = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(idToken)}`);
+  if (!r.ok) return null;
+  const payload = await r.json();
+  if (payload.aud !== GOOGLE_CLIENT_ID) return null;
+  return { sub: payload.sub, email: payload.email, first_name: payload.given_name || '', last_name: payload.family_name || '' };
+}
+
+function oauthRedirect(role) {
+  if (role === 'vendor')    return '/dashboard/vendor';
+  if (role === 'organiser') return '/dashboard/organiser';
+  if (role === 'foodie')    return '/discover';
+  return '/';
+}
+
+app.post('/api/auth/google', async (req, res) => {
+  if (!GOOGLE_CLIENT_ID) return res.status(503).json({ error: 'Google Sign-In is not configured.' });
+  const { credential, intent, role } = req.body; // intent: 'login' | 'signup', role: 'foodie'|'vendor'|'organiser'
+  if (!credential) return res.status(400).json({ error: 'Missing credential' });
+
+  const gUser = await verifyGoogleToken(credential);
+  if (!gUser) return res.status(401).json({ error: 'Invalid Google token' });
+
+  // Check if user already exists (by OAuth sub or email)
+  let user = await stmts.getUserByOAuth.get('google', gUser.sub);
+  if (!user) user = await stmts.getUserByEmail.get(gUser.email);
+
+  if (user) {
+    // Existing user — log them in
+    if (user.status === 'banned')    return res.status(403).json({ error: 'This account has been banned.' });
+    if (user.status === 'suspended') return res.status(403).json({ error: 'This account is suspended.' });
+    // Link OAuth if not already linked
+    if (!user.oauth_provider) await stmts.setUserOAuth.run('google', gUser.sub, user.id);
+    // Activate pending accounts (OAuth = verified email)
+    if (user.status === 'pending') {
+      await stmts.setUserStatus.run('active', user.id);
+      await stmts.setEmailVerified.run(user.id);
+    }
+    sessWrite(res, { userId: Number(user.id), role: user.role, name: `${user.first_name} ${user.last_name}` });
+    return res.json({ ok: true, redirect: oauthRedirect(user.role), existing: true });
+  }
+
+  // New user — signup flow
+  if (intent === 'login') {
+    // On login page with no account — tell them to sign up
+    return res.json({ ok: true, needsSignup: true, email: gUser.email, first_name: gUser.first_name, last_name: gUser.last_name });
+  }
+
+  const targetRole = role || 'foodie';
+  if (targetRole === 'vendor' || targetRole === 'organiser') {
+    // For vendor/organiser, return pre-fill data — they still need to fill business details
+    return res.json({ ok: true, prefill: true, email: gUser.email, first_name: gUser.first_name, last_name: gUser.last_name, oauth_provider: 'google', oauth_sub: gUser.sub });
+  }
+
+  // Foodie — create account directly
+  try {
+    const result = await stmts.createOAuthUser.run({ email: gUser.email, first_name: gUser.first_name, last_name: gUser.last_name || '', role: 'foodie', oauth_provider: 'google', oauth_sub: gUser.sub });
+    const userId = Number(result.lastInsertRowid ?? result.lastrowid ?? result.insertId);
+    sessWrite(res, { userId, role: 'foodie', name: `${gUser.first_name} ${gUser.last_name || ''}`.trim() });
+    res.json({ ok: true, redirect: '/discover' });
+  } catch (err) {
+    console.error('[google auth] create user error:', err);
+    res.status(500).json({ error: 'Could not create account' });
+  }
+});
+
+// ── OAuth: Apple Sign-In ──────────────────────────────────────────────────
+const APPLE_CLIENT_ID = process.env.APPLE_CLIENT_ID || '';
+
+function decodeAppleToken(idToken) {
+  try {
+    const parts = idToken.split('.');
+    if (parts.length !== 3) return null;
+    const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString());
+    if (payload.iss !== 'https://appleid.apple.com') return null;
+    if (APPLE_CLIENT_ID && payload.aud !== APPLE_CLIENT_ID) return null;
+    if (payload.exp && Date.now() / 1000 > payload.exp) return null;
+    return { sub: payload.sub, email: payload.email || null };
+  } catch { return null; }
+}
+
+app.post('/api/auth/apple', async (req, res) => {
+  if (!APPLE_CLIENT_ID) return res.status(503).json({ error: 'Apple Sign-In is not configured.' });
+  const { id_token, user: appleUser, intent, role } = req.body;
+  if (!id_token) return res.status(400).json({ error: 'Missing id_token' });
+
+  const aUser = decodeAppleToken(id_token);
+  if (!aUser) return res.status(401).json({ error: 'Invalid Apple token' });
+
+  // Apple only sends name on first auth — appleUser may contain { name: { firstName, lastName } }
+  const firstName = appleUser?.name?.firstName || '';
+  const lastName  = appleUser?.name?.lastName || '';
+
+  // Check if user already exists
+  let user = await stmts.getUserByOAuth.get('apple', aUser.sub);
+  if (!user && aUser.email) user = await stmts.getUserByEmail.get(aUser.email);
+
+  if (user) {
+    if (user.status === 'banned')    return res.status(403).json({ error: 'This account has been banned.' });
+    if (user.status === 'suspended') return res.status(403).json({ error: 'This account is suspended.' });
+    if (!user.oauth_provider) await stmts.setUserOAuth.run('apple', aUser.sub, user.id);
+    if (user.status === 'pending') {
+      await stmts.setUserStatus.run('active', user.id);
+      await stmts.setEmailVerified.run(user.id);
+    }
+    sessWrite(res, { userId: Number(user.id), role: user.role, name: `${user.first_name} ${user.last_name}` });
+    return res.json({ ok: true, redirect: oauthRedirect(user.role), existing: true });
+  }
+
+  if (!aUser.email) return res.status(400).json({ error: 'Email is required. Please allow email sharing with Apple.' });
+
+  if (intent === 'login') {
+    return res.json({ ok: true, needsSignup: true, email: aUser.email, first_name: firstName, last_name: lastName });
+  }
+
+  const targetRole = role || 'foodie';
+  if (targetRole === 'vendor' || targetRole === 'organiser') {
+    return res.json({ ok: true, prefill: true, email: aUser.email, first_name: firstName, last_name: lastName, oauth_provider: 'apple', oauth_sub: aUser.sub });
+  }
+
+  // Foodie — create directly
+  try {
+    const result = await stmts.createOAuthUser.run({ email: aUser.email, first_name: firstName || 'User', last_name: lastName || '', role: 'foodie', oauth_provider: 'apple', oauth_sub: aUser.sub });
+    const userId = Number(result.lastInsertRowid ?? result.lastrowid ?? result.insertId);
+    sessWrite(res, { userId, role: 'foodie', name: `${firstName} ${lastName}`.trim() || 'User' });
+    res.json({ ok: true, redirect: '/discover' });
+  } catch (err) {
+    console.error('[apple auth] create user error:', err);
+    res.status(500).json({ error: 'Could not create account' });
+  }
+});
+
+// ── OAuth config endpoint (frontend needs client IDs) ─────────────────────
+app.get('/api/auth/oauth-config', (req, res) => {
+  res.json({
+    google: GOOGLE_CLIENT_ID || null,
+    apple: APPLE_CLIENT_ID || null,
+  });
 });
 
 // POST /api/logout
