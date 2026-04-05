@@ -986,7 +986,7 @@ export const stmts = {
     LEFT JOIN event_applications ea ON ea.event_id=e.id AND ea.status='approved'
     WHERE e.status='published' AND e.date_sort >= ?
     GROUP BY e.id
-    ORDER BY e.featured DESC, e.date_sort ASC, vendor_count DESC LIMIT 6
+    ORDER BY e.featured DESC, e.featured_at DESC, e.date_sort ASC, vendor_count DESC LIMIT 6
   `),
   categoryCounts: prepare(`
     SELECT category, COUNT(*) AS count FROM events
@@ -1002,8 +1002,8 @@ export const stmts = {
     FROM organisers o JOIN users u ON u.id=o.user_id
     WHERE u.status='pending' ORDER BY u.created_at DESC LIMIT 5
   `),
-  featuredVendors:   prepare(`SELECT v.user_id,v.trading_name,v.cuisine_tags,v.suburb,v.state,v.featured,COALESCE(v.plan,'free') AS plan,v.setup_type,v.featured_at FROM vendors v JOIN users u ON v.user_id=u.id WHERE v.featured=1 AND u.status='active' ORDER BY v.featured_at ASC, v.trading_name ASC`),
-  adminFeaturedEvents: prepare(`SELECT e.id,e.name,e.slug,e.category,e.suburb,e.state,e.date_sort,e.featured,e.featured_at FROM events e WHERE e.featured=1 AND e.status='published' ORDER BY e.featured_at ASC, e.date_sort ASC`),
+  featuredVendors:   prepare(`SELECT v.user_id,v.trading_name,v.cuisine_tags,v.suburb,v.state,v.featured,COALESCE(v.plan,'free') AS plan,v.setup_type,v.featured_at FROM vendors v JOIN users u ON v.user_id=u.id WHERE v.featured=1 AND u.status='active' ORDER BY v.featured_at DESC, v.trading_name ASC`),
+  adminFeaturedEvents: prepare(`SELECT e.id,e.name,e.slug,e.category,e.suburb,e.state,e.date_sort,e.featured,e.featured_at FROM events e WHERE e.featured=1 AND e.status='published' ORDER BY e.featured_at DESC, e.date_sort ASC`),
   recommendedVendors: prepare(`
     SELECT v.user_id, v.trading_name, v.cuisine_tags, v.suburb, v.state,
            COALESCE(v.plan,'free') AS plan, v.featured,
