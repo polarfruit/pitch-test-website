@@ -859,7 +859,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
       <div class="step-panel" id="step-2">
         <div class="card">
           <div class="form-row">
-            <div class="form-group"><label class="form-label">Total vendor spots</label><input class="form-input" id="ne-spots" type="number" placeholder="e.g. 20" oninput="validateSpotsInput(this)" /><div id="ne-spots-err" style="display:none;color:#C0392B;font-size:12px;margin-top:4px;font-weight:600;"></div></div>
+            <div class="form-group"><label class="form-label">Total vendor spots</label><input class="form-input" id="ne-spots" type="number" placeholder="e.g. 20" oninput="validateSpotsInput(this)" onchange="validateSpotsInput(this)" /><div id="ne-spots-err" style="display:none;color:#C0392B;font-size:12px;margin-top:4px;font-weight:600;"></div></div>
             <div class="form-group"><label class="form-label">Standard booth size</label><input class="form-input" id="ne-booth-size" placeholder="e.g. 3m × 3m" /></div>
           </div>
           <div class="form-group">
@@ -1430,7 +1430,7 @@ async function openEventMgmt(id, name) {
               <div class="form-group"><label class="form-label">State</label><select class="form-select" id="ed-state">${['SA','VIC','NSW','QLD','WA','TAS','ACT','NT'].map(s=>`<option ${ev.state===s?'selected':''}>${s}</option>`).join('')}</select></div>
             </div>
             <div class="form-group"><label class="form-label">Venue / address</label><input class="form-input" id="ed-venue" value="${ev.venue_name||''}" /></div>
-            <div class="form-group"><label class="form-label">Total vendor spots</label><input class="form-input" id="ed-spots" type="number" value="${ev.stalls_available||''}" oninput="validateSpotsInput(this)" /><div id="ed-spots-err" style="display:none;color:#C0392B;font-size:12px;margin-top:4px;font-weight:600;"></div></div>
+            <div class="form-group"><label class="form-label">Total vendor spots</label><input class="form-input" id="ed-spots" type="number" value="${ev.stalls_available||''}" oninput="validateSpotsInput(this)" onchange="validateSpotsInput(this)" /><div id="ed-spots-err" style="display:none;color:#C0392B;font-size:12px;margin-top:4px;font-weight:600;"></div></div>
             <div class="form-group"><label class="form-label">Public description</label><textarea class="form-textarea" id="ed-description" style="min-height:100px;">${ev.description||''}</textarea></div>
             <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;">
               <button class="btn-step-next" onclick="saveEventDetails(${ev.id})" style="flex:1;min-width:140px;">Save changes</button>
@@ -1687,6 +1687,10 @@ async function saveEventDetails(evId) {
     description:      document.getElementById('ed-description').value.trim(),
     stalls_available: document.getElementById('ed-spots').value || null,
   };
+
+  // Enforce platform stall limit before submit
+  if (payload.stalls_available && !checkSpotsLimit(payload.stalls_available)) return;
+
   const r = await pitchFetch(`/api/organiser/events/${evId}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
   msg.style.display = 'block';
   if (r.ok) {
@@ -1820,6 +1824,13 @@ async function publishEvent() {
     description:      document.getElementById('ne-description').value.trim(),
     stalls_available: document.getElementById('ne-spots')?.value || null,
   };
+
+  // Enforce platform stall limit before submit
+  if (payload.stalls_available && !checkSpotsLimit(payload.stalls_available)) {
+    btn.textContent = '🚀 Publish event';
+    btn.disabled = false;
+    return;
+  }
 
   try {
     const r = await pitchFetch('/api/organiser/events', {
@@ -1962,9 +1973,10 @@ async function initDashboard() {
   loadOrgEvents().catch(() => {});
 }
 
-// ── Platform stalls limit ─────────────────────────────────────────────────
+// ── Platform limits ──────────────────────────────────────────────────────
 let _maxStallsPerEvent = 0; // 0 = unlimited
 let _maxEventsPerOrg = 0;
+let _limitsLoaded = false;
 (async function fetchPlatformLimits() {
   try {
     const r = await fetch('/api/platform-limits');
@@ -1972,8 +1984,16 @@ let _maxEventsPerOrg = 0;
       const d = await r.json();
       _maxStallsPerEvent = d.limit_stalls_per_event || 0;
       _maxEventsPerOrg = d.limit_events_per_org || 0;
+      // Set max attribute on spots inputs so browser enforces too
+      if (_maxStallsPerEvent > 0) {
+        ['ne-spots','ed-spots'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.max = _maxStallsPerEvent;
+        });
+      }
     }
   } catch {}
+  _limitsLoaded = true;
 })();
 
 function validateSpotsInput(input) {
@@ -1986,13 +2006,22 @@ function validateSpotsInput(input) {
     errEl.style.display = 'block';
     input.style.borderColor = '#C0392B';
     input.value = _maxStallsPerEvent;
-    // Brief shake animation
     input.style.animation = 'none';
     requestAnimationFrame(() => { input.style.animation = 'shake 0.3s ease'; });
   } else {
     errEl.style.display = 'none';
     input.style.borderColor = '';
   }
+}
+
+// Returns true if spots value is valid, false + shows alert if not
+function checkSpotsLimit(spotsValue) {
+  const v = parseInt(spotsValue, 10);
+  if (_maxStallsPerEvent > 0 && v > _maxStallsPerEvent) {
+    alert(`Maximum ${_maxStallsPerEvent} vendor spots allowed per event. Please reduce the number.`);
+    return false;
+  }
+  return true;
 }
 
 const EMOJI_POOL = ['🍽','🎪','🌟','🎉','🍴','🥘','🎊','🌮','🎶','🍻'];
