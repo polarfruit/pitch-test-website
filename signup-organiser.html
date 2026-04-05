@@ -1035,13 +1035,17 @@
   function doGoogleSignup() {
     if (!_oauthConfig?.google) return alert('Google Sign-In is not configured.');
     if (typeof google === 'undefined') return alert('Google Sign-In is loading, please try again.');
-    google.accounts.id.prompt((n) => {
-      if (n.isNotDisplayed() || n.isSkippedMoment()) {
-        const clientId = _oauthConfig.google;
-        const redirect = encodeURIComponent(window.location.origin + '/api/auth/google/callback');
-        window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirect}&response_type=token+id_token&scope=openid+email+profile&nonce=${Date.now()}`;
-      }
-    });
+    let container = document.getElementById('g-signin-hidden');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'g-signin-hidden';
+      container.style.cssText = 'position:absolute;opacity:0;pointer-events:none;height:0;overflow:hidden;';
+      document.body.appendChild(container);
+    }
+    if (!container.hasChildNodes()) {
+      google.accounts.id.renderButton(container, { type: 'standard', size: 'large', width: 300 });
+    }
+    container.querySelector('div[role="button"]')?.click();
   }
 
   async function handleGoogleCredential(response) {

@@ -158,6 +158,7 @@ h1 { font-family: var(--fd); font-size: 26px; font-weight: 900; letter-spacing: 
       </button>
     </div>
 
+    <div id="g-signin-hidden" style="position:absolute;opacity:0;pointer-events:none;height:0;overflow:hidden;"></div>
     <div class="divider">or sign up with email</div>
 
     <div id="error-box" class="error-box"></div>
@@ -275,13 +276,11 @@ function initGoogleSignIn(clientId) {
 function doGoogleSignup() {
   if (!_oauthConfig?.google) return showError('Google Sign-In is not configured.');
   if (typeof google === 'undefined') return showError('Google Sign-In is loading, please try again.');
-  google.accounts.id.prompt((n) => {
-    if (n.isNotDisplayed() || n.isSkippedMoment()) {
-      const clientId = _oauthConfig.google;
-      const redirect = encodeURIComponent(window.location.origin + '/api/auth/google/callback');
-      window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirect}&response_type=token+id_token&scope=openid+email+profile&nonce=${Date.now()}`;
-    }
-  });
+  const container = document.getElementById('g-signin-hidden');
+  if (!container.hasChildNodes()) {
+    google.accounts.id.renderButton(container, { type: 'standard', size: 'large', width: 300 });
+  }
+  container.querySelector('div[role="button"]')?.click();
 }
 
 async function handleGoogleCredential(response) {
