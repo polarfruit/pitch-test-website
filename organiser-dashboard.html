@@ -557,6 +557,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .rate-stars { display:flex; gap:6px; }
 .rate-star { font-size:24px; cursor:pointer; color:#ffffff20; transition:color 0.1s; }
 .rate-star.active { color:#C9840A; }
+@keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(6px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
 </style>
 </head>
 <body>
@@ -858,7 +859,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
       <div class="step-panel" id="step-2">
         <div class="card">
           <div class="form-row">
-            <div class="form-group"><label class="form-label">Total vendor spots</label><input class="form-input" id="ne-spots" type="number" placeholder="e.g. 20" /></div>
+            <div class="form-group"><label class="form-label">Total vendor spots</label><input class="form-input" id="ne-spots" type="number" placeholder="e.g. 20" oninput="validateSpotsInput(this)" /><div id="ne-spots-err" style="display:none;color:#C0392B;font-size:12px;margin-top:4px;font-weight:600;"></div></div>
             <div class="form-group"><label class="form-label">Standard booth size</label><input class="form-input" id="ne-booth-size" placeholder="e.g. 3m × 3m" /></div>
           </div>
           <div class="form-group">
@@ -1429,7 +1430,7 @@ async function openEventMgmt(id, name) {
               <div class="form-group"><label class="form-label">State</label><select class="form-select" id="ed-state">${['SA','VIC','NSW','QLD','WA','TAS','ACT','NT'].map(s=>`<option ${ev.state===s?'selected':''}>${s}</option>`).join('')}</select></div>
             </div>
             <div class="form-group"><label class="form-label">Venue / address</label><input class="form-input" id="ed-venue" value="${ev.venue_name||''}" /></div>
-            <div class="form-group"><label class="form-label">Total vendor spots</label><input class="form-input" id="ed-spots" type="number" value="${ev.stalls_available||''}" /></div>
+            <div class="form-group"><label class="form-label">Total vendor spots</label><input class="form-input" id="ed-spots" type="number" value="${ev.stalls_available||''}" oninput="validateSpotsInput(this)" /><div id="ed-spots-err" style="display:none;color:#C0392B;font-size:12px;margin-top:4px;font-weight:600;"></div></div>
             <div class="form-group"><label class="form-label">Public description</label><textarea class="form-textarea" id="ed-description" style="min-height:100px;">${ev.description||''}</textarea></div>
             <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;">
               <button class="btn-step-next" onclick="saveEventDetails(${ev.id})" style="flex:1;min-width:140px;">Save changes</button>
@@ -1959,6 +1960,39 @@ async function initDashboard() {
   // Eager non-blocking loads so stats + events populate even if init data was empty
   loadOrgOverview().catch(() => {});
   loadOrgEvents().catch(() => {});
+}
+
+// ── Platform stalls limit ─────────────────────────────────────────────────
+let _maxStallsPerEvent = 0; // 0 = unlimited
+let _maxEventsPerOrg = 0;
+(async function fetchPlatformLimits() {
+  try {
+    const r = await fetch('/api/platform-limits');
+    if (r.ok) {
+      const d = await r.json();
+      _maxStallsPerEvent = d.limit_stalls_per_event || 0;
+      _maxEventsPerOrg = d.limit_events_per_org || 0;
+    }
+  } catch {}
+})();
+
+function validateSpotsInput(input) {
+  const val = parseInt(input.value, 10);
+  const errId = input.id + '-err';
+  const errEl = document.getElementById(errId);
+  if (!errEl) return;
+  if (_maxStallsPerEvent > 0 && val > _maxStallsPerEvent) {
+    errEl.textContent = `Maximum ${_maxStallsPerEvent} vendor spots allowed per event.`;
+    errEl.style.display = 'block';
+    input.style.borderColor = '#C0392B';
+    input.value = _maxStallsPerEvent;
+    // Brief shake animation
+    input.style.animation = 'none';
+    requestAnimationFrame(() => { input.style.animation = 'shake 0.3s ease'; });
+  } else {
+    errEl.style.display = 'none';
+    input.style.borderColor = '';
+  }
 }
 
 const EMOJI_POOL = ['🍽','🎪','🌟','🎉','🍴','🥘','🎊','🌮','🎶','🍻'];

@@ -2541,6 +2541,20 @@ app.get('/api/banner', async (req, res) => {
   } catch { res.json({ show: false }); }
 });
 
+// ── Public — platform limits (for frontend validation) ───────────────────
+app.get('/api/platform-limits', async (req, res) => {
+  try {
+    const [stallsRow, eventsRow] = await Promise.all([
+      stmts.getSetting.get('limit_stalls_per_event'),
+      stmts.getSetting.get('limit_events_per_org'),
+    ]);
+    res.json({
+      limit_stalls_per_event: stallsRow ? parseInt(stallsRow.value, 10) || 0 : 0,
+      limit_events_per_org: eventsRow ? parseInt(eventsRow.value, 10) || 0 : 0,
+    });
+  } catch { res.json({ limit_stalls_per_event: 0, limit_events_per_org: 0 }); }
+});
+
 // ── Admin — featured ──────────────────────────────────────────────────────
 app.get('/api/admin/featured', requireAdmin, async (req, res) => {
   const [events, vendors] = await Promise.all([
