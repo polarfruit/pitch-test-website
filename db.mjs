@@ -959,7 +959,7 @@ export const stmts = {
   // Event performance
   eventFillRates:    prepare(`SELECT e.id, e.name, e.date_sort, COALESCE(e.stalls_available,0) as stalls_available, COUNT(CASE WHEN ea.status='approved' THEN 1 END) as approved_count, COUNT(ea.id) as total_apps FROM events e LEFT JOIN event_applications ea ON ea.event_id=e.id WHERE e.status='published' GROUP BY e.id ORDER BY CASE WHEN e.stalls_available > 0 THEN ROUND(COUNT(CASE WHEN ea.status='approved' THEN 1 END)*100.0/e.stalls_available,0) ELSE 0 END DESC LIMIT 10`),
   avgStallFee:       prepare(`SELECT ROUND(AVG((COALESCE(stall_fee_min,0)+COALESCE(stall_fee_max,0))/2.0),0) as n FROM events WHERE status='published' AND (stall_fee_min>0 OR stall_fee_max>0)`),
-  avgAppsPerEvent:   prepare(`SELECT ROUND(CAST(COUNT(ea.id) AS REAL)/MAX(COUNT(DISTINCT e.id),1),1) as n FROM events e LEFT JOIN event_applications ea ON ea.event_id=e.id WHERE e.status='published'`),
+  avgAppsPerEvent:   prepare(`SELECT ROUND(CAST(total_apps AS REAL)/CASE WHEN total_events=0 THEN 1 ELSE total_events END,1) as n FROM (SELECT COUNT(ea.id) as total_apps, COUNT(DISTINCT e.id) as total_events FROM events e LEFT JOIN event_applications ea ON ea.event_id=e.id WHERE e.status='published')`),
 
   // Geography
   eventsBySuburb:    prepare(`SELECT COALESCE(suburb,'Unknown') as suburb, COUNT(*) as n FROM events WHERE status='published' GROUP BY suburb ORDER BY n DESC LIMIT 10`),
