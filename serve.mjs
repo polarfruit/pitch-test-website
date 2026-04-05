@@ -1623,14 +1623,34 @@ app.post('/api/events/:id/apply', requireAuth, async (req, res) => {
         }
       }
     }
+
+    // Pro/Growth plan: enforce pro application limit
+    if (effectivePlan === 'pro' || effectivePlan === 'growth') {
+      const proLimitSetting = await getPlatformFlag('limit_pro_apps');
+      const PRO_LIMIT = proLimitSetting ? parseInt(proLimitSetting, 10) : 0;
+      if (PRO_LIMIT > 0) { // 0 = unlimited
+        if (vendorSub.apps_reset_month !== currentMonth) {
+          await stmts.resetAppsCounter.run(currentMonth, req.session.userId);
+          vendorSub.apps_this_month = 0;
+        }
+        if (Number(vendorSub.apps_this_month) >= PRO_LIMIT) {
+          return res.status(429).json({
+            error: 'Application limit reached',
+            message: `You've used all ${PRO_LIMIT} applications for this month on your plan.`,
+            limit: PRO_LIMIT,
+            used: Number(vendorSub.apps_this_month),
+          });
+        }
+      }
+    }
   }
   // ─────────────────────────────────────────────────────────────────────────
 
   try {
     await stmts.createApplication.run(ev.id, req.session.userId, message || null);
 
-    // Increment monthly counter for free-plan vendors
-    if (vendorSub && (vendorSub.plan === 'free' || !vendorSub.plan)) {
+    // Increment monthly counter for all vendors with subscription tracking
+    if (vendorSub) {
       const now = new Date();
       const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
       if (vendorSub.apps_reset_month !== currentMonth) {
@@ -2011,9 +2031,28 @@ app.get('/api/organiser/overview', requireAuth, async (req, res) => {
 app.post('/api/organiser/events', requireAuth, async (req, res) => {
   if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
 
+  // Enforce max events per organiser
+  const evLimitSetting = await getPlatformFlag('limit_events_per_org');
+  const EV_LIMIT = evLimitSetting ? parseInt(evLimitSetting, 10) : 50;
+  if (EV_LIMIT > 0) {
+    const evCount = await stmts.countOrganiserEvents.get(req.session.userId);
+    if (evCount && Number(evCount.n) >= EV_LIMIT) {
+      return res.status(429).json({ error: `You've reached the maximum of ${EV_LIMIT} events. Archive or delete existing events to create new ones.` });
+    }
+  }
+
   const { name, category, date_sort, date_end, date_text, suburb, state, venue_name, description, stalls_available, stall_fee_min, stall_fee_max, deadline, cover_image } = req.body;
   if (!name || !date_sort || !suburb) {
     return res.status(400).json({ error: 'Name, date, and suburb are required' });
+  }
+
+  // Enforce max stalls per event
+  if (stalls_available) {
+    const stallLimitSetting = await getPlatformFlag('limit_stalls_per_event');
+    const STALL_LIMIT = stallLimitSetting ? parseInt(stallLimitSetting, 10) : 200;
+    if (STALL_LIMIT > 0 && parseInt(stalls_available) > STALL_LIMIT) {
+      return res.status(400).json({ error: `Maximum stalls per event is ${STALL_LIMIT}.` });
+    }
   }
 
   const organiser = await stmts.getOrganiserByUserId.get(req.session.userId);
@@ -2070,6 +2109,14 @@ app.patch('/api/organiser/events/:id', requireAuth, async (req, res) => {
   const ev = await stmts.getEventById.get(req.params.id);
   if (!ev || Number(ev.organiser_user_id) !== Number(req.session.userId)) return res.status(403).json({ error: 'Not your event' });
   const { name, category, suburb, state, venue_name, date_sort, date_end, description, stalls_available, stall_fee_min, stall_fee_max, deadline, cover_image } = req.body;
+  // Enforce max stalls per event
+  if (stalls_available != null) {
+    const stallLimitSetting = await getPlatformFlag('limit_stalls_per_event');
+    const STALL_LIMIT = stallLimitSetting ? parseInt(stallLimitSetting, 10) : 200;
+    if (STALL_LIMIT > 0 && Number(stalls_available) > STALL_LIMIT) {
+      return res.status(400).json({ error: `Maximum stalls per event is ${STALL_LIMIT}.` });
+    }
+  }
   const dateText = date_sort ? new Date(date_sort).toLocaleDateString('en-AU', { day:'numeric', month:'short', year:'numeric' }) : null;
   await stmts.updateEvent.run({ id: Number(req.params.id), name: name || ev.name, category: category || ev.category, suburb: suburb || ev.suburb, state: state || ev.state, venue_name: venue_name ?? ev.venue_name, date_sort: date_sort || ev.date_sort, date_end: date_end ?? ev.date_end, date_text: dateText || ev.date_text, description: description ?? ev.description, stalls_available: stalls_available != null ? Number(stalls_available) : ev.stalls_available, stall_fee_min: stall_fee_min != null ? Number(stall_fee_min) : ev.stall_fee_min, stall_fee_max: stall_fee_max != null ? Number(stall_fee_max) : ev.stall_fee_max, deadline: deadline !== undefined ? deadline : ev.deadline, cover_image: cover_image !== undefined ? cover_image : ev.cover_image });
   res.json({ ok: true });
