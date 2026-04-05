@@ -428,7 +428,7 @@ body { background:var(--coal); color:var(--text-hi); font-family:var(--fb); line
       </div>
       <div class="form-divider"><span>or sign up with</span></div>
       <div style="display:flex;gap:10px;margin-bottom:4px;">
-        <button id="btn-google" style="flex:1;height:46px;border-radius:11px;background:#ffffff08;border:1px solid #ffffff10;font-family:var(--fb);font-size:13px;font-weight:600;color:var(--text-mid);cursor:pointer;transition:all 0.14s;" onmouseover="this.style.background='#ffffff12'" onmouseout="this.style.background='#ffffff08'" onclick="doGoogleSignup()">🔵 Continue with Google</button>
+        <div id="g-btn-container" style="flex:1;"></div>
         <button id="btn-apple" style="flex:1;height:46px;border-radius:11px;background:#ffffff08;border:1px solid #ffffff10;font-family:var(--fb);font-size:13px;font-weight:600;color:var(--text-mid);cursor:pointer;transition:all 0.14s;" onmouseover="this.style.background='#ffffff12'" onmouseout="this.style.background='#ffffff08'" onclick="doAppleSignup()">🍎 Continue with Apple</button>
       </div>
       <div class="step-nav"><div></div><button class="btn-next" onclick="goStep(2)">Next: Business details →</button></div>
@@ -1018,25 +1018,12 @@ function initGoogleSignIn(clientId) {
   const s = document.createElement('script');
   s.src = 'https://accounts.google.com/gsi/client';
   s.onload = () => {
-    google.accounts.id.initialize({ client_id: clientId, callback: handleGoogleCredential, auto_prompt: false });
+    google.accounts.id.initialize({ client_id: clientId, callback: handleGoogleCredential, ux_mode: 'popup' });
+    google.accounts.id.renderButton(document.getElementById('g-btn-container'), {
+      theme: 'filled_black', size: 'large', text: 'signup_with', shape: 'rectangular', width: '100%',
+    });
   };
   document.head.appendChild(s);
-}
-
-function doGoogleSignup() {
-  if (!_oauthConfig?.google) return alert('Google Sign-In is not configured.');
-  if (typeof google === 'undefined') return alert('Google Sign-In is loading, please try again.');
-  let container = document.getElementById('g-signin-hidden');
-  if (!container) {
-    container = document.createElement('div');
-    container.id = 'g-signin-hidden';
-    container.style.cssText = 'position:absolute;opacity:0;pointer-events:none;height:0;overflow:hidden;';
-    document.body.appendChild(container);
-  }
-  if (!container.hasChildNodes()) {
-    google.accounts.id.renderButton(container, { type: 'standard', size: 'large', width: 300 });
-  }
-  container.querySelector('div[role="button"]')?.click();
 }
 
 async function handleGoogleCredential(response) {
