@@ -142,7 +142,7 @@ if (process.env.TURSO_DATABASE_URL) {
 
 // ── Schema version — bump this whenever migrations are added ─────────────────
 // On a versioned DB the entire migration block is skipped (1 read vs 50+ calls).
-const SCHEMA_VERSION = 13;
+const SCHEMA_VERSION = 14;
 let _schemaVersion = 0;
 try {
   const _ver = await prepare(`SELECT v FROM _schema_meta LIMIT 1`).get();
@@ -766,6 +766,26 @@ await _safeExec(`ALTER TABLE announcements ADD COLUMN delivery TEXT NOT NULL DEF
 await _safeExec(`UPDATE users SET created_at=datetime('2026-03-0'||((abs(id)%14)+1)||'T10:00:00') WHERE created_at=0 OR created_at IS NULL OR created_at='0'`);
 await _safeExec(`UPDATE users SET created_at='2026-03-18 11:00:00' WHERE email='leroy.anton@yahoo.com'`);
 
+// ── Platform settings key-value store ─────────────────────────────────────────
+await _safeExec(`CREATE TABLE IF NOT EXISTS platform_settings (
+  key   TEXT PRIMARY KEY,
+  value TEXT NOT NULL
+)`);
+// Seed defaults (INSERT OR IGNORE = no-op if already set)
+await _safeExec(`INSERT OR IGNORE INTO platform_settings (key,value) VALUES ('flag_pro_apps','1')`);
+await _safeExec(`INSERT OR IGNORE INTO platform_settings (key,value) VALUES ('flag_messaging','1')`);
+await _safeExec(`INSERT OR IGNORE INTO platform_settings (key,value) VALUES ('flag_reviews','1')`);
+await _safeExec(`INSERT OR IGNORE INTO platform_settings (key,value) VALUES ('flag_org_signups','1')`);
+await _safeExec(`INSERT OR IGNORE INTO platform_settings (key,value) VALUES ('flag_maintenance','0')`);
+await _safeExec(`INSERT OR IGNORE INTO platform_settings (key,value) VALUES ('flag_auto_approve','0')`);
+await _safeExec(`INSERT OR IGNORE INTO platform_settings (key,value) VALUES ('flag_manual_org_review','1')`);
+await _safeExec(`INSERT OR IGNORE INTO platform_settings (key,value) VALUES ('banner_message','')`);
+await _safeExec(`INSERT OR IGNORE INTO platform_settings (key,value) VALUES ('banner_show','1')`);
+await _safeExec(`INSERT OR IGNORE INTO platform_settings (key,value) VALUES ('limit_free_apps','3')`);
+await _safeExec(`INSERT OR IGNORE INTO platform_settings (key,value) VALUES ('limit_pro_apps','0')`);
+await _safeExec(`INSERT OR IGNORE INTO platform_settings (key,value) VALUES ('limit_events_per_org','50')`);
+await _safeExec(`INSERT OR IGNORE INTO platform_settings (key,value) VALUES ('limit_stalls_per_event','200')`);
+
 // ── Mark schema as current so migrations are skipped on next boot ─────────────
 await _safeExec(`CREATE TABLE IF NOT EXISTS _schema_meta (v INTEGER)`);
 await _safeExec(`DELETE FROM _schema_meta`);
@@ -1311,6 +1331,16 @@ export const stmts = {
     FROM vendors v JOIN users u ON v.user_id=u.id
     WHERE v.user_id=? AND u.status='active'
   `),
+  // platform settings
+  getAllSettings:   prepare(`SELECT key, value FROM platform_settings`),
+  getSetting:       prepare(`SELECT value FROM platform_settings WHERE key = ?`),
+  upsertSetting:    prepare(`INSERT INTO platform_settings (key,value) VALUES (?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value`),
+
+  // danger zone
+  purgeDraftEvents: prepare(`DELETE FROM events WHERE status='draft'`),
+  resetPendingApprovals: prepare(`UPDATE users SET status='active' WHERE status='pending'`),
+  countDraftEvents: prepare(`SELECT COUNT(*) as n FROM events WHERE status='draft'`),
+  countPendingUsers: prepare(`SELECT COUNT(*) as n FROM users WHERE status='pending'`),
 };
 
 // ── Transactions ─────────────────────────────────────────────────────────────
