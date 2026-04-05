@@ -162,6 +162,7 @@ window.__PITCH_INIT_DATA__ = ${JSON.stringify(initData)};
         html = html.replace('>🔥<', `>${avatarImg}<`);
         html = html.replace('>🏛️<', `>${avatarImg}<`);
       }
+      html = injectBanner(html);
       res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
       res.send(html);
     } catch (e) {
