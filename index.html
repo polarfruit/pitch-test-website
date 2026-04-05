@@ -2097,23 +2097,19 @@ fetch('/api/stats').then(r => r.json()).then(d => {
     </a>`;
   }
 
-  // Fetch featured vendors first, then fill with all vendors
-  Promise.all([
-    fetch('/api/featured-vendors').then(r => r.ok ? r.json() : []).catch(() => []),
-    fetch('/api/vendors').then(r => r.json()).then(d => (d.vendors || d || []).filter(v => v.trading_name)).catch(() => [])
-  ]).then(([featured, all]) => {
-    const featIds = new Set((featured || []).map(v => v.user_id));
-    // Featured vendors first, then remaining vendors (no duplicates)
-    const remaining = all.filter(v => !featIds.has(v.user_id));
-    const vendors = [...(featured || []), ...remaining];
-    if (!vendors.length) return; // keep static fallback
-    const marquee = document.getElementById('vendor-marquee');
-    if (!marquee) return;
-    let pool = vendors;
-    while (pool.length < 8) pool = pool.concat(vendors);
-    const html = pool.map((v, i) => buildCard(v, i)).join('');
-    marquee.innerHTML = html + html; // duplicate for seamless loop
-  });
+  // Only show featured vendors selected in admin
+  fetch('/api/featured-vendors')
+    .then(r => r.ok ? r.json() : [])
+    .then(vendors => {
+      if (!vendors || !vendors.length) return; // keep static fallback
+      const marquee = document.getElementById('vendor-marquee');
+      if (!marquee) return;
+      let pool = vendors;
+      while (pool.length < 8) pool = pool.concat(vendors);
+      const html = pool.map((v, i) => buildCard(v, i)).join('');
+      marquee.innerHTML = html + html; // duplicate for seamless loop
+    })
+    .catch(() => {});
 })();
 
 // Hero search — redirect to events page with all three segment params
