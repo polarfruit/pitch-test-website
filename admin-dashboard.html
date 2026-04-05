@@ -1323,9 +1323,10 @@
   <div class="panel" id="panel-analytics">
     <div class="page-header">
       <h1>Analytics</h1>
-      <p>Key trends to inform product decisions. Signups, events posted, applications, and category breakdown.</p>
+      <p>Key trends to inform product decisions. Revenue, growth, event performance, and platform health.</p>
     </div>
 
+    <!-- KPI row -->
     <div class="analytics-grid" id="analytics-kpis">
       <div class="kpi-card"><div class="kpi-label">Total vendors</div><div class="kpi-val" id="an-vendors">—</div><div class="kpi-delta neutral">All time</div></div>
       <div class="kpi-card"><div class="kpi-label">Total organisers</div><div class="kpi-val" id="an-organisers">—</div><div class="kpi-delta neutral">All time</div></div>
@@ -1333,19 +1334,50 @@
       <div class="kpi-card"><div class="kpi-label">Total applications</div><div class="kpi-val" id="an-apps">—</div><div class="kpi-delta neutral">All time</div></div>
     </div>
 
-    <div class="two-col" style="margin-bottom:20px;">
+    <!-- Revenue row -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px;">
+      <div class="kpi-card"><div class="kpi-label">Total revenue</div><div class="kpi-val" id="an-rev-total">—</div><div class="kpi-delta neutral">All time</div></div>
+      <div class="kpi-card"><div class="kpi-label">This month</div><div class="kpi-val" id="an-rev-month">—</div><div class="kpi-delta" id="an-rev-delta">vs last month</div></div>
+      <div class="kpi-card"><div class="kpi-label">Avg transaction</div><div class="kpi-val" id="an-rev-avg">—</div><div class="kpi-delta neutral">Per payment</div></div>
+    </div>
+
+    <!-- Growth vs last month -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;">
+      <div class="kpi-card"><div class="kpi-label">Vendors this month</div><div class="kpi-val" id="an-g-vendors">—</div><div class="kpi-delta" id="an-g-vendors-d">vs last month</div></div>
+      <div class="kpi-card"><div class="kpi-label">Organisers this month</div><div class="kpi-val" id="an-g-orgs">—</div><div class="kpi-delta" id="an-g-orgs-d">vs last month</div></div>
+      <div class="kpi-card"><div class="kpi-label">Events this month</div><div class="kpi-val" id="an-g-events">—</div><div class="kpi-delta" id="an-g-events-d">vs last month</div></div>
+      <div class="kpi-card"><div class="kpi-label">Applications this month</div><div class="kpi-val" id="an-g-apps">—</div><div class="kpi-delta" id="an-g-apps-d">vs last month</div></div>
+    </div>
+
+    <!-- Signups 30d + Vendor plan breakdown -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
       <div class="card">
-        <div class="card-header"><span style="font-size:16px;">📊</span><span class="card-title">Signups (last 7 days)</span></div>
+        <div class="card-header"><span style="font-size:16px;">📊</span><span class="card-title">Signups (last 30 days)</span></div>
         <div style="padding:20px;">
-          <div style="display:flex;gap:12px;">
-            <div style="display:flex;flex-direction:column;justify-content:space-between;font-size:10px;color:#6B5A4A;padding-bottom:20px;text-align:right;min-width:16px;" id="an-signups-yaxis">
-              <span>—</span><span>—</span><span>—</span><span>—</span><span>0</span>
-            </div>
-            <div style="flex:1;">
-              <div class="week-bars" id="an-signups-bars"></div>
-              <div class="week-labels" id="an-signups-labels"></div>
-            </div>
+          <div style="display:flex;gap:1px;align-items:flex-end;height:90px;" id="an-signups30-bars"></div>
+          <div style="display:flex;justify-content:space-between;font-size:9px;color:#4A3C30;margin-top:5px;" id="an-signups30-labels"></div>
+          <div style="display:flex;gap:14px;margin-top:10px;font-size:11px;color:#A89880;">
+            <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#E8500A;margin-right:4px;"></span>Vendor</span>
+            <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#C9840A;margin-right:4px;"></span>Organiser</span>
+            <span><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:#2B5BA8;margin-right:4px;"></span>Foodie</span>
           </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span style="font-size:16px;">💳</span><span class="card-title">Vendor plans</span></div>
+        <div style="padding:18px 20px;display:flex;flex-direction:column;gap:10px;" id="an-plan-breakdown">
+          <div style="color:#6B5A4A;font-size:13px;">Loading…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Revenue 6 months + Applications by status -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
+      <div class="card">
+        <div class="card-header"><span style="font-size:16px;">💰</span><span class="card-title">Revenue (last 6 months)</span></div>
+        <div style="padding:20px;">
+          <div style="display:flex;align-items:flex-end;gap:8px;height:90px;" id="an-rev-chart"></div>
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:#4A3C30;margin-top:5px;" id="an-rev-labels"></div>
         </div>
       </div>
       <div class="card">
@@ -1356,7 +1388,8 @@
       </div>
     </div>
 
-    <div class="two-col" style="margin-bottom:20px;">
+    <!-- Event categories + Event fill rates -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
       <div class="card">
         <div class="card-header"><span style="font-size:16px;">🗂</span><span class="card-title">Event categories</span><span class="card-sub" id="an-cat-total">from DB</span></div>
         <div style="padding:18px 20px;display:flex;flex-direction:column;gap:10px;" id="an-cat-breakdown">
@@ -1364,19 +1397,75 @@
         </div>
       </div>
       <div class="card">
-        <div class="card-header"><span style="font-size:16px;">🔽</span><span class="card-title">Vendor funnel</span></div>
-        <div style="padding:18px 20px;display:flex;flex-direction:column;gap:10px;" id="an-vendor-funnel">
+        <div class="card-header"><span style="font-size:16px;">📈</span><span class="card-title">Event fill rates</span><span class="card-sub" style="margin-left:auto;">Avg stall fee: <strong id="an-avg-fee">—</strong> · Avg apps/event: <strong id="an-avg-apps">—</strong></span></div>
+        <div style="padding:12px 20px;max-height:240px;overflow-y:auto;" id="an-fill-rates">
           <div style="color:#6B5A4A;font-size:13px;">Loading…</div>
         </div>
       </div>
     </div>
 
+    <!-- Vendor funnel + Organiser funnel -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
+      <div class="card">
+        <div class="card-header"><span style="font-size:16px;">🔽</span><span class="card-title">Vendor funnel</span></div>
+        <div style="padding:18px 20px;display:flex;flex-direction:column;gap:10px;" id="an-vendor-funnel">
+          <div style="color:#6B5A4A;font-size:13px;">Loading…</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span style="font-size:16px;">🏙</span><span class="card-title">Organiser funnel</span></div>
+        <div style="padding:18px 20px;display:flex;flex-direction:column;gap:10px;" id="an-org-funnel">
+          <div style="color:#6B5A4A;font-size:13px;">Loading…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Geography: Events + Vendors by suburb -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
+      <div class="card">
+        <div class="card-header"><span style="font-size:16px;">📍</span><span class="card-title">Events by location</span></div>
+        <div style="padding:18px 20px;display:flex;flex-direction:column;gap:10px;" id="an-evt-suburb">
+          <div style="color:#6B5A4A;font-size:13px;">Loading…</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span style="font-size:16px;">📍</span><span class="card-title">Vendors by location</span></div>
+        <div style="padding:18px 20px;display:flex;flex-direction:column;gap:10px;" id="an-vnd-suburb">
+          <div style="color:#6B5A4A;font-size:13px;">Loading…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Platform health: Moderation + Doc compliance + Messaging -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:20px;">
+      <div class="card">
+        <div class="card-header"><span style="font-size:16px;">🛡</span><span class="card-title">Moderation</span></div>
+        <div style="padding:18px 20px;display:flex;flex-direction:column;gap:14px;" id="an-moderation">
+          <div style="color:#6B5A4A;font-size:13px;">Loading…</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span style="font-size:16px;">📄</span><span class="card-title">Document compliance</span></div>
+        <div style="padding:18px 20px;display:flex;flex-direction:column;gap:10px;" id="an-doc-compliance">
+          <div style="color:#6B5A4A;font-size:13px;">Loading…</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span style="font-size:16px;">💬</span><span class="card-title">Messaging</span></div>
+        <div style="padding:18px 20px;display:flex;flex-direction:column;gap:14px;" id="an-messaging">
+          <div style="color:#6B5A4A;font-size:13px;">Loading…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top vendors -->
     <div class="card" style="margin-bottom:20px;">
-      <div class="card-header"><span style="font-size:16px;">🏙</span><span class="card-title">Organiser funnel</span></div>
-      <div style="padding:18px 20px;display:flex;flex-direction:column;gap:10px;" id="an-org-funnel">
+      <div class="card-header"><span style="font-size:16px;">🏆</span><span class="card-title">Most active vendors</span></div>
+      <div style="padding:12px 20px;" id="an-top-vendors">
         <div style="color:#6B5A4A;font-size:13px;">Loading…</div>
       </div>
     </div>
+
   </div>
 
 </div><!-- /main -->
@@ -3241,77 +3330,229 @@
   }
 
   // ── Analytics ─────────────────────────────────────────────────────────────
+  function _barRow(label, n, pct, color) {
+    return `<div class="analytics-bar-row"><span class="analytics-bar-label">${label}</span><div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:${Math.max(pct,2)}%;background:${color};"></div></div><span class="analytics-bar-val">${n}</span></div>`;
+  }
+  function _growthDelta(el, cur, prev) {
+    if (!prev) { el.textContent = cur ? '+' + cur + ' new' : 'No change'; el.className = 'kpi-delta ' + (cur ? 'up' : 'neutral'); return; }
+    const pct = Math.round(((cur - prev) / prev) * 100);
+    const sign = pct >= 0 ? '+' : '';
+    el.textContent = sign + pct + '% vs last month';
+    el.className = 'kpi-delta ' + (pct > 0 ? 'up' : pct < 0 ? 'down' : 'neutral');
+  }
+  function _statBlock(label, value, sub) {
+    return `<div><div style="font-size:11px;color:#6B5A4A;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">${label}</div><div style="font-family:'Fraunces',serif;font-size:22px;color:#FDF4E7;line-height:1;">${value}</div>${sub ? '<div style="font-size:11px;color:#A89880;margin-top:3px;">'+sub+'</div>' : ''}</div>`;
+  }
+
   async function loadAnalytics() {
     try {
       const r = await fetch('/api/admin/analytics');
       const data = await r.json();
+
+      // ── KPI row ──
       document.getElementById('an-vendors').textContent = (data.totalVendors || 0).toLocaleString();
       document.getElementById('an-organisers').textContent = (data.totalOrganisers || 0).toLocaleString();
       document.getElementById('an-events').textContent = (data.totalEvents || 0).toLocaleString();
-
       const appStatus = data.applicationsByStatus || [];
       const totalApps = appStatus.reduce((s, a) => s + a.n, 0);
       document.getElementById('an-apps').textContent = totalApps.toLocaleString();
-      const appBreakdown = document.getElementById('an-app-breakdown');
-      const colors = { approved:'#2D8B55', pending:'#C9840A', declined:'#C0392B', withdrawn:'#6B5A4A' };
-      appBreakdown.innerHTML = appStatus.length
-        ? appStatus.map(a => {
-            const pct = totalApps > 0 ? Math.round((a.n / totalApps) * 100) : 0;
-            return `<div class="analytics-bar-row">
-              <span class="analytics-bar-label">${a.status.charAt(0).toUpperCase()+a.status.slice(1)}</span>
-              <div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:${Math.max(pct,3)}%;background:${colors[a.status]||'#6B5A4A'};"></div></div>
-              <span class="analytics-bar-val">${a.n}</span>
-            </div>`;
-          }).join('')
-        : '<div style="color:#6B5A4A;font-size:13px;padding:8px 0;">No applications yet.</div>';
 
-      // Event categories — from DB
-      const cats = data.eventsByCategory || [];
-      const maxCat = cats.length ? Math.max(...cats.map(c => c.n)) : 1;
-      const catColors = ['#E8500A','#C9840A','#2B5BA8','#2D8B55','#6B5A4A','#8B4513'];
-      const catEl = document.getElementById('an-cat-breakdown');
-      const catTotalEl = document.getElementById('an-cat-total');
-      if (catTotalEl) catTotalEl.textContent = cats.reduce((s,c)=>s+c.n,0) + ' total';
-      catEl.innerHTML = cats.length
-        ? cats.map((c,i) => `<div class="analytics-bar-row">
-            <span class="analytics-bar-label">${c.category}</span>
-            <div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:${Math.round((c.n/maxCat)*100)}%;background:${catColors[i%catColors.length]};"></div></div>
-            <span class="analytics-bar-val">${c.n}</span>
-          </div>`).join('')
-        : '<div style="color:#6B5A4A;font-size:13px;">No events yet.</div>';
+      // ── Revenue row ──
+      const rev = data.revenue || {};
+      document.getElementById('an-rev-total').textContent = '$' + (rev.total || 0).toLocaleString();
+      document.getElementById('an-rev-month').textContent = '$' + (rev.thisMonth || 0).toLocaleString();
+      document.getElementById('an-rev-avg').textContent = '$' + (rev.avgTransaction || 0).toLocaleString();
+      _growthDelta(document.getElementById('an-rev-delta'), rev.thisMonth || 0, rev.lastMonth || 0);
 
-      // Signups chart (also rendered here so it updates if analytics panel opened fresh)
+      // ── Growth vs last month ──
+      const g = data.growth || {};
+      document.getElementById('an-g-vendors').textContent = (g.vendorsThis || 0).toLocaleString();
+      _growthDelta(document.getElementById('an-g-vendors-d'), g.vendorsThis || 0, g.vendorsLast || 0);
+      document.getElementById('an-g-orgs').textContent = (g.orgsThis || 0).toLocaleString();
+      _growthDelta(document.getElementById('an-g-orgs-d'), g.orgsThis || 0, g.orgsLast || 0);
+      document.getElementById('an-g-events').textContent = (g.eventsThis || 0).toLocaleString();
+      _growthDelta(document.getElementById('an-g-events-d'), g.eventsThis || 0, g.eventsLast || 0);
+      document.getElementById('an-g-apps').textContent = (g.appsThis || 0).toLocaleString();
+      _growthDelta(document.getElementById('an-g-apps-d'), g.appsThis || 0, g.appsLast || 0);
+
+      // ── Signups 30 days bar chart ──
+      const s30 = data.signups30dByDay || [];
+      const barsEl = document.getElementById('an-signups30-bars');
+      const labelsEl = document.getElementById('an-signups30-labels');
+      if (barsEl) {
+        // Group by day
+        const dayMap = {};
+        s30.forEach(r => { if (!dayMap[r.day]) dayMap[r.day] = {}; dayMap[r.day][r.role] = r.n; });
+        const days = [];
+        for (let i = 29; i >= 0; i--) {
+          const d = new Date(); d.setDate(d.getDate() - i);
+          days.push(d.toISOString().slice(0,10));
+        }
+        const maxDay = Math.max(1, ...days.map(d => { const dm = dayMap[d]||{}; return (dm.vendor||0)+(dm.organiser||0)+(dm.foodie||0); }));
+        barsEl.innerHTML = days.map(d => {
+          const dm = dayMap[d] || {};
+          const v = dm.vendor||0, o = dm.organiser||0, f = dm.foodie||0;
+          const total = v+o+f;
+          const h = Math.max(total ? Math.round((total/maxDay)*90) : 0, 2);
+          const vH = total ? Math.round((v/total)*h) : 0;
+          const oH = total ? Math.round((o/total)*h) : 0;
+          const fH = h - vH - oH;
+          return `<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:stretch;height:90px;" title="${d}: ${total}">
+            <div style="height:${fH}px;background:#2B5BA8;border-radius:2px 2px 0 0;"></div>
+            <div style="height:${oH}px;background:#C9840A;"></div>
+            <div style="height:${vH}px;background:#E8500A;border-radius:0 0 2px 2px;"></div>
+          </div>`;
+        }).join('');
+        labelsEl.innerHTML = days.filter((_,i) => i%7===0 || i===29).map(d => {
+          const dt = new Date(d+'T00:00:00');
+          return `<span>${dt.toLocaleDateString('en-AU',{day:'numeric',month:'short'})}</span>`;
+        }).join('');
+      }
+
+      // Also render the 7-day mini chart on overview
       _renderSignupsChart(
         data.signups7dByDay || [],
         'an-signups-bars', 'an-signups-labels', 'an-signups-yaxis',
         'mini-bar-chart', 'mini-bar-labels'
       );
 
-      // Vendor funnel
+      // ── Vendor plan breakdown ──
+      const plans = data.vendorsByPlan || [];
+      const planColors = { growth:'#E8500A', pro:'#C9840A', basic:'#2B5BA8', free:'#6B5A4A' };
+      const planLabels = { growth:'Growth', pro:'Pro', basic:'Basic', free:'Free' };
+      const maxPlan = plans.length ? Math.max(...plans.map(p=>p.n)) : 1;
+      document.getElementById('an-plan-breakdown').innerHTML = plans.length
+        ? plans.map(p => _barRow(planLabels[p.plan]||p.plan, p.n, Math.round((p.n/maxPlan)*100), planColors[p.plan]||'#6B5A4A')).join('')
+        : '<div style="color:#6B5A4A;font-size:13px;">No vendors yet.</div>';
+
+      // ── Revenue 6 months chart ──
+      const revChart = document.getElementById('an-rev-chart');
+      const revLabels = document.getElementById('an-rev-labels');
+      const revMonths = rev.byMonth || [];
+      if (revChart) {
+        // Fill 6 months
+        const months = [];
+        for (let i = 5; i >= 0; i--) {
+          const d = new Date(); d.setMonth(d.getMonth() - i);
+          months.push(d.toISOString().slice(0,7));
+        }
+        const monthMap = {};
+        revMonths.forEach(m => { monthMap[m.month] = m.total; });
+        const maxRev = Math.max(1, ...months.map(m => monthMap[m]||0));
+        revChart.innerHTML = months.map(m => {
+          const val = monthMap[m] || 0;
+          const h = Math.max(val ? Math.round((val/maxRev)*90) : 0, 2);
+          return `<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;">
+            <div style="font-size:10px;color:#A89880;margin-bottom:4px;">$${val.toLocaleString()}</div>
+            <div style="width:100%;height:${h}px;background:#E8500A;border-radius:4px;"></div>
+          </div>`;
+        }).join('');
+        revLabels.innerHTML = months.map(m => {
+          const d = new Date(m + '-01T00:00:00');
+          return `<span>${d.toLocaleDateString('en-AU',{month:'short'})}</span>`;
+        }).join('');
+      }
+
+      // ── Applications by status ──
+      const colors = { approved:'#2D8B55', pending:'#C9840A', declined:'#C0392B', withdrawn:'#6B5A4A' };
+      document.getElementById('an-app-breakdown').innerHTML = appStatus.length
+        ? appStatus.map(a => {
+            const pct = totalApps > 0 ? Math.round((a.n / totalApps) * 100) : 0;
+            return _barRow(a.status.charAt(0).toUpperCase()+a.status.slice(1), a.n, pct, colors[a.status]||'#6B5A4A');
+          }).join('')
+        : '<div style="color:#6B5A4A;font-size:13px;padding:8px 0;">No applications yet.</div>';
+
+      // ── Event categories ──
+      const cats = data.eventsByCategory || [];
+      const maxCat = cats.length ? Math.max(...cats.map(c => c.n)) : 1;
+      const catColors = ['#E8500A','#C9840A','#2B5BA8','#2D8B55','#6B5A4A','#8B4513'];
+      const catTotalEl = document.getElementById('an-cat-total');
+      if (catTotalEl) catTotalEl.textContent = cats.reduce((s,c)=>s+c.n,0) + ' total';
+      document.getElementById('an-cat-breakdown').innerHTML = cats.length
+        ? cats.map((c,i) => _barRow(c.category, c.n, Math.round((c.n/maxCat)*100), catColors[i%catColors.length])).join('')
+        : '<div style="color:#6B5A4A;font-size:13px;">No events yet.</div>';
+
+      // ── Event fill rates ──
+      document.getElementById('an-avg-fee').textContent = data.avgStallFee ? '$'+data.avgStallFee : '—';
+      document.getElementById('an-avg-apps').textContent = data.avgAppsPerEvent ?? '—';
+      const fills = data.eventFillRates || [];
+      document.getElementById('an-fill-rates').innerHTML = fills.length
+        ? `<table style="width:100%;font-size:12px;border-collapse:collapse;">
+            <tr style="color:#6B5A4A;text-align:left;"><th style="padding:6px 8px;font-weight:600;">Event</th><th style="padding:6px 8px;font-weight:600;width:70px;">Stalls</th><th style="padding:6px 8px;font-weight:600;width:70px;">Filled</th><th style="padding:6px 8px;font-weight:600;width:60px;">Rate</th></tr>
+            ${fills.map(f => {
+              const pct = f.stalls_available > 0 ? Math.round((f.approved_count/f.stalls_available)*100) : 0;
+              const clr = pct >= 90 ? '#C0392B' : pct >= 60 ? '#C9840A' : '#2D8B55';
+              return `<tr style="border-top:1px solid #2A2018;"><td style="padding:6px 8px;color:#FDF4E7;">${f.name}</td><td style="padding:6px 8px;color:#A89880;">${f.stalls_available||'—'}</td><td style="padding:6px 8px;color:#A89880;">${f.approved_count}</td><td style="padding:6px 8px;color:${clr};font-weight:700;">${f.stalls_available ? pct+'%' : '—'}</td></tr>`;
+            }).join('')}
+          </table>`
+        : '<div style="color:#6B5A4A;font-size:13px;">No events yet.</div>';
+
+      // ── Vendor funnel (real data) ──
       const vTotal = data.totalVendors || 0;
-      const vActive = appStatus.find(a=>a.status==='approved')?.n || Math.round(vTotal * 0.8);
-      const vPro = Math.round(vTotal * 0.25);
+      const f2 = data.funnels || {};
+      const vApproved = f2.vendorsApproved || 0;
+      const vPaid = f2.vendorsPaid || 0;
       document.getElementById('an-vendor-funnel').innerHTML = [
         { label:'Registered', n: vTotal, pct: 100, color:'#E8500A' },
-        { label:'Active', n: vActive || vTotal, pct: vTotal ? Math.round(((vActive||vTotal)/vTotal)*100) : 100, color:'#C9840A' },
-        { label:'Pro subscribers', n: vPro, pct: vTotal ? Math.round((vPro/vTotal)*100) : 0, color:'#2B5BA8' },
-      ].map(row => `<div class="analytics-bar-row">
-        <span class="analytics-bar-label">${row.label}</span>
-        <div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:${row.pct}%;background:${row.color};"></div></div>
-        <span class="analytics-bar-val">${row.n}</span>
-      </div>`).join('');
+        { label:'Applied to events', n: vApproved, pct: vTotal ? Math.round((vApproved/vTotal)*100) : 0, color:'#C9840A' },
+        { label:'Pro/Growth plan', n: vPaid, pct: vTotal ? Math.round((vPaid/vTotal)*100) : 0, color:'#2B5BA8' },
+      ].map(row => _barRow(row.label, row.n, row.pct, row.color)).join('');
 
-      // Organiser funnel
+      // ── Organiser funnel (real data) ──
       const oTotal = data.totalOrganisers || 0;
+      const oPosted = f2.orgsWithEvent || 0;
+      const oApps = f2.orgsWithApps || 0;
       document.getElementById('an-org-funnel').innerHTML = [
         { label:'Registered', n: oTotal, pct: 100, color:'#E8500A' },
-        { label:'Posted an event', n: Math.round(oTotal * 0.7), pct: 70, color:'#C9840A' },
-        { label:'Received applications', n: Math.round(oTotal * 0.55), pct: 55, color:'#2D8B55' },
-      ].map(row => `<div class="analytics-bar-row">
-        <span class="analytics-bar-label">${row.label}</span>
-        <div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:${row.pct}%;background:${row.color};"></div></div>
-        <span class="analytics-bar-val">${row.n}</span>
-      </div>`).join('');
+        { label:'Posted an event', n: oPosted, pct: oTotal ? Math.round((oPosted/oTotal)*100) : 0, color:'#C9840A' },
+        { label:'Received applications', n: oApps, pct: oTotal ? Math.round((oApps/oTotal)*100) : 0, color:'#2D8B55' },
+      ].map(row => _barRow(row.label, row.n, row.pct, row.color)).join('');
+
+      // ── Geography ──
+      const evtSub = data.eventsBySuburb || [];
+      const maxEvtSub = evtSub.length ? Math.max(...evtSub.map(s=>s.n)) : 1;
+      document.getElementById('an-evt-suburb').innerHTML = evtSub.length
+        ? evtSub.map((s,i) => _barRow(s.suburb, s.n, Math.round((s.n/maxEvtSub)*100), catColors[i%catColors.length])).join('')
+        : '<div style="color:#6B5A4A;font-size:13px;">No events yet.</div>';
+      const vndSub = data.vendorsBySuburb || [];
+      const maxVndSub = vndSub.length ? Math.max(...vndSub.map(s=>s.n)) : 1;
+      document.getElementById('an-vnd-suburb').innerHTML = vndSub.length
+        ? vndSub.map((s,i) => _barRow(s.suburb, s.n, Math.round((s.n/maxVndSub)*100), catColors[i%catColors.length])).join('')
+        : '<div style="color:#6B5A4A;font-size:13px;">No vendors yet.</div>';
+
+      // ── Moderation ──
+      const mod = data.moderation || {};
+      document.getElementById('an-moderation').innerHTML =
+        _statBlock('Open reports', mod.openReports || 0, mod.openReports > 0 ? 'Need attention' : 'All clear') +
+        _statBlock('Open flags', mod.openFlags || 0, mod.openFlags > 0 ? 'Pending review' : 'All clear') +
+        _statBlock('Avg resolution', mod.avgResolutionHours != null ? (mod.avgResolutionHours < 24 ? mod.avgResolutionHours + 'h' : Math.round(mod.avgResolutionHours/24) + 'd') : '—', 'Time to resolve');
+
+      // ── Doc compliance ──
+      const dc = data.docCompliance || {};
+      const dcTotal = dc.total || 1;
+      document.getElementById('an-doc-compliance').innerHTML = [
+        { label:'Food safety cert', n: dc.has_food_safety||0, color:'#2D8B55' },
+        { label:'Public liability', n: dc.has_pli||0, color:'#C9840A' },
+        { label:'Council permit', n: dc.has_council||0, color:'#2B5BA8' },
+      ].map(d => _barRow(d.label, d.n + '/' + (dc.total||0), Math.round((d.n/dcTotal)*100), d.color)).join('');
+
+      // ── Messaging ──
+      const msg = data.messaging || {};
+      document.getElementById('an-messaging').innerHTML =
+        _statBlock('Total messages', (msg.total||0).toLocaleString(), 'All time') +
+        _statBlock('Last 7 days', (msg.last7d||0).toLocaleString(), 'Recent activity');
+
+      // ── Top vendors ──
+      const top = data.topVendors || [];
+      document.getElementById('an-top-vendors').innerHTML = top.length
+        ? `<table style="width:100%;font-size:12px;border-collapse:collapse;">
+            <tr style="color:#6B5A4A;text-align:left;"><th style="padding:6px 8px;font-weight:600;width:30px;">#</th><th style="padding:6px 8px;font-weight:600;">Vendor</th><th style="padding:6px 8px;font-weight:600;width:80px;">Applications</th><th style="padding:6px 8px;font-weight:600;width:80px;">Approved</th><th style="padding:6px 8px;font-weight:600;width:80px;">Rate</th></tr>
+            ${top.map((v,i) => {
+              const rate = v.total_apps > 0 ? Math.round((v.approved/v.total_apps)*100) : 0;
+              return `<tr style="border-top:1px solid #2A2018;"><td style="padding:6px 8px;color:#6B5A4A;font-weight:700;">${i+1}</td><td style="padding:6px 8px;color:#FDF4E7;font-weight:600;">${v.trading_name}</td><td style="padding:6px 8px;color:#A89880;">${v.total_apps}</td><td style="padding:6px 8px;color:#2D8B55;">${v.approved}</td><td style="padding:6px 8px;color:#FDF4E7;font-weight:600;">${rate}%</td></tr>`;
+            }).join('')}
+          </table>`
+        : '<div style="color:#6B5A4A;font-size:13px;padding:8px 0;">No vendor applications yet.</div>';
 
     } catch(e) { console.warn('Analytics load failed', e); }
   }

@@ -934,6 +934,54 @@ export const stmts = {
   newAppsPrior7d:  prepare(`SELECT COUNT(*) as n FROM event_applications WHERE created_at >= datetime('now','-14 days') AND created_at < datetime('now','-7 days')`),
   // Per-day signup counts for the rolling 7-day chart
   signups7dByDay:  prepare(`SELECT date(created_at) as day, COUNT(*) as n FROM users WHERE created_at >= date('now','-6 days') GROUP BY date(created_at) ORDER BY day ASC`),
+
+  // ── Extended analytics ──────────────────────────────────────────────────────
+
+  // Revenue & Plans
+  totalRevenue:      prepare(`SELECT COALESCE(SUM(amount),0) as n FROM payments WHERE status='paid'`),
+  revenueThisMonth:  prepare(`SELECT COALESCE(SUM(amount),0) as n FROM payments WHERE status='paid' AND created_at >= date('now','start of month')`),
+  revenueLastMonth:  prepare(`SELECT COALESCE(SUM(amount),0) as n FROM payments WHERE status='paid' AND created_at >= date('now','start of month','-1 month') AND created_at < date('now','start of month')`),
+  avgTransaction:    prepare(`SELECT COALESCE(ROUND(AVG(amount),2),0) as n FROM payments WHERE status='paid'`),
+  revenueByMonth:    prepare(`SELECT strftime('%Y-%m',created_at) as month, COALESCE(SUM(amount),0) as total FROM payments WHERE status='paid' AND created_at >= date('now','-5 months','start of month') GROUP BY strftime('%Y-%m',created_at) ORDER BY month ASC`),
+  vendorsByPlan:     prepare(`SELECT COALESCE(v.plan,'free') as plan, COUNT(*) as n FROM vendors v JOIN users u ON v.user_id=u.id WHERE u.role='vendor' GROUP BY v.plan ORDER BY CASE COALESCE(v.plan,'free') WHEN 'growth' THEN 1 WHEN 'pro' THEN 2 WHEN 'basic' THEN 3 ELSE 4 END`),
+
+  // Growth trends
+  signups30dByDay:   prepare(`SELECT date(created_at) as day, role, COUNT(*) as n FROM users WHERE created_at >= date('now','-29 days') GROUP BY date(created_at), role ORDER BY day ASC`),
+  growthVendorsThisMonth:  prepare(`SELECT COUNT(*) as n FROM users WHERE role='vendor' AND created_at >= date('now','start of month')`),
+  growthVendorsLastMonth:  prepare(`SELECT COUNT(*) as n FROM users WHERE role='vendor' AND created_at >= date('now','start of month','-1 month') AND created_at < date('now','start of month')`),
+  growthOrgsThisMonth:     prepare(`SELECT COUNT(*) as n FROM users WHERE role='organiser' AND created_at >= date('now','start of month')`),
+  growthOrgsLastMonth:     prepare(`SELECT COUNT(*) as n FROM users WHERE role='organiser' AND created_at >= date('now','start of month','-1 month') AND created_at < date('now','start of month')`),
+  growthEventsThisMonth:   prepare(`SELECT COUNT(*) as n FROM events WHERE status='published' AND created_at >= date('now','start of month')`),
+  growthEventsLastMonth:   prepare(`SELECT COUNT(*) as n FROM events WHERE status='published' AND created_at >= date('now','start of month','-1 month') AND created_at < date('now','start of month')`),
+  growthAppsThisMonth:     prepare(`SELECT COUNT(*) as n FROM event_applications WHERE created_at >= date('now','start of month')`),
+  growthAppsLastMonth:     prepare(`SELECT COUNT(*) as n FROM event_applications WHERE created_at >= date('now','start of month','-1 month') AND created_at < date('now','start of month')`),
+
+  // Event performance
+  eventFillRates:    prepare(`SELECT e.id, e.name, e.date_sort, COALESCE(e.stalls_available,0) as stalls_available, COUNT(CASE WHEN ea.status='approved' THEN 1 END) as approved_count, COUNT(ea.id) as total_apps FROM events e LEFT JOIN event_applications ea ON ea.event_id=e.id WHERE e.status='published' GROUP BY e.id ORDER BY CASE WHEN e.stalls_available > 0 THEN ROUND(COUNT(CASE WHEN ea.status='approved' THEN 1 END)*100.0/e.stalls_available,0) ELSE 0 END DESC LIMIT 10`),
+  avgStallFee:       prepare(`SELECT ROUND(AVG((COALESCE(stall_fee_min,0)+COALESCE(stall_fee_max,0))/2.0),0) as n FROM events WHERE status='published' AND (stall_fee_min>0 OR stall_fee_max>0)`),
+  avgAppsPerEvent:   prepare(`SELECT ROUND(CAST(COUNT(ea.id) AS REAL)/MAX(COUNT(DISTINCT e.id),1),1) as n FROM events e LEFT JOIN event_applications ea ON ea.event_id=e.id WHERE e.status='published'`),
+
+  // Geography
+  eventsBySuburb:    prepare(`SELECT COALESCE(suburb,'Unknown') as suburb, COUNT(*) as n FROM events WHERE status='published' GROUP BY suburb ORDER BY n DESC LIMIT 10`),
+  vendorsBySuburb:   prepare(`SELECT COALESCE(v.suburb,'Unknown') as suburb, COUNT(*) as n FROM vendors v JOIN users u ON v.user_id=u.id WHERE u.role='vendor' AND u.status='active' GROUP BY v.suburb ORDER BY n DESC LIMIT 10`),
+
+  // Platform health
+  openReports:       prepare(`SELECT COUNT(*) as n FROM reports WHERE status='open'`),
+  openFlags:         prepare(`SELECT COUNT(*) as n FROM content_flags WHERE status='pending'`),
+  avgResolutionTime: prepare(`SELECT ROUND(AVG((julianday(resolved_at)-julianday(created_at))*24),1) as n FROM reports WHERE resolved_at IS NOT NULL`),
+  messagesTotal:     prepare(`SELECT COUNT(*) as n FROM messages`),
+  messages7d:        prepare(`SELECT COUNT(*) as n FROM messages WHERE created_at >= date('now','-7 days')`),
+  docCompliance:     prepare(`SELECT COUNT(*) as total, SUM(CASE WHEN food_safety_url IS NOT NULL AND food_safety_url!='' THEN 1 ELSE 0 END) as has_food_safety, SUM(CASE WHEN pli_url IS NOT NULL AND pli_url!='' THEN 1 ELSE 0 END) as has_pli, SUM(CASE WHEN council_url IS NOT NULL AND council_url!='' THEN 1 ELSE 0 END) as has_council FROM vendors v JOIN users u ON v.user_id=u.id WHERE u.status='active' AND u.role='vendor'`),
+
+  // Real funnels
+  vendorsWithApprovedApp:  prepare(`SELECT COUNT(DISTINCT vendor_user_id) as n FROM event_applications WHERE status='approved'`),
+  vendorsPaidPlan:         prepare(`SELECT COUNT(*) as n FROM vendors v JOIN users u ON v.user_id=u.id WHERE u.role='vendor' AND v.plan IN ('pro','growth')`),
+  organisersWithEvent:     prepare(`SELECT COUNT(DISTINCT organiser_user_id) as n FROM events WHERE status='published' AND organiser_user_id IS NOT NULL`),
+  organisersWithApps:      prepare(`SELECT COUNT(DISTINCT e.organiser_user_id) as n FROM events e JOIN event_applications ea ON ea.event_id=e.id WHERE e.status='published'`),
+
+  // Top vendors
+  topVendorsByApps:  prepare(`SELECT v.trading_name, COUNT(ea.id) as total_apps, SUM(CASE WHEN ea.status='approved' THEN 1 ELSE 0 END) as approved FROM event_applications ea JOIN vendors v ON v.user_id=ea.vendor_user_id GROUP BY ea.vendor_user_id ORDER BY total_apps DESC LIMIT 5`),
+
   // Activity feed — 6 most recent events across signups, applications, events published
   recentActivity: prepare(`
     SELECT type, actor_name, subject_name, status, ts FROM (
