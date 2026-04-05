@@ -1017,7 +1017,6 @@ export const stmts = {
       CASE COALESCE(v.plan,'free') WHEN 'growth' THEN 4 WHEN 'pro' THEN 3 WHEN 'basic' THEN 2 ELSE 1 END DESC,
       event_count DESC,
       v.trading_name ASC
-    LIMIT 10
   `),
   recommendedEvents: prepare(`
     SELECT e.id, e.name, e.category, e.suburb, e.state, e.date_sort, e.featured,
@@ -1030,7 +1029,6 @@ export const stmts = {
     WHERE e.status='published' AND e.featured=0 AND e.date_sort >= date('now')
     GROUP BY e.id
     ORDER BY app_count DESC, org_event_count DESC, e.date_sort ASC
-    LIMIT 10
   `),
   setEventFeatured:  prepare(`UPDATE events SET featured=?, featured_at=CASE WHEN ?=1 THEN datetime('now') ELSE NULL END WHERE id=?`),
   setVendorFeatured: prepare(`UPDATE vendors SET featured=?, featured_at=CASE WHEN ?=1 THEN datetime('now') ELSE NULL END WHERE user_id=?`),
