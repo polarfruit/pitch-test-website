@@ -1040,31 +1040,31 @@
             <div class="settings-row">
               <div class="settings-row-label"><strong>Pro vendor applications</strong><span>Allow vendors to subscribe to Pro plan</span></div>
               <div class="settings-row-ctrl">
-                <label class="toggle"><input type="checkbox" checked /><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+                <label class="toggle"><input type="checkbox" id="flag-pro-apps" onchange="saveFlag('flag_pro_apps',this.checked)" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
               </div>
             </div>
             <div class="settings-row">
               <div class="settings-row-label"><strong>Organiser direct messaging</strong><span>Enable organiser → vendor messaging</span></div>
               <div class="settings-row-ctrl">
-                <label class="toggle"><input type="checkbox" checked /><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+                <label class="toggle"><input type="checkbox" id="flag-messaging" onchange="saveFlag('flag_messaging',this.checked)" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
               </div>
             </div>
             <div class="settings-row">
               <div class="settings-row-label"><strong>Vendor reviews</strong><span>Allow organisers to leave vendor reviews</span></div>
               <div class="settings-row-ctrl">
-                <label class="toggle"><input type="checkbox" checked /><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+                <label class="toggle"><input type="checkbox" id="flag-reviews" onchange="saveFlag('flag_reviews',this.checked)" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
               </div>
             </div>
             <div class="settings-row">
               <div class="settings-row-label"><strong>New organiser signups</strong><span>Open organiser registration</span></div>
               <div class="settings-row-ctrl">
-                <label class="toggle"><input type="checkbox" checked /><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+                <label class="toggle"><input type="checkbox" id="flag-org-signups" onchange="saveFlag('flag_org_signups',this.checked)" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
               </div>
             </div>
             <div class="settings-row">
               <div class="settings-row-label"><strong>Maintenance mode</strong><span>Take site offline for all public users</span></div>
               <div class="settings-row-ctrl">
-                <label class="toggle"><input type="checkbox" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+                <label class="toggle"><input type="checkbox" id="flag-maintenance" onchange="saveFlag('flag_maintenance',this.checked)" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
               </div>
             </div>
           </div>
@@ -1077,13 +1077,13 @@
             <div class="settings-row">
               <div class="settings-row-label"><strong>Auto-approve vendors with full docs</strong><span>Approve instantly if ABN + FSC + PLI verified</span></div>
               <div class="settings-row-ctrl">
-                <label class="toggle"><input type="checkbox" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+                <label class="toggle"><input type="checkbox" id="flag-auto-approve" onchange="saveFlag('flag_auto_approve',this.checked)" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
               </div>
             </div>
             <div class="settings-row">
               <div class="settings-row-label"><strong>Require manual organiser review</strong><span>All organiser accounts reviewed by admin</span></div>
               <div class="settings-row-ctrl">
-                <label class="toggle"><input type="checkbox" checked /><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+                <label class="toggle"><input type="checkbox" id="flag-manual-org-review" onchange="saveFlag('flag_manual_org_review',this.checked)" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
               </div>
             </div>
           </div>
@@ -1098,13 +1098,13 @@
             <p class="settings-sub">Display a notice to all users at the top of every page.</p>
             <div style="margin-bottom:12px;">
               <label class="field-label-sm">Banner message</label>
-              <textarea class="field-sm" placeholder="e.g. Scheduled maintenance on Sunday 9–11am AEST…">🎉 Welcome to Pitch. — Australia's food vendor marketplace. Applications now open for Rundle Mall Night Eats.</textarea>
+              <textarea class="field-sm" id="setting-banner-msg" placeholder="e.g. Scheduled maintenance on Sunday 9–11am AEST…"></textarea>
             </div>
             <div style="display:flex;gap:10px;align-items:center;margin-bottom:12px;">
               <div class="settings-row-label"><strong style="font-size:13px;color:#FDF4E7;">Show banner</strong></div>
-              <label class="toggle" style="margin-left:auto;"><input type="checkbox" checked /><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+              <label class="toggle" style="margin-left:auto;"><input type="checkbox" id="flag-banner-show" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
             </div>
-            <button class="btn-sm-primary" style="width:100%;">Save banner</button>
+            <button class="btn-sm-primary" style="width:100%;" onclick="saveBanner()">Save banner</button>
           </div>
         </div>
 
@@ -1112,25 +1112,26 @@
           <div class="settings-section">
             <h3 class="settings-heading">Platform limits</h3>
             <p class="settings-sub">Configure vendor and event capacity limits.</p>
+            <p style="font-size:11px;color:#6B5A4A;margin:0 0 12px;">Enter <strong style="color:#A89880;">0</strong> or <strong style="color:#A89880;">—</strong> for unlimited.</p>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
               <div>
                 <label class="field-label-sm">Max free applications/month</label>
-                <input class="field-sm" type="number" value="3" />
+                <input class="field-sm" id="limit-free-apps" type="text" value="3" />
               </div>
               <div>
                 <label class="field-label-sm">Max Pro applications/month</label>
-                <input class="field-sm" type="number" value="999" placeholder="Unlimited" />
+                <input class="field-sm" id="limit-pro-apps" type="text" value="0" placeholder="0 = unlimited" />
               </div>
               <div>
                 <label class="field-label-sm">Max events per organiser</label>
-                <input class="field-sm" type="number" value="50" />
+                <input class="field-sm" id="limit-events-per-org" type="text" value="50" />
               </div>
               <div>
                 <label class="field-label-sm">Max stalls per event</label>
-                <input class="field-sm" type="number" value="200" />
+                <input class="field-sm" id="limit-stalls-per-event" type="text" value="200" />
               </div>
             </div>
-            <button class="btn-sm-primary" style="margin-top:14px;width:100%;">Save limits</button>
+            <button class="btn-sm-primary" style="margin-top:14px;width:100%;" onclick="saveLimits()">Save limits</button>
           </div>
         </div>
 
@@ -1139,8 +1140,8 @@
             <h3 class="settings-heading" style="color:#C0392B;">Danger zone</h3>
             <p class="settings-sub">Irreversible platform-wide actions.</p>
             <div style="display:flex;flex-direction:column;gap:8px;">
-              <button class="btn-sm-danger" style="width:100%;">Purge all draft events</button>
-              <button class="btn-sm-danger" style="width:100%;">Reset all pending approvals</button>
+              <button class="btn-sm-danger" style="width:100%;" id="btn-purge-drafts" onclick="confirmDangerAction('purge')">Purge all draft events</button>
+              <button class="btn-sm-danger" style="width:100%;" id="btn-reset-approvals" onclick="confirmDangerAction('reset')">Reset all pending approvals</button>
             </div>
           </div>
         </div>
@@ -1908,6 +1909,24 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="dangerConfirmModal">
+  <div class="modal" style="max-width:440px;width:100%;">
+    <div class="modal-header">
+      <span style="font-size:18px;">⚠️</span>
+      <span class="modal-title" id="danger-modal-title">Confirm action</span>
+      <button class="modal-close" onclick="closeModal('dangerConfirmModal')">✕</button>
+    </div>
+    <div style="padding:20px 24px;">
+      <p id="danger-modal-desc" style="font-size:14px;color:#A89880;line-height:1.6;margin:0 0 16px;"></p>
+      <p style="font-size:12px;color:#C0392B;margin:0;">This action cannot be undone.</p>
+    </div>
+    <div class="modal-footer" style="display:flex;gap:10px;justify-content:flex-end;padding:14px 24px;border-top:1px solid #2A2018;">
+      <button class="btn-sm-outline" onclick="closeModal('dangerConfirmModal')">Cancel</button>
+      <button class="btn-sm-danger" id="danger-confirm-btn" style="min-width:120px;">Confirm</button>
+    </div>
+  </div>
+</div>
+
 <div class="detail-overlay" id="detail-overlay" onclick="closeDetailDrawer()"></div>
 <div class="detail-drawer" id="detail-drawer">
   <div class="detail-header">
@@ -1957,6 +1976,7 @@
     if (id === 'reports')        loadReports();
     if (id === 'moderation')     loadFlags();
     if (id === 'messages')       loadMsgUsers();
+    if (id === 'settings')       loadSettings();
   }
 
   function toggleExpand(id) {
@@ -5578,6 +5598,170 @@
     if (np && np.style.display !== 'none' && !np.contains(e.target) && !nb.contains(e.target)) np.style.display = 'none';
     if (qp && qp.style.display !== 'none' && !qp.contains(e.target) && !qb.contains(e.target)) qp.style.display = 'none';
   });
+
+  // ── Platform Settings ────────────────────────────────────────────────────────
+  let _settingsLoaded = false;
+  async function loadSettings() {
+    try {
+      const r = await fetch('/api/admin/settings', {});
+      if (!r.ok) return;
+      const s = await r.json();
+      // Flags
+      const flagMap = {
+        'flag_pro_apps': 'flag-pro-apps',
+        'flag_messaging': 'flag-messaging',
+        'flag_reviews': 'flag-reviews',
+        'flag_org_signups': 'flag-org-signups',
+        'flag_maintenance': 'flag-maintenance',
+        'flag_auto_approve': 'flag-auto-approve',
+        'flag_manual_org_review': 'flag-manual-org-review',
+        'banner_show': 'flag-banner-show',
+      };
+      for (const [key, id] of Object.entries(flagMap)) {
+        const el = document.getElementById(id);
+        if (el) el.checked = s[key] === '1';
+      }
+      // Banner message
+      const bm = document.getElementById('setting-banner-msg');
+      if (bm) bm.value = s.banner_message || '';
+      // Limits — 0 displays as "0" (unlimited)
+      const limMap = {
+        'limit_free_apps': 'limit-free-apps',
+        'limit_pro_apps': 'limit-pro-apps',
+        'limit_events_per_org': 'limit-events-per-org',
+        'limit_stalls_per_event': 'limit-stalls-per-event',
+      };
+      for (const [key, id] of Object.entries(limMap)) {
+        const el = document.getElementById(id);
+        if (el) el.value = s[key] === '0' ? '0' : (s[key] || '');
+      }
+      _settingsLoaded = true;
+    } catch (e) { console.error('[loadSettings]', e); }
+  }
+
+  async function saveFlag(key, checked) {
+    try {
+      const r = await fetch('/api/admin/settings', {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [key]: checked ? '1' : '0' }),
+      });
+      if (!r.ok) throw new Error('Save failed');
+      showSettingsToast(key.replace('flag_','').replace(/_/g,' ') + (checked ? ' enabled' : ' disabled'));
+    } catch (e) {
+      console.error('[saveFlag]', e);
+      // Revert the toggle
+      const idMap = {
+        'flag_pro_apps': 'flag-pro-apps', 'flag_messaging': 'flag-messaging',
+        'flag_reviews': 'flag-reviews', 'flag_org_signups': 'flag-org-signups',
+        'flag_maintenance': 'flag-maintenance', 'flag_auto_approve': 'flag-auto-approve',
+        'flag_manual_org_review': 'flag-manual-org-review',
+      };
+      const el = document.getElementById(idMap[key]);
+      if (el) el.checked = !checked;
+      showSettingsToast('Failed to save — reverted', true);
+    }
+  }
+
+  async function saveBanner() {
+    const msg = document.getElementById('setting-banner-msg').value;
+    const show = document.getElementById('flag-banner-show').checked;
+    try {
+      const r = await fetch('/api/admin/settings', {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ banner_message: msg, banner_show: show ? '1' : '0' }),
+      });
+      if (!r.ok) throw new Error('Save failed');
+      showSettingsToast('Banner saved');
+    } catch (e) { console.error('[saveBanner]', e); showSettingsToast('Failed to save banner', true); }
+  }
+
+  function parseLimitValue(val) {
+    val = (val || '').trim();
+    if (val === '' || val === '—' || val === '-') return '0'; // unlimited
+    const n = parseInt(val, 10);
+    return isNaN(n) ? '0' : String(Math.max(n, 0));
+  }
+
+  async function saveLimits() {
+    const limits = {
+      limit_free_apps: parseLimitValue(document.getElementById('limit-free-apps').value),
+      limit_pro_apps: parseLimitValue(document.getElementById('limit-pro-apps').value),
+      limit_events_per_org: parseLimitValue(document.getElementById('limit-events-per-org').value),
+      limit_stalls_per_event: parseLimitValue(document.getElementById('limit-stalls-per-event').value),
+    };
+    try {
+      const r = await fetch('/api/admin/settings', {
+        method: 'PUT', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(limits),
+      });
+      if (!r.ok) throw new Error('Save failed');
+      // Update inputs with normalized values
+      document.getElementById('limit-free-apps').value = limits.limit_free_apps;
+      document.getElementById('limit-pro-apps').value = limits.limit_pro_apps;
+      document.getElementById('limit-events-per-org').value = limits.limit_events_per_org;
+      document.getElementById('limit-stalls-per-event').value = limits.limit_stalls_per_event;
+      showSettingsToast('Limits saved');
+    } catch (e) { console.error('[saveLimits]', e); showSettingsToast('Failed to save limits', true); }
+  }
+
+  function confirmDangerAction(type) {
+    const modal = document.getElementById('dangerConfirmModal');
+    const title = document.getElementById('danger-modal-title');
+    const desc = document.getElementById('danger-modal-desc');
+    const btn = document.getElementById('danger-confirm-btn');
+    if (type === 'purge') {
+      title.textContent = 'Purge all draft events';
+      desc.textContent = 'This will permanently delete all events with status "draft". Published and active events will not be affected.';
+      btn.textContent = 'Purge drafts';
+      btn.onclick = () => executeDangerAction('purge');
+    } else {
+      title.textContent = 'Reset all pending approvals';
+      desc.textContent = 'This will approve all pending vendor and organiser accounts by setting their status to "active". They will immediately gain full platform access.';
+      btn.textContent = 'Approve all';
+      btn.onclick = () => executeDangerAction('reset');
+    }
+    modal.classList.add('open');
+  }
+
+  async function executeDangerAction(type) {
+    const btn = document.getElementById('danger-confirm-btn');
+    btn.disabled = true; btn.textContent = 'Processing…';
+    try {
+      const url = type === 'purge' ? '/api/admin/settings/purge-drafts' : '/api/admin/settings/reset-approvals';
+      const r = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' } });
+      const data = await r.json();
+      if (!r.ok) throw new Error(data.error || 'Failed');
+      closeModal('dangerConfirmModal');
+      if (type === 'purge') {
+        showSettingsToast(data.deleted + ' draft event' + (data.deleted !== 1 ? 's' : '') + ' purged');
+      } else {
+        showSettingsToast(data.approved + ' account' + (data.approved !== 1 ? 's' : '') + ' approved');
+        loadStats(); loadVendors(); loadOrganisers();
+      }
+    } catch (e) {
+      console.error('[danger]', e);
+      showSettingsToast('Action failed: ' + e.message, true);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = type === 'purge' ? 'Purge drafts' : 'Approve all';
+    }
+  }
+
+  function showSettingsToast(msg, isError) {
+    let t = document.getElementById('settings-toast');
+    if (!t) {
+      t = document.createElement('div');
+      t.id = 'settings-toast';
+      t.style.cssText = 'position:fixed;bottom:24px;right:24px;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;transform:translateY(20px);opacity:0;transition:transform 0.25s,opacity 0.25s;pointer-events:none;';
+      document.body.appendChild(t);
+    }
+    t.style.background = isError ? '#C0392B' : '#2D8B55';
+    t.style.color = '#fff';
+    t.textContent = msg;
+    requestAnimationFrame(() => { t.style.transform = 'translateY(0)'; t.style.opacity = '1'; });
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => { t.style.transform = 'translateY(20px)'; t.style.opacity = '0'; }, 3000);
+  }
 
   // ── Boot: fire all data loads in parallel, redirect if auth fails ────────────
   // loadStats() itself hits /api/admin/stats — no separate auth-check round trip needed

@@ -245,6 +245,29 @@ function requireAdminPage(req, res, next) {
   next();
 }
 
+// ── Helper: read a platform setting ───────────────────────────────────────
+async function getPlatformFlag(key) {
+  try {
+    const row = await stmts.getSetting.get(key);
+    return row ? row.value : null;
+  } catch { return null; }
+}
+
+// ── Maintenance mode middleware ───────────────────────────────────────────
+// Blocks public pages + API when maintenance is on (admin routes exempt)
+async function maintenanceGuard(req, res, next) {
+  if (req.path.startsWith('/admin') || req.path.startsWith('/api/admin')) return next();
+  try {
+    const row = await stmts.getSetting.get('flag_maintenance');
+    if (row && row.value === '1') {
+      if (req.path.startsWith('/api/')) return res.status(503).json({ error: 'Site is under maintenance. Please try again later.' });
+      return res.status(503).send(`<!DOCTYPE html><html><head><title>Maintenance</title><style>body{font-family:'Instrument Sans',sans-serif;background:#1A1612;color:#FDF4E7;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;text-align:center;}.wrap{max-width:400px;padding:40px;}.dot{width:48px;height:48px;border-radius:50%;background:#E8500A;margin:0 auto 20px;}h1{font-family:'Fraunces',serif;font-size:28px;margin:0 0 12px;}p{color:#A89880;font-size:15px;line-height:1.6;}</style></head><body><div class="wrap"><div class="dot"></div><h1>We'll be right back</h1><p>Pitch. is undergoing scheduled maintenance. We'll be back shortly.</p></div></body></html>`);
+    }
+  } catch {}
+  next();
+}
+app.use(maintenanceGuard);
+
 // ── Verification helpers ───────────────────────────────────────────────────
 function makeCode() {
   return String(Math.floor(100000 + Math.random() * 900000));
@@ -314,12 +337,16 @@ app.post('/api/presignup/verify-code', async (req, res) => {
 
 // POST /api/signup/vendor
 app.post('/api/signup/vendor', async (req, res) => {
-  const {
+  let {
     first_name, last_name, email, password,
     trading_name, abn, mobile, state, suburb, bio,
     cuisine_tags, setup_type, stall_w, stall_d, power, water, price_range, instagram,
     plan,
   } = req.body;
+
+  // If pro applications are disabled, force free plan
+  const proFlag = await getPlatformFlag('flag_pro_apps');
+  if (proFlag === '0' && plan && plan !== 'free') plan = 'free';
 
   if (!email || !password || !first_name || !last_name || !trading_name) {
     return res.status(400).json({ error: 'Missing required fields' });
@@ -374,6 +401,10 @@ app.post('/api/signup/vendor', async (req, res) => {
 
 // POST /api/signup/organiser
 app.post('/api/signup/organiser', async (req, res) => {
+  // Check if organiser signups are enabled
+  const orgSignupsFlag = await getPlatformFlag('flag_org_signups');
+  if (orgSignupsFlag === '0') return res.status(403).json({ error: 'Organiser registrations are currently closed.' });
+
   const {
     first_name, last_name, email, password,
     org_name, abn, website, state, suburb, phone, bio,
@@ -1570,22 +1601,25 @@ app.post('/api/events/:id/apply', requireAuth, async (req, res) => {
     const onTrial = vendorSub.trial_ends_at && new Date(vendorSub.trial_ends_at) > now;
     const effectivePlan = onTrial ? 'pro' : (vendorSub.plan || 'free');
 
-    // Free plan: enforce 10 applications per month
+    // Free plan: enforce application limit from platform settings
     if (effectivePlan === 'free') {
-      const APP_LIMIT = 10;
-      // Reset counter if it's a new month
-      if (vendorSub.apps_reset_month !== currentMonth) {
-        await stmts.resetAppsCounter.run(currentMonth, req.session.userId);
-        vendorSub.apps_this_month = 0;
-      }
-      if (Number(vendorSub.apps_this_month) >= APP_LIMIT) {
-        return res.status(429).json({
-          error: 'Application limit reached',
-          message: `You've used all ${APP_LIMIT} applications for this month on the Starter plan. Upgrade to Pro or Growth to apply to unlimited events.`,
-          limit: APP_LIMIT,
-          used: Number(vendorSub.apps_this_month),
-          upgrade_url: '/pricing'
-        });
+      const limitSetting = await getPlatformFlag('limit_free_apps');
+      const APP_LIMIT = limitSetting ? parseInt(limitSetting, 10) : 3;
+      if (APP_LIMIT > 0) { // 0 = unlimited, skip check
+        // Reset counter if it's a new month
+        if (vendorSub.apps_reset_month !== currentMonth) {
+          await stmts.resetAppsCounter.run(currentMonth, req.session.userId);
+          vendorSub.apps_this_month = 0;
+        }
+        if (Number(vendorSub.apps_this_month) >= APP_LIMIT) {
+          return res.status(429).json({
+            error: 'Application limit reached',
+            message: `You've used all ${APP_LIMIT} applications for this month on the Starter plan. Upgrade to Pro or Growth to apply to unlimited events.`,
+            limit: APP_LIMIT,
+            used: Number(vendorSub.apps_this_month),
+            upgrade_url: '/pricing'
+          });
+        }
       }
     }
   }
@@ -1746,6 +1780,10 @@ app.get('/api/messages/:threadKey', requireAuth, async (req, res) => {
 
 // POST /api/messages/:threadKey — send a message
 app.post('/api/messages/:threadKey', requireAuth, async (req, res) => {
+  // Check if messaging is enabled
+  const msgFlag = await getPlatformFlag('flag_messaging');
+  if (msgFlag === '0' && !req.session.isAdmin) return res.status(403).json({ error: 'Messaging is currently disabled.' });
+
   try {
     const { threadKey } = req.params;
     const { body } = req.body;
@@ -2397,6 +2435,62 @@ app.get('/api/admin/analytics', requireAdmin, async (req, res) => {
     funnels: { vendorsApproved: vApproved.n, vendorsPaid: vPaid.n, orgsWithEvent: oWithEvent.n, orgsWithApps: oWithApps.n },
     topVendors,
   });
+});
+
+// ── Admin — platform settings ─────────────────────────────────────────────
+app.get('/api/admin/settings', requireAdmin, async (req, res) => {
+  try {
+    const rows = await stmts.getAllSettings.all();
+    const settings = {};
+    for (const r of rows) settings[r.key] = r.value;
+    res.json(settings);
+  } catch (e) { console.error('[settings GET]', e); res.status(500).json({ error: 'Failed to load settings' }); }
+});
+
+app.put('/api/admin/settings', requireAdmin, async (req, res) => {
+  try {
+    const allowed = [
+      'flag_pro_apps','flag_messaging','flag_reviews','flag_org_signups','flag_maintenance',
+      'flag_auto_approve','flag_manual_org_review',
+      'banner_message','banner_show',
+      'limit_free_apps','limit_pro_apps','limit_events_per_org','limit_stalls_per_event',
+    ];
+    const updates = req.body;
+    for (const [key, value] of Object.entries(updates)) {
+      if (allowed.includes(key)) await stmts.upsertSetting.run(key, String(value));
+    }
+    // Clear public caches so banner changes take effect immediately
+    _apiCache.clear();
+    res.json({ ok: true });
+  } catch (e) { console.error('[settings PUT]', e); res.status(500).json({ error: 'Failed to save settings' }); }
+});
+
+app.post('/api/admin/settings/purge-drafts', requireAdmin, async (req, res) => {
+  try {
+    const count = await stmts.countDraftEvents.get();
+    const result = await stmts.purgeDraftEvents.run();
+    _apiCache.clear();
+    res.json({ ok: true, deleted: count.n });
+  } catch (e) { console.error('[purge-drafts]', e); res.status(500).json({ error: 'Failed to purge drafts' }); }
+});
+
+app.post('/api/admin/settings/reset-approvals', requireAdmin, async (req, res) => {
+  try {
+    const count = await stmts.countPendingUsers.get();
+    const result = await stmts.resetPendingApprovals.run();
+    _apiCache.clear();
+    res.json({ ok: true, approved: count.n });
+  } catch (e) { console.error('[reset-approvals]', e); res.status(500).json({ error: 'Failed to reset approvals' }); }
+});
+
+// ── Public banner endpoint (for all pages) ────────────────────────────────
+app.get('/api/banner', async (req, res) => {
+  try {
+    const show = await getPlatformFlag('banner_show');
+    if (show !== '1') return res.json({ show: false });
+    const msg = await getPlatformFlag('banner_message');
+    res.json({ show: true, message: msg || '' });
+  } catch { res.json({ show: false }); }
 });
 
 // ── Admin — featured ──────────────────────────────────────────────────────
