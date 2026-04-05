@@ -142,7 +142,7 @@ if (process.env.TURSO_DATABASE_URL) {
 
 // ── Schema version — bump this whenever migrations are added ─────────────────
 // On a versioned DB the entire migration block is skipped (1 read vs 50+ calls).
-const SCHEMA_VERSION = 12;
+const SCHEMA_VERSION = 13;
 let _schemaVersion = 0;
 try {
   const _ver = await prepare(`SELECT v FROM _schema_meta LIMIT 1`).get();
