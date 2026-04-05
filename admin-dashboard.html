@@ -363,6 +363,11 @@
 
     /* ── Analytics ─────────────────────────────── */
     .analytics-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 22px; }
+    .an-range-btn { background: #1C1814; border: 1px solid #2A2018; color: #A89880; font-size: 12px; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+    .an-range-btn:hover { border-color: #E8500A44; color: #FDF4E7; }
+    .an-range-btn.active { background: #E8500A; border-color: #E8500A; color: #fff; font-weight: 600; }
+    .an-date-input { background: #1C1814; border: 1px solid #2A2018; color: #FDF4E7; font-size: 12px; padding: 5px 10px; border-radius: 6px; font-family: inherit; }
+    .an-date-input:focus { border-color: #E8500A; outline: none; }
     .analytics-bar-wrap { margin-bottom: 6px; }
     .analytics-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
     .analytics-bar-label { font-size: 12px; color: #A89880; width: 100px; flex-shrink: 0; }
@@ -1321,9 +1326,26 @@
 
   <!-- ════════════ ANALYTICS ════════════ -->
   <div class="panel" id="panel-analytics">
-    <div class="page-header">
+    <div class="page-header" style="margin-bottom:0;">
       <h1>Analytics</h1>
       <p>Key trends to inform product decisions. Revenue, growth, event performance, and platform health.</p>
+    </div>
+
+    <!-- Date range filter -->
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+      <button class="an-range-btn active" data-range="all" onclick="setAnalyticsRange('all',this)">All time</button>
+      <button class="an-range-btn" data-range="7d" onclick="setAnalyticsRange('7d',this)">Last 7 days</button>
+      <button class="an-range-btn" data-range="30d" onclick="setAnalyticsRange('30d',this)">Last 30 days</button>
+      <button class="an-range-btn" data-range="90d" onclick="setAnalyticsRange('90d',this)">Last 90 days</button>
+      <button class="an-range-btn" data-range="month" onclick="setAnalyticsRange('month',this)">This month</button>
+      <span style="color:#4A3C30;margin:0 4px;">|</span>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <input type="date" id="an-date-from" class="an-date-input" />
+        <span style="color:#6B5A4A;font-size:12px;">to</span>
+        <input type="date" id="an-date-to" class="an-date-input" />
+        <button class="an-range-btn" onclick="applyCustomRange()">Apply</button>
+      </div>
+      <span id="an-range-label" style="font-size:12px;color:#A89880;margin-left:auto;"></span>
     </div>
 
     <!-- KPI row -->
@@ -1352,7 +1374,7 @@
     <!-- Signups 30d + Vendor plan breakdown -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
       <div class="card">
-        <div class="card-header"><span style="font-size:16px;">📊</span><span class="card-title">Signups (last 30 days)</span></div>
+        <div class="card-header"><span style="font-size:16px;">📊</span><span class="card-title" id="an-signups-title">Signups (last 30 days)</span></div>
         <div style="padding:20px;">
           <div style="display:flex;gap:1px;align-items:flex-end;height:90px;" id="an-signups30-bars"></div>
           <div style="display:flex;justify-content:space-between;font-size:9px;color:#4A3C30;margin-top:5px;" id="an-signups30-labels"></div>
@@ -3330,6 +3352,53 @@
   }
 
   // ── Analytics ─────────────────────────────────────────────────────────────
+  // ── Analytics date range filter ──────────────────────────────────────────
+  let _anFrom = null, _anTo = null;
+  function setAnalyticsRange(range, btn) {
+    document.querySelectorAll('.an-range-btn').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    const today = new Date();
+    const fmt = d => d.toISOString().slice(0,10);
+    if (range === 'all') {
+      _anFrom = null; _anTo = null;
+      document.getElementById('an-date-from').value = '';
+      document.getElementById('an-date-to').value = '';
+      document.getElementById('an-range-label').textContent = '';
+    } else if (range === '7d') {
+      const from = new Date(today); from.setDate(from.getDate() - 6);
+      _anFrom = fmt(from); _anTo = fmt(today);
+    } else if (range === '30d') {
+      const from = new Date(today); from.setDate(from.getDate() - 29);
+      _anFrom = fmt(from); _anTo = fmt(today);
+    } else if (range === '90d') {
+      const from = new Date(today); from.setDate(from.getDate() - 89);
+      _anFrom = fmt(from); _anTo = fmt(today);
+    } else if (range === 'month') {
+      _anFrom = fmt(new Date(today.getFullYear(), today.getMonth(), 1));
+      _anTo = fmt(today);
+    }
+    if (_anFrom && _anTo) {
+      document.getElementById('an-date-from').value = _anFrom;
+      document.getElementById('an-date-to').value = _anTo;
+      const f = new Date(_anFrom + 'T00:00:00').toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'});
+      const t = new Date(_anTo + 'T00:00:00').toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'});
+      document.getElementById('an-range-label').textContent = f + ' — ' + t;
+    }
+    loadAnalytics();
+  }
+  function applyCustomRange() {
+    const from = document.getElementById('an-date-from').value;
+    const to = document.getElementById('an-date-to').value;
+    if (!from || !to) return;
+    if (from > to) { alert('Start date must be before end date'); return; }
+    _anFrom = from; _anTo = to;
+    document.querySelectorAll('.an-range-btn').forEach(b => b.classList.remove('active'));
+    const f = new Date(from + 'T00:00:00').toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'});
+    const t = new Date(to + 'T00:00:00').toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'});
+    document.getElementById('an-range-label').textContent = f + ' — ' + t;
+    loadAnalytics();
+  }
+
   function _barRow(label, n, pct, color) {
     return `<div class="analytics-bar-row"><span class="analytics-bar-label">${label}</span><div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:${Math.max(pct,2)}%;background:${color};"></div></div><span class="analytics-bar-val">${n}</span></div>`;
   }
@@ -3346,25 +3415,42 @@
 
   async function loadAnalytics() {
     try {
-      const r = await fetch('/api/admin/analytics');
+      let url = '/api/admin/analytics';
+      if (_anFrom && _anTo) url += '?from=' + _anFrom + '&to=' + _anTo;
+      const r = await fetch(url);
       const data = await r.json();
+      const isFiltered = !!data.dateRange;
 
       // ── KPI row ──
+      const rangeLabel = isFiltered ? 'In selected range' : 'All time';
       document.getElementById('an-vendors').textContent = (data.totalVendors || 0).toLocaleString();
       document.getElementById('an-organisers').textContent = (data.totalOrganisers || 0).toLocaleString();
       document.getElementById('an-events').textContent = (data.totalEvents || 0).toLocaleString();
       const appStatus = data.applicationsByStatus || [];
       const totalApps = appStatus.reduce((s, a) => s + a.n, 0);
       document.getElementById('an-apps').textContent = totalApps.toLocaleString();
+      document.querySelectorAll('#analytics-kpis .kpi-delta').forEach(el => { el.textContent = rangeLabel; });
 
       // ── Revenue row ──
       const rev = data.revenue || {};
       document.getElementById('an-rev-total').textContent = '$' + (rev.total || 0).toLocaleString();
+      document.getElementById('an-rev-total').closest('.kpi-card').querySelector('.kpi-delta').textContent = rangeLabel;
+      // Hide "this month" and "avg" context when filtered
+      const revMonthCard = document.getElementById('an-rev-month').closest('.kpi-card');
+      const revAvgCard = document.getElementById('an-rev-avg').closest('.kpi-card');
+      if (isFiltered) {
+        revMonthCard.style.opacity = '0.4'; revMonthCard.title = 'Not applicable for custom date range';
+        revAvgCard.querySelector('.kpi-delta').textContent = rangeLabel;
+      } else {
+        revMonthCard.style.opacity = '1'; revMonthCard.title = '';
+      }
       document.getElementById('an-rev-month').textContent = '$' + (rev.thisMonth || 0).toLocaleString();
       document.getElementById('an-rev-avg').textContent = '$' + (rev.avgTransaction || 0).toLocaleString();
       _growthDelta(document.getElementById('an-rev-delta'), rev.thisMonth || 0, rev.lastMonth || 0);
 
-      // ── Growth vs last month ──
+      // ── Growth vs last month (hidden when custom range) ──
+      const growthRow = document.getElementById('an-g-vendors').closest('[style*="grid-template-columns"]');
+      if (growthRow) growthRow.style.display = isFiltered ? 'none' : '';
       const g = data.growth || {};
       document.getElementById('an-g-vendors').textContent = (g.vendorsThis || 0).toLocaleString();
       _growthDelta(document.getElementById('an-g-vendors-d'), g.vendorsThis || 0, g.vendorsLast || 0);
@@ -3375,18 +3461,27 @@
       document.getElementById('an-g-apps').textContent = (g.appsThis || 0).toLocaleString();
       _growthDelta(document.getElementById('an-g-apps-d'), g.appsThis || 0, g.appsLast || 0);
 
-      // ── Signups 30 days bar chart ──
+      // ── Signups bar chart ──
       const s30 = data.signups30dByDay || [];
       const barsEl = document.getElementById('an-signups30-bars');
       const labelsEl = document.getElementById('an-signups30-labels');
+      const signupsTitle = document.getElementById('an-signups-title');
+      if (signupsTitle) signupsTitle.textContent = isFiltered ? 'Signups (selected range)' : 'Signups (last 30 days)';
       if (barsEl) {
         // Group by day
         const dayMap = {};
         s30.forEach(r => { if (!dayMap[r.day]) dayMap[r.day] = {}; dayMap[r.day][r.role] = r.n; });
         const days = [];
-        for (let i = 29; i >= 0; i--) {
-          const d = new Date(); d.setDate(d.getDate() - i);
-          days.push(d.toISOString().slice(0,10));
+        if (isFiltered) {
+          // Use from/to range
+          const start = new Date(data.dateRange.from + 'T00:00:00');
+          const end = new Date(data.dateRange.to + 'T00:00:00');
+          for (let d = new Date(start); d <= end; d.setDate(d.getDate()+1)) days.push(d.toISOString().slice(0,10));
+        } else {
+          for (let i = 29; i >= 0; i--) {
+            const d = new Date(); d.setDate(d.getDate() - i);
+            days.push(d.toISOString().slice(0,10));
+          }
         }
         const maxDay = Math.max(1, ...days.map(d => { const dm = dayMap[d]||{}; return (dm.vendor||0)+(dm.organiser||0)+(dm.foodie||0); }));
         barsEl.innerHTML = days.map(d => {
