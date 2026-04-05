@@ -1317,5 +1317,6 @@ export const stmts = {
 export const txSignupVendor    = _txSignupVendor;
 export const txSignupOrganiser = _txSignupOrganiser;
 export const txSignupFoodie    = _txSignupFoodie;
+export { prepare };
 
 export default _client ?? _localDb;
