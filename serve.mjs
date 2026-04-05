@@ -2714,7 +2714,7 @@ app.get('/contact',             page('contact.html'));
 app.get('/terms',               page('terms.html'));
 app.get('/privacy',             page('privacy.html'));
 app.get('/blog',                page('blog.html'));
-app.get('/forgot-password',     page('forgot-password.html'));
+app.get('/forgot-password',     page('forgot-password.html', { skipBanner: true }));
 app.get('/events/new',          (req, res) => {
   const sess = req.session;
   if (sess && sess.userId && sess.role === 'organiser') {
@@ -2722,14 +2722,14 @@ app.get('/events/new',          (req, res) => {
   }
   return res.redirect('/signup/organiser');
 });
-app.get('/login',               page('login.html'));
-app.get('/signup',              page('signup.html'));
-app.get('/signup/vendor',       page('signup-vendor.html'));
-app.get('/signup/organiser',    page('signup-organiser.html'));
-app.get('/signup/foodie',       page('signup-foodie.html'));
+app.get('/login',               page('login.html', { skipBanner: true }));
+app.get('/signup',              page('signup.html', { skipBanner: true }));
+app.get('/signup/vendor',       page('signup-vendor.html', { skipBanner: true }));
+app.get('/signup/organiser',    page('signup-organiser.html', { skipBanner: true }));
+app.get('/signup/foodie',       page('signup-foodie.html', { skipBanner: true }));
 app.get('/discover',            page('foodie-feed.html'));
-app.get('/verify/email',        page('verify-email.html'));
-app.get('/verify/phone',        page('verify-phone.html'));
+app.get('/verify/email',        page('verify-email.html', { skipBanner: true }));
+app.get('/verify/phone',        page('verify-phone.html', { skipBanner: true }));
 app.get('/events/*splat', async (req, res) => {
   const slug = req.params.splat;
   try {
