@@ -223,16 +223,16 @@ async function vendorInitData(user) {
 
 // ── Auth helpers ───────────────────────────────────────────────────────────
 function requireAuth(req, res, next) {
-  // Cookie session (regular user or admin with userId set)
-  if (req.session.userId) return next();
-  // Admin session without userId — backfill it
-  if (req.session.isAdmin) { req.session.userId = 1000; return next(); }
-  // Header token (sent by dashboard pages when cookies don't persist on Vercel)
+  // Header token takes priority — carries userId AND role reliably
   const tok = req.headers['x-pitch-auth'];
   if (tok) {
     const auth = verifyPageToken(tok);
     if (auth) { req.session = auth; return next(); }
   }
+  // Cookie session (regular user or admin with userId set)
+  if (req.session.userId) return next();
+  // Admin session without userId — backfill it
+  if (req.session.isAdmin) { req.session.userId = 1000; return next(); }
   return res.status(401).json({ error: 'Not authenticated' });
 }
 
