@@ -5,7 +5,7 @@ import fs from 'fs';
 import bcrypt from 'bcryptjs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import db, { stmts, txSignupVendor, txSignupOrganiser, txSignupFoodie } from './db.mjs';
+import db, { stmts, txSignupVendor, txSignupOrganiser, txSignupFoodie, prepare } from './db.mjs';
 import { sendVerificationEmail, sendVerificationSMS, sendAdminEmail, buildSuspensionEmailHtml, buildSuspensionNoticeHtml } from './mailer.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -2286,133 +2286,116 @@ app.get('/api/admin/activity', requireAdmin, async (req, res) => {
 
 // ── Admin — analytics ─────────────────────────────────────────────────────
 app.get('/api/admin/analytics', requireAdmin, async (req, res) => {
-  // Optional date range filter: ?from=YYYY-MM-DD&to=YYYY-MM-DD
-  const from = req.query.from || null; // inclusive
-  const to   = req.query.to   || null; // inclusive (we add 1 day for < comparison)
-  const hasRange = from && to;
+  const from = req.query.from || null;
+  const to   = req.query.to   || null;
+  const hasRange = !!(from && to);
 
-  // Build date-filtered ad-hoc queries when a range is selected
-  function dq(sql, args) { return prepare(sql).get(...(args||[])); }
-  function dqAll(sql, args) { return prepare(sql).all(...(args||[])); }
+  // ── "All time" path — use pre-compiled prepared statements (fast, works on Turso) ──
+  if (!hasRange) {
+    const [
+      vendors, organisers, events, appCounts, catCounts, signupsByDay,
+      totalRev, revThisMonth, revLastMonth, avgTx, revByMonth, planBreakdown,
+      signups30d,
+      gvThis, gvLast, goThis, goLast, geThis, geLast, gaThis, gaLast,
+      fillRates, avgFee, avgApps,
+      evtSuburb, vndSuburb,
+      oReports, oFlags, avgResolve, msgTotal, msg7d, docComp,
+      vApproved, vPaid, oWithEvent, oWithApps,
+      topVendors,
+    ] = await Promise.all([
+      stmts.countVendors.get(), stmts.countOrganisers.get(), stmts.countEvents.get(),
+      stmts.countApplications.all(), stmts.countEventsByCategory.all(), stmts.signups7dByDay.all(),
+      stmts.totalRevenue.get(), stmts.revenueThisMonth.get(), stmts.revenueLastMonth.get(),
+      stmts.avgTransaction.get(), stmts.revenueByMonth.all(), stmts.vendorsByPlan.all(),
+      stmts.signups30dByDay.all(),
+      stmts.growthVendorsThisMonth.get(), stmts.growthVendorsLastMonth.get(),
+      stmts.growthOrgsThisMonth.get(), stmts.growthOrgsLastMonth.get(),
+      stmts.growthEventsThisMonth.get(), stmts.growthEventsLastMonth.get(),
+      stmts.growthAppsThisMonth.get(), stmts.growthAppsLastMonth.get(),
+      stmts.eventFillRates.all(), stmts.avgStallFee.get(), stmts.avgAppsPerEvent.get(),
+      stmts.eventsBySuburb.all(), stmts.vendorsBySuburb.all(),
+      stmts.openReports.get(), stmts.openFlags.get(), stmts.avgResolutionTime.get(),
+      stmts.messagesTotal.get(), stmts.messages7d.get(), stmts.docCompliance.get(),
+      stmts.vendorsWithApprovedApp.get(), stmts.vendorsPaidPlan.get(),
+      stmts.organisersWithEvent.get(), stmts.organisersWithApps.get(),
+      stmts.topVendorsByApps.all(),
+    ]);
+    return res.json({
+      dateRange: null,
+      totalVendors: vendors.n, totalOrganisers: organisers.n, totalEvents: events.n,
+      applicationsByStatus: appCounts, eventsByCategory: catCounts, signups7dByDay: signupsByDay,
+      revenue: { total: totalRev.n, thisMonth: revThisMonth.n, lastMonth: revLastMonth.n, avgTransaction: avgTx.n, byMonth: revByMonth },
+      vendorsByPlan: planBreakdown, signups30dByDay: signups30d,
+      growth: { vendorsThis: gvThis.n, vendorsLast: gvLast.n, orgsThis: goThis.n, orgsLast: goLast.n, eventsThis: geThis.n, eventsLast: geLast.n, appsThis: gaThis.n, appsLast: gaLast.n },
+      eventFillRates: fillRates, avgStallFee: avgFee.n, avgAppsPerEvent: avgApps.n,
+      eventsBySuburb: evtSuburb, vendorsBySuburb: vndSuburb,
+      moderation: { openReports: oReports.n, openFlags: oFlags.n, avgResolutionHours: avgResolve.n },
+      messaging: { total: msgTotal.n, last7d: msg7d.n },
+      docCompliance: docComp,
+      funnels: { vendorsApproved: vApproved.n, vendorsPaid: vPaid.n, orgsWithEvent: oWithEvent.n, orgsWithApps: oWithApps.n },
+      topVendors,
+    });
+  }
 
-  // Date clause helpers — each table has different date column names
-  const uDate = hasRange ? `AND u.created_at >= ? AND u.created_at < date(?, '+1 day')` : '';
-  const uDateRaw = hasRange ? `AND created_at >= ? AND created_at < date(?, '+1 day')` : '';
-  const eDate = hasRange ? `AND e.created_at >= ? AND e.created_at < date(?, '+1 day')` : '';
-  const eDateRaw = hasRange ? `AND created_at >= ? AND created_at < date(?, '+1 day')` : '';
-  const pDate = hasRange ? `AND created_at >= ? AND created_at < date(?, '+1 day')` : '';
-  const eaDateRaw = hasRange ? `AND created_at >= ? AND created_at < date(?, '+1 day')` : '';
-  const rDate = hasRange ? `AND created_at >= ? AND created_at < date(?, '+1 day')` : '';
-  const mDate = hasRange ? `AND created_at >= ? AND created_at < date(?, '+1 day')` : '';
-  const fDate = hasRange ? `AND created_at >= ? AND created_at < date(?, '+1 day')` : '';
-  const dp = hasRange ? [from, to] : []; // date params pair
+  // ── Date-filtered path — dynamic queries ──
+  const dq = (sql, args) => prepare(sql).get(...(args||[]));
+  const dqAll = (sql, args) => prepare(sql).all(...(args||[]));
+  const D = `AND created_at >= ? AND created_at < date(?, '+1 day')`;
+  const uD = `AND u.created_at >= ? AND u.created_at < date(?, '+1 day')`;
+  const eD = `AND e.created_at >= ? AND e.created_at < date(?, '+1 day')`;
+  const eaD = `AND ea.created_at >= ? AND ea.created_at < date(?, '+1 day')`;
+  const dp = [from, to];
 
   const [
     vendors, organisers, events, appCounts, catCounts, signupsByDay,
-    totalRev, revThisMonth, revLastMonth, avgTx, revByMonth, planBreakdown,
-    signups30d,
-    gvThis, gvLast, goThis, goLast, geThis, geLast, gaThis, gaLast,
+    totalRev, avgTx, revByMonth, planBreakdown, signups30d,
     fillRates, avgFee, avgApps,
     evtSuburb, vndSuburb,
     oReports, oFlags, avgResolve, msgTotal, msg7d, docComp,
-    vApproved, vPaid, oWithEvent, oWithApps,
-    topVendors,
+    vApproved, vPaid, oWithEvent, oWithApps, topVendors,
   ] = await Promise.all([
-    // KPIs
-    dq(`SELECT COUNT(*) as n FROM users WHERE role='vendor' ${uDateRaw}`, dp),
-    dq(`SELECT COUNT(*) as n FROM users WHERE role='organiser' ${uDateRaw}`, dp),
-    dq(`SELECT COUNT(*) as n FROM events WHERE status='published' ${eDateRaw}`, dp),
-    dqAll(`SELECT status, COUNT(*) as n FROM event_applications WHERE 1=1 ${eaDateRaw} GROUP BY status`, dp),
-    dqAll(`SELECT COALESCE(category,'Other') as category, COUNT(*) as n FROM events WHERE status='published' ${eDateRaw} GROUP BY category ORDER BY n DESC`, dp),
-    // Signups 7d — always relative, not filtered by range
-    hasRange
-      ? dqAll(`SELECT date(created_at) as day, COUNT(*) as n FROM users WHERE created_at >= ? AND created_at < date(?, '+1 day') GROUP BY date(created_at) ORDER BY day ASC`, dp)
-      : stmts.signups7dByDay.all(),
-    // Revenue
-    dq(`SELECT COALESCE(SUM(amount),0) as n FROM payments WHERE status='paid' ${pDate}`, dp),
-    hasRange ? dq(`SELECT 0 as n`) : stmts.revenueThisMonth.get(),
-    hasRange ? dq(`SELECT 0 as n`) : stmts.revenueLastMonth.get(),
-    dq(`SELECT COALESCE(ROUND(AVG(amount),2),0) as n FROM payments WHERE status='paid' ${pDate}`, dp),
-    hasRange
-      ? dqAll(`SELECT strftime('%Y-%m',created_at) as month, COALESCE(SUM(amount),0) as total FROM payments WHERE status='paid' ${pDate} GROUP BY strftime('%Y-%m',created_at) ORDER BY month ASC`, dp)
-      : stmts.revenueByMonth.all(),
-    dqAll(`SELECT COALESCE(v.plan,'free') as plan, COUNT(*) as n FROM vendors v JOIN users u ON v.user_id=u.id WHERE u.role='vendor' ${uDate} GROUP BY v.plan ORDER BY CASE COALESCE(v.plan,'free') WHEN 'growth' THEN 1 WHEN 'pro' THEN 2 WHEN 'basic' THEN 3 ELSE 4 END`, dp),
-    // Growth — always relative, skip in date-range mode
-    hasRange
-      ? dqAll(`SELECT date(created_at) as day, role, COUNT(*) as n FROM users WHERE created_at >= ? AND created_at < date(?, '+1 day') GROUP BY date(created_at), role ORDER BY day ASC`, dp)
-      : stmts.signups30dByDay.all(),
-    hasRange ? dq(`SELECT 0 as n`) : stmts.growthVendorsThisMonth.get(),
-    hasRange ? dq(`SELECT 0 as n`) : stmts.growthVendorsLastMonth.get(),
-    hasRange ? dq(`SELECT 0 as n`) : stmts.growthOrgsThisMonth.get(),
-    hasRange ? dq(`SELECT 0 as n`) : stmts.growthOrgsLastMonth.get(),
-    hasRange ? dq(`SELECT 0 as n`) : stmts.growthEventsThisMonth.get(),
-    hasRange ? dq(`SELECT 0 as n`) : stmts.growthEventsLastMonth.get(),
-    hasRange ? dq(`SELECT 0 as n`) : stmts.growthAppsThisMonth.get(),
-    hasRange ? dq(`SELECT 0 as n`) : stmts.growthAppsLastMonth.get(),
-    // Event performance
-    dqAll(`SELECT e.id, e.name, e.date_sort, COALESCE(e.stalls_available,0) as stalls_available, COUNT(CASE WHEN ea.status='approved' THEN 1 END) as approved_count, COUNT(ea.id) as total_apps FROM events e LEFT JOIN event_applications ea ON ea.event_id=e.id WHERE e.status='published' ${eDate} GROUP BY e.id ORDER BY CASE WHEN e.stalls_available > 0 THEN ROUND(COUNT(CASE WHEN ea.status='approved' THEN 1 END)*100.0/e.stalls_available,0) ELSE 0 END DESC LIMIT 10`, dp),
-    dq(`SELECT ROUND(AVG((COALESCE(stall_fee_min,0)+COALESCE(stall_fee_max,0))/2.0),0) as n FROM events WHERE status='published' AND (stall_fee_min>0 OR stall_fee_max>0) ${eDateRaw}`, dp),
-    dq(`SELECT ROUND(CAST(total_apps AS REAL)/CASE WHEN total_events=0 THEN 1 ELSE total_events END,1) as n FROM (SELECT COUNT(ea.id) as total_apps, COUNT(DISTINCT e.id) as total_events FROM events e LEFT JOIN event_applications ea ON ea.event_id=e.id WHERE e.status='published' ${eDate})`, dp),
-    // Geography
-    dqAll(`SELECT COALESCE(suburb,'Unknown') as suburb, COUNT(*) as n FROM events WHERE status='published' ${eDateRaw} GROUP BY suburb ORDER BY n DESC LIMIT 10`, dp),
-    dqAll(`SELECT COALESCE(v.suburb,'Unknown') as suburb, COUNT(*) as n FROM vendors v JOIN users u ON v.user_id=u.id WHERE u.role='vendor' AND u.status='active' ${uDate} GROUP BY v.suburb ORDER BY n DESC LIMIT 10`, dp),
-    // Platform health
-    dq(`SELECT COUNT(*) as n FROM reports WHERE status='open' ${rDate}`, dp),
-    dq(`SELECT COUNT(*) as n FROM content_flags WHERE status='pending' ${fDate}`, dp),
-    dq(`SELECT ROUND(AVG((julianday(resolved_at)-julianday(created_at))*24),1) as n FROM reports WHERE resolved_at IS NOT NULL ${rDate}`, dp),
-    dq(`SELECT COUNT(*) as n FROM messages WHERE 1=1 ${mDate}`, dp),
-    hasRange ? dq(`SELECT COUNT(*) as n FROM messages WHERE 1=1 ${mDate}`, dp) : stmts.messages7d.get(),
-    dqAll(`SELECT COUNT(*) as total, SUM(CASE WHEN food_safety_url IS NOT NULL AND food_safety_url!='' THEN 1 ELSE 0 END) as has_food_safety, SUM(CASE WHEN pli_url IS NOT NULL AND pli_url!='' THEN 1 ELSE 0 END) as has_pli, SUM(CASE WHEN council_url IS NOT NULL AND council_url!='' THEN 1 ELSE 0 END) as has_council FROM vendors v JOIN users u ON v.user_id=u.id WHERE u.status='active' AND u.role='vendor' ${uDate}`, dp).then(r => r[0] || { total:0, has_food_safety:0, has_pli:0, has_council:0 }),
-    // Funnels
-    dq(`SELECT COUNT(DISTINCT vendor_user_id) as n FROM event_applications WHERE status='approved' ${eaDateRaw}`, dp),
-    dq(`SELECT COUNT(*) as n FROM vendors v JOIN users u ON v.user_id=u.id WHERE u.role='vendor' AND v.plan IN ('pro','growth') ${uDate}`, dp),
-    dq(`SELECT COUNT(DISTINCT organiser_user_id) as n FROM events WHERE status='published' AND organiser_user_id IS NOT NULL ${eDateRaw}`, dp),
-    dq(`SELECT COUNT(DISTINCT e.organiser_user_id) as n FROM events e JOIN event_applications ea ON ea.event_id=e.id WHERE e.status='published' ${eDate}`, dp),
-    // Top vendors
-    dqAll(`SELECT v.trading_name, COUNT(ea.id) as total_apps, SUM(CASE WHEN ea.status='approved' THEN 1 ELSE 0 END) as approved FROM event_applications ea JOIN vendors v ON v.user_id=ea.vendor_user_id WHERE 1=1 ${eaDateRaw} GROUP BY ea.vendor_user_id ORDER BY total_apps DESC LIMIT 5`, dp),
+    dq(`SELECT COUNT(*) as n FROM users WHERE role='vendor' ${D}`, dp),
+    dq(`SELECT COUNT(*) as n FROM users WHERE role='organiser' ${D}`, dp),
+    dq(`SELECT COUNT(*) as n FROM events WHERE status='published' ${D}`, dp),
+    dqAll(`SELECT status, COUNT(*) as n FROM event_applications WHERE 1=1 ${D} GROUP BY status`, dp),
+    dqAll(`SELECT COALESCE(category,'Other') as category, COUNT(*) as n FROM events WHERE status='published' ${D} GROUP BY category ORDER BY n DESC`, dp),
+    dqAll(`SELECT date(created_at) as day, COUNT(*) as n FROM users WHERE created_at >= ? AND created_at < date(?, '+1 day') GROUP BY date(created_at) ORDER BY day ASC`, dp),
+    dq(`SELECT COALESCE(SUM(amount),0) as n FROM payments WHERE status='paid' ${D}`, dp),
+    dq(`SELECT COALESCE(ROUND(AVG(amount),2),0) as n FROM payments WHERE status='paid' ${D}`, dp),
+    dqAll(`SELECT strftime('%Y-%m',created_at) as month, COALESCE(SUM(amount),0) as total FROM payments WHERE status='paid' ${D} GROUP BY strftime('%Y-%m',created_at) ORDER BY month ASC`, dp),
+    dqAll(`SELECT COALESCE(v.plan,'free') as plan, COUNT(*) as n FROM vendors v JOIN users u ON v.user_id=u.id WHERE u.role='vendor' ${uD} GROUP BY v.plan ORDER BY CASE COALESCE(v.plan,'free') WHEN 'growth' THEN 1 WHEN 'pro' THEN 2 WHEN 'basic' THEN 3 ELSE 4 END`, dp),
+    dqAll(`SELECT date(created_at) as day, role, COUNT(*) as n FROM users WHERE created_at >= ? AND created_at < date(?, '+1 day') GROUP BY date(created_at), role ORDER BY day ASC`, dp),
+    dqAll(`SELECT e.id, e.name, e.date_sort, COALESCE(e.stalls_available,0) as stalls_available, COUNT(CASE WHEN ea.status='approved' THEN 1 END) as approved_count, COUNT(ea.id) as total_apps FROM events e LEFT JOIN event_applications ea ON ea.event_id=e.id WHERE e.status='published' ${eD} GROUP BY e.id ORDER BY CASE WHEN e.stalls_available > 0 THEN ROUND(COUNT(CASE WHEN ea.status='approved' THEN 1 END)*100.0/e.stalls_available,0) ELSE 0 END DESC LIMIT 10`, dp),
+    dq(`SELECT ROUND(AVG((COALESCE(stall_fee_min,0)+COALESCE(stall_fee_max,0))/2.0),0) as n FROM events WHERE status='published' AND (stall_fee_min>0 OR stall_fee_max>0) ${D}`, dp),
+    dq(`SELECT ROUND(CAST(total_apps AS REAL)/CASE WHEN total_events=0 THEN 1 ELSE total_events END,1) as n FROM (SELECT COUNT(ea.id) as total_apps, COUNT(DISTINCT e.id) as total_events FROM events e LEFT JOIN event_applications ea ON ea.event_id=e.id WHERE e.status='published' ${eD})`, dp),
+    dqAll(`SELECT COALESCE(suburb,'Unknown') as suburb, COUNT(*) as n FROM events WHERE status='published' ${D} GROUP BY suburb ORDER BY n DESC LIMIT 10`, dp),
+    dqAll(`SELECT COALESCE(v.suburb,'Unknown') as suburb, COUNT(*) as n FROM vendors v JOIN users u ON v.user_id=u.id WHERE u.role='vendor' AND u.status='active' ${uD} GROUP BY v.suburb ORDER BY n DESC LIMIT 10`, dp),
+    dq(`SELECT COUNT(*) as n FROM reports WHERE status='open' ${D}`, dp),
+    dq(`SELECT COUNT(*) as n FROM content_flags WHERE status='pending' ${D}`, dp),
+    dq(`SELECT ROUND(AVG((julianday(resolved_at)-julianday(created_at))*24),1) as n FROM reports WHERE resolved_at IS NOT NULL ${D}`, dp),
+    dq(`SELECT COUNT(*) as n FROM messages WHERE 1=1 ${D}`, dp),
+    dq(`SELECT COUNT(*) as n FROM messages WHERE 1=1 ${D}`, dp),
+    dqAll(`SELECT COUNT(*) as total, SUM(CASE WHEN food_safety_url IS NOT NULL AND food_safety_url!='' THEN 1 ELSE 0 END) as has_food_safety, SUM(CASE WHEN pli_url IS NOT NULL AND pli_url!='' THEN 1 ELSE 0 END) as has_pli, SUM(CASE WHEN council_url IS NOT NULL AND council_url!='' THEN 1 ELSE 0 END) as has_council FROM vendors v JOIN users u ON v.user_id=u.id WHERE u.status='active' AND u.role='vendor' ${uD}`, dp).then(r => r[0] || { total:0, has_food_safety:0, has_pli:0, has_council:0 }),
+    dq(`SELECT COUNT(DISTINCT vendor_user_id) as n FROM event_applications ea WHERE ea.status='approved' ${eaD}`, dp),
+    dq(`SELECT COUNT(*) as n FROM vendors v JOIN users u ON v.user_id=u.id WHERE u.role='vendor' AND v.plan IN ('pro','growth') ${uD}`, dp),
+    dq(`SELECT COUNT(DISTINCT organiser_user_id) as n FROM events WHERE status='published' AND organiser_user_id IS NOT NULL ${D}`, dp),
+    dq(`SELECT COUNT(DISTINCT e.organiser_user_id) as n FROM events e JOIN event_applications ea ON ea.event_id=e.id WHERE e.status='published' ${eD}`, dp),
+    dqAll(`SELECT v.trading_name, COUNT(ea.id) as total_apps, SUM(CASE WHEN ea.status='approved' THEN 1 ELSE 0 END) as approved FROM event_applications ea JOIN vendors v ON v.user_id=ea.vendor_user_id WHERE 1=1 ${eaD} GROUP BY ea.vendor_user_id ORDER BY total_apps DESC LIMIT 5`, dp),
   ]);
   res.json({
-    dateRange: hasRange ? { from, to } : null,
-    totalVendors: vendors.n,
-    totalOrganisers: organisers.n,
-    totalEvents: events.n,
-    applicationsByStatus: appCounts,
-    eventsByCategory: catCounts,
-    signups7dByDay: signupsByDay,
-    revenue: {
-      total: totalRev.n,
-      thisMonth: revThisMonth.n,
-      lastMonth: revLastMonth.n,
-      avgTransaction: avgTx.n,
-      byMonth: revByMonth,
-    },
-    vendorsByPlan: planBreakdown,
-    signups30dByDay: signups30d,
-    growth: {
-      vendorsThis: gvThis.n, vendorsLast: gvLast.n,
-      orgsThis: goThis.n, orgsLast: goLast.n,
-      eventsThis: geThis.n, eventsLast: geLast.n,
-      appsThis: gaThis.n, appsLast: gaLast.n,
-    },
-    eventFillRates: fillRates,
-    avgStallFee: avgFee.n,
-    avgAppsPerEvent: avgApps.n,
-    eventsBySuburb: evtSuburb,
-    vendorsBySuburb: vndSuburb,
-    moderation: {
-      openReports: oReports.n,
-      openFlags: oFlags.n,
-      avgResolutionHours: avgResolve.n,
-    },
+    dateRange: { from, to },
+    totalVendors: vendors.n, totalOrganisers: organisers.n, totalEvents: events.n,
+    applicationsByStatus: appCounts, eventsByCategory: catCounts, signups7dByDay: signupsByDay,
+    revenue: { total: totalRev.n, thisMonth: 0, lastMonth: 0, avgTransaction: avgTx.n, byMonth: revByMonth },
+    vendorsByPlan: planBreakdown, signups30dByDay: signups30d,
+    growth: { vendorsThis: 0, vendorsLast: 0, orgsThis: 0, orgsLast: 0, eventsThis: 0, eventsLast: 0, appsThis: 0, appsLast: 0 },
+    eventFillRates: fillRates, avgStallFee: avgFee.n, avgAppsPerEvent: avgApps.n,
+    eventsBySuburb: evtSuburb, vendorsBySuburb: vndSuburb,
+    moderation: { openReports: oReports.n, openFlags: oFlags.n, avgResolutionHours: avgResolve.n },
     messaging: { total: msgTotal.n, last7d: msg7d.n },
     docCompliance: docComp,
-    funnels: {
-      vendorsApproved: vApproved.n,
-      vendorsPaid: vPaid.n,
-      orgsWithEvent: oWithEvent.n,
-      orgsWithApps: oWithApps.n,
-    },
-    topVendors: topVendors,
+    funnels: { vendorsApproved: vApproved.n, vendorsPaid: vPaid.n, orgsWithEvent: oWithEvent.n, orgsWithApps: oWithApps.n },
+    topVendors,
   });
 });
 
