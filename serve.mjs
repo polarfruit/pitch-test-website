@@ -2638,8 +2638,14 @@ app.get('/api/vendors/:id/menu', async (req, res) => {
 function injectBanner(html) {
   const bannerDiv = `<div id="site-banner" style="display:none;background:#E8500A;color:#fff;text-align:center;padding:10px 48px 10px 20px;font-size:13px;font-weight:600;position:relative;z-index:999;letter-spacing:0.01em;font-family:'Instrument Sans',sans-serif;"><span id="site-banner-msg"></span><button onclick="this.parentElement.style.display='none'" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:#fff;font-size:16px;cursor:pointer;opacity:0.7;line-height:1;">✕</button></div>`;
   const bannerScript = `<script>fetch('/api/banner').then(r=>r.json()).then(d=>{if(d.show&&d.message){document.getElementById('site-banner-msg').textContent=d.message;document.getElementById('site-banner').style.display='block';}}).catch(()=>{});<\/script>`;
-  if (html.includes('<body>')) html = html.replace('<body>', '<body>' + bannerDiv);
-  else if (html.includes('<body ')) html = html.replace(/<body[^>]*>/, '$&' + bannerDiv);
+  // Dashboard pages: inject inside .main (above topbar) so it sits in the content area, not the sidebar
+  if (html.includes('<div class="main">')) {
+    html = html.replace('<div class="main">', '<div class="main">' + bannerDiv);
+  } else if (html.includes('<body>')) {
+    html = html.replace('<body>', '<body>' + bannerDiv);
+  } else if (html.includes('<body ')) {
+    html = html.replace(/<body[^>]*>/, '$&' + bannerDiv);
+  }
   if (html.includes('</body>')) html = html.replace('</body>', bannerScript + '</body>');
   return html;
 }
