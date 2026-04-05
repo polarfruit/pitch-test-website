@@ -1160,6 +1160,7 @@ export const stmts = {
   // organiser events
   createEvent:        prepare(`INSERT INTO events (slug,name,category,suburb,state,date_sort,date_end,date_text,description,stalls_available,stall_fee_min,stall_fee_max,deadline,organiser_name,organiser_user_id,venue_name,cover_image) VALUES (@slug,@name,@category,@suburb,@state,@date_sort,@date_end,@date_text,@description,@stalls_available,@stall_fee_min,@stall_fee_max,@deadline,@organiser_name,@organiser_user_id,@venue_name,@cover_image)`),
   getOrganiserEvents: prepare(`SELECT * FROM events WHERE organiser_user_id=? ORDER BY date_sort ASC`),
+  countOrganiserEvents: prepare(`SELECT COUNT(*) as n FROM events WHERE organiser_user_id=? AND status IN ('draft','published')`),
   // single query — all apps across all of an organiser's events (replaces N+1 loop)
   getAllAppsByOrganiser: prepare(`SELECT ea.*,e.name as event_name,u.first_name,u.last_name,u.email,v.trading_name,v.mobile,v.suburb as v_suburb,v.state as v_state,v.bio,v.cuisine_tags,v.plan,v.instagram,v.setup_type,v.stall_w,v.stall_d,v.power,v.water,v.price_range FROM event_applications ea JOIN events e ON ea.event_id=e.id JOIN users u ON ea.vendor_user_id=u.id JOIN vendors v ON v.user_id=u.id WHERE e.organiser_user_id=? ORDER BY ea.created_at DESC`),
 
