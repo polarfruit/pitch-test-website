@@ -2286,13 +2286,68 @@ app.get('/api/admin/activity', requireAdmin, async (req, res) => {
 
 // ── Admin — analytics ─────────────────────────────────────────────────────
 app.get('/api/admin/analytics', requireAdmin, async (req, res) => {
-  const [vendors, organisers, events, appCounts, catCounts, signupsByDay] = await Promise.all([
+  const [
+    vendors, organisers, events, appCounts, catCounts, signupsByDay,
+    // Revenue
+    totalRev, revThisMonth, revLastMonth, avgTx, revByMonth, planBreakdown,
+    // Growth
+    signups30d,
+    gvThis, gvLast, goThis, goLast, geThis, geLast, gaThis, gaLast,
+    // Event performance
+    fillRates, avgFee, avgApps,
+    // Geography
+    evtSuburb, vndSuburb,
+    // Platform health
+    oReports, oFlags, avgResolve, msgTotal, msg7d, docComp,
+    // Funnels
+    vApproved, vPaid, oWithEvent, oWithApps,
+    // Top vendors
+    topVendors,
+  ] = await Promise.all([
     stmts.countVendors.get(),
     stmts.countOrganisers.get(),
     stmts.countEvents.get(),
     stmts.countApplications.all(),
     stmts.countEventsByCategory.all(),
     stmts.signups7dByDay.all(),
+    // Revenue
+    stmts.totalRevenue.get(),
+    stmts.revenueThisMonth.get(),
+    stmts.revenueLastMonth.get(),
+    stmts.avgTransaction.get(),
+    stmts.revenueByMonth.all(),
+    stmts.vendorsByPlan.all(),
+    // Growth
+    stmts.signups30dByDay.all(),
+    stmts.growthVendorsThisMonth.get(),
+    stmts.growthVendorsLastMonth.get(),
+    stmts.growthOrgsThisMonth.get(),
+    stmts.growthOrgsLastMonth.get(),
+    stmts.growthEventsThisMonth.get(),
+    stmts.growthEventsLastMonth.get(),
+    stmts.growthAppsThisMonth.get(),
+    stmts.growthAppsLastMonth.get(),
+    // Event performance
+    stmts.eventFillRates.all(),
+    stmts.avgStallFee.get(),
+    stmts.avgAppsPerEvent.get(),
+    // Geography
+    stmts.eventsBySuburb.all(),
+    stmts.vendorsBySuburb.all(),
+    // Platform health
+    stmts.openReports.get(),
+    stmts.openFlags.get(),
+    stmts.avgResolutionTime.get(),
+    stmts.messagesTotal.get(),
+    stmts.messages7d.get(),
+    stmts.docCompliance.get(),
+    // Funnels
+    stmts.vendorsWithApprovedApp.get(),
+    stmts.vendorsPaidPlan.get(),
+    stmts.organisersWithEvent.get(),
+    stmts.organisersWithApps.get(),
+    // Top vendors
+    stmts.topVendorsByApps.all(),
   ]);
   res.json({
     totalVendors: vendors.n,
@@ -2301,6 +2356,46 @@ app.get('/api/admin/analytics', requireAdmin, async (req, res) => {
     applicationsByStatus: appCounts,
     eventsByCategory: catCounts,
     signups7dByDay: signupsByDay,
+    // Revenue
+    revenue: {
+      total: totalRev.n,
+      thisMonth: revThisMonth.n,
+      lastMonth: revLastMonth.n,
+      avgTransaction: avgTx.n,
+      byMonth: revByMonth,
+    },
+    vendorsByPlan: planBreakdown,
+    // Growth
+    signups30dByDay: signups30d,
+    growth: {
+      vendorsThis: gvThis.n, vendorsLast: gvLast.n,
+      orgsThis: goThis.n, orgsLast: goLast.n,
+      eventsThis: geThis.n, eventsLast: geLast.n,
+      appsThis: gaThis.n, appsLast: gaLast.n,
+    },
+    // Event performance
+    eventFillRates: fillRates,
+    avgStallFee: avgFee.n,
+    avgAppsPerEvent: avgApps.n,
+    // Geography
+    eventsBySuburb: evtSuburb,
+    vendorsBySuburb: vndSuburb,
+    // Platform health
+    moderation: {
+      openReports: oReports.n,
+      openFlags: oFlags.n,
+      avgResolutionHours: avgResolve.n,
+    },
+    messaging: { total: msgTotal.n, last7d: msg7d.n },
+    docCompliance: docComp,
+    // Funnels (real data)
+    funnels: {
+      vendorsApproved: vApproved.n,
+      vendorsPaid: vPaid.n,
+      orgsWithEvent: oWithEvent.n,
+      orgsWithApps: oWithApps.n,
+    },
+    topVendors: topVendors,
   });
 });
 
