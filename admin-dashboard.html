@@ -366,8 +366,42 @@
     .an-range-btn { background: #1C1814; border: 1px solid #2A2018; color: #A89880; font-size: 12px; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-family: inherit; transition: all 0.15s; }
     .an-range-btn:hover { border-color: #E8500A44; color: #FDF4E7; }
     .an-range-btn.active { background: #E8500A; border-color: #E8500A; color: #fff; font-weight: 600; }
-    .an-date-input { background: #1C1814; border: 1px solid #2A2018; color: #FDF4E7; font-size: 12px; padding: 5px 10px; border-radius: 6px; font-family: inherit; }
-    .an-date-input:focus { border-color: #E8500A; outline: none; }
+    .an-date-text { width: 96px; height: 34px; background: #1C1814; border: 1px solid #2A2018; border-radius: 6px; padding: 0 10px; font-family: inherit; font-size: 12px; color: #FDF4E7; outline: none; transition: border-color 0.14s, box-shadow 0.14s; }
+    .an-date-text:focus { border-color: #E8500A40; box-shadow: 0 0 0 3px #E8500A12; }
+    .an-date-text::placeholder { color: #6B5A4A; }
+    .an-date-text.has-value { border-color: #E8500A40; }
+    .an-cal-toggle { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; background: #1C1814; border: 1px solid #2A2018; border-radius: 6px; cursor: pointer; color: #A89880; transition: border-color 0.14s, color 0.14s, background 0.14s; }
+    .an-cal-toggle:hover, .an-cal-toggle.active { border-color: #E8500A40; color: #E8500A; background: #E8500A08; }
+    .an-cal-popup { display: none; position: absolute; top: calc(100% + 8px); right: 0; z-index: 500; background: #231E19; border: 1px solid #ffffff12; border-radius: 14px; padding: 18px; box-shadow: 0 24px 64px rgba(0,0,0,0.6), 0 4px 16px rgba(0,0,0,0.4); min-width: 540px; }
+    .an-cal-popup.open { display: block; }
+    .an-cal-inner { display: flex; gap: 20px; }
+    .an-cal-month { flex: 1; min-width: 220px; }
+    .an-cal-month-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .an-cal-month-name { font-family: 'Fraunces', serif; font-size: 13px; font-weight: 800; color: #FDF4E7; letter-spacing: -0.01em; }
+    .an-cal-nav { background: none; border: none; cursor: pointer; color: #A89880; padding: 4px 8px; border-radius: 6px; font-size: 15px; line-height: 1; transition: color 0.12s, background 0.12s; }
+    .an-cal-nav:hover { color: #FDF4E7; background: #ffffff0A; }
+    .an-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+    .an-cal-dow { text-align: center; font-size: 10px; font-weight: 700; color: #6B5A4A; letter-spacing: 0.05em; padding-bottom: 6px; }
+    .an-cal-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; color: #A89880; border-radius: 6px; cursor: pointer; border: none; background: none; font-family: 'Instrument Sans', sans-serif; transition: background 0.1s, color 0.1s; }
+    .an-cal-day:hover:not(.empty) { background: #ffffff12; color: #FDF4E7; }
+    .an-cal-day.empty { cursor: default; color: #6B5A4A; opacity: 0.35; pointer-events: none; }
+    .an-cal-day.today { color: #E8500A; font-weight: 700; }
+    .an-cal-day.start, .an-cal-day.end, .an-cal-day.hover-end { background: #E8500A; color: #fff; font-weight: 700; }
+    .an-cal-day.hover-end { opacity: 0.7; }
+    .an-cal-day.in-range { background: #E8500A18; color: #FDF4E7; border-radius: 0; }
+    .an-cal-day.start { border-radius: 6px 0 0 6px; }
+    .an-cal-day.end   { border-radius: 0 6px 6px 0; }
+    .an-cal-day.start.end { border-radius: 6px; }
+    .an-cal-divider { width: 1px; background: #ffffff0A; flex-shrink: 0; }
+    .an-cal-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; padding-top: 12px; border-top: 1px solid #ffffff0A; }
+    .an-cal-label { font-size: 12px; color: #6B5A4A; }
+    .an-cal-label strong { color: #A89880; }
+    .an-cal-actions { display: flex; gap: 8px; }
+    .an-cal-btn-clear { font-family: inherit; font-size: 12px; font-weight: 600; background: none; border: 1px solid #ffffff12; border-radius: 6px; color: #A89880; padding: 6px 12px; cursor: pointer; transition: color 0.12s, border-color 0.12s; }
+    .an-cal-btn-clear:hover { color: #FDF4E7; border-color: #ffffff25; }
+    .an-cal-btn-apply { font-family: inherit; font-size: 12px; font-weight: 700; background: #E8500A; border: none; border-radius: 6px; color: #fff; padding: 6px 16px; cursor: pointer; transition: background 0.12s; }
+    .an-cal-btn-apply:hover { background: #FF6B2B; }
+    @media (max-width: 680px) { .an-cal-popup { min-width: calc(100vw - 48px); right: 0; left: auto; } .an-cal-inner { flex-direction: column; } .an-cal-divider { height: 1px; width: 100%; } }
     .analytics-bar-wrap { margin-bottom: 6px; }
     .analytics-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
     .analytics-bar-label { font-size: 12px; color: #A89880; width: 100px; flex-shrink: 0; }
@@ -1339,11 +1373,46 @@
       <button class="an-range-btn" data-range="90d" onclick="setAnalyticsRange('90d',this)">Last 90 days</button>
       <button class="an-range-btn" data-range="month" onclick="setAnalyticsRange('month',this)">This month</button>
       <span style="color:#4A3C30;margin:0 4px;">|</span>
-      <div style="display:flex;align-items:center;gap:6px;">
-        <input type="date" id="an-date-from" class="an-date-input" />
-        <span style="color:#6B5A4A;font-size:12px;">to</span>
-        <input type="date" id="an-date-to" class="an-date-input" />
-        <button class="an-range-btn" onclick="applyCustomRange()">Apply</button>
+      <div style="display:flex;align-items:center;gap:6px;position:relative;" id="an-cal-wrap">
+        <input class="an-date-text" id="an-from-text" type="text" placeholder="Start date"
+               oninput="anDateInput('from', event)" onblur="anNormDate('from')" />
+        <span style="color:#6B5A4A;font-size:12px;">→</span>
+        <input class="an-date-text" id="an-to-text" type="text" placeholder="End date"
+               oninput="anDateInput('to', event)" onblur="anNormDate('to')" />
+        <button class="an-cal-toggle" id="an-cal-btn" onclick="anToggleCal(event)" title="Open calendar">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <rect x="1.5" y="2.5" width="11" height="10" rx="2" stroke="currentColor" stroke-width="1.4"/>
+            <path d="M1.5 5.5h11M4.5 1v3M9.5 1v3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <div class="an-cal-popup" id="an-cal-popup">
+          <div class="an-cal-inner">
+            <div class="an-cal-month">
+              <div class="an-cal-month-header">
+                <button class="an-cal-nav" onclick="anCalPrev()">‹</button>
+                <span class="an-cal-month-name" id="an-cal-month-a"></span>
+                <span></span>
+              </div>
+              <div class="an-cal-grid" id="an-cal-grid-a"></div>
+            </div>
+            <div class="an-cal-divider"></div>
+            <div class="an-cal-month">
+              <div class="an-cal-month-header">
+                <span></span>
+                <span class="an-cal-month-name" id="an-cal-month-b"></span>
+                <button class="an-cal-nav" onclick="anCalNext()">›</button>
+              </div>
+              <div class="an-cal-grid" id="an-cal-grid-b"></div>
+            </div>
+          </div>
+          <div class="an-cal-footer">
+            <div class="an-cal-label" id="an-cal-label">Click a date to start</div>
+            <div class="an-cal-actions">
+              <button class="an-cal-btn-clear" onclick="anCalClear()">Clear</button>
+              <button class="an-cal-btn-apply" onclick="anCalApply()">Apply</button>
+            </div>
+          </div>
+        </div>
       </div>
       <span id="an-range-label" style="font-size:12px;color:#A89880;margin-left:auto;"></span>
     </div>
@@ -3354,6 +3423,82 @@
   // ── Analytics ─────────────────────────────────────────────────────────────
   // ── Analytics date range filter ──────────────────────────────────────────
   let _anFrom = null, _anTo = null;
+
+  // Date parsing/formatting helpers (DD/MM/YY, DD/MM/YYYY, D/M/YY etc)
+  function anParseDate(str) {
+    str = (str||'').trim();
+    if (!str) return '';
+    var m = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+    if (m) {
+      var d = m[1].padStart(2,'0'), mo = m[2].padStart(2,'0'), y = m[3];
+      if (y.length === 2) y = '20' + y;
+      var iso = y + '-' + mo + '-' + d;
+      return /^\d{4}-\d{2}-\d{2}$/.test(iso) ? iso : '';
+    }
+    if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+    return '';
+  }
+  function anDisplayDate(iso) {
+    if (!iso) return '';
+    var p = iso.split('-');
+    return p[2] + '/' + p[1] + '/' + p[0];
+  }
+  function anIso(y, m, d) {
+    return y + '-' + String(m+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+  }
+
+  // Text input handlers
+  function anDateInput(field, e) {
+    var inp = document.getElementById('an-' + field + '-text');
+    var isDel = e && (e.inputType === 'deleteContentBackward' || e.inputType === 'deleteContentForward');
+    if (!isDel) {
+      var raw = inp.value;
+      if (raw.length === 2 && /^\d\d$/.test(raw)) inp.value = raw + '/';
+      else if (raw.length === 5 && /^\d\d\/\d\d$/.test(raw)) inp.value = raw + '/';
+    }
+    var iso = anParseDate(inp.value);
+    inp.classList.toggle('has-value', !!iso);
+    if (iso) {
+      if (field === 'from') { _anCalStart = iso; _anFrom = iso; }
+      if (field === 'to')   { _anCalEnd = iso; _anTo = iso; }
+      if (_anFrom && _anTo) {
+        if (_anFrom > _anTo) { var tmp = _anFrom; _anFrom = _anTo; _anTo = tmp; _anCalStart = _anFrom; _anCalEnd = _anTo; }
+        document.querySelectorAll('.an-range-btn').forEach(b => b.classList.remove('active'));
+        _anUpdateLabel();
+        loadAnalytics();
+      }
+    } else if (!inp.value.trim()) {
+      if (field === 'from') { _anCalStart = null; _anFrom = null; }
+      if (field === 'to')   { _anCalEnd = null; _anTo = null; }
+      if (!_anFrom && !_anTo) {
+        document.querySelectorAll('.an-range-btn').forEach(b => b.classList.remove('active'));
+        document.querySelector('.an-range-btn[data-range="all"]').classList.add('active');
+        document.getElementById('an-range-label').textContent = '';
+        loadAnalytics();
+      }
+    }
+  }
+  function anNormDate(field) {
+    var inp = document.getElementById('an-' + field + '-text');
+    var iso = anParseDate(inp.value);
+    if (iso) inp.value = anDisplayDate(iso);
+  }
+  function _anUpdateLabel() {
+    if (_anFrom && _anTo) {
+      var f = new Date(_anFrom + 'T00:00:00').toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'});
+      var t = new Date(_anTo + 'T00:00:00').toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'});
+      document.getElementById('an-range-label').textContent = f + ' — ' + t;
+    } else {
+      document.getElementById('an-range-label').textContent = '';
+    }
+  }
+  function _anSyncTextInputs() {
+    var fi = document.getElementById('an-from-text');
+    var ti = document.getElementById('an-to-text');
+    fi.value = anDisplayDate(_anFrom); fi.classList.toggle('has-value', !!_anFrom);
+    ti.value = anDisplayDate(_anTo);   ti.classList.toggle('has-value', !!_anTo);
+  }
+
   function setAnalyticsRange(range, btn) {
     document.querySelectorAll('.an-range-btn').forEach(b => b.classList.remove('active'));
     if (btn) btn.classList.add('active');
@@ -3361,8 +3506,7 @@
     const fmt = d => d.toISOString().slice(0,10);
     if (range === 'all') {
       _anFrom = null; _anTo = null;
-      document.getElementById('an-date-from').value = '';
-      document.getElementById('an-date-to').value = '';
+      _anCalStart = null; _anCalEnd = null;
       document.getElementById('an-range-label').textContent = '';
     } else if (range === '7d') {
       const from = new Date(today); from.setDate(from.getDate() - 6);
@@ -3377,27 +3521,160 @@
       _anFrom = fmt(new Date(today.getFullYear(), today.getMonth(), 1));
       _anTo = fmt(today);
     }
-    if (_anFrom && _anTo) {
-      document.getElementById('an-date-from').value = _anFrom;
-      document.getElementById('an-date-to').value = _anTo;
-      const f = new Date(_anFrom + 'T00:00:00').toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'});
-      const t = new Date(_anTo + 'T00:00:00').toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'});
-      document.getElementById('an-range-label').textContent = f + ' — ' + t;
+    _anCalStart = _anFrom; _anCalEnd = _anTo;
+    _anSyncTextInputs();
+    _anUpdateLabel();
+    loadAnalytics();
+  }
+
+  // ── Calendar popup ──────────────────────────────────────────────────────
+  var _anCalVY, _anCalVM;
+  var _anCalStart = null, _anCalEnd = null, _anCalHover = null;
+
+  function anCalInit() {
+    var base = _anCalStart ? new Date(_anCalStart + 'T00:00:00') : new Date();
+    _anCalVY = base.getFullYear();
+    _anCalVM = base.getMonth();
+    anCalRender();
+  }
+  function anCalRender() {
+    anCalRenderMonth('a', _anCalVY, _anCalVM);
+    var nM = _anCalVM === 11 ? 0 : _anCalVM + 1;
+    var nY = _anCalVM === 11 ? _anCalVY + 1 : _anCalVY;
+    anCalRenderMonth('b', nY, nM);
+    anCalUpdateLabel();
+  }
+  function anCalRenderMonth(slot, year, month) {
+    var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    var DAYS = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+    document.getElementById('an-cal-month-' + slot).textContent = MONTHS[month] + ' ' + year;
+    var grid = document.getElementById('an-cal-grid-' + slot);
+    var html = DAYS.map(d => '<div class="an-cal-dow">' + d + '</div>').join('');
+    var firstDay = new Date(year, month, 1).getDay();
+    var dim = new Date(year, month + 1, 0).getDate();
+    var today = anIso(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+    for (var i = 0; i < firstDay; i++) html += '<div class="an-cal-day empty"></div>';
+    for (var d = 1; d <= dim; d++) {
+      var iso = anIso(year, month, d);
+      var cls = ['an-cal-day'];
+      if (iso === today) cls.push('today');
+      if (_anCalStart && iso === _anCalStart) cls.push('start');
+      if (_anCalEnd && iso === _anCalEnd) cls.push('end');
+      if (_anCalStart && _anCalEnd && iso > _anCalStart && iso < _anCalEnd) cls.push('in-range');
+      html += '<button class="' + cls.join(' ') + '" data-iso="' + iso + '">' + d + '</button>';
     }
-    loadAnalytics();
+    grid.innerHTML = html;
   }
-  function applyCustomRange() {
-    const from = document.getElementById('an-date-from').value;
-    const to = document.getElementById('an-date-to').value;
-    if (!from || !to) return;
-    if (from > to) { alert('Start date must be before end date'); return; }
-    _anFrom = from; _anTo = to;
+  function anCalUpdateLabel() {
+    var lbl = document.getElementById('an-cal-label');
+    if (!_anCalStart && !_anCalEnd) lbl.innerHTML = 'Click a date to start';
+    else if (_anCalStart && !_anCalEnd) lbl.innerHTML = '<strong>' + anDisplayDate(_anCalStart) + '</strong> → pick end date';
+    else lbl.innerHTML = '<strong>' + anDisplayDate(_anCalStart) + '</strong> → <strong>' + anDisplayDate(_anCalEnd) + '</strong>';
+  }
+  function anCalPrev() { if (_anCalVM === 0) { _anCalVM = 11; _anCalVY--; } else _anCalVM--; anCalRender(); }
+  function anCalNext() { if (_anCalVM === 11) { _anCalVM = 0; _anCalVY++; } else _anCalVM++; anCalRender(); }
+  function anCalClear() {
+    _anCalStart = null; _anCalEnd = null; _anCalHover = null;
+    _anFrom = null; _anTo = null;
+    _anSyncTextInputs();
+    document.getElementById('an-range-label').textContent = '';
+    document.getElementById('an-cal-btn').classList.remove('active');
     document.querySelectorAll('.an-range-btn').forEach(b => b.classList.remove('active'));
-    const f = new Date(from + 'T00:00:00').toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'});
-    const t = new Date(to + 'T00:00:00').toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'});
-    document.getElementById('an-range-label').textContent = f + ' — ' + t;
+    document.querySelector('.an-range-btn[data-range="all"]').classList.add('active');
+    anCalRender();
+    anCloseCal();
     loadAnalytics();
   }
+  function anCalApply() {
+    if (_anCalStart && !_anCalEnd) { _anCalEnd = _anCalStart; }
+    if (_anCalStart) {
+      _anFrom = _anCalStart; _anTo = _anCalEnd;
+      document.querySelectorAll('.an-range-btn').forEach(b => b.classList.remove('active'));
+      _anSyncTextInputs();
+      _anUpdateLabel();
+      loadAnalytics();
+    }
+    anCloseCal();
+  }
+  function anToggleCal(e) {
+    e.stopPropagation();
+    var popup = document.getElementById('an-cal-popup');
+    if (popup.classList.contains('open')) { anCloseCal(); return; }
+    if (_anFrom) _anCalStart = _anFrom;
+    if (_anTo) _anCalEnd = _anTo;
+    anCalInit();
+    popup.classList.add('open');
+    document.getElementById('an-cal-btn').classList.add('active');
+  }
+  function anCloseCal() {
+    document.getElementById('an-cal-popup').classList.remove('open');
+    document.getElementById('an-cal-btn').classList.remove('active');
+  }
+  // Delegated click + hover on calendar
+  (function() {
+    var popup = document.getElementById('an-cal-popup');
+    if (!popup) return;
+    popup.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var day = e.target.closest('.an-cal-day');
+      if (!day || day.classList.contains('empty') || !day.dataset.iso) return;
+      var iso = day.dataset.iso;
+      if (!_anCalStart || (_anCalStart && _anCalEnd)) {
+        _anCalStart = iso; _anCalEnd = null; _anCalHover = null;
+        document.getElementById('an-from-text').value = anDisplayDate(iso);
+        document.getElementById('an-from-text').classList.add('has-value');
+        document.getElementById('an-to-text').value = '';
+        document.getElementById('an-to-text').classList.remove('has-value');
+        anCalRender();
+      } else {
+        if (iso === _anCalStart) {
+          _anCalStart = null; _anCalEnd = null; _anCalHover = null;
+          _anSyncTextInputs();
+        } else {
+          if (iso < _anCalStart) { _anCalEnd = _anCalStart; _anCalStart = iso; }
+          else _anCalEnd = iso;
+          _anCalHover = null;
+          _anSyncTextInputs();
+        }
+        anCalRender();
+      }
+    });
+    popup.addEventListener('mouseover', function(e) {
+      if (!_anCalStart || _anCalEnd) return;
+      var day = e.target.closest('.an-cal-day');
+      if (!day || day.classList.contains('empty') || !day.dataset.iso) return;
+      var iso = day.dataset.iso;
+      if (iso === _anCalHover) return;
+      _anCalHover = iso;
+      anCalUpdateHover();
+    });
+    popup.addEventListener('mouseleave', function() {
+      if (!_anCalHover) return;
+      _anCalHover = null;
+      anCalUpdateHover();
+    });
+  })();
+  function anCalUpdateHover() {
+    document.querySelectorAll('#an-cal-popup .an-cal-day[data-iso]').forEach(function(el) {
+      el.classList.remove('hover-end', 'in-range');
+      var iso = el.dataset.iso;
+      if (_anCalStart && _anCalEnd && iso > _anCalStart && iso < _anCalEnd) el.classList.add('in-range');
+      if (_anCalStart && !_anCalEnd && _anCalHover && _anCalHover !== _anCalStart) {
+        var hMin = _anCalHover < _anCalStart ? _anCalHover : _anCalStart;
+        var hMax = _anCalHover < _anCalStart ? _anCalStart : _anCalHover;
+        if (iso > hMin && iso < hMax) el.classList.add('in-range');
+        if (iso === _anCalHover) el.classList.add('hover-end');
+      }
+    });
+  }
+  // Close calendar on outside click
+  document.addEventListener('click', function(e) {
+    var popup = document.getElementById('an-cal-popup');
+    var btn = document.getElementById('an-cal-btn');
+    if (popup && popup.classList.contains('open') && !popup.contains(e.target) && e.target !== btn && !btn.contains(e.target)) {
+      anCloseCal();
+    }
+  });
 
   function _barRow(label, n, pct, color) {
     return `<div class="analytics-bar-row"><span class="analytics-bar-label">${label}</span><div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:${Math.max(pct,2)}%;background:${color};"></div></div><span class="analytics-bar-val">${n}</span></div>`;
