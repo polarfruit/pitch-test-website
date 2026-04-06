@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="64x64" href="/favicon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <title>Join as a Foodie — Pitch.</title>
 <link rel="stylesheet" href="/fonts/fonts.css">
 <style>
@@ -140,13 +143,6 @@ h1 { font-family: var(--fd); font-size: 26px; font-weight: 900; letter-spacing: 
 
     <div class="social-btns">
       <div id="g-btn-container"></div>
-      <button class="social-btn" id="btn-apple" onclick="doAppleSignup()">
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-          <path d="M15.769 9.516c-.023-2.878 2.352-4.276 2.458-4.339-1.34-1.959-3.42-2.228-4.163-2.254-1.774-.181-3.468 1.044-4.37 1.044-.898 0-2.293-1.02-3.771-.993-1.94.028-3.73 1.127-4.731 2.857-2.013 3.494-.517 8.676 1.45 11.514.963 1.391 2.113 2.955 3.622 2.897 1.456-.059 2.003-.934 3.757-.934s2.247.934 3.784.905c1.563-.027 2.556-1.415 3.51-2.812.113-.161.217-.327.312-.497a7.61 7.61 0 01-4.858-7.388z" fill="white"/>
-          <path d="M13.1 2.116C13.89 1.143 14.416.02 14.266-1.12c-1.08.053-2.39.725-3.16 1.68-.702.87-1.317 2.053-1.148 3.16 1.188.09 2.402-.594 3.141-1.605z" fill="white"/>
-        </svg>
-        Continue with Apple
-      </button>
     </div>
 
     <div class="divider">or sign up with email</div>
@@ -242,8 +238,7 @@ let _oauthConfig = null;
     _oauthConfig = await r.json();
     if (_oauthConfig.google) initGoogleSignIn(_oauthConfig.google);
     if (!_oauthConfig.google) document.getElementById('btn-google').style.display = 'none';
-    if (!_oauthConfig.apple) document.getElementById('btn-apple').style.display = 'none';
-    if (!_oauthConfig.google && !_oauthConfig.apple) {
+    if (!_oauthConfig.google) {
       document.querySelector('.social-btns').style.display = 'none';
       document.querySelector('.divider').style.display = 'none';
     }
@@ -283,44 +278,7 @@ async function handleGoogleCredential(response) {
   } catch { showError('Network error — please try again.'); }
 }
 
-function doAppleSignup() {
-  if (!_oauthConfig?.apple) return showError('Apple Sign-In is not configured.');
-  if (typeof AppleID === 'undefined') {
-    const s = document.createElement('script');
-    s.src = 'https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js';
-    s.onload = () => startAppleAuth();
-    document.head.appendChild(s);
-  } else {
-    startAppleAuth();
-  }
-}
 
-async function startAppleAuth() {
-  try {
-    AppleID.auth.init({
-      clientId: _oauthConfig.apple,
-      scope: 'name email',
-      redirectURI: window.location.origin + '/signup/foodie',
-      usePopup: true,
-    });
-    const response = await AppleID.auth.signIn();
-    const r = await fetch('/api/auth/apple', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        id_token: response.authorization.id_token,
-        user: response.user || null,
-        intent: 'signup',
-        role: 'foodie',
-      }),
-    });
-    const d = await r.json();
-    if (!r.ok) { showError(d.error); return; }
-    if (d.redirect) window.location.href = d.redirect;
-  } catch (e) {
-    if (e.error !== 'popup_closed_by_user') showError('Apple Sign-In failed. Please try again.');
-  }
-}
 </script>
 </body>
 </html>

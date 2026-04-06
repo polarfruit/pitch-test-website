@@ -684,77 +684,10 @@ app.post('/api/auth/google', async (req, res) => {
   }
 });
 
-// ── OAuth: Apple Sign-In ──────────────────────────────────────────────────
-const APPLE_CLIENT_ID = process.env.APPLE_CLIENT_ID || '';
-
-function decodeAppleToken(idToken) {
-  try {
-    const parts = idToken.split('.');
-    if (parts.length !== 3) return null;
-    const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString());
-    if (payload.iss !== 'https://appleid.apple.com') return null;
-    if (APPLE_CLIENT_ID && payload.aud !== APPLE_CLIENT_ID) return null;
-    if (payload.exp && Date.now() / 1000 > payload.exp) return null;
-    return { sub: payload.sub, email: payload.email || null };
-  } catch { return null; }
-}
-
-app.post('/api/auth/apple', async (req, res) => {
-  if (!APPLE_CLIENT_ID) return res.status(503).json({ error: 'Apple Sign-In is not configured.' });
-  const { id_token, user: appleUser, intent, role } = req.body;
-  if (!id_token) return res.status(400).json({ error: 'Missing id_token' });
-
-  const aUser = decodeAppleToken(id_token);
-  if (!aUser) return res.status(401).json({ error: 'Invalid Apple token' });
-
-  // Apple only sends name on first auth — appleUser may contain { name: { firstName, lastName } }
-  const firstName = appleUser?.name?.firstName || '';
-  const lastName  = appleUser?.name?.lastName || '';
-
-  // Check if user already exists
-  let user = await stmts.getUserByOAuth.get('apple', aUser.sub);
-  if (!user && aUser.email) user = await stmts.getUserByEmail.get(aUser.email);
-
-  if (user) {
-    if (user.status === 'banned')    return res.status(403).json({ error: 'This account has been banned.' });
-    if (user.status === 'suspended') return res.status(403).json({ error: 'This account is suspended.' });
-    if (!user.oauth_provider) await stmts.setUserOAuth.run('apple', aUser.sub, user.id);
-    if (user.status === 'pending') {
-      await stmts.setUserStatus.run('active', user.id);
-      await stmts.setEmailVerified.run(user.id);
-    }
-    sessWrite(res, { userId: Number(user.id), role: user.role, name: `${user.first_name} ${user.last_name}` });
-    return res.json({ ok: true, redirect: oauthRedirect(user.role), existing: true });
-  }
-
-  if (!aUser.email) return res.status(400).json({ error: 'Email is required. Please allow email sharing with Apple.' });
-
-  if (intent === 'login') {
-    return res.json({ ok: true, needsSignup: true, email: aUser.email, first_name: firstName, last_name: lastName });
-  }
-
-  const targetRole = role || 'foodie';
-  if (targetRole === 'vendor' || targetRole === 'organiser') {
-    return res.json({ ok: true, prefill: true, email: aUser.email, first_name: firstName, last_name: lastName, oauth_provider: 'apple', oauth_sub: aUser.sub });
-  }
-
-  // Foodie — create directly
-  try {
-    const result = await stmts.createOAuthUser.run({ email: aUser.email, first_name: firstName || 'User', last_name: lastName || '', role: 'foodie', oauth_provider: 'apple', oauth_sub: aUser.sub });
-    const userId = Number(result.lastInsertRowid ?? result.lastrowid ?? result.insertId);
-    sessWrite(res, { userId, role: 'foodie', name: `${firstName} ${lastName}`.trim() || 'User' });
-    res.json({ ok: true, redirect: '/discover' });
-  } catch (err) {
-    console.error('[apple auth] create user error:', err);
-    res.status(500).json({ error: 'Could not create account' });
-  }
-});
-
 // ── OAuth config endpoint (frontend needs client IDs) ─────────────────────
 app.get('/api/auth/oauth-config', (req, res) => {
   res.json({
     google: GOOGLE_CLIENT_ID || null,
-    apple: APPLE_CLIENT_ID || null,
   });
 });
 
