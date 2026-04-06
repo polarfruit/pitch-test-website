@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="64x64" href="/favicon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <title>Sign up as an Organiser — Pitch.</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="/fonts/fonts.css">
@@ -410,10 +413,6 @@
 
         <div class="sso-btns" style="margin-bottom:20px;">
           <div id="g-btn-container"></div>
-          <button class="sso-btn" id="btn-apple" onclick="doAppleSignup()">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="currentColor"><path d="M12.257 0c.07.93-.263 1.857-.776 2.536-.513.68-1.35 1.213-2.2 1.143-.097-.93.307-1.9.793-2.493C10.573.557 11.47.053 12.257 0zM15.68 12.58c-.38.88-.563 1.27-1.053 2.047-.683 1.04-1.647 2.337-2.843 2.347-.853.01-1.133-.557-2.357-.55-1.22.007-1.527.563-2.387.553-1.193-.013-2.107-1.19-2.79-2.23C2.487 12.51 2.013 9.623 3.073 7.933c.74-1.207 1.903-1.913 3.12-1.913.94 0 1.813.62 2.433.62.61 0 1.55-.707 2.693-.707.447 0 1.73.077 2.547 1.173-.07.043-1.52.89-1.503 2.66.017 2.11 1.853 2.81 1.87 2.817-.017.05-.29.997-1.553 1.997z"/></svg>
-            Continue with Apple
-          </button>
         </div>
 
         <div class="divider"><hr/><span>or sign up with email</span><hr/></div>
@@ -1012,8 +1011,7 @@
       _oauthConfig = await r.json();
       if (_oauthConfig.google) initGoogleSignIn(_oauthConfig.google);
       if (!_oauthConfig.google) document.getElementById('btn-google').style.display = 'none';
-      if (!_oauthConfig.apple) document.getElementById('btn-apple').style.display = 'none';
-      if (!_oauthConfig.google && !_oauthConfig.apple) {
+      if (!_oauthConfig.google) {
         document.querySelector('.sso-btns').style.display = 'none';
         document.querySelector('.divider').style.display = 'none';
       }
@@ -1047,33 +1045,6 @@
     } catch { alert('Network error — please try again.'); }
   }
 
-  function doAppleSignup() {
-    if (!_oauthConfig?.apple) return alert('Apple Sign-In is not configured.');
-    if (typeof AppleID === 'undefined') {
-      const s = document.createElement('script');
-      s.src = 'https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js';
-      s.onload = () => startAppleAuth();
-      document.head.appendChild(s);
-    } else { startAppleAuth(); }
-  }
-
-  async function startAppleAuth() {
-    try {
-      AppleID.auth.init({ clientId: _oauthConfig.apple, scope: 'name email', redirectURI: window.location.origin + '/signup/organiser', usePopup: true });
-      const response = await AppleID.auth.signIn();
-      const r = await fetch('/api/auth/apple', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id_token: response.authorization.id_token, user: response.user || null, intent: 'signup', role: 'organiser' }),
-      });
-      const d = await r.json();
-      if (!r.ok) { alert(d.error); return; }
-      if (d.existing && d.redirect) { window.location.href = d.redirect; return; }
-      if (d.prefill) { applyOAuthPrefill(d); return; }
-      if (d.redirect) window.location.href = d.redirect;
-    } catch (e) { if (e.error !== 'popup_closed_by_user') alert('Apple Sign-In failed.'); }
-  }
-
   function applyOAuthPrefill(d) {
     _oauthProvider = d.oauth_provider;
     _oauthSub = d.oauth_sub;
@@ -1088,7 +1059,7 @@
     // Show success badge
     const badge = document.createElement('div');
     badge.style.cssText = 'background:#2D8B5520;border:1px solid #2D8B5540;border-radius:10px;padding:10px 14px;font-size:13px;color:#2D8B55;font-weight:600;margin-bottom:12px;text-align:center;';
-    badge.textContent = `✓ Signed in with ${d.oauth_provider === 'apple' ? 'Apple' : 'Google'} — fill in your organisation details below`;
+    badge.textContent = `✓ Signed in with Google — fill in your organisation details below`;
     document.getElementById('step-1').prepend(badge);
   }
 </script>

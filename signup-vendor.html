@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="64x64" href="/favicon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 <title>Join as a Vendor — Pitch.</title>
 <link rel="stylesheet" href="/fonts/fonts.css">
 <style>
@@ -429,7 +432,6 @@ body { background:var(--coal); color:var(--text-hi); font-family:var(--fb); line
       <div class="form-divider"><span>or sign up with</span></div>
       <div style="display:flex;gap:10px;margin-bottom:4px;">
         <div id="g-btn-container" style="flex:1;"></div>
-        <button id="btn-apple" style="flex:1;height:46px;border-radius:11px;background:#ffffff08;border:1px solid #ffffff10;font-family:var(--fb);font-size:13px;font-weight:600;color:var(--text-mid);cursor:pointer;transition:all 0.14s;" onmouseover="this.style.background='#ffffff12'" onmouseout="this.style.background='#ffffff08'" onclick="doAppleSignup()">🍎 Continue with Apple</button>
       </div>
       <div class="step-nav"><div></div><button class="btn-next" onclick="goStep(2)">Next: Business details →</button></div>
     </div>
@@ -1010,7 +1012,6 @@ let _oauthConfig = null;
     _oauthConfig = await r.json();
     if (_oauthConfig.google) initGoogleSignIn(_oauthConfig.google);
     if (!_oauthConfig.google) document.getElementById('btn-google').style.display = 'none';
-    if (!_oauthConfig.apple) document.getElementById('btn-apple').style.display = 'none';
   } catch {}
 })();
 
@@ -1041,33 +1042,6 @@ async function handleGoogleCredential(response) {
   } catch { alert('Network error — please try again.'); }
 }
 
-function doAppleSignup() {
-  if (!_oauthConfig?.apple) return alert('Apple Sign-In is not configured.');
-  if (typeof AppleID === 'undefined') {
-    const s = document.createElement('script');
-    s.src = 'https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/en_US/appleid.auth.js';
-    s.onload = () => startAppleAuth();
-    document.head.appendChild(s);
-  } else { startAppleAuth(); }
-}
-
-async function startAppleAuth() {
-  try {
-    AppleID.auth.init({ clientId: _oauthConfig.apple, scope: 'name email', redirectURI: window.location.origin + '/signup/vendor', usePopup: true });
-    const response = await AppleID.auth.signIn();
-    const r = await fetch('/api/auth/apple', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id_token: response.authorization.id_token, user: response.user || null, intent: 'signup', role: 'vendor' }),
-    });
-    const d = await r.json();
-    if (!r.ok) { alert(d.error); return; }
-    if (d.existing && d.redirect) { window.location.href = d.redirect; return; }
-    if (d.prefill) { applyOAuthPrefill(d); return; }
-    if (d.redirect) window.location.href = d.redirect;
-  } catch (e) { if (e.error !== 'popup_closed_by_user') alert('Apple Sign-In failed.'); }
-}
-
 function applyOAuthPrefill(d) {
   _oauthProvider = d.oauth_provider;
   _oauthSub = d.oauth_sub;
@@ -1082,7 +1056,7 @@ function applyOAuthPrefill(d) {
   // Show success badge
   const badge = document.createElement('div');
   badge.style.cssText = 'background:#2D8B5520;border:1px solid #2D8B5540;border-radius:10px;padding:10px 14px;font-size:13px;color:#2D8B55;font-weight:600;margin-bottom:12px;text-align:center;';
-  badge.textContent = `✓ Signed in with ${d.oauth_provider === 'apple' ? 'Apple' : 'Google'} — fill in your business details below`;
+  badge.textContent = `✓ Signed in with Google — fill in your business details below`;
   document.getElementById('v-first-name').closest('.form-group').parentElement.prepend(badge);
 }
 </script>
