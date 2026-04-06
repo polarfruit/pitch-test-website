@@ -43,7 +43,7 @@ function buildEmailHtml(code) {
 
 async function sendViaResend(toEmail, code) {
   const apiKey = process.env.RESEND_API_KEY;
-  const from   = process.env.RESEND_FROM || 'Pitch. <noreply@pitch.com.au>';
+  const from   = process.env.RESEND_FROM || 'Pitch. <noreply@onpitch.com.au>';
 
   const res = await fetch('https://api.resend.com/emails', {
     method: 'POST',
@@ -100,7 +100,7 @@ async function getTransporter() {
 }
 
 async function sendViaSMTP(toEmail, code) {
-  const from = process.env.SMTP_FROM || '"Pitch." <noreply@pitch.com.au>';
+  const from = process.env.SMTP_FROM || '"Pitch." <noreply@onpitch.com.au>';
   const transporter = await getTransporter();
   const info = await transporter.sendMail({
     from,
@@ -142,7 +142,7 @@ function buildAdminNoticeHtml(bodyHtml) {
     </div>
     <div style="padding:36px;">
       ${bodyHtml}
-      <p style="font-size:12px;color:#6B5A4A;margin:24px 0 0;line-height:1.6;">Questions? Contact <a href="mailto:support@getpitch.com.au" style="color:#E8500A;">support@getpitch.com.au</a></p>
+      <p style="font-size:12px;color:#6B5A4A;margin:24px 0 0;line-height:1.6;">Questions? Contact <a href="mailto:support@onpitch.com.au" style="color:#E8500A;">support@onpitch.com.au</a></p>
     </div>
   </div>
 </body>
@@ -158,7 +158,7 @@ export function buildSuspensionEmailHtml(firstName, reason, role) {
       <div style="font-size:11px;font-weight:700;color:#6B5A4A;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px;">Reason</div>
       <div style="font-size:14px;color:#FDF4E7;">${reason}</div>
     </div>
-    <p style="font-size:14px;color:#A89880;margin:0;line-height:1.6;">To appeal this decision, reply to this email or contact <a href="mailto:support@getpitch.com.au" style="color:#E8500A;">support@getpitch.com.au</a>.</p>
+    <p style="font-size:14px;color:#A89880;margin:0;line-height:1.6;">To appeal this decision, reply to this email or contact <a href="mailto:support@onpitch.com.au" style="color:#E8500A;">support@onpitch.com.au</a>.</p>
   `);
 }
 
@@ -166,7 +166,7 @@ export function buildSuspensionNoticeHtml(bodyText) {
   return buildAdminNoticeHtml(`
     <p style="font-size:14px;color:#A89880;margin:0 0 16px;line-height:1.6;">Hi,</p>
     <p style="font-size:14px;color:#A89880;margin:0 0 20px;line-height:1.6;">${bodyText}</p>
-    <p style="font-size:14px;color:#A89880;margin:0;line-height:1.6;">If you have questions, contact <a href="mailto:support@getpitch.com.au" style="color:#E8500A;">support@getpitch.com.au</a>.</p>
+    <p style="font-size:14px;color:#A89880;margin:0;line-height:1.6;">If you have questions, contact <a href="mailto:support@onpitch.com.au" style="color:#E8500A;">support@onpitch.com.au</a>.</p>
   `);
 }
 
@@ -178,14 +178,14 @@ export async function sendAdminEmail(toEmail, subject, htmlBody, textBody) {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          from: process.env.RESEND_FROM || 'Pitch. <noreply@getpitch.com.au>',
+          from: process.env.RESEND_FROM || 'Pitch. <noreply@onpitch.com.au>',
           to: [toEmail], subject, text: textBody, html: htmlBody,
         }),
       });
       if (!res.ok) console.error('[mailer] Resend admin email error:', await res.text());
     } else {
       const t = await getTransporter();
-      const from = process.env.SMTP_FROM || '"Pitch." <noreply@getpitch.com.au>';
+      const from = process.env.SMTP_FROM || '"Pitch." <noreply@onpitch.com.au>';
       const info = await t.sendMail({ from, to: toEmail, subject, text: textBody, html: htmlBody });
       const preview = nodemailer.getTestMessageUrl(info);
       if (preview) console.log('[mailer] Ethereal preview:', preview);
