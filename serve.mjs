@@ -119,8 +119,8 @@ function serveDashboard(file, expectedRole, getInitData) {
         // Use first real user with this role so API calls & init data work correctly
         const bypassUser = await stmts.usersByRole.get(expectedRole);
         const demoDefaults = expectedRole === 'organiser'
-          ? { id: 0, role: 'organiser', email: 'demo.organiser@pitch.com.au', first_name: 'Sam', last_name: 'Nguyen', status: 'active', avatar_url: null }
-          : { id: 0, role: 'vendor', email: 'demo.vendor@pitch.com.au', first_name: 'Alex', last_name: 'Chen', status: 'active', avatar_url: null };
+          ? { id: 0, role: 'organiser', email: 'demo.organiser@onpitch.com.au', first_name: 'Sam', last_name: 'Nguyen', status: 'active', avatar_url: null }
+          : { id: 0, role: 'vendor', email: 'demo.vendor@onpitch.com.au', first_name: 'Alex', last_name: 'Chen', status: 'active', avatar_url: null };
         user = bypassUser || demoDefaults;
         req.session = { userId: user.id, role: user.role };
       } else {
@@ -1041,7 +1041,7 @@ app.post('/api/admin/users/:id/status', requireAdmin, async (req, res) => {
           user.email,
           'Your Pitch. account has been suspended',
           buildSuspensionEmailHtml(user.first_name, reason || 'Violation of platform terms.', 'vendor'),
-          `Your Pitch. vendor account has been suspended. Reason: ${reason || 'Violation of platform terms.'}. Contact support@getpitch.com.au to appeal.`
+          `Your Pitch. vendor account has been suspended. Reason: ${reason || 'Violation of platform terms.'}. Contact support@onpitch.com.au to appeal.`
         );
       } else if (user.role === 'organiser') {
         // Notify confirmed vendors BEFORE archiving events
@@ -1061,7 +1061,7 @@ app.post('/api/admin/users/:id/status', requireAdmin, async (req, res) => {
           user.email,
           'Your Pitch. organiser account has been suspended',
           buildSuspensionEmailHtml(user.first_name, reason || 'Violation of platform terms.', 'organiser'),
-          `Your Pitch. organiser account has been suspended. Reason: ${reason || 'Violation of platform terms.'}. Contact support@getpitch.com.au to appeal.`
+          `Your Pitch. organiser account has been suspended. Reason: ${reason || 'Violation of platform terms.'}. Contact support@onpitch.com.au to appeal.`
         );
       }
     } else if (status === 'active' && prevStatus === 'suspended') {
@@ -1303,7 +1303,7 @@ app.post('/api/admin/reports/:id/dismiss', requireAdmin, async (req, res) => {
       await sendAdminEmail(
         report.reporter_email,
         `Your report #${report.ref_number} has been reviewed`,
-        `<p>Hi ${report.reporter_name},</p><p>We've reviewed your report #${report.ref_number} and determined that no further action is required at this time.</p><p>If you believe this decision is in error, please contact support@getpitch.com.au.</p><p>Pitch Admin Team</p>`,
+        `<p>Hi ${report.reporter_name},</p><p>We've reviewed your report #${report.ref_number} and determined that no further action is required at this time.</p><p>If you believe this decision is in error, please contact support@onpitch.com.au.</p><p>Pitch Admin Team</p>`,
         `We reviewed your report #${report.ref_number} and no further action is required at this time.`
       ).catch(() => {});
     }
@@ -1330,7 +1330,7 @@ app.post('/api/admin/reports/:id/request-info', requireAdmin, async (req, res) =
   const { id } = req.params;
   const { delivery, subject, body: msgBody, to_user_id } = req.body;
   // Fall back to DB lookup in case session predates the userId:1000 fix
-  const adminId = req.session.userId || (await stmts.getUserByEmail.get('admin@pitch.com.au').catch(() => null))?.id || 1000;
+  const adminId = req.session.userId || (await stmts.getUserByEmail.get('admin@onpitch.com.au').catch(() => null))?.id || 1000;
   try {
     const report = await stmts.getReportById.get(id);
     if (!report) return res.status(404).json({ error: 'Not found' });
