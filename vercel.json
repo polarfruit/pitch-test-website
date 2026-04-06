@@ -11,6 +11,8 @@
           "*.html",
           "*.mjs",
           "*.js",
+          "*.ico",
+          "*.png",
           "brand_assets/**/*",
           "fonts/**/*"
         ]
