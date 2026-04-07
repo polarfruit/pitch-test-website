@@ -1142,7 +1142,7 @@ export const stmts = {
   // update profiles (admin)
   updateUserProfile:      prepare(`UPDATE users SET first_name=@first_name,last_name=@last_name,email=@email,status=@status WHERE id=@id`),
   updateVendorProfile:    prepare(`UPDATE vendors SET trading_name=@trading_name,mobile=@mobile,suburb=@suburb,state=@state,bio=@bio,plan=@plan,instagram=@instagram,setup_type=@setup_type,stall_w=@stall_w,stall_d=@stall_d,power=@power,water=@water,price_range=@price_range,abn=@abn WHERE user_id=@user_id`),
-  updateVendorProfileSelf: prepare(`UPDATE vendors SET trading_name=@trading_name,mobile=@mobile,suburb=@suburb,state=@state,bio=@bio,instagram=@instagram,setup_type=@setup_type,stall_w=@stall_w,stall_d=@stall_d,power=@power,water=@water,price_range=@price_range,cuisine_tags=@cuisine_tags WHERE user_id=@user_id`),
+  updateVendorProfileSelf: prepare(`UPDATE vendors SET trading_name=@trading_name,mobile=@mobile,suburb=@suburb,state=@state,bio=@bio,instagram=@instagram,abn=@abn,setup_type=@setup_type,stall_w=@stall_w,stall_d=@stall_d,power=@power,water=@water,price_range=@price_range,cuisine_tags=@cuisine_tags WHERE user_id=@user_id`),
   updateVendorPhotos:     prepare(`UPDATE vendors SET photos=@photos WHERE user_id=@user_id`),
   updateVendorDoc:        prepare(`UPDATE vendors SET food_safety_url=@food_safety_url,pli_url=@pli_url,council_url=@council_url WHERE user_id=@user_id`),
   updateVendorPliAnalysis: prepare(`UPDATE vendors SET pli_insured_name=@pli_insured_name,pli_policy_number=@pli_policy_number,pli_coverage_amount=@pli_coverage_amount,pli_expiry=@pli_expiry,pli_status=@pli_status,pli_analysed_at=datetime('now'),pli_flags=@pli_flags WHERE user_id=@user_id`),

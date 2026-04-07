@@ -1478,7 +1478,7 @@ app.put('/api/admin/organisers/:userId', requireAdmin, async (req, res) => {
 // PUT /api/vendor/profile — vendor updates their own profile
 app.put('/api/vendor/profile', requireAuth, async (req, res) => {
   if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Vendors only' });
-  const { trading_name, bio, mobile, suburb, state, instagram, stall_w, stall_d, power, water, setup_type, price_range, cuisine_tags } = req.body;
+  const { trading_name, bio, mobile, suburb, state, instagram, abn, stall_w, stall_d, power, water, setup_type, price_range, cuisine_tags } = req.body;
   try {
     await stmts.updateVendorProfileSelf.run({
       trading_name: trading_name || null,
@@ -1487,6 +1487,7 @@ app.put('/api/vendor/profile', requireAuth, async (req, res) => {
       suburb:       suburb       || null,
       state:        state        || null,
       instagram:    instagram    || null,
+      abn:          abn          || null,
       stall_w:      stall_w      || null,
       stall_d:      stall_d      || null,
       power:        power  ? 1 : 0,
