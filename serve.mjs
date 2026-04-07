@@ -2763,6 +2763,14 @@ app.patch('/api/admin/events/:id/rename', requireAdmin, async (req, res) => {
   res.json({ ok: true });
 });
 
+app.patch('/api/admin/vendors/:id/abn', requireAdmin, async (req, res) => {
+  const { abn } = req.body;
+  const clean = abn ? abn.replace(/\s/g, '') : null;
+  if (clean && !/^\d{11}$/.test(clean)) return res.status(400).json({ error: 'ABN must be exactly 11 digits.' });
+  await (prepare(`UPDATE vendors SET abn=? WHERE user_id=?`)).run(clean, req.params.id);
+  res.json({ ok: true });
+});
+
 app.patch('/api/admin/vendors/:id/rename', requireAdmin, async (req, res) => {
   const { name } = req.body;
   if (!name || !name.trim()) return res.status(400).json({ error: 'Name required' });
