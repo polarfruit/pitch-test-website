@@ -2379,13 +2379,7 @@
     try {
       const r = await fetch('/api/admin/vendors');
       const { vendors } = await r.json();
-      _vendorsCache = vendors.map(v => {
-        const mockAbn = v.abn || ((51 + (v.user_id % 40)) + ' ' + String(100 + (v.user_id % 900)).padStart(3,'0') + ' ' + String(100 + (v.user_id * 7 % 900)).padStart(3,'0') + ' ' + String(100 + (v.user_id * 13 % 900)).padStart(3,'0'));
-        return Object.assign({}, v, {
-          _abn_display: mockAbn,
-          _abn_num: parseInt(mockAbn.replace(/\s/g, '')) || 0,
-        });
-      });
+      _vendorsCache = vendors;
       const filtered = _vendorStatusFilter ? _vendorsCache.filter(v => v.status === _vendorStatusFilter) : _vendorsCache;
       renderVendorsTable(filtered);
       renderPendingQueue();
@@ -2434,7 +2428,7 @@
 
       return `<tr>
         <td onclick="openVendorDetail(${v.user_id})" style="cursor:pointer;" title="View vendor"><strong>${v.trading_name}</strong><br><span style="font-size:12px;color:#4A3C30;">${v.email}</span></td>
-        <td><span style="font-size:12px;">${v._abn_display || v.abn || '—'}</span></td>
+        <td><span style="font-size:12px;">${v.abn || '—'}</span></td>
         <td>${(() => {
           const total = 3;
           const uploaded = [v.food_safety_url, v.pli_url, v.council_url].filter(Boolean).length;
@@ -2482,7 +2476,7 @@
     list.sort((a, b) => {
       let av, bv;
       if (key === 'name')   { av = (a.trading_name||'').toLowerCase(); bv = (b.trading_name||'').toLowerCase(); }
-      else if (key === 'abn')    { av = a._abn_num || 0; bv = b._abn_num || 0; }
+      else if (key === 'abn')    { av = (a.abn||''); bv = (b.abn||''); }
       else if (key === 'docs')   { av = [a.food_safety_url,a.pli_url,a.council_url].filter(Boolean).length; bv = [b.food_safety_url,b.pli_url,b.council_url].filter(Boolean).length; }
       else if (key === 'plan')   { av = PLAN_ORDER[a.plan] ?? 9; bv = PLAN_ORDER[b.plan] ?? 9; }
       else if (key === 'joined') { av = a.joined || ''; bv = b.joined || ''; }
@@ -2504,9 +2498,9 @@
     list.sort((a, b) => {
       let av, bv;
       if (key === 'name')        { av = (a.org_name||'').toLowerCase(); bv = (b.org_name||'').toLowerCase(); }
-      else if (key === 'abn')    { av = a._abn_num || 0; bv = b._abn_num || 0; }
-      else if (key === 'events') { av = a._events || 0; bv = b._events || 0; }
-      else if (key === 'stalls') { av = a._stalls || 0; bv = b._stalls || 0; }
+      else if (key === 'abn')    { av = (a.abn||''); bv = (b.abn||''); }
+      else if (key === 'events') { av = a.event_count || 0; bv = b.event_count || 0; }
+      else if (key === 'stalls') { av = a.stall_count || 0; bv = b.stall_count || 0; }
       else if (key === 'joined') { av = a.joined || ''; bv = b.joined || ''; }
       else if (key === 'status') { av = STATUS_ORDER[a.status] ?? 9; bv = STATUS_ORDER[b.status] ?? 9; }
       if (av < bv) return -dir;
@@ -2597,12 +2591,7 @@
     try {
       const r = await fetch('/api/admin/organisers');
       const { organisers } = await r.json();
-      _orgsCache = organisers.map(o => Object.assign({}, o, {
-        _events: 2 + (o.user_id % 4),
-        _stalls: (2 + (o.user_id % 4)) * (8 + (o.user_id % 12)),
-        _mock_abn: o.abn || ((51 + (o.user_id % 40)) + ' ' + String(100 + (o.user_id % 900)).padStart(3,'0') + ' ' + String(100 + (o.user_id * 7 % 900)).padStart(3,'0')),
-        _abn_num: parseInt((o.abn || ((51 + (o.user_id % 40)) + '' + String(100 + (o.user_id % 900)).padStart(3,'0') + String(100 + (o.user_id * 7 % 900)).padStart(3,'0'))).replace(/\s/g, '')) || 0,
-      }));
+      _orgsCache = organisers;
       const filtered = _orgStatusFilter ? _orgsCache.filter(o => o.status === _orgStatusFilter) : _orgsCache;
       renderOrgsTable(filtered);
       renderPendingQueue();
@@ -2645,14 +2634,11 @@
              <button class="act-btn act-view" onclick="openOrganiserDetail(${o.user_id})">View</button>
            </div>`;
 
-      const mockEvents = o._events !== undefined ? o._events : (2 + (o.user_id % 4));
-      const mockStalls = o._stalls !== undefined ? o._stalls : mockEvents * (8 + (o.user_id % 12));
-      const mockAbn = o._mock_abn || o.abn || '—';
       return `<tr>
         <td onclick="openOrganiserDetail(${o.user_id})" style="cursor:pointer;" title="View organiser"><strong>${o.org_name}</strong><br><span style="font-size:12px;color:#4A3C30;">${o.email}</span></td>
-        <td><span style="font-size:12px;">${mockAbn}</span></td>
-        <td><strong>${mockEvents}</strong></td>
-        <td><strong>${mockStalls}</strong></td>
+        <td><span style="font-size:12px;">${o.abn || '—'}</span></td>
+        <td><strong>${o.event_count || 0}</strong></td>
+        <td><strong>${o.stall_count || 0}</strong></td>
         <td><span style="font-size:12px;">${fmtDate(o.joined)}</span></td>
         <td>${statusBadge(o.status)}</td>
         <td>${actions}</td>
@@ -2955,6 +2941,28 @@
   // Cache vendor doc URLs so adminViewDoc can access them without a second fetch
   let _docCache = {};
 
+  async function adminSaveAbn(userId) {
+    const inp = document.getElementById(`df-abn-edit-${userId}`);
+    if (!inp) return;
+    const abn = inp.value.replace(/\s/g, '');
+    if (abn && abn.length !== 11) { alert('ABN must be exactly 11 digits.'); return; }
+    try {
+      const r = await fetch(`/api/admin/vendors/${userId}/abn`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ abn: abn || null }),
+      });
+      const d = await r.json();
+      if (r.ok) {
+        const result = document.getElementById(`abn-check-result-${userId}`);
+        if (result) result.innerHTML = '<span style="color:#2D8B55;font-size:12px;">✓ ABN saved</span>';
+        // Update cache
+        const v = _vendorsCache.find(v => v.user_id === userId);
+        if (v) v.abn = abn || null;
+      } else { alert(d.error || 'Save failed'); }
+    } catch (e) { alert('Network error'); }
+  }
+
   async function adminCheckAbn(userId, abn) {
     const btn = document.getElementById(`abn-check-btn-${userId}`);
     const result = document.getElementById(`abn-check-result-${userId}`);
@@ -3090,13 +3098,16 @@
           const abn = vendor.abn || '';
           const verified = vendor.abn_verified;
           return `<div style="display:flex;flex-direction:column;gap:12px;">
-            <div style="display:flex;align-items:center;gap:10px;">
-              <span style="font-size:14px;font-weight:600;color:#FDF4E7;font-family:monospace;letter-spacing:0.5px;">${abn ? abn.replace(/(\d{2})(\d{3})(\d{3})(\d{3})/, '$1 $2 $3 $4') : 'No ABN provided'}</span>
-              ${abn ? (verified ? '<span style="font-size:11px;background:rgba(45,139,85,0.15);color:#2D8B55;border:1px solid rgba(45,139,85,0.3);border-radius:6px;padding:2px 8px;">✓ Verified</span>'
-                                : '<span style="font-size:11px;background:rgba(201,132,10,0.15);color:#C9840A;border:1px solid rgba(201,132,10,0.3);border-radius:6px;padding:2px 8px;">Unverified</span>') : ''}
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <input id="df-abn-edit-${userId}" type="text" value="${abn}" placeholder="Enter 11-digit ABN" maxlength="14"
+                style="font-size:14px;font-weight:600;color:#FDF4E7;font-family:monospace;letter-spacing:0.5px;background:#1E1916;border:1px solid #2A2018;border-radius:8px;padding:8px 12px;width:180px;outline:none;"
+                oninput="this.value=this.value.replace(/[^\\d\\s]/g,'')" />
+              ${verified ? '<span style="font-size:11px;background:rgba(45,139,85,0.15);color:#2D8B55;border:1px solid rgba(45,139,85,0.3);border-radius:6px;padding:2px 8px;">✓ Verified</span>'
+                         : abn ? '<span style="font-size:11px;background:rgba(201,132,10,0.15);color:#C9840A;border:1px solid rgba(201,132,10,0.3);border-radius:6px;padding:2px 8px;">Unverified</span>' : ''}
+              <button onclick="adminSaveAbn(${userId})" style="background:rgba(232,80,10,0.1);border:1px solid rgba(232,80,10,0.3);border-radius:8px;padding:6px 14px;font-size:12px;color:#E8500A;cursor:pointer;font-family:inherit;">Save ABN</button>
             </div>
             <div id="abn-check-result-${userId}" style="font-size:12px;color:#A89880;line-height:1.6;"></div>
-            ${abn ? `<button onclick="adminCheckAbn(${userId},'${abn}')" id="abn-check-btn-${userId}" style="align-self:flex-start;background:rgba(232,80,10,0.1);border:1px solid rgba(232,80,10,0.3);border-radius:8px;padding:6px 14px;font-size:12px;color:#E8500A;cursor:pointer;font-family:inherit;transition:opacity 0.15s;">Check ABN against ABR →</button>` : ''}
+            <button onclick="adminCheckAbn(${userId}, document.getElementById('df-abn-edit-${userId}').value)" id="abn-check-btn-${userId}" style="align-self:flex-start;background:rgba(232,80,10,0.1);border:1px solid rgba(232,80,10,0.3);border-radius:8px;padding:6px 14px;font-size:12px;color:#E8500A;cursor:pointer;font-family:inherit;transition:opacity 0.15s;">Check ABN against ABR →</button>
           </div>`;
         })()) +
         detailSection('Subscription', (() => {
