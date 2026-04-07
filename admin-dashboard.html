@@ -2955,6 +2955,42 @@
   // Cache vendor doc URLs so adminViewDoc can access them without a second fetch
   let _docCache = {};
 
+  async function adminCheckAbn(userId, abn) {
+    const btn = document.getElementById(`abn-check-btn-${userId}`);
+    const result = document.getElementById(`abn-check-result-${userId}`);
+    if (!btn || !result) return;
+    btn.textContent = 'Checking…';
+    btn.style.opacity = '0.5';
+    btn.disabled = true;
+    try {
+      const r = await fetch('/api/verify-abn', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ abn: abn.replace(/\s/g, '') }),
+      });
+      const data = await r.json();
+      if (data.valid) {
+        result.innerHTML = `<div style="background:rgba(45,139,85,0.1);border:1px solid rgba(45,139,85,0.25);border-radius:10px;padding:12px 14px;">
+          <div style="font-size:12px;font-weight:700;color:#2D8B55;margin-bottom:6px;">✓ ABN Active</div>
+          ${data.entityName ? `<div style="font-size:13px;color:#FDF4E7;margin-bottom:4px;"><span style="color:#6B5A4A;font-size:11px;">Entity name:</span> ${data.entityName}</div>` : ''}
+          ${data.status ? `<div style="font-size:12px;color:#A89880;"><span style="color:#6B5A4A;font-size:11px;">Status:</span> ${data.status}</div>` : ''}
+          ${data.checksum_only ? `<div style="font-size:11px;color:#C9840A;margin-top:6px;">⚠ Format valid only — ABR_GUID not configured for full lookup</div>` : ''}
+        </div>`;
+      } else {
+        result.innerHTML = `<div style="background:rgba(192,57,43,0.1);border:1px solid rgba(192,57,43,0.25);border-radius:10px;padding:12px 14px;">
+          <div style="font-size:12px;font-weight:700;color:#C0392B;margin-bottom:4px;">✕ ABN Check Failed</div>
+          <div style="font-size:12px;color:#A89880;">${data.error || 'Could not verify this ABN.'}</div>
+          ${data.entityName ? `<div style="font-size:12px;color:#A89880;margin-top:4px;">Entity: ${data.entityName} · Status: ${data.status || 'Unknown'}</div>` : ''}
+        </div>`;
+      }
+    } catch (e) {
+      result.innerHTML = `<div style="font-size:12px;color:#C0392B;">Network error — could not reach ABR.</div>`;
+    }
+    btn.textContent = 'Check ABN against ABR →';
+    btn.style.opacity = '1';
+    btn.disabled = false;
+  }
+
   async function adminViewDoc(docKey, userId) {
     // Try cache first, otherwise fetch
     let url = _docCache[`${userId}_${docKey}`];
@@ -3050,6 +3086,19 @@
           ${dfSelect('df-water', 'Water required', vendor.water?'1':'0', [{v:'1',l:'Yes'},{v:'0',l:'No'}])}
           ${dfTextarea('df-bio', 'Bio', vendor.bio)}
         </div>`) +
+        detailSection('ABN Verification', (() => {
+          const abn = vendor.abn || '';
+          const verified = vendor.abn_verified;
+          return `<div style="display:flex;flex-direction:column;gap:12px;">
+            <div style="display:flex;align-items:center;gap:10px;">
+              <span style="font-size:14px;font-weight:600;color:#FDF4E7;font-family:monospace;letter-spacing:0.5px;">${abn ? abn.replace(/(\d{2})(\d{3})(\d{3})(\d{3})/, '$1 $2 $3 $4') : 'No ABN provided'}</span>
+              ${abn ? (verified ? '<span style="font-size:11px;background:rgba(45,139,85,0.15);color:#2D8B55;border:1px solid rgba(45,139,85,0.3);border-radius:6px;padding:2px 8px;">✓ Verified</span>'
+                                : '<span style="font-size:11px;background:rgba(201,132,10,0.15);color:#C9840A;border:1px solid rgba(201,132,10,0.3);border-radius:6px;padding:2px 8px;">Unverified</span>') : ''}
+            </div>
+            <div id="abn-check-result-${userId}" style="font-size:12px;color:#A89880;line-height:1.6;"></div>
+            ${abn ? `<button onclick="adminCheckAbn(${userId},'${abn}')" id="abn-check-btn-${userId}" style="align-self:flex-start;background:rgba(232,80,10,0.1);border:1px solid rgba(232,80,10,0.3);border-radius:8px;padding:6px 14px;font-size:12px;color:#E8500A;cursor:pointer;font-family:inherit;transition:opacity 0.15s;">Check ABN against ABR →</button>` : ''}
+          </div>`;
+        })()) +
         detailSection('Subscription', (() => {
           const plan = vendor.plan || 'free';
           const quota = plan === 'growth' ? null : plan === 'pro' ? 10 : 3;
