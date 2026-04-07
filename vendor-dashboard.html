@@ -1973,6 +1973,15 @@ body::before {
             <input class="form-input" id="v-instagram" type="text" value="" placeholder="@yourhandle" />
           </div>
 
+          <div class="form-group">
+            <label class="form-label">ABN (Australian Business Number)</label>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input class="form-input" id="v-abn" type="text" value="" placeholder="XX XXX XXX XXX" maxlength="14" style="flex:1;font-family:monospace;letter-spacing:0.5px;" oninput="this.value=this.value.replace(/[^\d\s]/g,'')" />
+              <button type="button" id="v-abn-btn" onclick="vendorVerifyAbn()" style="flex-shrink:0;background:var(--ember);color:#fff;border:none;border-radius:10px;padding:10px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--fb);white-space:nowrap;transition:background 0.15s;" onmouseover="this.style.background='var(--ember-glow)'" onmouseout="this.style.background='var(--ember)'">Verify ABN</button>
+            </div>
+            <div id="v-abn-result" style="margin-top:8px;font-size:12px;line-height:1.5;"></div>
+          </div>
+
           <!-- Growth: Cuisine vanity URL -->
           <div class="form-group" id="vanity-url-group" style="display:none;">
             <label class="form-label" style="display:flex;align-items:center;gap:8px;">
@@ -3161,12 +3170,51 @@ function updatePreview() {
   if (priceEl) { priceEl.textContent = formatPrice(priceVal); priceEl.style.display = priceVal ? '' : 'none'; }
 }
 
+async function vendorVerifyAbn() {
+  const inp = document.getElementById('v-abn');
+  const btn = document.getElementById('v-abn-btn');
+  const result = document.getElementById('v-abn-result');
+  if (!inp) return;
+  const abn = inp.value.replace(/\s/g, '');
+  if (abn.length < 11) {
+    result.innerHTML = '<span style="color:var(--terra);">ABN must be 11 digits.</span>';
+    return;
+  }
+  btn.textContent = 'Checking…'; btn.disabled = true; btn.style.opacity = '0.6';
+  try {
+    const r = await pitchFetch('/api/verify-abn', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ abn }),
+    });
+    const data = await r.json();
+    if (data.valid) {
+      result.innerHTML = `<div style="background:rgba(45,139,85,0.1);border:1px solid rgba(45,139,85,0.25);border-radius:10px;padding:10px 12px;">
+        <span style="color:var(--herb);font-weight:700;">✓ ABN Active</span>
+        ${data.entityName ? `<span style="color:var(--text-hi);margin-left:8px;">${data.entityName}</span>` : ''}
+        ${data.checksum_only ? '<div style="font-size:11px;color:var(--gold);margin-top:4px;">Format valid — full lookup not configured</div>' : ''}
+      </div>`;
+      inp.dataset.verified = 'true';
+    } else {
+      result.innerHTML = `<div style="background:rgba(192,57,43,0.1);border:1px solid rgba(192,57,43,0.25);border-radius:10px;padding:10px 12px;">
+        <span style="color:var(--terra);font-weight:700;">✕ ${data.error || 'ABN could not be verified'}</span>
+        ${data.entityName ? `<div style="font-size:12px;color:var(--text-mid);margin-top:4px;">Entity: ${data.entityName} · Status: ${data.status || 'Unknown'}</div>` : ''}
+      </div>`;
+      inp.dataset.verified = 'false';
+    }
+  } catch (e) {
+    result.innerHTML = '<span style="color:var(--terra);">Network error — could not check ABN.</span>';
+  }
+  btn.textContent = 'Verify ABN'; btn.disabled = false; btn.style.opacity = '1';
+}
+
 async function saveProfile(btn) {
   btn.textContent = 'Saving…'; btn.disabled = true; btn.style.background = '';
 
   const cuisine_tags = [...document.querySelectorAll('.tag-option.selected')].map(b => b.textContent.trim());
   const setup = document.querySelector('input[name="setup"]:checked');
   const activePrice = document.querySelector('.price-btn.active');
+  const abnVal = (document.getElementById('v-abn') || {}).value || '';
 
   const payload = {
     trading_name: (document.getElementById('prof-name') || {}).value || '',
@@ -3175,6 +3223,7 @@ async function saveProfile(btn) {
     suburb:       (document.getElementById('v-suburb')  || {}).value || '',
     state:        (document.getElementById('v-state')   || {}).value || '',
     instagram:    (document.getElementById('v-instagram') || {}).value || '',
+    abn:          abnVal.replace(/\s/g, ''),
     stall_w:      Number((document.getElementById('v-stall-w') || {}).value) || null,
     stall_d:      Number((document.getElementById('v-stall-d') || {}).value) || null,
     power:        (document.getElementById('v-power')   || {}).checked ? 1 : 0,
@@ -3495,6 +3544,7 @@ async function initDashboard() {
     if (document.getElementById('v-state')) document.getElementById('v-state').value = v.state || '';
     if (document.getElementById('v-suburb')) document.getElementById('v-suburb').value = v.suburb || '';
     if (document.getElementById('v-instagram')) document.getElementById('v-instagram').value = v.instagram || '';
+    if (document.getElementById('v-abn')) document.getElementById('v-abn').value = v.abn || '';
     if (document.getElementById('v-stall-w') && v.stall_w) document.getElementById('v-stall-w').value = v.stall_w;
     if (document.getElementById('v-stall-d') && v.stall_d) document.getElementById('v-stall-d').value = v.stall_d;
     if (document.getElementById('v-power'))  document.getElementById('v-power').checked  = !!v.power;
