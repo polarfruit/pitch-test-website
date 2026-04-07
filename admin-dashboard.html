@@ -2941,28 +2941,6 @@
   // Cache vendor doc URLs so adminViewDoc can access them without a second fetch
   let _docCache = {};
 
-  async function adminSaveAbn(userId) {
-    const inp = document.getElementById(`df-abn-edit-${userId}`);
-    if (!inp) return;
-    const abn = inp.value.replace(/\s/g, '');
-    if (abn && abn.length !== 11) { alert('ABN must be exactly 11 digits.'); return; }
-    try {
-      const r = await fetch(`/api/admin/vendors/${userId}/abn`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ abn: abn || null }),
-      });
-      const d = await r.json();
-      if (r.ok) {
-        const result = document.getElementById(`abn-check-result-${userId}`);
-        if (result) result.innerHTML = '<span style="color:#2D8B55;font-size:12px;">✓ ABN saved</span>';
-        // Update cache
-        const v = _vendorsCache.find(v => v.user_id === userId);
-        if (v) v.abn = abn || null;
-      } else { alert(d.error || 'Save failed'); }
-    } catch (e) { alert('Network error'); }
-  }
-
   async function adminCheckAbn(userId, abn) {
     const btn = document.getElementById(`abn-check-btn-${userId}`);
     const result = document.getElementById(`abn-check-result-${userId}`);
@@ -3098,16 +3076,15 @@
           const abn = vendor.abn || '';
           const verified = vendor.abn_verified;
           return `<div style="display:flex;flex-direction:column;gap:12px;">
-            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-              <input id="df-abn-edit-${userId}" type="text" value="${abn}" placeholder="Enter 11-digit ABN" maxlength="14"
-                style="font-size:14px;font-weight:600;color:#FDF4E7;font-family:monospace;letter-spacing:0.5px;background:#1E1916;border:1px solid #2A2018;border-radius:8px;padding:8px 12px;width:180px;outline:none;"
-                oninput="this.value=this.value.replace(/[^\\d\\s]/g,'')" />
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+              <span style="font-size:14px;font-weight:600;color:#FDF4E7;font-family:monospace;letter-spacing:0.5px;">${abn ? abn.replace(/(\d{2})(\d{3})(\d{3})(\d{3})/, '$1 $2 $3 $4') : 'No ABN provided'}</span>
               ${verified ? '<span style="font-size:11px;background:rgba(45,139,85,0.15);color:#2D8B55;border:1px solid rgba(45,139,85,0.3);border-radius:6px;padding:2px 8px;">✓ Verified</span>'
                          : abn ? '<span style="font-size:11px;background:rgba(201,132,10,0.15);color:#C9840A;border:1px solid rgba(201,132,10,0.3);border-radius:6px;padding:2px 8px;">Unverified</span>' : ''}
-              <button onclick="adminSaveAbn(${userId})" style="background:rgba(232,80,10,0.1);border:1px solid rgba(232,80,10,0.3);border-radius:8px;padding:6px 14px;font-size:12px;color:#E8500A;cursor:pointer;font-family:inherit;">Save ABN</button>
             </div>
+            <p style="font-size:11px;color:#6B5A4A;margin:0;">Edit the ABN in Business Details above, then click Save Changes. Use the button below to verify against the ABR.</p>
             <div id="abn-check-result-${userId}" style="font-size:12px;color:#A89880;line-height:1.6;"></div>
-            <button onclick="adminCheckAbn(${userId}, document.getElementById('df-abn-edit-${userId}').value)" id="abn-check-btn-${userId}" style="align-self:flex-start;background:rgba(232,80,10,0.1);border:1px solid rgba(232,80,10,0.3);border-radius:8px;padding:6px 14px;font-size:12px;color:#E8500A;cursor:pointer;font-family:inherit;transition:opacity 0.15s;">Check ABN against ABR →</button>
+            ${abn ? `<button onclick="adminCheckAbn(${userId}, document.getElementById('df-abn').value || '${abn}')" id="abn-check-btn-${userId}" style="align-self:flex-start;background:rgba(232,80,10,0.1);border:1px solid rgba(232,80,10,0.3);border-radius:8px;padding:6px 14px;font-size:12px;color:#E8500A;cursor:pointer;font-family:inherit;transition:opacity 0.15s;">Check ABN against ABR →</button>`
+                  : '<span style="font-size:12px;color:#6B5A4A;">Add an ABN in Business Details above to verify.</span>'}
           </div>`;
         })()) +
         detailSection('Subscription', (() => {
