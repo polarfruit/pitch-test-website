@@ -2438,9 +2438,13 @@
         <td>${(() => {
           const total = 3;
           const uploaded = [v.food_safety_url, v.pli_url, v.council_url].filter(Boolean).length;
-          if (uploaded === total) return `<span class="badge badge-green" title="Food Safety · PLI · Council Permit">✓ All docs</span>`;
+          const pliTag = v.pli_status === 'verified' ? '<span title="PLI verified" style="color:#2D8B55;font-size:10px;margin-left:3px;">✓PLI</span>'
+                       : v.pli_status === 'flagged'  ? '<span title="PLI flagged" style="color:#C9840A;font-size:10px;margin-left:3px;">⚠PLI</span>'
+                       : v.pli_status === 'expired'  ? '<span title="PLI expired" style="color:#C0392B;font-size:10px;margin-left:3px;">✕PLI</span>'
+                       : '';
+          if (uploaded === total) return `<span class="badge badge-green" title="Food Safety · PLI · Council Permit">✓ All docs</span>${pliTag}`;
           if (uploaded === 0)    return `<span class="badge badge-grey">No docs</span>`;
-          return `<span class="badge badge-amber" title="${uploaded}/${total} uploaded">${uploaded}/${total} docs</span>`;
+          return `<span class="badge badge-amber" title="${uploaded}/${total} uploaded">${uploaded}/${total} docs</span>${pliTag}`;
         })()}</td>
         <td>${planBadge(v.plan)}</td>
         <td><span style="font-size:12px;">${fmtDate(v.joined)}</span></td>
@@ -3101,15 +3105,41 @@
             const isImg = url.startsWith('data:image');
             const icon  = isPdf ? '📄' : isImg ? '🖼' : '📎';
             const typeLabel = isPdf ? 'PDF' : isImg ? 'Image' : 'File';
-            return `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #1E1916;">
-              <div>
-                <div style="font-size:13px;color:#FDF4E7;">${d.label}</div>
-                <div style="font-size:11px;color:#4A3C30;margin-top:2px;">${icon} ${typeLabel} uploaded</div>
+
+            // PLI analysis badge
+            let pliExtra = '';
+            if (d.key === 'pli_url' && vendor.pli_status && vendor.pli_status !== 'none') {
+              const sm = { verified: { icon:'✓', label:'Verified', bg:'rgba(45,139,85,0.12)', border:'rgba(45,139,85,0.3)', color:'#2D8B55' },
+                           flagged:  { icon:'⚠', label:'Flagged', bg:'rgba(201,132,10,0.12)', border:'rgba(201,132,10,0.3)', color:'#C9840A' },
+                           expired:  { icon:'✕', label:'Expired', bg:'rgba(192,57,43,0.12)', border:'rgba(192,57,43,0.3)', color:'#C0392B' },
+                           pending:  { icon:'…', label:'Pending', bg:'rgba(201,132,10,0.12)', border:'rgba(201,132,10,0.3)', color:'#C9840A' } };
+              const st = sm[vendor.pli_status] || sm.pending;
+              const details = [];
+              if (vendor.pli_insured_name)    details.push(`Insured: ${vendor.pli_insured_name}`);
+              if (vendor.pli_coverage_amount) details.push(`Coverage: ${vendor.pli_coverage_amount}`);
+              if (vendor.pli_expiry)          details.push(`Expiry: ${vendor.pli_expiry}`);
+              if (vendor.pli_policy_number)   details.push(`Policy #: ${vendor.pli_policy_number}`);
+              const flags = JSON.parse(vendor.pli_flags || '[]');
+              const flagsHtml = flags.map(f => `<div style="font-size:11px;color:${st.color};margin-top:3px;">⚠ ${f}</div>`).join('');
+              pliExtra = `<div style="background:${st.bg};border:1px solid ${st.border};border-radius:8px;padding:8px 10px;margin-top:6px;">
+                <div style="font-size:11px;font-weight:700;color:${st.color};margin-bottom:4px;">${st.icon} PLI ${st.label}</div>
+                <div style="font-size:11px;color:#A89880;line-height:1.5;">${details.join(' · ')}</div>
+                ${flagsHtml}
+              </div>`;
+            }
+
+            return `<div style="padding:10px 0;border-bottom:1px solid #1E1916;">
+              <div style="display:flex;align-items:center;justify-content:space-between;">
+                <div>
+                  <div style="font-size:13px;color:#FDF4E7;">${d.label}</div>
+                  <div style="font-size:11px;color:#4A3C30;margin-top:2px;">${icon} ${typeLabel} uploaded</div>
+                </div>
+                <div style="display:flex;gap:8px;">
+                  <button onclick="adminViewDoc('${d.key}',${userId})" style="background:rgba(232,80,10,0.1);border:1px solid rgba(232,80,10,0.3);border-radius:6px;padding:4px 12px;font-size:12px;color:#E8500A;cursor:pointer;font-family:inherit;">View</button>
+                  ${isImg ? `<button onclick="adminViewDoc('${d.key}',${userId})" style="background:#1E1916;border:1px solid #2A2018;border-radius:6px;padding:4px 12px;font-size:12px;color:#A89880;cursor:pointer;font-family:inherit;">Preview</button>` : ''}
+                </div>
               </div>
-              <div style="display:flex;gap:8px;">
-                <button onclick="adminViewDoc('${d.key}',${userId})" style="background:rgba(232,80,10,0.1);border:1px solid rgba(232,80,10,0.3);border-radius:6px;padding:4px 12px;font-size:12px;color:#E8500A;cursor:pointer;font-family:inherit;">View</button>
-                ${isImg ? `<button onclick="adminViewDoc('${d.key}',${userId})" style="background:#1E1916;border:1px solid #2A2018;border-radius:6px;padding:4px 12px;font-size:12px;color:#A89880;cursor:pointer;font-family:inherit;">Preview</button>` : ''}
-              </div>
+              ${pliExtra}
             </div>`;
           }).join('');
         })()) +
