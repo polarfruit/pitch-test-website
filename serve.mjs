@@ -962,9 +962,20 @@ app.get('/api/vendors/:userId', async (req, res) => {
 // ── API: Admin ─────────────────────────────────────────────────────────────
 
 app.get('/api/admin/vendors', requireAdmin, async (req, res) => {
-  const { status } = req.query;
-  const rows = status ? await stmts.vendorsByStatus.all(status) : await stmts.allVendors.all();
-  res.json({ vendors: rows });
+  try {
+    const { status } = req.query;
+    const rows = status ? await stmts.vendorsByStatus.all(status) : await stmts.allVendors.all();
+    // Try to enrich with PLI status (columns may not exist yet on first deploy)
+    try {
+      const pliRows = await (prepare(`SELECT user_id, pli_status FROM vendors WHERE pli_status IS NOT NULL AND pli_status != 'none'`)).all();
+      const pliMap = Object.fromEntries(pliRows.map(r => [r.user_id, r.pli_status]));
+      for (const v of rows) { v.pli_status = pliMap[v.user_id] || null; }
+    } catch (_) { /* pli columns not yet migrated — ignore */ }
+    res.json({ vendors: rows });
+  } catch (e) {
+    console.error('[admin vendors]', e);
+    res.status(500).json({ error: e.message });
+  }
 });
 
 app.get('/api/admin/organisers', requireAdmin, async (req, res) => {
