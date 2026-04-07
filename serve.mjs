@@ -7,6 +7,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import db, { stmts, txSignupVendor, txSignupOrganiser, txSignupFoodie, prepare } from './db.mjs';
 import { sendVerificationEmail, sendVerificationSMS, sendAdminEmail, buildSuspensionEmailHtml, buildSuspensionNoticeHtml } from './mailer.mjs';
+import { analysePli } from './pli-analyser.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -1946,7 +1947,54 @@ app.post('/api/vendor/documents', requireAuth, async (req, res) => {
     council_url:     doc_type === 'council'     ? data : (current && current.council_url)     || null,
     user_id: req.session.userId,
   });
-  res.json({ ok: true, url: data });
+
+  // Auto-analyse PLI document on upload
+  let pliAnalysis = null;
+  if (doc_type === 'pli' && data) {
+    try {
+      pliAnalysis = await analysePli(data, {
+        trading_name: current?.trading_name,
+        abn_entity_name: current?.abn_entity_name || current?.trading_name,
+      });
+      await stmts.updateVendorPliAnalysis.run({
+        pli_insured_name:    pliAnalysis.insured_name,
+        pli_policy_number:   pliAnalysis.policy_number,
+        pli_coverage_amount: pliAnalysis.coverage_amount,
+        pli_expiry:          pliAnalysis.expiry,
+        pli_status:          pliAnalysis.status,
+        pli_flags:           JSON.stringify(pliAnalysis.flags),
+        user_id: req.session.userId,
+      });
+    } catch (e) {
+      console.error('[pli-analyser] Error:', e.message);
+      pliAnalysis = { status: 'pending', flags: ['Analysis failed — manual review required'] };
+    }
+  } else if (doc_type === 'pli' && !data) {
+    // Document removed — clear analysis
+    await stmts.updateVendorPliAnalysis.run({
+      pli_insured_name: null, pli_policy_number: null,
+      pli_coverage_amount: null, pli_expiry: null,
+      pli_status: 'none', pli_flags: '[]', user_id: req.session.userId,
+    });
+  }
+
+  res.json({ ok: true, url: data, pli_analysis: pliAnalysis });
+});
+
+// ── API: PLI analysis status ──────────────────────────────────────────────
+app.get('/api/vendor/pli-status', requireAuth, async (req, res) => {
+  if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Vendors only' });
+  const v = await stmts.getVendorByUserId.get(req.session.userId);
+  if (!v) return res.json({ status: 'none' });
+  res.json({
+    status:          v.pli_status || 'none',
+    insured_name:    v.pli_insured_name || null,
+    policy_number:   v.pli_policy_number || null,
+    coverage_amount: v.pli_coverage_amount || null,
+    expiry:          v.pli_expiry || null,
+    flags:           JSON.parse(v.pli_flags || '[]'),
+    analysed_at:     v.pli_analysed_at || null,
+  });
 });
 
 // ── API: Vendor reviews ────────────────────────────────────────────────────

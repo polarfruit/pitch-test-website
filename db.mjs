@@ -285,6 +285,14 @@ await _safeExec(`ALTER TABLE vendors ADD COLUMN photos TEXT DEFAULT '[]'`);
 await _safeExec(`ALTER TABLE vendors ADD COLUMN food_safety_url TEXT`);
 await _safeExec(`ALTER TABLE vendors ADD COLUMN pli_url TEXT`);
 await _safeExec(`ALTER TABLE vendors ADD COLUMN council_url TEXT`);
+// PLI auto-analysis fields
+await _safeExec(`ALTER TABLE vendors ADD COLUMN pli_insured_name TEXT`);
+await _safeExec(`ALTER TABLE vendors ADD COLUMN pli_policy_number TEXT`);
+await _safeExec(`ALTER TABLE vendors ADD COLUMN pli_coverage_amount TEXT`);
+await _safeExec(`ALTER TABLE vendors ADD COLUMN pli_expiry TEXT`);
+await _safeExec(`ALTER TABLE vendors ADD COLUMN pli_status TEXT DEFAULT 'none'`);  // none | pending | verified | flagged | expired
+await _safeExec(`ALTER TABLE vendors ADD COLUMN pli_analysed_at DATETIME`);
+await _safeExec(`ALTER TABLE vendors ADD COLUMN pli_flags TEXT DEFAULT '[]'`);
 await _safeExec(`ALTER TABLE events ADD COLUMN date_end TEXT`);
 await _safeExec(`ALTER TABLE events ADD COLUMN stall_fee_min INTEGER`);
 await _safeExec(`ALTER TABLE events ADD COLUMN stall_fee_max INTEGER`);
@@ -889,8 +897,8 @@ export const stmts = {
   `),
   getVendorByUserId:  prepare(`SELECT * FROM vendors WHERE user_id = ?`),
   updateVendorPlan:   prepare(`UPDATE vendors SET plan = ? WHERE user_id = ?`),
-  allVendors: prepare(`SELECT u.id as user_id, COALESCE(v.trading_name, u.first_name||' '||u.last_name) as trading_name, u.email, u.first_name, u.last_name, u.status, u.created_at as joined, v.abn, COALESCE(v.plan,'free') as plan, v.suburb, v.state, v.id as vid, v.created_at, v.food_safety_url, v.pli_url, v.council_url FROM users u LEFT JOIN vendors v ON v.user_id=u.id AND v.id=(SELECT MIN(id) FROM vendors WHERE user_id=u.id) WHERE u.role='vendor' ORDER BY u.id DESC`),
-  vendorsByStatus: prepare(`SELECT u.id as user_id, COALESCE(v.trading_name, u.first_name||' '||u.last_name) as trading_name, u.email, u.first_name, u.last_name, u.status, u.created_at as joined, v.abn, COALESCE(v.plan,'free') as plan, v.suburb, v.state, v.id as vid, v.created_at, v.food_safety_url, v.pli_url, v.council_url FROM users u LEFT JOIN vendors v ON v.user_id=u.id AND v.id=(SELECT MIN(id) FROM vendors WHERE user_id=u.id) WHERE u.role='vendor' AND u.status=? ORDER BY u.id DESC`),
+  allVendors: prepare(`SELECT u.id as user_id, COALESCE(v.trading_name, u.first_name||' '||u.last_name) as trading_name, u.email, u.first_name, u.last_name, u.status, u.created_at as joined, v.abn, COALESCE(v.plan,'free') as plan, v.suburb, v.state, v.id as vid, v.created_at, v.food_safety_url, v.pli_url, v.council_url, v.pli_status FROM users u LEFT JOIN vendors v ON v.user_id=u.id AND v.id=(SELECT MIN(id) FROM vendors WHERE user_id=u.id) WHERE u.role='vendor' ORDER BY u.id DESC`),
+  vendorsByStatus: prepare(`SELECT u.id as user_id, COALESCE(v.trading_name, u.first_name||' '||u.last_name) as trading_name, u.email, u.first_name, u.last_name, u.status, u.created_at as joined, v.abn, COALESCE(v.plan,'free') as plan, v.suburb, v.state, v.id as vid, v.created_at, v.food_safety_url, v.pli_url, v.council_url, v.pli_status FROM users u LEFT JOIN vendors v ON v.user_id=u.id AND v.id=(SELECT MIN(id) FROM vendors WHERE user_id=u.id) WHERE u.role='vendor' AND u.status=? ORDER BY u.id DESC`),
 
   // organisers
   createOrganiser: prepare(`
@@ -1137,6 +1145,7 @@ export const stmts = {
   updateVendorProfileSelf: prepare(`UPDATE vendors SET trading_name=@trading_name,mobile=@mobile,suburb=@suburb,state=@state,bio=@bio,instagram=@instagram,setup_type=@setup_type,stall_w=@stall_w,stall_d=@stall_d,power=@power,water=@water,price_range=@price_range,cuisine_tags=@cuisine_tags WHERE user_id=@user_id`),
   updateVendorPhotos:     prepare(`UPDATE vendors SET photos=@photos WHERE user_id=@user_id`),
   updateVendorDoc:        prepare(`UPDATE vendors SET food_safety_url=@food_safety_url,pli_url=@pli_url,council_url=@council_url WHERE user_id=@user_id`),
+  updateVendorPliAnalysis: prepare(`UPDATE vendors SET pli_insured_name=@pli_insured_name,pli_policy_number=@pli_policy_number,pli_coverage_amount=@pli_coverage_amount,pli_expiry=@pli_expiry,pli_status=@pli_status,pli_analysed_at=datetime('now'),pli_flags=@pli_flags WHERE user_id=@user_id`),
   updateOrganiserProfile: prepare(`UPDATE organisers SET org_name=@org_name,phone=@phone,website=@website,suburb=@suburb,state=@state,bio=@bio,event_scale=@event_scale,stall_range=@stall_range,abn=@abn WHERE user_id=@user_id`),
   updateOrganiserProfileSelf: prepare(`UPDATE organisers SET org_name=@org_name,bio=@bio,website=@website WHERE user_id=@user_id`),
 

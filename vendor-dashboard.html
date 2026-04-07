@@ -3527,8 +3527,11 @@ async function initDashboard() {
   // Photos panel
   loadPhotos(profile);
 
-  // Documents panel
-  renderDocuments();
+  // Documents panel — load PLI analysis status then render
+  pitchFetch('/api/vendor/pli-status').then(r => r.ok ? r.json() : null).then(data => {
+    if (data) window.__PLI_STATUS__ = data;
+    renderDocuments();
+  }).catch(() => renderDocuments());
 
   // Fetch subscription info — store globally for quota bar, apply button gating, and plan card
   pitchFetch('/api/vendor/subscription-info').then(r => r.ok ? r.json() : null).then(subInfo => {
@@ -4154,13 +4157,15 @@ function renderDocuments(uploadingState, uploadingKey) {
   if (!grid) return;
   const docs = [
     { key: 'food_safety', label: 'Food Safety Certificate', icon: '🛡️', desc: 'Required for all food vendors.' },
-    { key: 'pli',         label: 'Public Liability Insurance', icon: '📋', desc: 'Min. $20M cover required.' },
+    { key: 'pli',         label: 'Public Liability Insurance', icon: '📋', desc: 'Min. $10M cover required.' },
     { key: 'council',     label: 'Council Trading Permit', icon: '🏛️', desc: 'Issued by your local council.' },
   ];
   const profile = window.__PITCH_PROFILE__ || {};
+  const pli = window.__PLI_STATUS__ || {};
   grid.innerHTML = docs.map(d => {
     const uploaded = profile[d.key + '_url'];
     const isUploading = uploadingState === 'uploading' && uploadingKey === d.key;
+    const isAnalysing = uploadingState === 'analysing' && uploadingKey === d.key;
 
     // Determine file label for viewing (pdf vs image)
     let viewLink = '';
@@ -4173,18 +4178,47 @@ function renderDocuments(uploadingState, uploadingKey) {
       }
     }
 
+    // PLI analysis panel
+    let pliPanel = '';
+    if (d.key === 'pli' && uploaded && pli.status && pli.status !== 'none') {
+      const statusMap = {
+        verified: { icon: '✓', label: 'Verified', cls: 'badge-approved', color: '#2D8B55' },
+        flagged:  { icon: '⚠', label: 'Needs review', cls: 'badge-pending', color: '#C9840A' },
+        expired:  { icon: '✕', label: 'Expired', cls: 'badge-rejected', color: '#C0392B' },
+        pending:  { icon: '…', label: 'Pending review', cls: 'badge-pending', color: '#C9840A' },
+      };
+      const s = statusMap[pli.status] || statusMap.pending;
+      const fields = [];
+      if (pli.insured_name)    fields.push(`<div><span style="color:var(--text-lo);font-size:11px;">Insured:</span> ${pli.insured_name}</div>`);
+      if (pli.policy_number)   fields.push(`<div><span style="color:var(--text-lo);font-size:11px;">Policy #:</span> ${pli.policy_number}</div>`);
+      if (pli.coverage_amount) fields.push(`<div><span style="color:var(--text-lo);font-size:11px;">Coverage:</span> ${pli.coverage_amount}</div>`);
+      if (pli.expiry)          fields.push(`<div><span style="color:var(--text-lo);font-size:11px;">Expiry:</span> ${pli.expiry}</div>`);
+      const flagsHtml = (pli.flags || []).map(f => `<div style="font-size:11px;color:${s.color};margin-top:4px;">⚠ ${f}</div>`).join('');
+      pliPanel = `<div style="background:#1A161280;border:1px solid ${s.color}30;border-radius:10px;padding:12px;margin-top:10px;font-size:12px;color:var(--text-hi);line-height:1.6;">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+          <span class="status-badge ${s.cls}" style="display:inline-flex;">${s.icon} ${s.label}</span>
+          <span style="font-size:10px;color:var(--text-lo);">Auto-analysed</span>
+        </div>
+        ${fields.join('')}
+        ${flagsHtml}
+      </div>`;
+    }
+
     return `<div class="doc-card" style="background:var(--ash);border:1px solid #ffffff09;border-radius:16px;padding:20px;">
       <div style="font-size:28px;margin-bottom:12px;">${d.icon}</div>
       <div style="font-size:13px;font-weight:700;color:var(--text-hi);margin-bottom:4px;">${d.label}</div>
       <div style="font-size:12px;color:var(--text-lo);margin-bottom:14px;line-height:1.5;">${d.desc}</div>
       ${isUploading
         ? `<span style="font-size:12px;color:var(--text-mid);">⏳ Uploading…</span>`
+        : isAnalysing
+        ? `<span style="font-size:12px;color:var(--text-mid);">🔍 Analysing document…</span>`
         : uploaded
           ? `<div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:10px;">
                <span class="status-badge badge-approved" style="display:inline-flex;">✓ Uploaded</span>
                ${viewLink}
              </div>
-             <div style="display:flex;gap:12px;align-items:center;">
+             ${pliPanel}
+             <div style="display:flex;gap:12px;align-items:center;margin-top:10px;">
                <label style="cursor:pointer;font-size:11px;color:var(--text-lo);text-decoration:underline;">Replace
                  <input type="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none;" onchange="uploadDoc('${d.key}', this)" />
                </label>
@@ -4211,13 +4245,21 @@ function uploadDoc(key, input) {
   reader.onload = async e => {
     const data = e.target.result; // base64 data URL
     try {
+      // For PLI, show analysing state after upload starts
+      if (key === 'pli') renderDocuments('analysing', key);
+
       const r = await pitchFetch('/api/vendor/documents', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ doc_type: key, data }),
       });
       if (r.ok) {
+        const result = await r.json();
         window.__PITCH_PROFILE__[key + '_url'] = data;
+        // Update PLI analysis status if returned
+        if (key === 'pli' && result.pli_analysis) {
+          window.__PLI_STATUS__ = result.pli_analysis;
+        }
         renderDocuments();
       } else {
         alert('Upload failed. Please try again.');
@@ -4235,6 +4277,7 @@ function uploadDoc(key, input) {
 async function removeDoc(key) {
   if (!confirm('Remove this document from your profile?')) return;
   window.__PITCH_PROFILE__[key + '_url'] = null;
+  if (key === 'pli') window.__PLI_STATUS__ = { status: 'none', flags: [] };
   renderDocuments();
   try {
     await pitchFetch('/api/vendor/documents', {
