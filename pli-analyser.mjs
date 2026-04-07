@@ -5,7 +5,10 @@
  * Flags issues: expired, low coverage (<$10M), name mismatch vs ABN entity.
  */
 
-import { PDFParse } from 'pdf-parse';
+// Use pdf-parse/lib to avoid the test-file-loading bug in v1's index.js
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const pdfParse = require('pdf-parse/lib/pdf-parse.js');
 
 // ── Text extraction ─────────────────────────────────────────────────────────
 
@@ -20,11 +23,8 @@ export async function extractTextFromDataUrl(dataUrl) {
 
   if (mime === 'application/pdf' || mime === 'application/octet-stream') {
     try {
-      const parser = new PDFParse({});
-      await parser.load(buffer);
-      const text = await parser.getText();
-      parser.destroy();
-      return text || '';
+      const pdf = await pdfParse(buffer);
+      return pdf.text || '';
     } catch (e) {
       console.error('[pli-analyser] PDF parse error:', e.message);
       return null;
