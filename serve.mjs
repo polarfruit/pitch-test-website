@@ -374,7 +374,7 @@ app.post('/api/signup/vendor', async (req, res) => {
       {
         trading_name,
         abn: abn || null,
-        abn_verified: abn ? 1 : 0,
+        abn_verified: 0,
         mobile: mobile || null,
         state: state || null,
         suburb: suburb || null,
@@ -400,6 +400,9 @@ app.post('/api/signup/vendor', async (req, res) => {
       await stmts.deletePresignupCode.run(email.toLowerCase());
     }
     _apiCache.delete('vendors'); _apiCache.delete('stats');
+
+    // Auto-verify ABN in background (non-blocking)
+    if (abn) autoVerifyAbn(abn.replace(/\s/g, ''), userId, 'vendor', { first_name, last_name, trading_name, email });
 
     sessWrite(res, { userId, role: 'vendor', name: `${first_name} ${last_name}` });
     res.json({ ok: true, redirect: '/dashboard/vendor' });
@@ -445,7 +448,7 @@ app.post('/api/signup/organiser', async (req, res) => {
       {
         org_name,
         abn: abn || null,
-        abn_verified: abn ? 1 : 0,
+        abn_verified: 0,
         website: website || null,
         state: state || null,
         suburb: suburb || null,
@@ -465,6 +468,9 @@ app.post('/api/signup/organiser', async (req, res) => {
     } else {
       await stmts.deletePresignupCode.run(email.toLowerCase());
     }
+
+    // Auto-verify ABN in background (non-blocking)
+    if (abn) autoVerifyAbn(abn.replace(/\s/g, ''), userId, 'organiser', { first_name, last_name, trading_name: org_name, email });
 
     sessWrite(res, { userId, role: 'organiser', name: `${first_name} ${last_name}` });
     res.json({ ok: true, redirect: '/dashboard/organiser' });
@@ -751,6 +757,42 @@ function abnCrossReference(entityName, tradingNames, context) {
 
   if (!accountNames.length) bestMatch = 'unknown';
   return { match: bestMatch, details };
+}
+
+// ── Server-side ABN auto-verify: call ABR + cross-reference + save ──────────
+// Called after signup and profile save. Runs in background (non-blocking).
+async function autoVerifyAbn(abn, userId, role, context) {
+  if (!abn || !/^\d{11}$/.test(abn) || !abnChecksum(abn)) return;
+  const guid = process.env.ABR_GUID;
+  if (!guid) return;
+  try {
+    const url = `https://abn.business.gov.au/abrxmlsearch/abrxmlsearch.asmx/SearchByABNv202001?searchString=${abn}&includeHistoricalDetails=N&authenticationGuid=${guid}`;
+    const r = await fetch(url, { headers: { Accept: 'text/xml' } });
+    const xml = await r.text();
+    const excMatch = xml.match(/<exceptionCode>([\s\S]*?)<\/exceptionCode>/);
+    if (excMatch) return;
+    const status = (xml.match(/<entityStatusCode>([\s\S]*?)<\/entityStatusCode>/) || [])[1] || 'Unknown';
+    if (status !== 'Active') return;
+
+    let entityName = '';
+    const orgMatch = xml.match(/<mainName>[\s\S]*?<organisationName>([\s\S]*?)<\/organisationName>/);
+    if (orgMatch) { entityName = orgMatch[1].trim(); }
+    else {
+      const given  = (xml.match(/<legalName>[\s\S]*?<givenName>([\s\S]*?)<\/givenName>/)  || [])[1] || '';
+      const family = (xml.match(/<legalName>[\s\S]*?<familyName>([\s\S]*?)<\/familyName>/) || [])[1] || '';
+      entityName = [given, family].map(s => s.trim()).filter(Boolean).join(' ');
+    }
+    const tradingNames = [];
+    for (const m of xml.matchAll(/<mainTradingName>[\s\S]*?<organisationName>([\s\S]*?)<\/organisationName>/g)) tradingNames.push(m[1].trim());
+    for (const m of xml.matchAll(/<otherTradingName>[\s\S]*?<organisationName>([\s\S]*?)<\/organisationName>/g)) tradingNames.push(m[1].trim());
+
+    const xref = abnCrossReference(entityName, tradingNames, context);
+    const abnVerified = xref.match === 'match' ? 1 : 0;
+    const params = { abn_verified: abnVerified, abn_entity_name: entityName, abn_match: xref.match, user_id: userId };
+    if (role === 'vendor') await stmts.updateVendorAbnVerification.run(params);
+    else if (role === 'organiser') await stmts.updateOrganiserAbnVerification.run(params);
+    console.log(`[ABR auto-verify] user=${userId} role=${role} abn=${abn} entity="${entityName}" match=${xref.match} verified=${abnVerified}`);
+  } catch (e) { console.error('[ABR auto-verify]', e.message); }
 }
 
 app.post('/api/verify-abn', async (req, res) => {
@@ -1567,6 +1609,14 @@ app.put('/api/vendor/profile', requireAuth, async (req, res) => {
       user_id:      req.session.userId,
     });
     _apiCache.delete('vendors');
+    // Auto-verify ABN if provided (runs in background)
+    if (abn) {
+      const user = await stmts.getUserById.get(req.session.userId);
+      autoVerifyAbn(abn.replace(/\s/g, ''), req.session.userId, 'vendor', {
+        first_name: user?.first_name || '', last_name: user?.last_name || '',
+        trading_name: trading_name || '', email: user?.email || '',
+      });
+    }
     res.json({ ok: true });
   } catch (e) {
     console.error('[vendor/profile PUT]', e);
@@ -2214,6 +2264,14 @@ app.put('/api/organiser/profile', requireAuth, async (req, res) => {
   const { org_name, bio, website, abn } = req.body;
   try {
     await stmts.updateOrganiserProfileSelf.run({ org_name: org_name || null, bio: bio || null, website: website || null, abn: abn || null, user_id: req.session.userId });
+    // Auto-verify ABN if provided (runs in background)
+    if (abn) {
+      const user = await stmts.getUserById.get(req.session.userId);
+      autoVerifyAbn(abn.replace(/\s/g, ''), req.session.userId, 'organiser', {
+        first_name: user?.first_name || '', last_name: user?.last_name || '',
+        trading_name: org_name || '', email: user?.email || '',
+      });
+    }
     res.json({ ok: true });
   } catch (e) {
     console.error('[organiser/profile PUT]', e);
