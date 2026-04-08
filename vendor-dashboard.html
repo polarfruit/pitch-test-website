@@ -1976,7 +1976,7 @@ body::before {
           <div class="form-group">
             <label class="form-label">ABN (Australian Business Number)</label>
             <div style="display:flex;gap:8px;align-items:center;">
-              <input class="form-input" id="v-abn" type="text" value="" placeholder="XX XXX XXX XXX" maxlength="14" style="flex:1;font-family:monospace;letter-spacing:0.5px;" oninput="this.value=this.value.replace(/[^\d\s]/g,'')" />
+              <input class="form-input" id="v-abn" type="text" value="" placeholder="XX XXX XXX XXX" maxlength="14" style="flex:1;font-family:monospace;letter-spacing:0.5px;" oninput="this.value=this.value.replace(/[^\d\s]/g,''); abnAutoVerify(this.value);" />
               <button type="button" id="v-abn-btn" onclick="vendorVerifyAbn()" style="flex-shrink:0;background:var(--ember);color:#fff;border:none;border-radius:10px;padding:10px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--fb);white-space:nowrap;transition:background 0.15s;" onmouseover="this.style.background='var(--ember-glow)'" onmouseout="this.style.background='var(--ember)'">Verify ABN</button>
             </div>
             <div id="v-abn-result" style="margin-top:8px;font-size:12px;line-height:1.5;"></div>
@@ -3170,40 +3170,105 @@ function updatePreview() {
   if (priceEl) { priceEl.textContent = formatPrice(priceVal); priceEl.style.display = priceVal ? '' : 'none'; }
 }
 
+// ── ABN auto-verify with cross-referencing ──────────────────────────────────
+let _abnDebounce = null;
+function abnAutoVerify(rawVal) {
+  clearTimeout(_abnDebounce);
+  const clean = rawVal.replace(/\s/g, '');
+  const resultEl = document.getElementById('v-abn-result');
+  if (clean.length < 11) { if (resultEl) resultEl.innerHTML = ''; return; }
+  if (clean.length === 11) {
+    _abnDebounce = setTimeout(() => vendorVerifyAbn(), 600);
+  }
+}
+
+function abnMatchBadge(match, entityName, tradingNames, details) {
+  const colors = { match: 'var(--herb)', partial: 'var(--gold)', mismatch: 'var(--terra)' };
+  const icons  = { match: '✓', partial: '⚠', mismatch: '✕' };
+  const labels = { match: 'Name matches your account', partial: 'Partial match — review entity name', mismatch: 'Entity name doesn\'t match your account' };
+  const c = colors[match] || 'var(--text-mid)';
+  const bg = match === 'match' ? 'rgba(45,139,85,0.1)' : match === 'partial' ? 'rgba(201,132,10,0.1)' : 'rgba(192,57,43,0.1)';
+  const border = match === 'match' ? 'rgba(45,139,85,0.25)' : match === 'partial' ? 'rgba(201,132,10,0.25)' : 'rgba(192,57,43,0.25)';
+
+  let html = `<div style="background:${bg};border:1px solid ${border};border-radius:10px;padding:10px 12px;">`;
+  html += `<div style="display:flex;align-items:center;gap:6px;"><span style="color:var(--herb);font-weight:700;">✓ ABN Active</span>`;
+  html += `<span style="color:var(--text-hi);">${entityName}</span></div>`;
+  if (tradingNames && tradingNames.length) {
+    html += `<div style="font-size:11px;color:var(--text-mid);margin-top:4px;">Trading as: ${tradingNames.join(', ')}</div>`;
+  }
+  // Cross-reference result
+  html += `<div style="margin-top:6px;padding-top:6px;border-top:1px solid ${border};display:flex;align-items:center;gap:6px;">`;
+  html += `<span style="color:${c};font-weight:700;">${icons[match] || '?'} ${labels[match] || 'Could not cross-reference'}</span></div>`;
+  if (details && details.length && match !== 'match') {
+    html += `<div style="font-size:11px;color:var(--text-mid);margin-top:4px;">Compared "${entityName}" against your account name and trading name</div>`;
+  }
+  html += '</div>';
+  return html;
+}
+
+function abnHydrateStored() {
+  const p = window.__PITCH_PROFILE__ || {};
+  const resultEl = document.getElementById('v-abn-result');
+  if (!resultEl || !p.abn_entity_name) return;
+  resultEl.innerHTML = abnMatchBadge(p.abn_match || 'unknown', p.abn_entity_name, [], []);
+}
+
 async function vendorVerifyAbn() {
   const inp = document.getElementById('v-abn');
   const btn = document.getElementById('v-abn-btn');
-  const result = document.getElementById('v-abn-result');
+  const resultEl = document.getElementById('v-abn-result');
   if (!inp) return;
   const abn = inp.value.replace(/\s/g, '');
   if (abn.length < 11) {
-    result.innerHTML = '<span style="color:var(--terra);">ABN must be 11 digits.</span>';
+    if (resultEl) resultEl.innerHTML = '<span style="color:var(--terra);">ABN must be 11 digits.</span>';
+    return;
+  }
+  // Skip API call if ABN unchanged and already verified
+  const p = window.__PITCH_PROFILE__ || {};
+  if (abn === p.abn && p.abn_entity_name && p.abn_verified) {
+    abnHydrateStored();
     return;
   }
   btn.textContent = 'Checking…'; btn.disabled = true; btn.style.opacity = '0.6';
+  if (resultEl) resultEl.innerHTML = '<span style="color:var(--text-mid);">Verifying with ABR…</span>';
   try {
+    const u = window.__PITCH_USER__ || {};
     const r = await pitchFetch('/api/verify-abn', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ abn }),
+      body: JSON.stringify({
+        abn,
+        context: {
+          first_name: u.first_name || '',
+          last_name: u.last_name || '',
+          trading_name: p.trading_name || (document.getElementById('prof-name') || {}).value || '',
+          email: u.email || '',
+        },
+      }),
     });
     const data = await r.json();
     if (data.valid) {
-      result.innerHTML = `<div style="background:rgba(45,139,85,0.1);border:1px solid rgba(45,139,85,0.25);border-radius:10px;padding:10px 12px;">
-        <span style="color:var(--herb);font-weight:700;">✓ ABN Active</span>
-        ${data.entityName ? `<span style="color:var(--text-hi);margin-left:8px;">${data.entityName}</span>` : ''}
-        ${data.checksum_only ? '<div style="font-size:11px;color:var(--gold);margin-top:4px;">Format valid — full lookup not configured</div>' : ''}
-      </div>`;
+      resultEl.innerHTML = abnMatchBadge(data.match || 'unknown', data.entityName, data.tradingNames || [], data.matchDetails || []);
+      if (data.checksum_only) {
+        resultEl.innerHTML = `<div style="background:rgba(45,139,85,0.1);border:1px solid rgba(45,139,85,0.25);border-radius:10px;padding:10px 12px;">
+          <span style="color:var(--herb);font-weight:700;">✓ ABN format valid</span>
+          <div style="font-size:11px;color:var(--gold);margin-top:4px;">Full verification not configured — cross-reference unavailable</div>
+        </div>`;
+      }
       inp.dataset.verified = 'true';
+      // Update in-memory profile so repeat checks don't re-call API
+      p.abn_entity_name = data.entityName;
+      p.abn_match = data.match;
+      p.abn_verified = 1;
     } else {
-      result.innerHTML = `<div style="background:rgba(192,57,43,0.1);border:1px solid rgba(192,57,43,0.25);border-radius:10px;padding:10px 12px;">
+      resultEl.innerHTML = `<div style="background:rgba(192,57,43,0.1);border:1px solid rgba(192,57,43,0.25);border-radius:10px;padding:10px 12px;">
         <span style="color:var(--terra);font-weight:700;">✕ ${data.error || 'ABN could not be verified'}</span>
         ${data.entityName ? `<div style="font-size:12px;color:var(--text-mid);margin-top:4px;">Entity: ${data.entityName} · Status: ${data.status || 'Unknown'}</div>` : ''}
       </div>`;
       inp.dataset.verified = 'false';
     }
   } catch (e) {
-    result.innerHTML = '<span style="color:var(--terra);">Network error — could not check ABN.</span>';
+    if (resultEl) resultEl.innerHTML = '<span style="color:var(--terra);">Network error — could not check ABN.</span>';
   }
   btn.textContent = 'Verify ABN'; btn.disabled = false; btn.style.opacity = '1';
 }
@@ -3544,7 +3609,7 @@ async function initDashboard() {
     if (document.getElementById('v-state')) document.getElementById('v-state').value = v.state || '';
     if (document.getElementById('v-suburb')) document.getElementById('v-suburb').value = v.suburb || '';
     if (document.getElementById('v-instagram')) document.getElementById('v-instagram').value = v.instagram || '';
-    if (document.getElementById('v-abn')) document.getElementById('v-abn').value = v.abn || '';
+    if (document.getElementById('v-abn')) { document.getElementById('v-abn').value = v.abn || ''; abnHydrateStored(); }
     if (document.getElementById('v-stall-w') && v.stall_w) document.getElementById('v-stall-w').value = v.stall_w;
     if (document.getElementById('v-stall-d') && v.stall_d) document.getElementById('v-stall-d').value = v.stall_d;
     if (document.getElementById('v-power'))  document.getElementById('v-power').checked  = !!v.power;

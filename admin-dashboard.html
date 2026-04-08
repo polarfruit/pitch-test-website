@@ -2428,7 +2428,7 @@
 
       return `<tr>
         <td onclick="openVendorDetail(${v.user_id})" style="cursor:pointer;" title="View vendor"><strong>${v.trading_name}</strong><br><span style="font-size:12px;color:#4A3C30;">${v.email}</span></td>
-        <td><span style="font-size:12px;">${v.abn || '—'}</span></td>
+        <td><span style="font-size:12px;">${v.abn || '—'}</span>${v.abn_match === 'match' ? ' <span style="color:#2D8B55;font-size:10px;" title="Name match">✓</span>' : v.abn_match === 'partial' ? ' <span style="color:#C9840A;font-size:10px;" title="Partial match">⚠</span>' : v.abn_match === 'mismatch' ? ' <span style="color:#C0392B;font-size:10px;" title="Name mismatch">✕</span>' : ''}</td>
         <td>${(() => {
           const total = 3;
           const uploaded = [v.food_safety_url, v.pli_url, v.council_url].filter(Boolean).length;
@@ -2941,7 +2941,7 @@
   // Cache vendor doc URLs so adminViewDoc can access them without a second fetch
   let _docCache = {};
 
-  async function adminCheckAbn(userId, abn) {
+  async function adminCheckAbn(userId, abn, context) {
     const btn = document.getElementById(`abn-check-btn-${userId}`);
     const result = document.getElementById(`abn-check-result-${userId}`);
     if (!btn || !result) return;
@@ -2952,14 +2952,18 @@
       const r = await fetch('/api/verify-abn', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ abn: abn.replace(/\s/g, '') }),
+        body: JSON.stringify({ abn: abn.replace(/\s/g, ''), context: context || null }),
       });
       const data = await r.json();
       if (data.valid) {
+        const mc = { match: { c: '#2D8B55', icon: '✓', label: 'Name match' }, partial: { c: '#C9840A', icon: '⚠', label: 'Partial match' }, mismatch: { c: '#C0392B', icon: '✕', label: 'Name mismatch' } };
+        const m = mc[data.match] || null;
         result.innerHTML = `<div style="background:rgba(45,139,85,0.1);border:1px solid rgba(45,139,85,0.25);border-radius:10px;padding:12px 14px;">
           <div style="font-size:12px;font-weight:700;color:#2D8B55;margin-bottom:6px;">✓ ABN Active</div>
           ${data.entityName ? `<div style="font-size:13px;color:#FDF4E7;margin-bottom:4px;"><span style="color:#6B5A4A;font-size:11px;">Entity name:</span> ${data.entityName}</div>` : ''}
+          ${data.tradingNames && data.tradingNames.length ? `<div style="font-size:12px;color:#A89880;margin-bottom:4px;"><span style="color:#6B5A4A;font-size:11px;">Trading as:</span> ${data.tradingNames.join(', ')}</div>` : ''}
           ${data.status ? `<div style="font-size:12px;color:#A89880;"><span style="color:#6B5A4A;font-size:11px;">Status:</span> ${data.status}</div>` : ''}
+          ${m ? `<div style="font-size:12px;color:${m.c};margin-top:6px;font-weight:600;">${m.icon} ${m.label} — cross-referenced against vendor's account name &amp; trading name</div>` : ''}
           ${data.checksum_only ? `<div style="font-size:11px;color:#C9840A;margin-top:6px;">⚠ Format valid only — ABR_GUID not configured for full lookup</div>` : ''}
         </div>`;
       } else {
@@ -3075,15 +3079,25 @@
         detailSection('ABN Verification', (() => {
           const abn = vendor.abn || '';
           const verified = vendor.abn_verified;
+          const entityName = vendor.abn_entity_name || '';
+          const abnMatch = vendor.abn_match || '';
+          const matchColors = { match: { bg: 'rgba(45,139,85,0.15)', c: '#2D8B55', border: 'rgba(45,139,85,0.3)', icon: '✓', label: 'Name match' }, partial: { bg: 'rgba(201,132,10,0.15)', c: '#C9840A', border: 'rgba(201,132,10,0.3)', icon: '⚠', label: 'Partial match' }, mismatch: { bg: 'rgba(192,57,43,0.15)', c: '#C0392B', border: 'rgba(192,57,43,0.3)', icon: '✕', label: 'Name mismatch' } };
+          const mc = matchColors[abnMatch] || null;
           return `<div style="display:flex;flex-direction:column;gap:12px;">
             <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
               <span style="font-size:14px;font-weight:600;color:#FDF4E7;font-family:monospace;letter-spacing:0.5px;">${abn ? abn.replace(/(\d{2})(\d{3})(\d{3})(\d{3})/, '$1 $2 $3 $4') : 'No ABN provided'}</span>
-              ${verified ? '<span style="font-size:11px;background:rgba(45,139,85,0.15);color:#2D8B55;border:1px solid rgba(45,139,85,0.3);border-radius:6px;padding:2px 8px;">✓ Verified</span>'
+              ${verified ? '<span style="font-size:11px;background:rgba(45,139,85,0.15);color:#2D8B55;border:1px solid rgba(45,139,85,0.3);border-radius:6px;padding:2px 8px;">✓ ABR Verified</span>'
                          : abn ? '<span style="font-size:11px;background:rgba(201,132,10,0.15);color:#C9840A;border:1px solid rgba(201,132,10,0.3);border-radius:6px;padding:2px 8px;">Unverified</span>' : ''}
+              ${mc ? `<span style="font-size:11px;background:${mc.bg};color:${mc.c};border:1px solid ${mc.border};border-radius:6px;padding:2px 8px;">${mc.icon} ${mc.label}</span>` : ''}
             </div>
+            ${entityName ? `<div style="background:#231E19;border-radius:8px;padding:10px 12px;">
+              <div style="font-size:11px;color:#6B5A4A;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;">ABR Entity Name</div>
+              <div style="font-size:13px;color:#FDF4E7;font-weight:600;">${entityName}</div>
+              ${mc ? `<div style="font-size:11px;color:${mc.c};margin-top:4px;">${mc.icon} ${mc.label} — compared against vendor's account name &amp; trading name</div>` : ''}
+            </div>` : ''}
             <p style="font-size:11px;color:#6B5A4A;margin:0;">Edit the ABN in Business Details above, then click Save Changes. Use the button below to verify against the ABR.</p>
             <div id="abn-check-result-${userId}" style="font-size:12px;color:#A89880;line-height:1.6;"></div>
-            ${abn ? `<button onclick="adminCheckAbn(${userId}, document.getElementById('df-abn').value || '${abn}')" id="abn-check-btn-${userId}" style="align-self:flex-start;background:rgba(232,80,10,0.1);border:1px solid rgba(232,80,10,0.3);border-radius:8px;padding:6px 14px;font-size:12px;color:#E8500A;cursor:pointer;font-family:inherit;transition:opacity 0.15s;">Check ABN against ABR →</button>`
+            ${abn ? `<button onclick="adminCheckAbn(${userId}, document.getElementById('df-abn').value || '${abn}', {first_name:'${(user.first_name||'').replace(/'/g,"\\'")}',last_name:'${(user.last_name||'').replace(/'/g,"\\'")}',trading_name:'${(vendor.trading_name||'').replace(/'/g,"\\'")}',email:'${(user.email||'').replace(/'/g,"\\'")}'} )" id="abn-check-btn-${userId}" style="align-self:flex-start;background:rgba(232,80,10,0.1);border:1px solid rgba(232,80,10,0.3);border-radius:8px;padding:6px 14px;font-size:12px;color:#E8500A;cursor:pointer;font-family:inherit;transition:opacity 0.15s;">Check ABN against ABR →</button>`
                   : '<span style="font-size:12px;color:#6B5A4A;">Add an ABN in Business Details above to verify.</span>'}
           </div>`;
         })()) +

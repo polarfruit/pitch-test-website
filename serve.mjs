@@ -702,6 +702,57 @@ function abnChecksum(abn) {
   return d.reduce((s, n, i) => s + n * weights[i], 0) % 89 === 0;
 }
 
+// ── ABN cross-reference: compare ABR entity name against vendor account ─────
+function abnNormalise(str) {
+  return (str || '').toLowerCase()
+    .replace(/\b(pty|ltd|limited|proprietary|trading\s+as|t\/a|trust|atf|as\s+trustee\s+for|the)\b/gi, '')
+    .replace(/[^a-z0-9]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function abnCrossReference(entityName, tradingNames, context) {
+  if (!context) return { match: 'unknown', details: [] };
+  const entityNorm = abnNormalise(entityName);
+  const allAbrNames = [entityNorm, ...tradingNames.map(abnNormalise)].filter(Boolean);
+  const details = [];
+  let bestMatch = 'mismatch';
+
+  // Build account-side names to compare against
+  const accountNames = [];
+  if (context.first_name || context.last_name)
+    accountNames.push({ label: 'Account name', value: abnNormalise(`${context.first_name || ''} ${context.last_name || ''}`) });
+  if (context.trading_name)
+    accountNames.push({ label: 'Trading name', value: abnNormalise(context.trading_name) });
+  if (context.email) {
+    const prefix = context.email.split('@')[0].replace(/[^a-z0-9]/gi, ' ').toLowerCase().trim();
+    if (prefix.length > 2) accountNames.push({ label: 'Email', value: prefix });
+  }
+
+  for (const abrName of allAbrNames) {
+    const abrWords = abrName.split(' ').filter(w => w.length > 2);
+    for (const acct of accountNames) {
+      const acctWords = acct.value.split(' ').filter(w => w.length > 2);
+      // Full containment check
+      if (abrName.includes(acct.value) || acct.value.includes(abrName)) {
+        details.push({ field: acct.label, result: 'match', abrName, acctValue: acct.value });
+        bestMatch = 'match';
+        continue;
+      }
+      // Word overlap
+      const overlap = abrWords.filter(w => acctWords.includes(w));
+      if (overlap.length >= 2) {
+        details.push({ field: acct.label, result: 'match', abrName, acctValue: acct.value, overlap });
+        bestMatch = 'match';
+      } else if (overlap.length === 1) {
+        details.push({ field: acct.label, result: 'partial', abrName, acctValue: acct.value, overlap });
+        if (bestMatch !== 'match') bestMatch = 'partial';
+      }
+    }
+  }
+
+  if (!accountNames.length) bestMatch = 'unknown';
+  return { match: bestMatch, details };
+}
+
 app.post('/api/verify-abn', async (req, res) => {
   const clean = (req.body.abn || '').replace(/\s/g, '');
   if (!/^\d{11}$/.test(clean))
@@ -711,7 +762,6 @@ app.post('/api/verify-abn', async (req, res) => {
 
   const guid = process.env.ABR_GUID;
   if (!guid) {
-    // No API key configured — checksum passed, can't confirm entity name
     return res.json({ valid: true, checksum_only: true, message: 'ABN format is valid. To confirm entity details, configure ABR_GUID.' });
   }
 
@@ -720,28 +770,49 @@ app.post('/api/verify-abn', async (req, res) => {
     const r = await fetch(url, { headers: { Accept: 'text/xml' } });
     const xml = await r.text();
 
-    // ABR returned an error (e.g. no match)
     const excMatch = xml.match(/<exceptionCode>([\s\S]*?)<\/exceptionCode>/);
     if (excMatch) return res.json({ valid: false, error: 'ABN not found in the Australian Business Register.' });
 
     const status = (xml.match(/<entityStatusCode>([\s\S]*?)<\/entityStatusCode>/) || [])[1] || 'Unknown';
 
-    // Organisation name (companies, trusts, etc.)
+    // Entity name — organisation or individual
     let entityName = '';
     const orgMatch = xml.match(/<mainName>[\s\S]*?<organisationName>([\s\S]*?)<\/organisationName>/);
     if (orgMatch) {
       entityName = orgMatch[1].trim();
     } else {
-      // Individual — use given + family name
       const given  = (xml.match(/<legalName>[\s\S]*?<givenName>([\s\S]*?)<\/givenName>/)  || [])[1] || '';
       const family = (xml.match(/<legalName>[\s\S]*?<familyName>([\s\S]*?)<\/familyName>/) || [])[1] || '';
       entityName = [given, family].map(s => s.trim()).filter(Boolean).join(' ');
     }
 
-    if (status !== 'Active')
-      return res.json({ valid: false, error: `ABN is ${status} — only active ABNs are accepted.`, entityName, status });
+    // Extract trading names from ABR XML
+    const tradingNames = [];
+    for (const m of xml.matchAll(/<mainTradingName>[\s\S]*?<organisationName>([\s\S]*?)<\/organisationName>/g))
+      tradingNames.push(m[1].trim());
+    for (const m of xml.matchAll(/<otherTradingName>[\s\S]*?<organisationName>([\s\S]*?)<\/organisationName>/g))
+      tradingNames.push(m[1].trim());
 
-    return res.json({ valid: true, entityName, status, abn: clean });
+    if (status !== 'Active')
+      return res.json({ valid: false, error: `ABN is ${status} — only active ABNs are accepted.`, entityName, tradingNames, status });
+
+    // Cross-reference against vendor account if context provided
+    const context = req.body.context || null; // { first_name, last_name, trading_name, email }
+    const xref = abnCrossReference(entityName, tradingNames, context);
+
+    // Auto-save verification result if authenticated vendor
+    if (req.session && req.session.userId && req.session.role === 'vendor') {
+      try {
+        await stmts.updateVendorAbnVerification.run({
+          abn_verified: 1,
+          abn_entity_name: entityName,
+          abn_match: xref.match,
+          user_id: req.session.userId,
+        });
+      } catch (e) { console.error('[ABR save]', e); }
+    }
+
+    return res.json({ valid: true, entityName, tradingNames, status, abn: clean, match: xref.match, matchDetails: xref.details });
   } catch (e) {
     console.error('[ABR]', e);
     return res.json({ valid: false, error: 'Could not reach the Australian Business Register. Please try again.' });
