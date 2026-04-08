@@ -444,7 +444,7 @@ body { background:var(--coal); color:var(--text-hi); font-family:var(--fb); line
       <div class="form-group">
         <label class="form-label">Australian Business Number (ABN)</label>
         <div class="abn-row">
-          <input class="form-input abn-input" id="abn-input" type="text" placeholder="11 digit ABN e.g. 51 824 753 556" maxlength="14" />
+          <input class="form-input abn-input" id="abn-input" type="text" placeholder="11 digit ABN e.g. 51 824 753 556" maxlength="14" oninput="this.value=this.value.replace(/[^\d\s]/g,''); _abnAutoTrigger(this.value);" />
           <button class="btn-verify" id="abn-btn" onclick="verifyABN()">Verify ABN →</button>
         </div>
         <div class="abn-result" id="abn-result">
@@ -702,6 +702,13 @@ function togglePw(id, btn) {
   btn.textContent = inp.type === 'password' ? '👁' : '🙈';
 }
 
+let _abnTimer = null;
+function _abnAutoTrigger(rawVal) {
+  clearTimeout(_abnTimer);
+  const clean = rawVal.replace(/\s/g, '');
+  if (clean.length === 11) _abnTimer = setTimeout(() => verifyABN(), 600);
+}
+
 async function verifyABN() {
   const inp = document.getElementById('abn-input');
   const abn = inp.value.replace(/\s/g, '');
@@ -724,18 +731,31 @@ async function verifyABN() {
     const r = await fetch('/api/verify-abn', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ abn }),
+      body: JSON.stringify({
+        abn,
+        context: {
+          first_name: (document.getElementById('v-first-name') || {}).value || '',
+          last_name: (document.getElementById('v-last-name') || {}).value || '',
+          trading_name: (document.getElementById('v-trading-name') || {}).value || '',
+          email: (document.getElementById('v-email') || {}).value || '',
+        },
+      }),
     });
     const data = await r.json();
     btn.textContent = 'Verify ABN →';
     btn.classList.remove('loading');
 
     if (data.valid) {
+      const matchLabels = { match: '✓ Name matches', partial: '⚠ Partial name match', mismatch: '✕ Name doesn\'t match your details' };
+      const matchColors = { match: '#2D8B55', partial: '#C9840A', mismatch: '#C0392B' };
       resEl.className = 'abn-result success';
       resEl.querySelector('.abn-result-icon').textContent = '✓';
-      resEl.querySelector('.abn-result-text').textContent = data.entityName
+      let text = data.entityName
         ? `ABN verified — ${data.entityName} · ${data.status || 'Active'}`
         : data.message || 'ABN format is valid';
+      if (data.tradingNames && data.tradingNames.length) text += ` (Trading as: ${data.tradingNames.join(', ')})`;
+      resEl.querySelector('.abn-result-text').innerHTML = text
+        + (data.match && matchLabels[data.match] ? `<br><span style="color:${matchColors[data.match]};font-weight:600;">${matchLabels[data.match]}</span>` : '');
       inp.dataset.verified = 'true';
       inp.dataset.entityName = data.entityName || '';
     } else {
