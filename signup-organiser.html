@@ -117,9 +117,15 @@
     .abn-confirm {
       display: none; margin-top: 7px; font-size: 13px; color: #2D8B55;
       background: rgba(45,139,85,0.1); border: 1px solid rgba(45,139,85,0.25);
-      border-radius: 7px; padding: 7px 11px; align-items: center; gap: 7px;
+      border-radius: 7px; padding: 7px 11px; align-items: center; gap: 7px; flex-wrap: wrap;
     }
     .abn-confirm.show { display: flex; }
+    .abn-fail {
+      display: none; margin-top: 7px; font-size: 13px; color: #C0392B;
+      background: rgba(192,57,43,0.1); border: 1px solid rgba(192,57,43,0.25);
+      border-radius: 7px; padding: 7px 11px; align-items: center; gap: 7px;
+    }
+    .abn-fail.show { display: flex; }
     .abn-loading {
       display: none; margin-top: 7px; font-size: 13px; color: #A89880;
       align-items: center; gap: 8px;
@@ -475,7 +481,7 @@
         <div class="field-group">
           <label class="field-label">ABN (Australian Business Number)</label>
           <div class="abn-wrap">
-            <input class="field-input" type="text" placeholder="XX XXX XXX XXX" id="abn-org" style="padding-right:100px;" />
+            <input class="field-input" type="text" placeholder="XX XXX XXX XXX" id="abn-org" style="padding-right:100px;" maxlength="14" oninput="this.value=this.value.replace(/[^\d\s]/g,''); _abnOrgAutoTrigger(this.value);" />
             <button class="abn-btn" onclick="verifyABN_org()">Verify</button>
           </div>
           <div class="abn-loading" id="abn-loading-org">
@@ -484,7 +490,11 @@
           </div>
           <div class="abn-confirm" id="abn-confirm-org">
             <span style="color:#2D8B55;">✓</span>
-            <span>ABN verified — <strong>Adelaide City Council · Active</strong></span>
+            <span id="abn-confirm-text">ABN verified</span>
+          </div>
+          <div class="abn-fail" id="abn-fail-org">
+            <span style="color:#C0392B;">✕</span>
+            <span id="abn-fail-text">ABN could not be verified</span>
           </div>
           <p class="field-hint">ABN lookup confirms your organisation is registered and active.</p>
         </div>
@@ -743,15 +753,73 @@
   }
 
   /* ── ABN verify (organiser) ── */
-  function verifyABN_org() {
+  let _abnOrgTimer = null;
+  function _abnOrgAutoTrigger(rawVal) {
+    clearTimeout(_abnOrgTimer);
+    const clean = rawVal.replace(/\s/g, '');
+    if (clean.length === 11) _abnOrgTimer = setTimeout(() => verifyABN_org(), 600);
+  }
+
+  async function verifyABN_org() {
+    const inp = document.getElementById('abn-org');
+    const abn = inp.value.replace(/\s/g, '');
     const loading = document.getElementById('abn-loading-org');
-    const confirm = document.getElementById('abn-confirm-org');
+    const confirmEl = document.getElementById('abn-confirm-org');
+    const failEl = document.getElementById('abn-fail-org');
+    const confirmText = document.getElementById('abn-confirm-text');
+    const failText = document.getElementById('abn-fail-text');
+
+    confirmEl.classList.remove('show');
+    failEl.classList.remove('show');
+
+    if (abn.length < 11) {
+      failEl.classList.add('show');
+      failText.textContent = 'Please enter an 11-digit ABN.';
+      return;
+    }
+
     loading.classList.add('show');
-    confirm.classList.remove('show');
-    setTimeout(() => {
+    inp.dataset.verified = '';
+
+    try {
+      const r = await fetch('/api/verify-abn', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          abn,
+          context: {
+            first_name: (document.getElementById('o-first-name') || {}).value || '',
+            last_name: (document.getElementById('o-last-name') || {}).value || '',
+            trading_name: (document.getElementById('o-org-name') || {}).value || '',
+            email: (document.getElementById('o-email') || {}).value || '',
+          },
+        }),
+      });
+      const data = await r.json();
       loading.classList.remove('show');
-      confirm.classList.add('show');
-    }, 1400);
+
+      if (data.valid) {
+        const matchLabels = { match: '✓ Name matches', partial: '⚠ Partial name match', mismatch: '✕ Name doesn\'t match your details' };
+        const matchColors = { match: '#2D8B55', partial: '#C9840A', mismatch: '#C0392B' };
+        let html = data.entityName
+          ? `ABN verified — <strong>${data.entityName} · ${data.status || 'Active'}</strong>`
+          : data.message || 'ABN format is valid';
+        if (data.tradingNames && data.tradingNames.length) html += ` <span style="font-size:12px;color:#A89880;">(Trading as: ${data.tradingNames.join(', ')})</span>`;
+        if (data.match && matchLabels[data.match]) html += `<br><span style="color:${matchColors[data.match]};font-weight:600;font-size:12px;">${matchLabels[data.match]}</span>`;
+        confirmText.innerHTML = html;
+        confirmEl.classList.add('show');
+        inp.dataset.verified = 'true';
+        inp.dataset.entityName = data.entityName || '';
+      } else {
+        failText.textContent = data.error || 'ABN could not be verified.';
+        failEl.classList.add('show');
+        inp.dataset.verified = 'false';
+      }
+    } catch (e) {
+      loading.classList.remove('show');
+      failText.textContent = 'Verification failed — please check your connection.';
+      failEl.classList.add('show');
+    }
   }
 
   /* ── Tag toggle ── */
