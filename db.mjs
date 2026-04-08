@@ -315,6 +315,11 @@ await _safeExec(`UPDATE events SET organiser_user_id = (SELECT o.user_id FROM or
 // Fallback: assign any available organiser to events still unlinked after name-match
 await _safeExec(`UPDATE events SET organiser_user_id = (SELECT user_id FROM organisers LIMIT 1) WHERE organiser_user_id IS NULL`);
 
+// ── Organiser ABN verification columns ───────────────────────────────────────
+await _safeExec(`ALTER TABLE organisers ADD COLUMN abn_entity_name TEXT`);
+await _safeExec(`ALTER TABLE organisers ADD COLUMN abn_match TEXT`);
+await _safeExec(`ALTER TABLE organisers ADD COLUMN abn_verified_at DATETIME`);
+
 // ── Organiser feature migrations ──────────────────────────────────────────────
 await _safeExec(`ALTER TABLE organisers ADD COLUMN paused INTEGER NOT NULL DEFAULT 0`);
 await _safeExec(`ALTER TABLE organisers ADD COLUMN notif_new_apps INTEGER NOT NULL DEFAULT 1`);
@@ -1151,7 +1156,8 @@ export const stmts = {
   updateVendorPliAnalysis: prepare(`UPDATE vendors SET pli_insured_name=@pli_insured_name,pli_policy_number=@pli_policy_number,pli_coverage_amount=@pli_coverage_amount,pli_expiry=@pli_expiry,pli_status=@pli_status,pli_analysed_at=datetime('now'),pli_flags=@pli_flags WHERE user_id=@user_id`),
   updateVendorAbnVerification: prepare(`UPDATE vendors SET abn_verified=@abn_verified,abn_entity_name=@abn_entity_name,abn_match=@abn_match,abn_verified_at=datetime('now') WHERE user_id=@user_id`),
   updateOrganiserProfile: prepare(`UPDATE organisers SET org_name=@org_name,phone=@phone,website=@website,suburb=@suburb,state=@state,bio=@bio,event_scale=@event_scale,stall_range=@stall_range,abn=@abn WHERE user_id=@user_id`),
-  updateOrganiserProfileSelf: prepare(`UPDATE organisers SET org_name=@org_name,bio=@bio,website=@website WHERE user_id=@user_id`),
+  updateOrganiserProfileSelf: prepare(`UPDATE organisers SET org_name=@org_name,bio=@bio,website=@website,abn=@abn WHERE user_id=@user_id`),
+  updateOrganiserAbnVerification: prepare(`UPDATE organisers SET abn_verified=@abn_verified,abn_entity_name=@abn_entity_name,abn_match=@abn_match,abn_verified_at=datetime('now') WHERE user_id=@user_id`),
 
   // verification codes
   createVerificationCode: prepare(`INSERT INTO verification_codes (user_id,type,code,target,expires_at) VALUES (@user_id,@type,@code,@target,@expires_at)`),

@@ -1073,6 +1073,16 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
             <div><div class="settings-row-label">Website</div><div class="settings-row-desc">Optional link shown on your profile.</div></div>
             <input class="form-input" id="settings-website" value="" style="width:240px;" placeholder="https://…" />
           </div>
+          <div class="settings-row" style="flex-wrap:wrap;">
+            <div><div class="settings-row-label">ABN (Australian Business Number)</div><div class="settings-row-desc">Verified against the Australian Business Register.</div></div>
+            <div style="display:flex;flex-direction:column;gap:6px;width:240px;">
+              <div style="display:flex;gap:6px;align-items:center;">
+                <input class="form-input" id="settings-abn" value="" style="flex:1;font-family:monospace;letter-spacing:0.5px;" placeholder="XX XXX XXX XXX" maxlength="14" oninput="this.value=this.value.replace(/[^\d\s]/g,''); _orgAbnAutoTrigger(this.value);" />
+                <button type="button" id="settings-abn-btn" onclick="orgVerifyAbn()" style="flex-shrink:0;background:var(--ember);color:#fff;border:none;border-radius:8px;padding:8px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--fb);white-space:nowrap;">Verify</button>
+              </div>
+              <div id="settings-abn-result" style="font-size:12px;line-height:1.5;"></div>
+            </div>
+          </div>
           <div class="settings-row">
             <div><div class="settings-row-label">Email address</div><div class="settings-row-desc" id="settings-email">—</div></div>
           </div>
@@ -2171,13 +2181,75 @@ function renderOrgEventsData(events) {
 
 initDashboard();
 
+// ── ABN auto-verify for organiser dashboard ──────────────────────────────────
+let _orgAbnTimer = null;
+function _orgAbnAutoTrigger(rawVal) {
+  clearTimeout(_orgAbnTimer);
+  const clean = rawVal.replace(/\s/g, '');
+  const resultEl = document.getElementById('settings-abn-result');
+  if (clean.length < 11) { if (resultEl) resultEl.innerHTML = ''; return; }
+  if (clean.length === 11) _orgAbnTimer = setTimeout(() => orgVerifyAbn(), 600);
+}
+
+function orgAbnMatchBadge(match, entityName) {
+  const colors = { match: 'var(--herb)', partial: 'var(--gold)', mismatch: 'var(--terra)' };
+  const icons  = { match: '✓', partial: '⚠', mismatch: '✕' };
+  const labels = { match: 'Name matches your account', partial: 'Partial match — review entity name', mismatch: 'Entity name doesn\'t match your account' };
+  const c = colors[match] || 'var(--text-mid)';
+  const bg = match === 'match' ? 'rgba(45,139,85,0.1)' : match === 'partial' ? 'rgba(201,132,10,0.1)' : 'rgba(192,57,43,0.1)';
+  const border = match === 'match' ? 'rgba(45,139,85,0.25)' : match === 'partial' ? 'rgba(201,132,10,0.25)' : 'rgba(192,57,43,0.25)';
+  return `<div style="background:${bg};border:1px solid ${border};border-radius:8px;padding:8px 10px;">
+    <div style="color:var(--herb);font-weight:700;font-size:12px;">✓ ABN Active — ${entityName || ''}</div>
+    <div style="color:${c};font-weight:600;font-size:11px;margin-top:4px;">${icons[match] || '?'} ${labels[match] || 'Could not cross-reference'}</div>
+  </div>`;
+}
+
+function orgAbnHydrateStored() {
+  const p = window.__PITCH_PROFILE__ || {};
+  const resultEl = document.getElementById('settings-abn-result');
+  if (!resultEl || !p.abn_entity_name) return;
+  resultEl.innerHTML = orgAbnMatchBadge(p.abn_match || 'unknown', p.abn_entity_name);
+}
+
+async function orgVerifyAbn() {
+  const inp = document.getElementById('settings-abn');
+  const btn = document.getElementById('settings-abn-btn');
+  const resultEl = document.getElementById('settings-abn-result');
+  if (!inp) return;
+  const abn = inp.value.replace(/\s/g, '');
+  if (abn.length < 11) { if (resultEl) resultEl.innerHTML = '<span style="color:var(--terra);font-size:12px;">ABN must be 11 digits.</span>'; return; }
+  const p = window.__PITCH_PROFILE__ || {};
+  if (abn === p.abn && p.abn_entity_name && p.abn_verified) { orgAbnHydrateStored(); return; }
+  btn.textContent = '…'; btn.disabled = true;
+  if (resultEl) resultEl.innerHTML = '<span style="color:var(--text-mid);font-size:12px;">Verifying with ABR…</span>';
+  try {
+    const u = window.__PITCH_USER__ || {};
+    const r = await pitchFetch('/api/verify-abn', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ abn, context: { first_name: u.first_name || '', last_name: u.last_name || '', trading_name: p.org_name || '', email: u.email || '' } }),
+    });
+    const data = await r.json();
+    if (data.valid && !data.checksum_only) {
+      resultEl.innerHTML = orgAbnMatchBadge(data.match || 'unknown', data.entityName);
+      p.abn_entity_name = data.entityName; p.abn_match = data.match; p.abn_verified = data.match === 'match' ? 1 : 0;
+    } else if (data.valid) {
+      resultEl.innerHTML = '<div style="background:rgba(45,139,85,0.1);border:1px solid rgba(45,139,85,0.25);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--herb);font-weight:600;">✓ ABN format valid<div style="font-size:11px;color:var(--gold);margin-top:2px;">Full verification not configured</div></div>';
+    } else {
+      resultEl.innerHTML = `<div style="background:rgba(192,57,43,0.1);border:1px solid rgba(192,57,43,0.25);border-radius:8px;padding:8px 10px;font-size:12px;color:var(--terra);font-weight:600;">✕ ${data.error || 'ABN could not be verified'}</div>`;
+    }
+  } catch (e) { if (resultEl) resultEl.innerHTML = '<span style="color:var(--terra);font-size:12px;">Network error.</span>'; }
+  btn.textContent = 'Verify'; btn.disabled = false;
+}
+
 async function saveOrgSettings() {
   const btn = document.getElementById('btn-save-settings');
   btn.textContent = 'Saving…'; btn.disabled = true;
+  const abnVal = (document.getElementById('settings-abn') || {}).value || '';
   const payload = {
     org_name: (document.getElementById('settings-org-name') || {}).value || '',
     bio:      (document.getElementById('settings-bio')      || {}).value || '',
     website:  (document.getElementById('settings-website')  || {}).value || '',
+    abn:      abnVal.replace(/\s/g, ''),
   };
   try {
     const res = await pitchFetch('/api/organiser/profile', {
@@ -2897,6 +2969,12 @@ function setOrgTimeFormat(fmt) {
 function initOrgSettingsPanel(user, profile) {
   const emailEl = document.getElementById('settings-email');
   if (emailEl) emailEl.textContent = user.email || '—';
+
+  // Populate ABN field and hydrate stored result
+  if (profile) {
+    const abnEl = document.getElementById('settings-abn');
+    if (abnEl) { abnEl.value = profile.abn || ''; orgAbnHydrateStored(); }
+  }
 
   if (profile) {
     const notifMap = { 'org-notif-apps': profile.notif_new_apps, 'org-notif-deadlines': profile.notif_deadlines, 'org-notif-messages': profile.notif_messages, 'org-notif-payments': profile.notif_payments };
