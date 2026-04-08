@@ -2428,17 +2428,33 @@
 
       return `<tr>
         <td onclick="openVendorDetail(${v.user_id})" style="cursor:pointer;" title="View vendor"><strong>${v.trading_name}</strong><br><span style="font-size:12px;color:#4A3C30;">${v.email}</span></td>
-        <td><span style="font-size:12px;">${v.abn || '—'}</span>${v.abn_match === 'match' ? ' <span style="color:#2D8B55;font-size:10px;" title="Name match">✓</span>' : v.abn_match === 'partial' ? ' <span style="color:#C9840A;font-size:10px;" title="Partial match">⚠</span>' : v.abn_match === 'mismatch' ? ' <span style="color:#C0392B;font-size:10px;" title="Name mismatch">✕</span>' : ''}</td>
         <td>${(() => {
-          const total = 3;
-          const uploaded = [v.food_safety_url, v.pli_url, v.council_url].filter(Boolean).length;
-          const pliTag = (v.pli_status === 'verified') ? '<span title="PLI verified" style="color:#2D8B55;font-size:10px;margin-left:3px;">✓PLI</span>'
-                       : (v.pli_status === 'flagged')  ? '<span title="PLI flagged" style="color:#C9840A;font-size:10px;margin-left:3px;">⚠PLI</span>'
-                       : (v.pli_status === 'expired')  ? '<span title="PLI expired" style="color:#C0392B;font-size:10px;margin-left:3px;">✕PLI</span>'
-                       : '';
-          if (uploaded === total) return `<span class="badge badge-green" title="Food Safety · PLI · Council Permit">✓ All docs</span>${pliTag}`;
-          if (uploaded === 0)    return `<span class="badge badge-grey">No docs</span>`;
-          return `<span class="badge badge-amber" title="${uploaded}/${total} uploaded">${uploaded}/${total} docs</span>${pliTag}`;
+          // ABN status box: red = not submitted, yellow = submitted but partial/unverified, green = verified + match
+          if (!v.abn) return '<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(192,57,43,0.12);border:1px solid rgba(192,57,43,0.3);border-radius:6px;padding:3px 8px;font-size:11px;font-weight:600;color:#C0392B;" title="No ABN submitted">✕ Not submitted</span>';
+          if (v.abn_match === 'match' && v.abn_verified) return '<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(45,139,85,0.12);border:1px solid rgba(45,139,85,0.3);border-radius:6px;padding:3px 8px;font-size:11px;font-weight:600;color:#2D8B55;" title="ABN verified — name matches account">✓ Verified</span>';
+          if (v.abn_match === 'mismatch') return '<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(192,57,43,0.12);border:1px solid rgba(192,57,43,0.3);border-radius:6px;padding:3px 8px;font-size:11px;font-weight:600;color:#C0392B;" title="ABN submitted — name does not match account">✕ Mismatch</span>';
+          if (v.abn_match === 'partial') return '<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(201,132,10,0.12);border:1px solid rgba(201,132,10,0.3);border-radius:6px;padding:3px 8px;font-size:11px;font-weight:600;color:#C9840A;" title="ABN submitted — partial name match">⚠ Partial</span>';
+          return '<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(201,132,10,0.12);border:1px solid rgba(201,132,10,0.3);border-radius:6px;padding:3px 8px;font-size:11px;font-weight:600;color:#C9840A;" title="ABN submitted — not yet verified against ABR">⚠ Unverified</span>';
+        })()}</td>
+        <td>${(() => {
+          // Documents status boxes: individual ticks for each doc
+          const docs = [
+            { key: 'food_safety_url', label: 'FS', full: 'Food Safety' },
+            { key: 'pli_url', label: 'PLI', full: 'Public Liability Insurance' },
+            { key: 'council_url', label: 'CP', full: 'Council Permit' },
+          ];
+          const uploaded = docs.filter(d => v[d.key]).length;
+          if (uploaded === 0) return '<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(192,57,43,0.12);border:1px solid rgba(192,57,43,0.3);border-radius:6px;padding:3px 8px;font-size:11px;font-weight:600;color:#C0392B;" title="No documents uploaded">✕ None</span>';
+          const boxes = docs.map(d => {
+            if (v[d.key]) {
+              // PLI has special status
+              if (d.key === 'pli_url' && v.pli_status === 'flagged') return `<span style="display:inline-block;background:rgba(201,132,10,0.15);border:1px solid rgba(201,132,10,0.3);border-radius:4px;padding:2px 5px;font-size:10px;font-weight:700;color:#C9840A;" title="${d.full} — flagged">⚠${d.label}</span>`;
+              if (d.key === 'pli_url' && v.pli_status === 'expired') return `<span style="display:inline-block;background:rgba(192,57,43,0.15);border:1px solid rgba(192,57,43,0.3);border-radius:4px;padding:2px 5px;font-size:10px;font-weight:700;color:#C0392B;" title="${d.full} — expired">✕${d.label}</span>`;
+              return `<span style="display:inline-block;background:rgba(45,139,85,0.15);border:1px solid rgba(45,139,85,0.3);border-radius:4px;padding:2px 5px;font-size:10px;font-weight:700;color:#2D8B55;" title="${d.full} uploaded">✓${d.label}</span>`;
+            }
+            return `<span style="display:inline-block;background:rgba(192,57,43,0.1);border:1px solid rgba(192,57,43,0.2);border-radius:4px;padding:2px 5px;font-size:10px;font-weight:700;color:#C0392B;opacity:0.6;" title="${d.full} — missing">✕${d.label}</span>`;
+          }).join(' ');
+          return `<div style="display:flex;gap:3px;flex-wrap:nowrap;">${boxes}</div>`;
         })()}</td>
         <td>${planBadge(v.plan)}</td>
         <td><span style="font-size:12px;">${fmtDate(v.joined)}</span></td>
