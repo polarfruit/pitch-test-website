@@ -2652,7 +2652,13 @@
 
       return `<tr>
         <td onclick="openOrganiserDetail(${o.user_id})" style="cursor:pointer;" title="View organiser"><strong>${o.org_name}</strong><br><span style="font-size:12px;color:#4A3C30;">${o.email}</span></td>
-        <td><span style="font-size:12px;">${o.abn || '—'}</span></td>
+        <td>${(() => {
+          if (!o.abn) return '<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(192,57,43,0.12);border:1px solid rgba(192,57,43,0.3);border-radius:6px;padding:3px 8px;font-size:11px;font-weight:600;color:#C0392B;" title="No ABN submitted">✕ Not submitted</span>';
+          if (o.abn_match === 'match' && o.abn_verified) return '<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(45,139,85,0.12);border:1px solid rgba(45,139,85,0.3);border-radius:6px;padding:3px 8px;font-size:11px;font-weight:600;color:#2D8B55;" title="ABN verified — name matches account">✓ Verified</span>';
+          if (o.abn_match === 'mismatch') return '<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(192,57,43,0.12);border:1px solid rgba(192,57,43,0.3);border-radius:6px;padding:3px 8px;font-size:11px;font-weight:600;color:#C0392B;" title="ABN submitted — name does not match">✕ Mismatch</span>';
+          if (o.abn_match === 'partial') return '<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(201,132,10,0.12);border:1px solid rgba(201,132,10,0.3);border-radius:6px;padding:3px 8px;font-size:11px;font-weight:600;color:#C9840A;" title="ABN submitted — partial match">⚠ Partial</span>';
+          return '<span style="display:inline-flex;align-items:center;gap:4px;background:rgba(201,132,10,0.12);border:1px solid rgba(201,132,10,0.3);border-radius:6px;padding:3px 8px;font-size:11px;font-weight:600;color:#C9840A;" title="ABN submitted — not verified">⚠ Unverified</span>';
+        })()}</td>
         <td><strong>${o.event_count || 0}</strong></td>
         <td><strong>${o.stall_count || 0}</strong></td>
         <td><span style="font-size:12px;">${fmtDate(o.joined)}</span></td>
@@ -2997,6 +3003,24 @@
     btn.disabled = false;
   }
 
+  async function adminForceVerify(userId, role, verified, entityName) {
+    const endpoint = role === 'organiser'
+      ? `/api/admin/organisers/${userId}/abn-verify`
+      : `/api/admin/vendors/${userId}/abn-verify`;
+    try {
+      const r = await fetch(endpoint, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ verified, entity_name: entityName || '', abn_match: verified ? 'match' : 'unknown' }),
+      });
+      if (r.ok) {
+        // Refresh the detail panel
+        if (role === 'organiser') openOrganiserDetail(userId);
+        else openVendorDetail(userId);
+      }
+    } catch (e) { console.error('[force verify]', e); }
+  }
+
   async function adminViewDoc(docKey, userId) {
     // Try cache first, otherwise fetch
     let url = _docCache[`${userId}_${docKey}`];
@@ -3113,8 +3137,12 @@
             </div>` : ''}
             <p style="font-size:11px;color:#6B5A4A;margin:0;">Edit the ABN in Business Details above, then click Save Changes. Use the button below to verify against the ABR.</p>
             <div id="abn-check-result-${userId}" style="font-size:12px;color:#A89880;line-height:1.6;"></div>
-            ${abn ? `<button onclick="adminCheckAbn(${userId}, document.getElementById('df-abn').value || '${abn}', {first_name:'${(user.first_name||'').replace(/'/g,"\\'")}',last_name:'${(user.last_name||'').replace(/'/g,"\\'")}',trading_name:'${(vendor.trading_name||'').replace(/'/g,"\\'")}',email:'${(user.email||'').replace(/'/g,"\\'")}'} )" id="abn-check-btn-${userId}" style="align-self:flex-start;background:rgba(232,80,10,0.1);border:1px solid rgba(232,80,10,0.3);border-radius:8px;padding:6px 14px;font-size:12px;color:#E8500A;cursor:pointer;font-family:inherit;transition:opacity 0.15s;">Check ABN against ABR →</button>`
-                  : '<span style="font-size:12px;color:#6B5A4A;">Add an ABN in Business Details above to verify.</span>'}
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              ${abn ? `<button onclick="adminCheckAbn(${userId}, document.getElementById('df-abn').value || '${abn}', {first_name:'${(user.first_name||'').replace(/'/g,"\\'")}',last_name:'${(user.last_name||'').replace(/'/g,"\\'")}',trading_name:'${(vendor.trading_name||'').replace(/'/g,"\\'")}',email:'${(user.email||'').replace(/'/g,"\\'")}'} )" id="abn-check-btn-${userId}" style="background:rgba(232,80,10,0.1);border:1px solid rgba(232,80,10,0.3);border-radius:8px;padding:6px 14px;font-size:12px;color:#E8500A;cursor:pointer;font-family:inherit;">Check ABN against ABR →</button>` : ''}
+              ${abn ? `<button onclick="adminForceVerify(${userId},'vendor',true,'${(entityName||'').replace(/'/g,"\\'")}')" style="background:rgba(45,139,85,0.1);border:1px solid rgba(45,139,85,0.3);border-radius:8px;padding:6px 14px;font-size:12px;color:#2D8B55;cursor:pointer;font-family:inherit;font-weight:600;">✓ Force verify</button>` : ''}
+              ${abn && verified ? `<button onclick="adminForceVerify(${userId},'vendor',false,'${(entityName||'').replace(/'/g,"\\'")}')" style="background:rgba(192,57,43,0.1);border:1px solid rgba(192,57,43,0.3);border-radius:8px;padding:6px 14px;font-size:12px;color:#C0392B;cursor:pointer;font-family:inherit;">Remove verification</button>` : ''}
+              ${!abn ? '<span style="font-size:12px;color:#6B5A4A;">Add an ABN in Business Details above to verify.</span>' : ''}
+            </div>
           </div>`;
         })()) +
         detailSection('Subscription', (() => {
@@ -3216,6 +3244,7 @@
       const saveBar = `<div class="save-bar">
         <button class="save-btn" onclick="saveVendor(${userId})">Save changes</button>
         <span class="save-msg" id="save-msg"></span>
+        <a href="/vendors/${userId}" target="_blank" style="background:rgba(43,91,168,0.1);border:1px solid rgba(43,91,168,0.3);border-radius:8px;padding:8px 16px;font-size:12px;color:#2B5BA8;text-decoration:none;font-weight:600;font-family:inherit;cursor:pointer;">View profile →</a>
         <button class="delete-account-btn" onclick="deleteAccount(${userId}, '${_vName.replace(/'/g,"\\'")}')">🗑 Delete account</button>
       </div>`;
 
@@ -3303,6 +3332,33 @@
           ${dfInput('df-stallrange', 'Stall range', organiser.stall_range)}
           ${dfTextarea('df-bio', 'Bio', organiser.bio)}
         </div>`) +
+        detailSection('ABN Verification', (() => {
+          const abn = organiser.abn || '';
+          const verified = organiser.abn_verified;
+          const entityName = organiser.abn_entity_name || '';
+          const abnMatch = organiser.abn_match || '';
+          const matchColors = { match: { bg: 'rgba(45,139,85,0.15)', c: '#2D8B55', border: 'rgba(45,139,85,0.3)', icon: '✓', label: 'Name match' }, partial: { bg: 'rgba(201,132,10,0.15)', c: '#C9840A', border: 'rgba(201,132,10,0.3)', icon: '⚠', label: 'Partial match' }, mismatch: { bg: 'rgba(192,57,43,0.15)', c: '#C0392B', border: 'rgba(192,57,43,0.3)', icon: '✕', label: 'Name mismatch' } };
+          const mc = matchColors[abnMatch] || null;
+          return `<div style="display:flex;flex-direction:column;gap:12px;">
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+              <span style="font-size:14px;font-weight:600;color:#FDF4E7;font-family:monospace;letter-spacing:0.5px;">${abn ? abn.replace(/(\d{2})(\d{3})(\d{3})(\d{3})/, '$1 $2 $3 $4') : 'No ABN provided'}</span>
+              ${verified ? '<span style="font-size:11px;background:rgba(45,139,85,0.15);color:#2D8B55;border:1px solid rgba(45,139,85,0.3);border-radius:6px;padding:2px 8px;">✓ ABR Verified</span>'
+                         : abn ? '<span style="font-size:11px;background:rgba(201,132,10,0.15);color:#C9840A;border:1px solid rgba(201,132,10,0.3);border-radius:6px;padding:2px 8px;">Unverified</span>' : ''}
+              ${mc ? `<span style="font-size:11px;background:${mc.bg};color:${mc.c};border:1px solid ${mc.border};border-radius:6px;padding:2px 8px;">${mc.icon} ${mc.label}</span>` : ''}
+            </div>
+            ${entityName ? `<div style="background:#231E19;border-radius:8px;padding:10px 12px;">
+              <div style="font-size:11px;color:#6B5A4A;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;">ABR Entity Name</div>
+              <div style="font-size:13px;color:#FDF4E7;font-weight:600;">${entityName}</div>
+              ${mc ? `<div style="font-size:11px;color:${mc.c};margin-top:4px;">${mc.icon} ${mc.label} — compared against organiser's account name</div>` : ''}
+            </div>` : ''}
+            <div id="abn-check-result-${userId}" style="font-size:12px;color:#A89880;line-height:1.6;"></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              ${abn ? `<button onclick="adminCheckAbn(${userId}, document.getElementById('df-abn').value || '${abn}', {first_name:'${(user.first_name||'').replace(/'/g,"\\'")}',last_name:'${(user.last_name||'').replace(/'/g,"\\'")}',trading_name:'${(organiser.org_name||'').replace(/'/g,"\\'")}',email:'${(user.email||'').replace(/'/g,"\\'")}'} )" id="abn-check-btn-${userId}" style="background:rgba(232,80,10,0.1);border:1px solid rgba(232,80,10,0.3);border-radius:8px;padding:6px 14px;font-size:12px;color:#E8500A;cursor:pointer;font-family:inherit;">Check ABN against ABR →</button>` : ''}
+              ${abn ? `<button onclick="adminForceVerify(${userId},'organiser',true,'${entityName.replace(/'/g,"\\'")}')" style="background:rgba(45,139,85,0.1);border:1px solid rgba(45,139,85,0.3);border-radius:8px;padding:6px 14px;font-size:12px;color:#2D8B55;cursor:pointer;font-family:inherit;font-weight:600;">✓ Force verify</button>` : ''}
+              ${abn && verified ? `<button onclick="adminForceVerify(${userId},'organiser',false,'${entityName.replace(/'/g,"\\'")}')" style="background:rgba(192,57,43,0.1);border:1px solid rgba(192,57,43,0.3);border-radius:8px;padding:6px 14px;font-size:12px;color:#C0392B;cursor:pointer;font-family:inherit;">Remove verification</button>` : ''}
+            </div>
+          </div>`;
+        })()) +
         detailSection('Payment history', paymentsHTML(payments));
 
       const saveBar = `<div class="save-bar">

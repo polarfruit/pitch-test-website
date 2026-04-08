@@ -800,15 +800,13 @@ app.post('/api/verify-abn', async (req, res) => {
     const context = req.body.context || null; // { first_name, last_name, trading_name, email }
     const xref = abnCrossReference(entityName, tradingNames, context);
 
-    // Auto-save verification result if authenticated vendor
-    if (req.session && req.session.userId && req.session.role === 'vendor') {
+    // Auto-save verification result if authenticated user
+    if (req.session && req.session.userId) {
+      const abnVerified = xref.match === 'match' ? 1 : 0; // green = auto-verified, partial/mismatch = not
+      const saveParams = { abn_verified: abnVerified, abn_entity_name: entityName, abn_match: xref.match, user_id: req.session.userId };
       try {
-        await stmts.updateVendorAbnVerification.run({
-          abn_verified: 1,
-          abn_entity_name: entityName,
-          abn_match: xref.match,
-          user_id: req.session.userId,
-        });
+        if (req.session.role === 'vendor') await stmts.updateVendorAbnVerification.run(saveParams);
+        else if (req.session.role === 'organiser') await stmts.updateOrganiserAbnVerification.run(saveParams);
       } catch (e) { console.error('[ABR save]', e); }
     }
 
@@ -2213,9 +2211,9 @@ app.get('/api/stats', apiCached('stats', 120000, async () => {
 
 app.put('/api/organiser/profile', requireAuth, async (req, res) => {
   if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
-  const { org_name, bio, website } = req.body;
+  const { org_name, bio, website, abn } = req.body;
   try {
-    await stmts.updateOrganiserProfileSelf.run({ org_name: org_name || null, bio: bio || null, website: website || null, user_id: req.session.userId });
+    await stmts.updateOrganiserProfileSelf.run({ org_name: org_name || null, bio: bio || null, website: website || null, abn: abn || null, user_id: req.session.userId });
     res.json({ ok: true });
   } catch (e) {
     console.error('[organiser/profile PUT]', e);
@@ -2840,6 +2838,29 @@ app.patch('/api/admin/vendors/:id/abn', requireAdmin, async (req, res) => {
   const clean = abn ? abn.replace(/\s/g, '') : null;
   if (clean && !/^\d{11}$/.test(clean)) return res.status(400).json({ error: 'ABN must be exactly 11 digits.' });
   await (prepare(`UPDATE vendors SET abn=? WHERE user_id=?`)).run(clean, req.params.id);
+  res.json({ ok: true });
+});
+
+// Admin force-verify ABN (override cross-reference result)
+app.patch('/api/admin/vendors/:id/abn-verify', requireAdmin, async (req, res) => {
+  const { verified } = req.body; // true = force green, false = force unverified
+  await stmts.updateVendorAbnVerification.run({
+    abn_verified: verified ? 1 : 0,
+    abn_entity_name: req.body.entity_name || null,
+    abn_match: verified ? 'match' : (req.body.abn_match || 'unknown'),
+    user_id: req.params.id,
+  });
+  res.json({ ok: true });
+});
+
+app.patch('/api/admin/organisers/:id/abn-verify', requireAdmin, async (req, res) => {
+  const { verified } = req.body;
+  await stmts.updateOrganiserAbnVerification.run({
+    abn_verified: verified ? 1 : 0,
+    abn_entity_name: req.body.entity_name || null,
+    abn_match: verified ? 'match' : (req.body.abn_match || 'unknown'),
+    user_id: req.params.id,
+  });
   res.json({ ok: true });
 });
 
