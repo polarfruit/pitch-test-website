@@ -293,6 +293,9 @@ await _safeExec(`ALTER TABLE vendors ADD COLUMN pli_expiry TEXT`);
 await _safeExec(`ALTER TABLE vendors ADD COLUMN pli_status TEXT DEFAULT 'none'`);  // none | pending | verified | flagged | expired
 await _safeExec(`ALTER TABLE vendors ADD COLUMN pli_analysed_at DATETIME`);
 await _safeExec(`ALTER TABLE vendors ADD COLUMN pli_flags TEXT DEFAULT '[]'`);
+await _safeExec(`ALTER TABLE vendors ADD COLUMN abn_entity_name TEXT`);
+await _safeExec(`ALTER TABLE vendors ADD COLUMN abn_match TEXT`);        // match | partial | mismatch | unknown
+await _safeExec(`ALTER TABLE vendors ADD COLUMN abn_verified_at DATETIME`);
 await _safeExec(`ALTER TABLE events ADD COLUMN date_end TEXT`);
 await _safeExec(`ALTER TABLE events ADD COLUMN stall_fee_min INTEGER`);
 await _safeExec(`ALTER TABLE events ADD COLUMN stall_fee_max INTEGER`);
@@ -1146,6 +1149,7 @@ export const stmts = {
   updateVendorPhotos:     prepare(`UPDATE vendors SET photos=@photos WHERE user_id=@user_id`),
   updateVendorDoc:        prepare(`UPDATE vendors SET food_safety_url=@food_safety_url,pli_url=@pli_url,council_url=@council_url WHERE user_id=@user_id`),
   updateVendorPliAnalysis: prepare(`UPDATE vendors SET pli_insured_name=@pli_insured_name,pli_policy_number=@pli_policy_number,pli_coverage_amount=@pli_coverage_amount,pli_expiry=@pli_expiry,pli_status=@pli_status,pli_analysed_at=datetime('now'),pli_flags=@pli_flags WHERE user_id=@user_id`),
+  updateVendorAbnVerification: prepare(`UPDATE vendors SET abn_verified=@abn_verified,abn_entity_name=@abn_entity_name,abn_match=@abn_match,abn_verified_at=datetime('now') WHERE user_id=@user_id`),
   updateOrganiserProfile: prepare(`UPDATE organisers SET org_name=@org_name,phone=@phone,website=@website,suburb=@suburb,state=@state,bio=@bio,event_scale=@event_scale,stall_range=@stall_range,abn=@abn WHERE user_id=@user_id`),
   updateOrganiserProfileSelf: prepare(`UPDATE organisers SET org_name=@org_name,bio=@bio,website=@website WHERE user_id=@user_id`),
 
