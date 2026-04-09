@@ -641,7 +641,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .analytics-funnel-legend i { width:8px; height:8px; border-radius:2px; display:inline-block; }
 .analytics-month-bar { display:flex; align-items:center; gap:10px; margin-bottom:6px; font-size:12px; }
 .analytics-month-bar .bar { flex:1; height:18px; background:#ffffff08; border-radius:4px; overflow:hidden; }
-.analytics-month-bar .bar-fill { height:100%; border-radius:4px; background:var(--ember); transition:width 0.5s; }
+.analytics-month-bar .bar-fill { height:100%; border-radius:4px; background:var(--slate); transition:width 0.5s; }
 .analytics-month-bar .label { width:60px; color:var(--text-lo); font-size:11px; flex-shrink:0; }
 .analytics-month-bar .count { width:30px; text-align:right; color:var(--text-mid); font-weight:600; font-size:12px; flex-shrink:0; }
 .analytics-vendor-row { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid #ffffff06; }
@@ -3558,7 +3558,7 @@ function _renderApplications(d) {
     <div class="analytics-stat-card"><div class="analytics-stat-value">${d.total}</div><div class="analytics-stat-label">Total Apps</div></div>
     <div class="analytics-stat-card"><div class="analytics-stat-value" style="color:var(--herb);">${d.approval_rate}%</div><div class="analytics-stat-label">Approval Rate</div></div>
     <div class="analytics-stat-card"><div class="analytics-stat-value">${_anaFmtHours(d.avg_response_hours)}</div><div class="analytics-stat-label">Avg Response</div></div>
-    <div class="analytics-stat-card"><div class="analytics-stat-value" style="color:var(--gold);">${d.pending}</div><div class="analytics-stat-label">Pending</div></div>
+    <div class="analytics-stat-card"><div class="analytics-stat-value" style="color:${d.pending > 0 ? 'var(--gold)' : 'var(--text-hi)'};">${d.pending}</div><div class="analytics-stat-label">Pending</div></div>
   </div>`;
   // Funnel
   const total = d.total || 1;
