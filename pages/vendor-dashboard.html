@@ -1420,16 +1420,8 @@ body::before {
 .cal-feed-secondary a:hover { text-decoration:underline; }
 
 /* ── MARKET HISTORY ───────────────────────────────────────────────────────── */
-.history-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px; }
-@media (max-width:900px) { .history-stats { grid-template-columns:repeat(2,1fr); } }
-.history-stat {
-  background:var(--char); border:1px solid #ffffff08; border-radius:14px; padding:16px 18px;
-  display:flex; flex-direction:column; gap:4px;
-}
-.history-stat-val { font-family:var(--fd); font-size:24px; font-weight:900; color:var(--text-hi); letter-spacing:-0.03em; }
-.history-stat-label { font-size:11px; font-weight:600; color:var(--text-lo); text-transform:uppercase; letter-spacing:0.08em; }
 .history-filters {
-  display:flex; align-items:center; gap:10px; margin-bottom:18px; flex-wrap:wrap;
+  display:flex; align-items:center; gap:8px; margin-bottom:18px; flex-wrap:wrap;
 }
 .history-filter-btn {
   font-family:var(--fb); font-size:12px; font-weight:600; color:var(--text-lo);
@@ -1438,16 +1430,33 @@ body::before {
 }
 .history-filter-btn:hover { color:var(--text-mid); border-color:#ffffff18; }
 .history-filter-btn.active { color:var(--ember); border-color:#E8500A30; background:#E8500A0a; }
+.history-filter-sep { width:1px; height:20px; background:#ffffff12; margin:0 4px; }
+.history-best {
+  background:var(--char); border:1px solid #C9840A20; border-radius:14px; padding:16px 20px;
+  margin-bottom:20px; display:flex; align-items:center; gap:14px;
+}
+.history-best-icon { font-size:24px; flex-shrink:0; }
+.history-best-body { flex:1; min-width:0; }
+.history-best-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--gold); margin-bottom:2px; }
+.history-best-name { font-size:14px; font-weight:700; color:var(--text-hi); }
+.history-best-meta { font-size:12px; color:var(--text-lo); margin-top:2px; }
+.history-best-rating { font-family:var(--fd); font-size:22px; font-weight:900; color:var(--gold); flex-shrink:0; letter-spacing:-0.02em; }
 .history-card { background:var(--char); border:1px solid #ffffff08; border-radius:14px; padding:18px 20px; margin-bottom:12px; transition:border-color 0.14s; }
 .history-card:hover { border-color:#ffffff18; }
 .history-header { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
 .history-name { font-size:15px; font-weight:700; color:var(--text-hi); margin-bottom:3px; }
 .history-meta { font-size:12px; color:var(--text-lo); line-height:1.5; }
-.history-detail-row { display:flex; gap:20px; flex-wrap:wrap; margin-top:12px; padding-top:12px; border-top:1px solid #ffffff06; }
+.history-detail-row { display:flex; gap:16px; flex-wrap:wrap; margin-top:12px; padding-top:12px; border-top:1px solid #ffffff06; }
 .history-detail { font-size:12px; color:var(--text-mid); display:flex; align-items:center; gap:5px; }
 .history-detail-label { color:var(--text-lo); }
+.history-cat-pill {
+  display:inline-flex; font-size:10px; font-weight:700; letter-spacing:0.06em;
+  padding:2px 8px; border-radius:6px; background:#ffffff08; color:var(--text-mid);
+  text-transform:uppercase; vertical-align:middle; margin-left:6px;
+}
 .history-reviews { margin-top:10px; padding-top:10px; border-top:1px solid #ffffff06; }
 .history-review-item { font-size:12px; color:var(--text-mid); display:flex; gap:8px; align-items:flex-start; margin-bottom:6px; }
+.history-review-summary { font-size:12px; color:var(--text-mid); display:flex; align-items:center; gap:6px; }
 
 /* ── SETTINGS (expanded) ──────────────────────────────────────────────────── */
 .settings-form-field { margin-bottom:14px; }
@@ -2507,14 +2516,18 @@ body::before {
           <div class="section-sub">Every market you've been approved for through Pitch. Organisers can see this on your public profile.</div>
         </div>
 
-        <!-- Stats summary -->
-        <div class="history-stats" id="history-stats"></div>
+        <!-- Stats summary — reuses .stat-grid / .stat-card from Overview -->
+        <div class="stat-grid" id="history-stats" style="display:none;"></div>
 
-        <!-- Filters -->
+        <!-- Best market highlight -->
+        <div id="history-best" style="display:none;"></div>
+
+        <!-- Filters: status + category -->
         <div class="history-filters" id="history-filters">
           <button class="history-filter-btn active" data-filter="all">All</button>
           <button class="history-filter-btn" data-filter="attended">Attended</button>
           <button class="history-filter-btn" data-filter="upcoming">Upcoming</button>
+          <!-- category pills injected here by JS -->
         </div>
 
         <div id="history-list"><div style="text-align:center;padding:40px;color:var(--text-lo);font-size:13px;">Loading…</div></div>
@@ -5454,6 +5467,7 @@ function renderCalendar() {
 // ── MARKET HISTORY ──────────────────────────────────────────────────────────
 let _historyData = [];
 let _historyFilter = 'all';
+let _historyCatFilter = null;
 
 async function loadMarketHistory() {
   try {
@@ -5464,10 +5478,12 @@ async function loadMarketHistory() {
 
     const list = document.getElementById('history-list');
     const statsEl = document.getElementById('history-stats');
+    const bestEl = document.getElementById('history-best');
     const filtersEl = document.getElementById('history-filters');
 
     if (!history.length) {
       if (statsEl) statsEl.style.display = 'none';
+      if (bestEl) bestEl.style.display = 'none';
       if (filtersEl) filtersEl.style.display = 'none';
       list.innerHTML = `<div style="text-align:center;padding:48px 20px;">
         <div style="font-size:36px;margin-bottom:12px;opacity:0.4;">🗓</div>
@@ -5478,32 +5494,86 @@ async function loadMarketHistory() {
       return;
     }
 
-    // Compute stats
+    // ── Compute stats ──
     const now = new Date();
     const attended = history.filter(h => h.date_sort && new Date(h.date_sort + 'T00:00:00') < now);
-    const upcoming = history.filter(h => !h.date_sort || new Date(h.date_sort + 'T00:00:00') >= now);
     const allReviews = history.flatMap(h => h.reviews || []);
     const avgRating = allReviews.length
       ? (allReviews.reduce((s, rv) => s + (rv.rating || 0), 0) / allReviews.length).toFixed(1)
       : '—';
-    const uniqueLocations = new Set(history.map(h => [h.suburb, h.state].filter(Boolean).join(', ')).filter(Boolean));
+    const totalFees = attended.reduce((s, h) => s + (h.stall_fee_min || 0), 0);
 
+    // ── Render stat cards (reusing .stat-card from Overview) ──
     if (statsEl) {
       statsEl.style.display = '';
       statsEl.innerHTML = `
-        <div class="history-stat"><div class="history-stat-val">${history.length}</div><div class="history-stat-label">Total Markets</div></div>
-        <div class="history-stat"><div class="history-stat-val">${attended.length}</div><div class="history-stat-label">Attended</div></div>
-        <div class="history-stat"><div class="history-stat-val">${avgRating !== '—' ? '★ ' + avgRating : '—'}</div><div class="history-stat-label">Avg Rating</div></div>
-        <div class="history-stat"><div class="history-stat-val">${uniqueLocations.size}</div><div class="history-stat-label">Locations</div></div>
+        <div class="stat-card ember"><div class="stat-label">Total Markets</div><div class="stat-value">${history.length}</div></div>
+        <div class="stat-card herb"><div class="stat-label">Attended</div><div class="stat-value">${attended.length}</div></div>
+        <div class="stat-card gold"><div class="stat-label">Avg Rating</div><div class="stat-value">${avgRating !== '—' ? '★ ' + avgRating : '—'}</div></div>
+        <div class="stat-card slate"><div class="stat-label">Total Fees</div><div class="stat-value">${totalFees > 0 ? '$' + totalFees.toLocaleString() : '—'}</div></div>
       `;
     }
 
-    // Wire up filter buttons
+    // ── Best market highlight ──
+    if (bestEl) {
+      // Find the market with highest average review rating
+      let bestMarket = null;
+      let bestRating = 0;
+      for (const h of history) {
+        if (h.reviews && h.reviews.length) {
+          const avg = h.reviews.reduce((s, rv) => s + (rv.rating || 0), 0) / h.reviews.length;
+          if (avg > bestRating) { bestRating = avg; bestMarket = h; }
+        }
+      }
+      if (bestMarket) {
+        bestEl.style.display = '';
+        bestEl.innerHTML = `<div class="history-best">
+          <div class="history-best-icon">🏆</div>
+          <div class="history-best-body">
+            <div class="history-best-label">Best Rated Market</div>
+            <div class="history-best-name">${bestMarket.event_name}</div>
+            <div class="history-best-meta">${bestMarket.date_sort ? _fmtDate(bestMarket.date_sort) : '—'} · ${[bestMarket.suburb, bestMarket.state].filter(Boolean).join(', ') || '—'} · ${bestMarket.reviews.length} review${bestMarket.reviews.length !== 1 ? 's' : ''}</div>
+          </div>
+          <div class="history-best-rating">★ ${bestRating.toFixed(1)}</div>
+        </div>`;
+      } else {
+        bestEl.style.display = 'none';
+      }
+    }
+
+    // ── Category filter pills ──
     if (filtersEl) {
       filtersEl.style.display = '';
-      filtersEl.querySelectorAll('.history-filter-btn').forEach(btn => {
+      const cats = [...new Set(history.map(h => h.category).filter(Boolean))];
+      // Remove any previously injected category pills
+      filtersEl.querySelectorAll('.history-cat-btn, .history-filter-sep').forEach(el => el.remove());
+      if (cats.length > 1) {
+        const sep = document.createElement('div');
+        sep.className = 'history-filter-sep';
+        filtersEl.appendChild(sep);
+        for (const cat of cats) {
+          const btn = document.createElement('button');
+          btn.className = 'history-filter-btn history-cat-btn';
+          btn.dataset.cat = cat;
+          btn.textContent = cat;
+          btn.onclick = () => {
+            filtersEl.querySelectorAll('.history-cat-btn').forEach(b => b.classList.remove('active'));
+            if (_historyCatFilter === cat) {
+              _historyCatFilter = null;
+            } else {
+              btn.classList.add('active');
+              _historyCatFilter = cat;
+            }
+            renderHistoryList();
+          };
+          filtersEl.appendChild(btn);
+        }
+      }
+
+      // Wire up status filter buttons
+      filtersEl.querySelectorAll('.history-filter-btn:not(.history-cat-btn)').forEach(btn => {
         btn.onclick = () => {
-          filtersEl.querySelectorAll('.history-filter-btn').forEach(b => b.classList.remove('active'));
+          filtersEl.querySelectorAll('.history-filter-btn:not(.history-cat-btn)').forEach(b => b.classList.remove('active'));
           btn.classList.add('active');
           _historyFilter = btn.dataset.filter;
           renderHistoryList();
@@ -5527,13 +5597,15 @@ function renderHistoryList() {
   const filtered = _historyData.filter(h => {
     const eventDate = h.date_sort ? new Date(h.date_sort + 'T00:00:00') : null;
     const isPast = eventDate && eventDate < now;
-    if (_historyFilter === 'attended') return isPast;
-    if (_historyFilter === 'upcoming') return !isPast;
+    if (_historyFilter === 'attended' && !isPast) return false;
+    if (_historyFilter === 'upcoming' && isPast) return false;
+    if (_historyCatFilter && h.category !== _historyCatFilter) return false;
     return true;
   });
 
   if (!filtered.length) {
-    list.innerHTML = `<div style="text-align:center;padding:32px 20px;color:var(--text-lo);font-size:13px;">No ${_historyFilter === 'all' ? '' : _historyFilter + ' '}markets to show.</div>`;
+    const label = [_historyFilter !== 'all' ? _historyFilter : '', _historyCatFilter || ''].filter(Boolean).join(' ');
+    list.innerHTML = `<div style="text-align:center;padding:32px 20px;color:var(--text-lo);font-size:13px;">No ${label} markets to show.</div>`;
     return;
   }
 
@@ -5541,9 +5613,29 @@ function renderHistoryList() {
     const eventDate = h.date_sort ? new Date(h.date_sort + 'T00:00:00') : null;
     const isPast = eventDate && eventDate < now;
 
+    // Days until upcoming
+    let daysLabel = '';
+    if (!isPast && eventDate) {
+      const diff = Math.ceil((eventDate - now) / (1000 * 60 * 60 * 24));
+      if (diff === 0) daysLabel = ' · Today';
+      else if (diff === 1) daysLabel = ' · Tomorrow';
+      else if (diff <= 30) daysLabel = ` · In ${diff} days`;
+    }
+
+    // Category pill
+    const catPill = h.category ? `<span class="history-cat-pill">${h.category}</span>` : '';
+
+    // Inline review summary
+    let reviewSummary = '';
+    if (h.reviews && h.reviews.length) {
+      const avg = (h.reviews.reduce((s, rv) => s + (rv.rating || 0), 0) / h.reviews.length).toFixed(1);
+      reviewSummary = `<span class="history-review-summary"><span style="color:var(--gold);">★ ${avg}</span> <span style="color:var(--text-lo);">(${h.reviews.length})</span></span>`;
+    }
+
+    // Reviews detail (expandable list)
     const reviewsHtml = h.reviews && h.reviews.length
       ? `<div class="history-reviews">
-          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-lo);margin-bottom:8px;">Reviews received</div>
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-lo);margin-bottom:8px;">Reviews</div>
           ${h.reviews.map(rv => `
             <div class="history-review-item">
               <span style="color:#C9840A;">${starsHtml(rv.rating)}</span>
@@ -5552,20 +5644,21 @@ function renderHistoryList() {
          </div>`
       : '';
 
+    // Detail row
     const details = [];
-    if (h.category) details.push(`<span class="history-detail"><span class="history-detail-label">Type:</span> ${h.category}</span>`);
     if (h.organiser_name) details.push(`<span class="history-detail"><span class="history-detail-label">Organiser:</span> ${h.organiser_name}</span>`);
     const fee = h.stall_fee_min && h.stall_fee_max && h.stall_fee_min !== h.stall_fee_max
       ? `$${h.stall_fee_min}–$${h.stall_fee_max}`
       : h.stall_fee_min ? `$${h.stall_fee_min}` : h.stall_fee_max ? `$${h.stall_fee_max}` : null;
     if (fee) details.push(`<span class="history-detail"><span class="history-detail-label">Fee:</span> ${fee}</span>`);
+    if (reviewSummary) details.push(reviewSummary);
     const detailsHtml = details.length ? `<div class="history-detail-row">${details.join('')}</div>` : '';
 
     return `<div class="history-card">
       <div class="history-header">
         <div>
-          <div class="history-name">${h.event_name}</div>
-          <div class="history-meta">${h.date_sort ? _fmtDate(h.date_sort) : '—'} · ${[h.suburb, h.state].filter(Boolean).join(', ') || '—'}</div>
+          <div class="history-name">${h.event_name}${catPill}</div>
+          <div class="history-meta">${h.date_sort ? _fmtDate(h.date_sort) : '—'} · ${[h.suburb, h.state].filter(Boolean).join(', ') || '—'}${daysLabel}</div>
         </div>
         <span class="status-badge ${isPast ? 'badge-approved' : 'badge-review'}" style="flex-shrink:0;">${isPast ? 'Attended' : 'Upcoming'}</span>
       </div>

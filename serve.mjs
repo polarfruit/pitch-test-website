@@ -2220,12 +2220,6 @@ app.post('/api/vendor/calendar-token', requireAuth, async (req, res) => {
 
 // ── Public calendar feed (.ics) ────────────────────────────────────────────
 app.get('/cal/:token.ics', async (req, res) => {
-  const row = await stmts.getVendorByCalToken.get(req.params.token);
-  if (!row) return res.status(404).send('Calendar not found');
-
-  const apps = await stmts.getVendorCalendar.all(row.user_id);
-  const exportable = apps.filter(a => a.status === 'pending' || a.status === 'approved');
-
   const icsEsc = s => (s || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
   const toD = iso => (iso || '').replace(/-/g, '');
   const nextD = iso => {
@@ -2235,24 +2229,57 @@ app.get('/cal/:token.ics', async (req, res) => {
   };
   const now = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
 
-  const vevents = exportable.map(a => {
-    const dtStart = toD(a.date_sort);
-    const dtEnd = a.date_end ? nextD(a.date_end) : nextD(a.date_sort);
-    const loc = [a.suburb, a.state].filter(Boolean).join(', ');
-    const st = a.status === 'approved' ? 'CONFIRMED' : 'TENTATIVE';
-    return [
-      'BEGIN:VEVENT',
-      `UID:pitch-${a.event_id}-${row.user_id}@onpitch.com.au`,
-      `DTSTAMP:${now}`,
-      `DTSTART;VALUE=DATE:${dtStart}`,
-      `DTEND;VALUE=DATE:${dtEnd}`,
-      `SUMMARY:${icsEsc(a.event_name)}`,
-      loc ? `LOCATION:${icsEsc(loc)}` : null,
-      `DESCRIPTION:${icsEsc('Status: ' + a.status + ' | Category: ' + (a.category || 'Event'))}`,
-      `STATUS:${st}`,
-      'END:VEVENT'
-    ].filter(Boolean).join('\r\n');
-  });
+  // Check vendor first, then organiser
+  let vevents = [];
+  let calName = 'Pitch Events';
+  const vendorRow = await stmts.getVendorByCalToken.get(req.params.token);
+  if (vendorRow) {
+    calName = 'Pitch — My Events';
+    const apps = await stmts.getVendorCalendar.all(vendorRow.user_id);
+    const exportable = apps.filter(a => a.status === 'pending' || a.status === 'approved');
+    vevents = exportable.map(a => {
+      const dtStart = toD(a.date_sort);
+      const dtEnd = a.date_end ? nextD(a.date_end) : nextD(a.date_sort);
+      const loc = [a.suburb, a.state].filter(Boolean).join(', ');
+      const st = a.status === 'approved' ? 'CONFIRMED' : 'TENTATIVE';
+      return [
+        'BEGIN:VEVENT',
+        `UID:pitch-${a.event_id}-${vendorRow.user_id}@onpitch.com.au`,
+        `DTSTAMP:${now}`,
+        `DTSTART;VALUE=DATE:${dtStart}`,
+        `DTEND;VALUE=DATE:${dtEnd}`,
+        `SUMMARY:${icsEsc(a.event_name)}`,
+        loc ? `LOCATION:${icsEsc(loc)}` : null,
+        `DESCRIPTION:${icsEsc('Status: ' + a.status + ' | Category: ' + (a.category || 'Event'))}`,
+        `STATUS:${st}`,
+        'END:VEVENT'
+      ].filter(Boolean).join('\r\n');
+    });
+  } else {
+    const orgRow = await stmts.getOrganiserByCalToken.get(req.params.token);
+    if (!orgRow) return res.status(404).send('Calendar not found');
+
+    calName = 'Pitch — My Events';
+    const events = await stmts.getOrgCalendar.all(orgRow.user_id);
+    vevents = events.map(e => {
+      const dtStart = toD(e.date_sort);
+      const dtEnd = e.date_end ? nextD(e.date_end) : nextD(e.date_sort);
+      const loc = [e.suburb, e.state].filter(Boolean).join(', ');
+      const st = e.status === 'published' ? 'CONFIRMED' : 'TENTATIVE';
+      return [
+        'BEGIN:VEVENT',
+        `UID:pitch-org-${e.id}-${orgRow.user_id}@onpitch.com.au`,
+        `DTSTAMP:${now}`,
+        `DTSTART;VALUE=DATE:${dtStart}`,
+        `DTEND;VALUE=DATE:${dtEnd}`,
+        `SUMMARY:${icsEsc(e.name)}`,
+        loc ? `LOCATION:${icsEsc(loc)}` : null,
+        `DESCRIPTION:${icsEsc('Category: ' + (e.category || 'Event') + (e.deadline ? ' | Deadline: ' + e.deadline : ''))}`,
+        `STATUS:${st}`,
+        'END:VEVENT'
+      ].filter(Boolean).join('\r\n');
+    });
+  }
 
   const ics = [
     'BEGIN:VCALENDAR',
@@ -2260,7 +2287,7 @@ app.get('/cal/:token.ics', async (req, res) => {
     'PRODID:-//Pitch//Events//EN',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
-    'X-WR-CALNAME:Pitch Events',
+    `X-WR-CALNAME:${calName}`,
     'X-WR-TIMEZONE:Australia/Adelaide',
     'REFRESH-INTERVAL;VALUE=DURATION:PT1H',
     ...vevents,
@@ -2555,6 +2582,27 @@ app.get('/api/organiser/calendar', requireAuth, async (req, res) => {
   if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
   const events = await stmts.getOrgCalendar.all(req.session.userId);
   res.json({ events });
+});
+
+// POST /api/organiser/calendar-token — generate/retrieve subscription URL
+app.post('/api/organiser/calendar-token', requireAuth, async (req, res) => {
+  try {
+    if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
+    const org = await stmts.getOrganiserByUserId.get(req.session.userId);
+    if (!org) return res.status(404).json({ error: 'Organiser not found' });
+
+    let token = org.calendar_feed_token;
+    if (!token) {
+      token = randomBytes(24).toString('base64url');
+      await stmts.setOrganiserCalToken.run({ token, user_id: req.session.userId });
+    }
+    const host = req.headers.host || 'onpitch.com.au';
+    const proto = req.headers['x-forwarded-proto'] || req.protocol || 'https';
+    res.json({ token, url: `${proto}://${host}/cal/${token}.ics` });
+  } catch (e) {
+    console.error('[organiser-calendar-token]', e);
+    res.status(500).json({ error: 'Failed to generate calendar link.' });
+  }
 });
 
 // GET /api/organiser/analytics
