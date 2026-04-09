@@ -2165,6 +2165,7 @@ async function initDashboard() {
   // Eager non-blocking loads so stats + events populate even if init data was empty
   loadOrgOverview().catch(() => {});
   loadOrgEvents().catch(() => {});
+  loadPendingRatings().catch(() => {});
 }
 
 // ── Platform limits ──────────────────────────────────────────────────────
@@ -3737,6 +3738,7 @@ async function loadOrgAnalytics() {
 let _rateVendorPunctual = 3, _rateVendorPresentation = 3, _rateVendorRebook = true;
 
 async function loadOrgRatings() {
+  loadPendingRatings().catch(() => {});
   try {
     const r = await pitchFetch('/api/organiser/vendor-ratings');
     if (!r.ok) {
@@ -3773,6 +3775,53 @@ async function loadOrgRatings() {
         <button class="btn-rate-vendor" onclick="openRateModal(${rt.vendor_user_id},'${rt.trading_name}',${rt.event_id||0})">Edit</button>
       </div>`).join('');
   } catch(e) { console.error('[ratings]', e); }
+}
+
+// ── Pending ratings (post-event prompts) ──────────────────────────────────
+async function loadPendingRatings() {
+  try {
+    const r = await pitchFetch('/api/organiser/pending-ratings');
+    if (!r.ok) return;
+    const { pending } = await r.json();
+    if (!pending || !pending.length) return;
+
+    // Overview banner
+    const banner = document.getElementById('pending-ratings-banner');
+    if (banner) {
+      banner.style.display = 'block';
+      banner.innerHTML = pending.map(ev => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:linear-gradient(135deg,#E8500A12,#E8500A06);border:1px solid #E8500A20;border-radius:14px;margin-bottom:10px;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <span style="font-size:22px;">🎉</span>
+            <div>
+              <div style="font-size:13.5px;font-weight:700;color:var(--text-hi);">${ev.event_name} has ended</div>
+              <div style="font-size:12px;color:var(--text-lo);margin-top:2px;">Rate ${ev.vendors.length} vendor${ev.vendors.length === 1 ? '' : 's'} who attended</div>
+            </div>
+          </div>
+          <button onclick="showPanel('ratings',null)" style="padding:8px 18px;border-radius:9px;border:none;background:var(--ember);color:#fff;font-family:var(--fb);font-size:12.5px;font-weight:700;cursor:pointer;">Rate now</button>
+        </div>`).join('');
+    }
+
+    // Pending section in ratings tab
+    const section = document.getElementById('pending-ratings-section');
+    if (section) {
+      section.style.display = 'block';
+      let html = '<div style="font-size:13px;font-weight:800;color:var(--text-hi);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px;">Pending</div>';
+      for (const ev of pending) {
+        html += `<div style="font-size:12px;font-weight:700;color:var(--text-lo);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;margin-top:${pending.indexOf(ev) > 0 ? '16px' : '0'}">${ev.event_name}</div>`;
+        for (const v of ev.vendors) {
+          html += `
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#ffffff06;border:1px solid #ffffff08;border-radius:10px;margin-bottom:6px;">
+              <div>
+                <div style="font-size:13.5px;font-weight:700;color:var(--text-hi);">${v.trading_name}</div>
+              </div>
+              <button onclick="openRateModal(${v.vendor_user_id},'${v.trading_name.replace(/'/g,"\\'")}',${ev.event_id})" style="padding:7px 16px;border-radius:8px;border:none;background:var(--ember);color:#fff;font-family:var(--fb);font-size:12px;font-weight:700;cursor:pointer;">Rate</button>
+            </div>`;
+        }
+      }
+      section.innerHTML = html;
+    }
+  } catch (e) { console.error('[pending-ratings]', e); }
 }
 
 // Load approved vendor list for rating (from all org events)

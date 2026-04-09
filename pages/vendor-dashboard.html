@@ -2905,6 +2905,35 @@ body::before {
   </div>
 </div>
 
+<!-- REVIEW ORGANISER MODAL -->
+<div class="modal-overlay" id="review-org-modal" onclick="if(event.target===this)closeReviewOrgModal()">
+  <div class="modal-box">
+    <div class="modal-title" style="font-size:20px;">Review this organiser</div>
+    <div class="modal-desc" id="review-org-modal-sub" style="margin-bottom:16px;">How was the event?</div>
+    <input type="hidden" id="review-org-org-id" />
+    <input type="hidden" id="review-org-event-id" />
+    <input type="hidden" id="review-org-event-name" />
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:11px;font-weight:700;color:var(--text-lo);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;">Overall rating</div>
+      <div id="review-org-stars" style="display:inline-flex;gap:6px;">
+        <span class="review-org-star" data-val="1" onclick="setReviewOrgStar(1)" style="font-size:32px;cursor:pointer;color:#ffffff20;transition:color 0.12s;">★</span>
+        <span class="review-org-star" data-val="2" onclick="setReviewOrgStar(2)" style="font-size:32px;cursor:pointer;color:#ffffff20;transition:color 0.12s;">★</span>
+        <span class="review-org-star" data-val="3" onclick="setReviewOrgStar(3)" style="font-size:32px;cursor:pointer;color:#ffffff20;transition:color 0.12s;">★</span>
+        <span class="review-org-star" data-val="4" onclick="setReviewOrgStar(4)" style="font-size:32px;cursor:pointer;color:#ffffff20;transition:color 0.12s;">★</span>
+        <span class="review-org-star" data-val="5" onclick="setReviewOrgStar(5)" style="font-size:32px;cursor:pointer;color:#ffffff20;transition:color 0.12s;">★</span>
+      </div>
+    </div>
+    <div style="margin-bottom:20px;">
+      <div style="font-size:11px;font-weight:700;color:var(--text-lo);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Your review (optional)</div>
+      <textarea id="review-org-body" rows="3" placeholder="What went well? What could be improved?" style="width:100%;padding:12px 14px;background:#ffffff08;border:1px solid #ffffff12;border-radius:10px;font-family:var(--fb);font-size:13px;color:var(--text-hi);resize:vertical;outline:none;"></textarea>
+    </div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="closeReviewOrgModal()" style="flex:1;padding:11px;border-radius:10px;border:1px solid #ffffff12;background:transparent;color:var(--text-mid);font-family:var(--fb);font-size:13px;font-weight:700;cursor:pointer;">Cancel</button>
+      <button id="review-org-submit-btn" onclick="submitOrgReview()" style="flex:1;padding:11px;border-radius:10px;border:none;background:var(--ember);color:#fff;font-family:var(--fb);font-size:13px;font-weight:700;cursor:pointer;">Submit review</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ── Navigate to messages panel and open a specific organiser thread ─────── */
 function msgOrg(orgId, orgName, eventName) {
@@ -3955,6 +3984,7 @@ async function initDashboard() {
   loadApplications().catch(() => {});
   loadEvents().catch(() => {});
   loadOverviewRating().catch(() => {});
+  loadPendingVendorReviews().catch(() => {});
 }
 
 async function loadOverviewRating() {
@@ -6929,6 +6959,87 @@ function sendTeamInvite() {
   // Placeholder — shows success message
   emailEl.value = '';
   if (msgEl) { msgEl.style.display = 'block'; setTimeout(() => { if (msgEl) msgEl.style.display = 'none'; }, 3000); }
+}
+
+// ── Review organiser modal ─────────────────────────────────────────────────
+let _reviewOrgRating = 0;
+
+function setReviewOrgStar(val) {
+  _reviewOrgRating = val;
+  document.querySelectorAll('#review-org-stars .review-org-star').forEach((s, i) => {
+    s.style.color = i < val ? '#E8500A' : '#ffffff20';
+  });
+}
+
+function openReviewOrgModal(orgUserId, orgName, eventId, eventName) {
+  document.getElementById('review-org-org-id').value = orgUserId;
+  document.getElementById('review-org-event-id').value = eventId || '';
+  document.getElementById('review-org-event-name').value = eventName || '';
+  document.getElementById('review-org-modal-sub').textContent = `${eventName || 'Event'} — organised by ${orgName}`;
+  document.getElementById('review-org-body').value = '';
+  _reviewOrgRating = 0;
+  setReviewOrgStar(0);
+  document.getElementById('review-org-modal').classList.add('open');
+}
+
+function closeReviewOrgModal() {
+  document.getElementById('review-org-modal').classList.remove('open');
+}
+
+async function submitOrgReview() {
+  if (_reviewOrgRating < 1) { alert('Please select a rating.'); return; }
+  const orgId = document.getElementById('review-org-org-id').value;
+  const eventId = document.getElementById('review-org-event-id').value;
+  const eventName = document.getElementById('review-org-event-name').value;
+  const body = document.getElementById('review-org-body').value.trim();
+  const btn = document.getElementById('review-org-submit-btn');
+  btn.disabled = true; btn.textContent = 'Submitting…';
+  try {
+    const r = await pitchFetch('/api/vendor/organiser-review', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ organiser_user_id: orgId, event_id: eventId || null, event_name: eventName || null, rating: _reviewOrgRating, body: body || null }),
+    });
+    if (r.ok) {
+      closeReviewOrgModal();
+      loadPendingVendorReviews();
+    } else {
+      const d = await r.json().catch(() => ({}));
+      alert(d.error || 'Failed to submit review');
+    }
+  } catch (e) { alert('Network error'); }
+  btn.disabled = false; btn.textContent = 'Submit review';
+}
+
+// ── Pending reviews (post-event prompts) ────────────────────────────────────
+async function loadPendingVendorReviews() {
+  try {
+    const r = await pitchFetch('/api/vendor/pending-reviews');
+    if (!r.ok) return;
+    const { pending } = await r.json();
+    if (!pending || !pending.length) {
+      const b = document.getElementById('vendor-pending-reviews-banner');
+      if (b) b.style.display = 'none';
+      return;
+    }
+
+    // Overview banner
+    const banner = document.getElementById('vendor-pending-reviews-banner');
+    if (banner) {
+      banner.style.display = 'block';
+      banner.innerHTML = pending.map(ev => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:linear-gradient(135deg,#E8500A12,#E8500A06);border:1px solid #E8500A20;border-radius:14px;margin-bottom:10px;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <span style="font-size:22px;">⭐</span>
+            <div>
+              <div style="font-size:13.5px;font-weight:700;color:var(--text-hi);">How was ${ev.event_name}?</div>
+              <div style="font-size:12px;color:var(--text-lo);margin-top:2px;">Share your experience with ${ev.organiser_name}</div>
+            </div>
+          </div>
+          <button onclick="openReviewOrgModal(${ev.organiser_user_id},'${(ev.organiser_name||'').replace(/'/g,"\\'")}',${ev.event_id},'${(ev.event_name||'').replace(/'/g,"\\'")}');" style="padding:8px 18px;border-radius:9px;border:none;background:var(--ember);color:#fff;font-family:var(--fb);font-size:12.5px;font-weight:700;cursor:pointer;">Leave a review</button>
+        </div>`).join('');
+    }
+  } catch (e) { console.error('[pending-reviews]', e); }
 }
 </script>
 </body>

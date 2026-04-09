@@ -22,5 +22,8 @@
   ],
   "rewrites": [
     { "source": "/(.*)", "destination": "/api/index.mjs" }
+  ],
+  "crons": [
+    { "path": "/api/cron/post-event", "schedule": "0 8 * * *" }
   ]
 }
