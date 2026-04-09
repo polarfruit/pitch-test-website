@@ -357,10 +357,11 @@ body::before {
   position: absolute; inset: 0;
   background: linear-gradient(to top, rgba(26,18,8,0.65) 0%, transparent 60%);
 }
+.browse-card-accent { height: 3px; width: 100%; flex-shrink: 0; }
 .browse-card-cat {
   position: absolute; top: 12px; left: 12px; z-index: 1;
   font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
-  background: rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.2); color: #fff;
+  border: 1px solid rgba(255,255,255,0.08);
   padding: 4px 9px; border-radius: 6px; backdrop-filter: blur(4px);
 }
 .browse-card-spots-badge {
@@ -379,12 +380,30 @@ body::before {
 .browse-card-fee { font-size: 11px; color: #5A4A3A; }
 .browse-card-fee strong { color: #1A1612; }
 .browse-card-dl { font-size: 11px; color: #8B7A6A; }
+.browse-card-urgency {
+  position: absolute; bottom: 10px; left: 12px; z-index: 1;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.04em;
+  padding: 3px 9px; border-radius: 100px;
+  background: rgba(192,57,43,0.18); color: #C0392B; border: 1px solid #C0392B33;
+  animation: urgencyPulse 2s ease-in-out infinite;
+}
+@keyframes urgencyPulse { 0%,100% { opacity:1; } 50% { opacity:0.7; } }
+.browse-applied-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 700;
+  padding: 6px 14px; border-radius: 8px; white-space: nowrap;
+}
+.browse-applied-badge.pending  { background: #C9840A1A; color: var(--gold); border: 1px solid #C9840A28; }
+.browse-applied-badge.approved { background: #2D8B551A; color: var(--herb); border: 1px solid #2D8B5528; }
+.browse-applied-badge.rejected { background: #C0392B14; color: #A0392B; border: 1px solid #C0392B1C; }
+.browse-card.applied { opacity: 0.82; }
+.browse-card.applied:hover { opacity: 1; }
 .btn-view-event {
   font-family: var(--fb); font-size: 12px; font-weight: 700;
-  color: var(--ember); background: var(--ember-bg); border: 1px solid #E8500A33;
-  padding: 7px 14px; border-radius: 8px; cursor: pointer; transition: all 0.14s;
+  color: #fff; background: var(--ember); border: none;
+  padding: 9px 18px; border-radius: 8px; cursor: pointer; transition: background 0.14s, transform 0.14s;
 }
-.btn-view-event:hover { background: #E8500A22; }
+.btn-view-event:hover { background: var(--ember-glow); }
 
 /* ── EVENT DETAIL PANEL ─────────────────────────────────────────────────── */
 .event-detail-back {
@@ -3788,6 +3807,20 @@ function _browseFillColor(pct) {
   return '#2D8B55';
 }
 
+const _categoryConfig = {
+  'Night Market':     { icon:'🌙', grad:['#0D1B2A','#1B2D4A'], accent:'#7BA4E8', pillBg:'#1a2744', pillText:'#7BA4E8', pattern:'radial-gradient(circle at 20% 80%,#1B3A6622 0%,transparent 50%),radial-gradient(circle at 80% 20%,#7BA4E812 0%,transparent 40%)' },
+  'Festival':         { icon:'🎪', grad:['#2A1508','#4D2A0E'], accent:'#E8500A', pillBg:'#3D2410', pillText:'#E8500A', pattern:'repeating-linear-gradient(45deg,transparent,transparent 20px,#E8500A06 20px,#E8500A06 22px)' },
+  'Markets':          { icon:'🥬', grad:['#0A1F12','#1A3D24'], accent:'#4CAF50', pillBg:'#1A3D24', pillText:'#4CAF50', pattern:'radial-gradient(circle at 30% 70%,#2D8B5518 0%,transparent 50%)' },
+  'Farmers Market':   { icon:'🥬', grad:['#0A1F12','#1A3D24'], accent:'#4CAF50', pillBg:'#1A3D24', pillText:'#4CAF50', pattern:'radial-gradient(circle at 30% 70%,#2D8B5518 0%,transparent 50%)' },
+  'Twilight Market':  { icon:'🌅', grad:['#1A0D2E','#2D1A44'], accent:'#B07AE8', pillBg:'#2D1A44', pillText:'#B07AE8', pattern:'radial-gradient(circle at 70% 30%,#B07AE812 0%,transparent 50%),radial-gradient(circle at 20% 90%,#6B3FA018 0%,transparent 40%)' },
+  'Food Festival':    { icon:'🍽️', grad:['#2A0D0D','#3D1A1A'], accent:'#E87A4A', pillBg:'#3D1A1A', pillText:'#E87A4A', pattern:'radial-gradient(circle at 60% 40%,#E87A4A10 0%,transparent 50%)' },
+  'Community Event':  { icon:'🤝', grad:['#0A1F1F','#1A3D3D'], accent:'#4ACAE8', pillBg:'#1A3D3D', pillText:'#4ACAE8', pattern:'radial-gradient(circle at 50% 50%,#4ACAE80C 0%,transparent 60%)' },
+  'Corporate':        { icon:'💼', grad:['#0D1322','#1A2233'], accent:'#7B9BE8', pillBg:'#1A2233', pillText:'#7B9BE8', pattern:'repeating-linear-gradient(135deg,transparent,transparent 24px,#7B9BE806 24px,#7B9BE806 26px)' },
+  'Pop-up':           { icon:'⚡', grad:['#2A1A08','#3D2A10'], accent:'#FF6B2B', pillBg:'#3D2A10', pillText:'#FF6B2B', pattern:'radial-gradient(circle at 80% 70%,#FF6B2B10 0%,transparent 40%)' },
+};
+const _defaultCatConfig = { icon:'🎪', grad:['#1A1208','#3D2C10'], accent:'#A89880', pillBg:'rgba(0,0,0,0.45)', pillText:'#fff', pattern:'none' };
+function _getCatConfig(cat) { return _categoryConfig[cat] || _defaultCatConfig; }
+
 function renderBrowseGrid(events) {
   const grid = document.getElementById('browse-grid');
   if (!grid) return;
@@ -3820,13 +3853,22 @@ function renderBrowseGrid(events) {
     const evCreatedAt = ev.created_at ? new Date(ev.created_at).getTime() : 0;
     const showEarlyAccess = isGrowth && evCreatedAt > earlyAccessCutoff;
 
+    const cc = _getCatConfig(ev.category);
+
+    // Urgency badge
+    const urgencyHtml = (total > 0 && spotsLeft <= 3 && spotsLeft > 0)
+      ? '<span class="browse-card-urgency">🔥 Almost full!</span>'
+      : (total > 0 && pct >= 80)
+        ? '<span class="browse-card-urgency" style="background:rgba(201,132,10,0.18);color:#C9840A;border-color:#C9840A33;">⚡ Filling fast</span>'
+        : '';
+
     let statusBadge;
     if (ev.applied) {
-      const statusColor = ev.appStatus==='approved'?'var(--herb)':ev.appStatus==='rejected'?'var(--terra)':'var(--gold)';
-      const statusText  = ev.appStatus==='approved'?'✓ Approved':ev.appStatus==='rejected'?'✕ Not accepted':'● Applied';
-      statusBadge = `<span style="font-size:11px;font-weight:700;color:${statusColor};">${statusText}</span>`;
+      const badgeClass = ev.appStatus==='approved'?'approved':ev.appStatus==='rejected'?'rejected':'pending';
+      const statusText = ev.appStatus==='approved'?'✓ Approved':ev.appStatus==='rejected'?'✕ Not accepted':'● Applied';
+      statusBadge = `<span class="browse-applied-badge ${badgeClass}">${statusText}</span>`;
     } else if (atLimit) {
-      statusBadge = `<button class="btn-view-event" style="opacity:0.45;cursor:not-allowed;background:#2E2720;border-color:#ffffff10;color:var(--text-lo);" onclick="event.stopPropagation();showLimitModal({used:${sub.apps_used},limit:${sub.apps_limit}})">Limit reached</button>`;
+      statusBadge = `<button class="btn-view-event" style="opacity:0.45;cursor:not-allowed;background:#2E2720;border:1px solid #ffffff10;color:var(--text-lo);" onclick="event.stopPropagation();showLimitModal({used:${sub.apps_used},limit:${sub.apps_limit}})">Limit reached</button>`;
     } else {
       statusBadge = `<button class="btn-view-event" onclick="event.stopPropagation();openEventDetail(${ev.id})">View & Apply →</button>`;
     }
@@ -3839,17 +3881,23 @@ function renderBrowseGrid(events) {
 
     const feeHtml = (ev.stall_fee_min || ev.stall_fee_max)
       ? `<span class="browse-card-fee">Booth: <strong>$${ev.stall_fee_min||'?'}–$${ev.stall_fee_max||'?'}</strong></span>`
-      : `<span class="browse-card-fee" style="color:#8B7A6A;">Fee TBC</span>`;
+      : '';
     const dlHtml = ev.deadline
       ? `<span class="browse-card-dl">Apply by ${_browseFmtDeadline(ev.deadline)}</span>`
       : '';
-    return `<div class="browse-card" onclick="openEventDetail(${ev.id})">
-      <div class="browse-card-header" style="background:linear-gradient(135deg,#1A1208,#3D2C10);position:relative;">
+    const appliedClass = ev.applied ? ' applied' : '';
+    const statusAccentColor = ev.applied ? (ev.appStatus==='approved'?'var(--herb)':ev.appStatus==='rejected'?'#A0392B':'var(--gold)') : '';
+    const statusBorderStyle = ev.applied ? `box-shadow:inset 3px 0 0 ${statusAccentColor};` : '';
+    const catPillPos = showEarlyAccess ? 'top:auto;bottom:12px;' : '';
+    return `<div class="browse-card${appliedClass}" style="${statusBorderStyle}" onclick="openEventDetail(${ev.id})">
+      <div class="browse-card-accent" style="background:${cc.accent};"></div>
+      <div class="browse-card-header" style="background-image:${cc.pattern},linear-gradient(135deg,${cc.grad[0]},${cc.grad[1]});position:relative;">
         <div class="browse-card-header-overlay"></div>
-        <span style="position:relative;z-index:1;font-size:52px;">🎪</span>
-        ${ev.category ? `<span class="browse-card-cat">${ev.category}</span>` : ''}
+        <span style="position:relative;z-index:1;font-size:72px;filter:drop-shadow(0 0 20px ${cc.accent}44);">${cc.icon}</span>
+        ${ev.category ? `<span class="browse-card-cat" style="background:${cc.pillBg};color:${cc.pillText};${catPillPos}">${ev.category}</span>` : ''}
         ${total > 0 ? `<span class="browse-card-spots-badge" style="background:${spotsBg};color:${spotsCol};border:1px solid ${spotsCol}33;">${spotsTxt}</span>` : ''}
         ${showEarlyAccess ? `<span class="early-access-badge">⚡ Early access</span>` : ''}
+        ${urgencyHtml}
       </div>
       <div class="browse-card-body">
         <div class="browse-card-name">${ev.name}</div>
