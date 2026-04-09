@@ -388,6 +388,8 @@ await _safeExec(`ALTER TABLE vendors ADD COLUMN subscription_status TEXT NOT NUL
 await _safeExec(`ALTER TABLE vendors ADD COLUMN calendar_feed_token TEXT`);
 await _safeExec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_vendors_cal_token ON vendors(calendar_feed_token)`);
 
+await _safeExec(`ALTER TABLE organisers ADD COLUMN calendar_feed_token TEXT`);
+await _safeExec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_organisers_cal_token ON organisers(calendar_feed_token)`);
 
 // ── Vendors: add 'growth' to plan CHECK constraint ───────────────────────────
 {
@@ -1295,6 +1297,10 @@ export const stmts = {
   getVendorCalendar:   prepare(`SELECT ea.*,e.name as event_name,e.date_sort,e.date_end,e.suburb,e.state,e.category FROM event_applications ea JOIN events e ON ea.event_id=e.id WHERE ea.vendor_user_id=? ORDER BY e.date_sort ASC`),
   getVendorByCalToken: prepare(`SELECT user_id FROM vendors WHERE calendar_feed_token=?`),
   setVendorCalToken:   prepare(`UPDATE vendors SET calendar_feed_token=@token WHERE user_id=@user_id`),
+
+  // organiser calendar feed
+  getOrganiserByCalToken: prepare(`SELECT user_id FROM organisers WHERE calendar_feed_token=?`),
+  setOrganiserCalToken:   prepare(`UPDATE organisers SET calendar_feed_token=@token WHERE user_id=@user_id`),
 
   // vendor market history (approved apps for past events)
   getVendorHistory:    prepare(`SELECT ea.*,e.name as event_name,e.date_sort,e.suburb,e.state,e.category,e.organiser_name,e.stall_fee_min,e.stall_fee_max FROM event_applications ea JOIN events e ON ea.event_id=e.id WHERE ea.vendor_user_id=? AND ea.status='approved' ORDER BY e.date_sort DESC`),

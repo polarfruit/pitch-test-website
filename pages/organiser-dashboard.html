@@ -577,16 +577,45 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .org-cal-event.deadline { background:#C9840A20; color:var(--gold); }
 .org-cal-event.archived { background:#ffffff10; color:var(--text-lo); }
 .org-cal-empty { text-align:center; padding:24px 16px; color:var(--text-lo); font-size:12.5px; line-height:1.6; }
+#org-ical-export-btn:hover { background:#ffffff12; color:var(--text-hi); border-color:#ffffff18; }
+
+/* Calendar subscription modal */
+.cal-feed-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:1000; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+.cal-feed-modal { background:var(--char); border:1px solid #ffffff12; border-radius:18px; padding:28px 32px; max-width:480px; width:90%; box-shadow:0 24px 64px rgba(0,0,0,0.5); position:relative; }
+.cal-feed-modal h3 { font-family:var(--fd); font-size:20px; font-weight:900; color:var(--text-hi); margin-bottom:6px; }
+.cal-feed-modal p { font-size:13px; color:var(--text-mid); line-height:1.5; margin-bottom:16px; }
+.cal-feed-url { display:flex; gap:8px; margin-bottom:16px; }
+.cal-feed-url input { flex:1; font-family:var(--fb); font-size:12px; background:#ffffff08; border:1px solid #ffffff12; color:var(--text-hi); padding:10px 12px; border-radius:8px; outline:none; }
+.cal-feed-url button { font-family:var(--fb); font-size:12px; font-weight:700; color:#fff; background:var(--ember); border:none; padding:10px 16px; border-radius:8px; cursor:pointer; white-space:nowrap; transition:background 0.14s; }
+.cal-feed-url button:hover { background:var(--ember-glow); }
+.cal-feed-links { display:flex; flex-direction:column; gap:10px; margin-bottom:16px; }
+.cal-feed-links a { display:flex; align-items:center; gap:10px; font-size:13px; font-weight:600; color:var(--text-hi); text-decoration:none; padding:10px 14px; background:#ffffff06; border:1px solid #ffffff0a; border-radius:10px; transition:background 0.14s; }
+.cal-feed-links a:hover { background:#ffffff10; }
+.cal-feed-links a span.icon { font-size:18px; }
+.cal-feed-secondary { font-size:12px; color:var(--text-lo); text-align:center; padding-top:12px; border-top:1px solid #ffffff08; }
+.cal-feed-secondary a { color:var(--ember); text-decoration:none; cursor:pointer; }
+.cal-feed-secondary a:hover { text-decoration:underline; }
 
 /* Analytics */
+.analytics-summary { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:12px; margin-bottom:28px; }
+.analytics-stat-card { background:var(--char); border:1px solid #ffffff12; border-radius:12px; padding:16px 18px; text-align:center; }
+.analytics-stat-value { font-size:28px; font-family:var(--fd); font-weight:900; color:var(--text-hi); letter-spacing:-0.02em; line-height:1.1; }
+.analytics-stat-label { font-size:11px; color:var(--text-lo); text-transform:uppercase; letter-spacing:0.06em; margin-top:6px; }
 .analytics-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:16px; margin-bottom:24px; }
-.analytics-event-card { background:var(--char); border:1px solid #ffffff08; border-radius:14px; padding:18px 20px; }
+.analytics-event-card { background:var(--char); border:1px solid #ffffff12; border-radius:14px; padding:18px 20px; cursor:pointer; transition:border-color 0.18s, transform 0.18s; }
+.analytics-event-card:hover { border-color:var(--ember); transform:translateY(-1px); }
 .analytics-event-name { font-size:14px; font-weight:700; color:var(--text-hi); margin-bottom:4px; }
 .analytics-event-date { font-size:12px; color:var(--text-lo); margin-bottom:14px; }
 .analytics-bar-row { margin-bottom:10px; }
+.analytics-bar-row:last-child { margin-bottom:0; }
 .analytics-bar-label { font-size:11px; color:var(--text-lo); display:flex; justify-content:space-between; margin-bottom:4px; }
-.analytics-bar-track { height:6px; background:#ffffff08; border-radius:3px; overflow:hidden; }
+.analytics-bar-label span:last-child { font-weight:600; color:var(--text-mid); }
+.analytics-bar-track { height:6px; background:#ffffff14; border-radius:3px; overflow:hidden; }
 .analytics-bar-fill { height:100%; border-radius:3px; transition:width 0.5s; }
+.analytics-empty { text-align:center; padding:60px 20px; }
+.analytics-empty-icon { font-size:40px; margin-bottom:16px; opacity:0.4; }
+.analytics-empty-title { font-size:15px; font-weight:700; color:var(--text-hi); margin-bottom:6px; }
+.analytics-empty-sub { font-size:13px; color:var(--text-lo); margin-bottom:20px; line-height:1.5; }
 
 /* Org settings expansion */
 .org-settings-input { width:100%; height:42px; padding:0 14px; background:#ffffff08; border:1px solid #ffffff10; border-radius:10px; font-family:var(--fb); font-size:14px; color:var(--text-hi); outline:none; transition:border-color 0.14s; }
@@ -1242,9 +1271,14 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
     <div class="panel" id="panel-calendar">
       <div style="max-width:860px;">
         <div class="org-cal-nav">
-          <button class="org-cal-nav-btn" onclick="orgCalNav(-1)">‹</button>
-          <div class="org-cal-month" id="org-cal-month-label">—</div>
-          <button class="org-cal-nav-btn" onclick="orgCalNav(1)">›</button>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <button class="org-cal-nav-btn" onclick="orgCalNav(-1)">‹</button>
+            <div class="org-cal-month" id="org-cal-month-label">—</div>
+            <button class="org-cal-nav-btn" onclick="orgCalNav(1)">›</button>
+          </div>
+          <button id="org-ical-export-btn" onclick="exportICal()" style="font-family:var(--fb);font-size:12px;font-weight:600;color:var(--text-mid);background:#ffffff08;border:1px solid #ffffff12;padding:8px 16px;border-radius:9px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .14s;">
+            <span>📅</span> Export to calendar
+          </button>
         </div>
         <div class="settings-card" style="padding:16px;">
           <div class="org-cal-grid" id="org-cal-grid">
@@ -1265,10 +1299,12 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
     <!-- ── PANEL: ANALYTICS ───────────────────────────────────────────────── -->
     <div class="panel" id="panel-analytics">
       <div style="max-width:900px;">
-        <div style="margin-bottom:20px;">
-          <div style="font-size:20px;font-family:var(--fd);font-weight:900;letter-spacing:-0.02em;color:var(--text-hi);margin-bottom:4px;">Market Analytics</div>
+        <div style="margin-bottom:28px;">
+          <div style="font-size:20px;font-family:var(--fd);font-weight:900;letter-spacing:-0.02em;color:var(--text-hi);margin-bottom:6px;">Market Analytics</div>
           <div style="font-size:13px;color:var(--text-lo);">Application and approval stats for each of your events.</div>
         </div>
+        <div class="analytics-summary" id="analytics-summary" style="display:none;"></div>
+        <div style="font-size:13px;font-weight:700;color:var(--text-mid);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:14px;">By Event</div>
         <div class="analytics-grid" id="analytics-grid"><div style="text-align:center;padding:40px;color:var(--text-lo);font-size:13px;">Loading…</div></div>
       </div>
     </div>
@@ -1276,9 +1312,9 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
     <!-- ── PANEL: VENDOR RATINGS ──────────────────────────────────────────── -->
     <div class="panel" id="panel-ratings">
       <div style="max-width:700px;">
-        <div style="margin-bottom:20px;">
-          <div style="font-size:20px;font-family:var(--fd);font-weight:900;letter-spacing:-0.02em;color:var(--text-hi);margin-bottom:4px;">Vendor Ratings</div>
-          <div style="font-size:13px;color:var(--text-lo);">Private ratings you've given to vendors who attended your markets. Vendors don't see exact scores but they contribute to their trust signal.</div>
+        <div style="display:flex;align-items:flex-start;gap:10px;padding:12px 16px;background:#2B5BA80a;border:1px solid #2B5BA818;border-radius:10px;margin-bottom:20px;">
+          <span style="font-size:14px;flex-shrink:0;margin-top:1px;">🔒</span>
+          <div style="font-size:12.5px;color:var(--text-mid);line-height:1.6;">Private ratings you've given to vendors who attended your markets. Vendors don't see exact scores but they contribute to their trust signal.</div>
         </div>
         <div id="ratings-list"><div style="text-align:center;padding:40px;color:var(--text-lo);font-size:13px;">Loading…</div></div>
       </div>
@@ -3325,6 +3361,84 @@ function renderOrgCalendar() {
   }
 }
 
+// ── Calendar subscription ────────────────────────────────────────────────────
+async function exportICal() {
+  const btn = document.getElementById('org-ical-export-btn');
+  if (btn) btn.style.opacity = '0.5';
+  try {
+    const r = await pitchFetch('/api/organiser/calendar-token', { method: 'POST' });
+    if (!r.ok) { const d = await r.json().catch(() => ({})); alert(d.error || 'Could not generate calendar link.'); return; }
+    const { url } = await r.json();
+    const webcalUrl = url.replace(/^https?:/, 'webcal:');
+    const googleUrl = 'https://calendar.google.com/calendar/r?cid=' + encodeURIComponent(webcalUrl);
+
+    document.getElementById('cal-feed-overlay')?.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'cal-feed-overlay';
+    overlay.className = 'cal-feed-overlay';
+    overlay.onclick = e => { if (e.target === overlay) overlay.remove(); };
+    overlay.innerHTML = `
+      <div class="cal-feed-modal">
+        <h3>📅 Subscribe to Calendar</h3>
+        <p>This calendar stays in sync — new events and status changes appear automatically in your calendar app.</p>
+        <div class="cal-feed-url">
+          <input type="text" value="${url}" readonly id="cal-feed-url-input" onclick="this.select()">
+          <button onclick="navigator.clipboard.writeText(document.getElementById('cal-feed-url-input').value).then(()=>{this.textContent='Copied!';setTimeout(()=>this.textContent='Copy URL',1500);})">Copy URL</button>
+        </div>
+        <div class="cal-feed-links">
+          <a href="${webcalUrl}" onclick="event.stopPropagation();">
+            <span class="icon">🍎</span>
+            <div><div style="font-weight:700;">Add to Apple Calendar</div><div style="font-size:11px;color:var(--text-lo);margin-top:2px;">Opens Calendar app directly</div></div>
+          </a>
+          <a href="${googleUrl}" target="_blank" rel="noopener" onclick="event.stopPropagation();">
+            <span class="icon">📆</span>
+            <div><div style="font-weight:700;">Add to Google Calendar</div><div style="font-size:11px;color:var(--text-lo);margin-top:2px;">Opens in a new tab</div></div>
+          </a>
+        </div>
+        <div style="font-size:12px;color:var(--text-lo);line-height:1.5;margin-bottom:14px;">
+          <strong style="color:var(--text-mid);">Outlook / Other:</strong> Copy the URL above and add it as a subscription calendar in your app's settings.
+        </div>
+        <div class="cal-feed-secondary">
+          <a onclick="event.preventDefault();document.getElementById('cal-feed-overlay').remove();downloadIcsSnapshot();">Or download a one-time .ics file instead</a>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+  } catch (e) {
+    console.error('[exportICal]', e);
+    alert('Something went wrong. Please try again.');
+  } finally {
+    if (btn) btn.style.opacity = '';
+  }
+}
+
+function downloadIcsSnapshot() {
+  if (!_orgCalEvents || !_orgCalEvents.length) { alert('No events to export.'); return; }
+  const esc = s => (s||'').replace(/\\/g,'\\\\').replace(/;/g,'\\;').replace(/,/g,'\\,').replace(/\n/g,'\\n');
+  const toD = iso => (iso||'').replace(/-/g,'');
+  const nextD = iso => { const d = new Date(iso+'T00:00:00'); d.setDate(d.getDate()+1); return d.toISOString().slice(0,10).replace(/-/g,''); };
+  const now = new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d+/,'');
+  const events = _orgCalEvents.map(e => [
+    'BEGIN:VEVENT',
+    'UID:pitch-org-' + e.id + '@onpitch.com.au',
+    'DTSTAMP:' + now,
+    'DTSTART;VALUE=DATE:' + toD(e.date_sort),
+    'DTEND;VALUE=DATE:' + (e.date_end ? nextD(e.date_end) : nextD(e.date_sort)),
+    'SUMMARY:' + esc(e.name),
+    [e.suburb,e.state].filter(Boolean).length ? 'LOCATION:' + esc([e.suburb,e.state].filter(Boolean).join(', ')) : null,
+    'DESCRIPTION:' + esc('Category: ' + (e.category||'Event') + (e.deadline ? ' | Deadline: ' + e.deadline : '')),
+    'STATUS:' + (e.status === 'published' ? 'CONFIRMED' : 'TENTATIVE'),
+    'END:VEVENT'
+  ].filter(Boolean).join('\r\n')).join('\r\n');
+  const ics = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Pitch//Events//EN\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\nX-WR-CALNAME:Pitch — My Events\r\nX-WR-TIMEZONE:Australia/Adelaide\r\n' + events + '\r\nEND:VCALENDAR';
+  const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'pitch-events.ics';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
 // ── Analytics ────────────────────────────────────────────────────────────────
 async function loadOrgAnalytics() {
   try {
@@ -3332,16 +3446,37 @@ async function loadOrgAnalytics() {
     if (!r.ok) return;
     const { stats } = await r.json();
     const grid = document.getElementById('analytics-grid');
-    if (!stats.length) { grid.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-lo);font-size:13px;">No events yet. Post your first market to see analytics here.</div>`; return; }
+    const summaryEl = document.getElementById('analytics-summary');
+    if (!stats.length) {
+      summaryEl.style.display = 'none';
+      document.querySelector('#panel-analytics [style*="By Event"]')?.style.setProperty('display','none');
+      grid.innerHTML = `<div class="analytics-empty">
+        <div class="analytics-empty-icon">📊</div>
+        <div class="analytics-empty-title">No analytics yet</div>
+        <div class="analytics-empty-sub">Post your first market and analytics will<br>appear here once vendors start applying.</div>
+        <button onclick="showPanel('new-event',null)" style="background:var(--ember);color:#fff;border:none;font-family:var(--fb);font-size:13px;font-weight:700;padding:10px 22px;border-radius:10px;cursor:pointer;transition:background 0.14s;" onmouseover="this.style.background='var(--ember-glow)'" onmouseout="this.style.background='var(--ember)'">+ Post an Event</button>
+      </div>`;
+      return;
+    }
+    // Summary totals
+    const totals = stats.reduce((a, s) => ({ events: a.events + 1, apps: a.apps + s.total_apps, approved: a.approved + s.approved, pending: a.pending + s.pending, rejected: a.rejected + (s.rejected || 0) }), { events:0, apps:0, approved:0, pending:0, rejected:0 });
+    summaryEl.style.display = '';
+    summaryEl.innerHTML = `
+      <div class="analytics-stat-card"><div class="analytics-stat-value">${totals.events}</div><div class="analytics-stat-label">Events</div></div>
+      <div class="analytics-stat-card"><div class="analytics-stat-value">${totals.apps}</div><div class="analytics-stat-label">Applications</div></div>
+      <div class="analytics-stat-card"><div class="analytics-stat-value" style="color:var(--herb);">${totals.approved}</div><div class="analytics-stat-label">Approved</div></div>
+      <div class="analytics-stat-card"><div class="analytics-stat-value" style="color:var(--gold);">${totals.pending}</div><div class="analytics-stat-label">Pending</div></div>
+    `;
     grid.innerHTML = stats.map(s => {
       const total = s.total_apps || 1;
       const approvePct = Math.round((s.approved / total) * 100);
       const pendingPct = Math.round((s.pending / total) * 100);
-      return `<div class="analytics-event-card">
+      const rejectedPct = Math.round(((s.rejected || 0) / total) * 100);
+      return `<div class="analytics-event-card" onclick="showPanel('events',null)">
         <div class="analytics-event-name">${s.name}</div>
         <div class="analytics-event-date">${_orgFmtDate(s.date_sort)} · ${s.category || '—'}</div>
         <div class="analytics-bar-row">
-          <div class="analytics-bar-label"><span>Total applications</span><span>${s.total_apps}</span></div>
+          <div class="analytics-bar-label"><span>Total Applications</span><span>${s.total_apps}</span></div>
         </div>
         <div class="analytics-bar-row">
           <div class="analytics-bar-label"><span>Approved</span><span>${s.approved}</span></div>
@@ -3351,6 +3486,10 @@ async function loadOrgAnalytics() {
           <div class="analytics-bar-label"><span>Pending</span><span>${s.pending}</span></div>
           <div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:${pendingPct}%;background:var(--gold);"></div></div>
         </div>
+        ${(s.rejected || 0) > 0 ? `<div class="analytics-bar-row">
+          <div class="analytics-bar-label"><span>Declined</span><span>${s.rejected}</span></div>
+          <div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:${rejectedPct}%;background:var(--terracotta);"></div></div>
+        </div>` : ''}
       </div>`;
     }).join('');
   } catch(e) { console.error('[analytics]', e); }
@@ -3364,13 +3503,21 @@ async function loadOrgRatings() {
     const r = await pitchFetch('/api/organiser/vendor-ratings');
     if (!r.ok) {
       const el = document.getElementById('ratings-list');
-      if (el) el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-lo);font-size:13px;">No vendor ratings yet. After a market, rate the vendors who attended.</div>';
+      if (el) el.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:56px 24px;text-align:center;">
+        <div style="font-size:44px;margin-bottom:14px;opacity:0.5;">⭐</div>
+        <div style="font-size:15px;font-weight:700;color:var(--text-hi);margin-bottom:6px;">No vendor ratings yet</div>
+        <div style="font-size:12.5px;color:var(--text-lo);line-height:1.6;max-width:300px;">After a market wraps up, come here to rate the vendors who attended. Your ratings help build trust across the platform.</div>
+      </div>';
       return;
     }
     const { ratings } = await r.json();
     const el = document.getElementById('ratings-list');
     if (!ratings.length) {
-      el.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-lo);font-size:13px;">No vendor ratings yet. After a market, rate the vendors who attended.</div>`;
+      el.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:56px 24px;text-align:center;">
+        <div style="font-size:44px;margin-bottom:14px;opacity:0.5;">⭐</div>
+        <div style="font-size:15px;font-weight:700;color:var(--text-hi);margin-bottom:6px;">No vendor ratings yet</div>
+        <div style="font-size:12.5px;color:var(--text-lo);line-height:1.6;max-width:300px;">After a market wraps up, come here to rate the vendors who attended. Your ratings help build trust across the platform.</div>
+      </div>`;
       return;
     }
     el.innerHTML = ratings.map(rt => `
