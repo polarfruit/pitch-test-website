@@ -1073,6 +1073,7 @@ app.get('/api/vendors/:userId', async (req, res) => {
 // ── API: Admin ─────────────────────────────────────────────────────────────
 
 app.get('/api/admin/vendors', requireAdmin, async (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   try {
     const { status } = req.query;
     const rows = status ? await stmts.vendorsByStatus.all(status) : await stmts.allVendors.all();
@@ -1090,6 +1091,7 @@ app.get('/api/admin/vendors', requireAdmin, async (req, res) => {
 });
 
 app.get('/api/admin/organisers', requireAdmin, async (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   const { status } = req.query;
   const rows = status ? await stmts.organisersByStatus.all(status) : await stmts.allOrganisers.all();
   res.json({ organisers: rows });
@@ -1544,6 +1546,7 @@ app.post('/api/admin/reports/:id/hide-content', requireAdmin, async (req, res) =
 });
 
 app.get('/api/admin/vendors/:userId', requireAdmin, async (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   const row = await stmts.getVendorDetail.get(req.params.userId);
   if (!row) return res.status(404).json({ error: 'Not found' });
   const { password_hash, ...safe } = row;
@@ -1551,6 +1554,7 @@ app.get('/api/admin/vendors/:userId', requireAdmin, async (req, res) => {
 });
 
 app.get('/api/admin/organisers/:userId', requireAdmin, async (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   const row = await stmts.getOrganiserDetail.get(req.params.userId);
   if (!row) return res.status(404).json({ error: 'Not found' });
   res.json({ organiser: row, user: { id: row.user_id, email: row.email, first_name: row.first_name, last_name: row.last_name, status: row.status, created_at: row.created_at } });
@@ -2625,6 +2629,7 @@ app.post('/api/admin/messages/send', requireAdmin, async (req, res) => {
 });
 
 app.get('/api/admin/users-all', requireAdmin, async (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   const { role } = req.query;
   const users = (role && role !== 'all')
     ? await stmts.usersByRole.all(role)

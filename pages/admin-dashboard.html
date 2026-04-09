@@ -2385,7 +2385,7 @@
 
   async function loadVendors() {
     try {
-      const r = await fetch('/api/admin/vendors');
+      const r = await fetch(`/api/admin/vendors?_t=${Date.now()}`);
       const { vendors } = await r.json();
       _vendorsCache = vendors;
       const filtered = _vendorStatusFilter ? _vendorsCache.filter(v => v.status === _vendorStatusFilter) : _vendorsCache;
@@ -2613,7 +2613,7 @@
 
   async function loadOrganisers() {
     try {
-      const r = await fetch('/api/admin/organisers');
+      const r = await fetch(`/api/admin/organisers?_t=${Date.now()}`);
       const { organisers } = await r.json();
       _orgsCache = organisers;
       const filtered = _orgStatusFilter ? _orgsCache.filter(o => o.status === _orgStatusFilter) : _orgsCache;
@@ -3134,9 +3134,10 @@
     _openDrawerUserId = userId; _openDrawerType = 'vendor';
     openDetailDrawer('Loading…', 'Vendor', '<div style="padding:40px;color:#6B5A4A;">Loading…</div>');
     try {
+      const _cb = `_t=${Date.now()}`;
       const [vr, pr] = await Promise.all([
-        fetch(`/api/admin/vendors/${userId}`).then(r => r.json()),
-        fetch(`/api/admin/payments/${userId}`).then(r => r.json()),
+        fetch(`/api/admin/vendors/${userId}?${_cb}`).then(r => r.json()),
+        fetch(`/api/admin/payments/${userId}?${_cb}`).then(r => r.json()),
       ]);
       if (!vr.vendor) throw new Error(vr.error || 'Vendor not found');
       const { vendor, user } = vr;
@@ -3360,9 +3361,10 @@
     _openDrawerUserId = userId; _openDrawerType = 'organiser';
     openDetailDrawer('Loading…', 'Organiser', '<div style="padding:40px;color:#6B5A4A;">Loading…</div>');
     try {
+      const _cb = `_t=${Date.now()}`;
       const [or, pr] = await Promise.all([
-        fetch(`/api/admin/organisers/${userId}`).then(r => r.json()),
-        fetch(`/api/admin/payments/${userId}`).then(r => r.json()),
+        fetch(`/api/admin/organisers/${userId}?${_cb}`).then(r => r.json()),
+        fetch(`/api/admin/payments/${userId}?${_cb}`).then(r => r.json()),
       ]);
       if (!or.organiser) throw new Error(or.error || 'Organiser not found');
       const { organiser, user } = or;
@@ -3566,9 +3568,10 @@
 
   async function loadAllUsers(roleFilter) {
     if (roleFilter) _usersRoleFilter = roleFilter;
-    const url = (_usersRoleFilter && _usersRoleFilter !== 'all') ? `/api/admin/users-all?role=${_usersRoleFilter}` : '/api/admin/users-all';
+    const _cb = `_t=${Date.now()}`;
+    const base = (_usersRoleFilter && _usersRoleFilter !== 'all') ? `/api/admin/users-all?role=${_usersRoleFilter}&${_cb}` : `/api/admin/users-all?${_cb}`;
     try {
-      const r = await fetch(url);
+      const r = await fetch(base);
       const { users } = await r.json();
       _usersCache = users;
       renderUsersTable(users);
