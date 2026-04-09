@@ -20,18 +20,31 @@ const BYPASS_AUTH = true;
 // ── Gzip all responses ──────────────────────────────────────────────────────
 app.use(compression());
 
+// ── Google Analytics (GA4) ──────────────────────────────────────────────────
+const GA_ID = process.env.GA_MEASUREMENT_ID || '';
+const _gaSnippet = GA_ID ? `<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=${GA_ID}"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${GA_ID}');</script>` : '';
+
 // ── HTML file reader ────────────────────────────────────────────────────────
 // Cache locally for performance; skip cache on Vercel and in dev so edits take effect immediately.
 const _htmlCache = new Map();
 const _isDev = !process.env.VERCEL;
 function readHtml(file) {
+  let html;
   if (_isDev || process.env.VERCEL) {
-    return fs.readFileSync(path.join(__dirname, file), 'utf8');
+    html = fs.readFileSync(path.join(__dirname, file), 'utf8');
+  } else {
+    if (!_htmlCache.has(file)) {
+      _htmlCache.set(file, fs.readFileSync(path.join(__dirname, file), 'utf8'));
+    }
+    html = _htmlCache.get(file);
   }
-  if (!_htmlCache.has(file)) {
-    _htmlCache.set(file, fs.readFileSync(path.join(__dirname, file), 'utf8'));
+  // Inject GA4 snippet into public pages (skip dashboards to avoid noise)
+  if (_gaSnippet && !file.includes('dashboard')) {
+    html = html.replace('</head>', _gaSnippet + '\n</head>');
   }
-  return _htmlCache.get(file);
+  return html;
 }
 
 // ── Simple HMAC-signed session cookie ──────────────────────────────────────
@@ -3401,6 +3414,15 @@ app.use(express.static(__dirname, {
     }
   },
 }));
+
+// ── 404 catch-all ──────────────────────────────────────────────────────────
+app.use((req, res) => {
+  // Return JSON for API requests, HTML page for everything else
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: 'Not found' });
+  }
+  res.status(404).send(readHtml('pages/404.html'));
+});
 
 // ── Start ──────────────────────────────────────────────────────────────────
 export default app;

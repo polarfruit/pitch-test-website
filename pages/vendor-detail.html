@@ -1204,7 +1204,7 @@ function applyAndReveal(v) {
   if (photos.length) {
     galleryEl.innerHTML = photos.map(function(src, i) {
       return '<div class="gallery-item" onclick="openLightbox(' + i + ')">' +
-        '<img class="gallery-img" src="' + src + '" style="object-fit:cover;width:100%;height:100%;" />' +
+        '<img class="gallery-img" src="' + src + '" alt="Vendor photo ' + (i+1) + '" style="object-fit:cover;width:100%;height:100%;" />' +
         '<div class="gallery-overlay">🔍</div>' +
       '</div>';
     }).join('');
@@ -1470,7 +1470,7 @@ function openLightbox(idx) {
   var imgEl = document.getElementById('lightbox-img');
   if (d && d.src) {
     // Real uploaded photo — show as <img>
-    imgEl.innerHTML = '<img src="' + d.src + '" style="max-width:90vw;max-height:80vh;object-fit:contain;border-radius:12px;" />';
+    imgEl.innerHTML = '<img src="' + d.src + '" alt="Vendor photo full view" style="max-width:90vw;max-height:80vh;object-fit:contain;border-radius:12px;" />';
   } else if (d) {
     imgEl.textContent = d.emoji || '';
   }
