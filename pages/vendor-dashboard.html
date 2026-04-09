@@ -6821,6 +6821,17 @@ async function loadAnalyticsData() {
     const uniqueEl = document.getElementById('analytics-views-unique');
     if (viewsEl) viewsEl.textContent = data.views.total;
     if (uniqueEl) uniqueEl.textContent = data.views.unique + ' unique visitor' + (data.views.unique !== 1 ? 's' : '');
+    var _lbl = document.getElementById('analytics-views-label');
+    if (_lbl) {
+      var _ab = document.querySelector('.van-range-btn.active');
+      var _rk = _ab ? _ab.dataset.range : null;
+      if (_rk === 'all') _lbl.textContent = 'views all time';
+      else if (_rk === '7d') _lbl.textContent = 'views in the last 7 days';
+      else if (_rk === '90d') _lbl.textContent = 'views in the last 90 days';
+      else if (_rk === 'month') _lbl.textContent = 'views this month';
+      else if (_vanFrom && _vanTo && !_ab) _lbl.textContent = 'views (custom range)';
+      else _lbl.textContent = 'views in the last 30 days';
+    }
 
     // Bar chart
     _renderBarChart('analytics-views-canvas', data.views.daily);
@@ -6983,6 +6994,10 @@ function applySubscriptionGating(plan) {
   const isStarter = plan === 'free' || !plan;
   const isPro     = plan === 'pro';
   const isGrowth  = plan === 'growth';
+
+  // ── Analytics date bar: hide for Starter ──
+  const dateBar = document.getElementById('van-date-bar');
+  if (dateBar) dateBar.style.display = isStarter ? 'none' : 'flex';
 
   // ── Starter: application usage counter on overview ──
   const usageBar = document.getElementById('starter-usage-bar');
