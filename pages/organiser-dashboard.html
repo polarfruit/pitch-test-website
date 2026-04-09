@@ -867,14 +867,14 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
             <div class="form-group"><label class="form-label">Total vendor spots</label><input class="form-input" id="ne-spots" type="number" placeholder="e.g. 20" oninput="validateSpotsInput(this)" onchange="validateSpotsInput(this)" /><div id="ne-spots-err" style="display:none;color:#C0392B;font-size:12px;margin-top:4px;font-weight:600;"></div></div>
             <div class="form-group"><label class="form-label">Standard booth size</label><input class="form-input" id="ne-booth-size" placeholder="e.g. 3m × 3m tent with 1m frontage" /></div>
           </div>
-          <div class="form-group" style="margin-bottom:24px;">
+          <div class="form-group" style="margin-bottom:0;padding-bottom:20px;border-bottom:1px solid #ffffff06;">
             <label class="form-label">Power available</label>
             <div style="display:flex;flex-direction:column;gap:10px;">
               <div class="toggle-row"><span class="toggle-label">Power available at this event</span><label class="toggle-switch"><input type="checkbox" checked id="power-toggle" onchange="document.getElementById('power-amps').style.display=this.checked?'block':'none'" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
               <div id="power-amps" style="padding-left:16px;"><div class="form-group" style="margin-bottom:0;"><label class="form-label">Amps available</label><select class="form-select" style="width:100%;max-width:300px;"><option>15A single phase</option><option>20A single phase</option><option>32A single phase</option><option>3-phase available</option></select></div></div>
             </div>
           </div>
-          <div class="form-group">
+          <div class="form-group" style="margin-top:20px;">
             <label class="form-label">Water available</label>
             <div class="toggle-row"><span class="toggle-label">Water connection available at this event</span><label class="toggle-switch"><input type="checkbox" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
           </div>
