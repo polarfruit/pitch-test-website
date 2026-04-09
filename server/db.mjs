@@ -1297,7 +1297,7 @@ export const stmts = {
   setVendorCalToken:   prepare(`UPDATE vendors SET calendar_feed_token=@token WHERE user_id=@user_id`),
 
   // vendor market history (approved apps for past events)
-  getVendorHistory:    prepare(`SELECT ea.*,e.name as event_name,e.date_sort,e.suburb,e.state,e.category,e.organiser_name FROM event_applications ea JOIN events e ON ea.event_id=e.id WHERE ea.vendor_user_id=? AND ea.status='approved' ORDER BY e.date_sort DESC`),
+  getVendorHistory:    prepare(`SELECT ea.*,e.name as event_name,e.date_sort,e.suburb,e.state,e.category,e.organiser_name,e.stall_fee_min,e.stall_fee_max FROM event_applications ea JOIN events e ON ea.event_id=e.id WHERE ea.vendor_user_id=? AND ea.status='approved' ORDER BY e.date_sort DESC`),
 
   // vendor settings
   updateVendorSettings: prepare(`UPDATE vendors SET notif_apps=@notif_apps,notif_docs=@notif_docs,notif_reviews=@notif_reviews,notif_payments=@notif_payments WHERE user_id=@user_id`),
