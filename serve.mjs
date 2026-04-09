@@ -1729,18 +1729,18 @@ app.get('/api/notifications', requireAuth, async (req, res) => {
       }
     }
 
-    // Prepend admin announcements targeted at this role
+    // Prepend unread admin announcements targeted at this role
     try {
       const audience = role === 'vendor' ? 'vendors' : role === 'organiser' ? 'organisers' : 'all';
       let planAudience = '';   // e.g. 'pro', 'growth', 'free_vendors'
       let groupAudience = '';  // 'paid' for pro/growth, '' otherwise
       if (role === 'vendor') {
-        const vr = await stmts.getVendorByUserId.get(req.session.userId).catch(() => null);
+        const vr = await stmts.getVendorByUserId.get(userId).catch(() => null);
         const plan = vr?.plan || 'free';
         planAudience = plan === 'free' ? 'free_vendors' : plan; // 'pro' or 'growth'
         groupAudience = (plan === 'pro' || plan === 'growth') ? 'paid' : '';
       }
-      const announcements = await stmts.getRecentAnnouncements.all(audience, planAudience, groupAudience);
+      const announcements = await stmts.getUnreadAnnouncements.all(audience, planAudience, groupAudience, userId);
       for (const a of announcements) {
         notifs.unshift({ id:`ann-${a.id}`, icon:'📢', iconCls:'gold',
           title: a.subject, desc: a.body,
@@ -1801,22 +1801,33 @@ app.get('/api/admin/announcements', requireAdmin, async (req, res) => {
   } catch (e) { res.json({ announcements: [] }); }
 });
 
-// ── GET /api/announcements — announcements for logged-in user's role ─────────
+// ── GET /api/announcements — unread announcements for logged-in user's role ──
 app.get('/api/announcements', requireAuth, async (req, res) => {
   try {
-    const { role } = req.session;
+    const { role, userId } = req.session;
     const audience = role === 'vendor' ? 'vendors' : role === 'organiser' ? 'organisers' : 'all';
     let planAudience = '';
     let groupAudience = '';
     if (role === 'vendor') {
-      const vr = await stmts.getVendorByUserId.get(req.session.userId).catch(() => null);
+      const vr = await stmts.getVendorByUserId.get(userId).catch(() => null);
       const plan = vr?.plan || 'free';
       planAudience = plan === 'free' ? 'free_vendors' : plan;
       groupAudience = (plan === 'pro' || plan === 'growth') ? 'paid' : '';
     }
-    const rows = await stmts.getRecentAnnouncements.all(audience, planAudience, groupAudience);
+    const rows = await stmts.getUnreadAnnouncements.all(audience, planAudience, groupAudience, userId);
     res.json({ announcements: rows });
   } catch (e) { res.json({ announcements: [] }); }
+});
+
+// ── POST /api/announcements/:id/dismiss — mark announcement as read ─────────
+app.post('/api/announcements/:id/dismiss', requireAuth, async (req, res) => {
+  try {
+    await stmts.dismissAnnouncement.run(req.session.userId, req.params.id);
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('[dismiss announcement]', e);
+    res.status(500).json({ error: 'Failed to dismiss' });
+  }
 });
 
 app.post('/api/events/:id/apply', requireAuth, async (req, res) => {

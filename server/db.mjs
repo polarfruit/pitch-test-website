@@ -802,6 +802,14 @@ await _safeExec(`INSERT OR IGNORE INTO platform_settings (key,value) VALUES ('li
 await _safeExec(`INSERT OR IGNORE INTO platform_settings (key,value) VALUES ('limit_events_per_org','50')`);
 await _safeExec(`INSERT OR IGNORE INTO platform_settings (key,value) VALUES ('limit_stalls_per_event','200')`);
 
+// ── Announcement read tracking ──────────────────────────────────────────────
+await _safeExec(`CREATE TABLE IF NOT EXISTS announcement_reads (
+  user_id         INTEGER NOT NULL,
+  announcement_id INTEGER NOT NULL,
+  read_at         DATETIME DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (user_id, announcement_id)
+)`);
+
 // ── OAuth columns on users ──────────────────────────────────────────────────
 await _safeExec(`ALTER TABLE users ADD COLUMN oauth_provider TEXT`);       // 'google' | 'apple' | null
 await _safeExec(`ALTER TABLE users ADD COLUMN oauth_sub TEXT`);            // provider's unique subject ID
@@ -1308,6 +1316,8 @@ export const stmts = {
   getAnnouncements:     prepare(`SELECT * FROM announcements ORDER BY created_at DESC LIMIT 50`),
   getAnnouncementsFor:  prepare(`SELECT * FROM announcements WHERE audience='all' OR audience=? ORDER BY created_at DESC LIMIT 20`),
   getRecentAnnouncements: prepare(`SELECT * FROM announcements WHERE (audience='all' OR audience=? OR audience=? OR audience=?) AND created_at > datetime('now','-30 days') ORDER BY created_at DESC`),
+  getUnreadAnnouncements: prepare(`SELECT a.* FROM announcements a WHERE (a.audience='all' OR a.audience=? OR a.audience=? OR a.audience=?) AND a.created_at > datetime('now','-30 days') AND a.id NOT IN (SELECT announcement_id FROM announcement_reads WHERE user_id=?) ORDER BY a.created_at DESC`),
+  dismissAnnouncement:    prepare(`INSERT OR IGNORE INTO announcement_reads (user_id, announcement_id) VALUES (?, ?)`),
 
   // menu items
   getMenuItems:       prepare(`SELECT * FROM menu_items WHERE vendor_user_id=? ORDER BY is_signature DESC, sort_order ASC, id ASC`),
