@@ -2101,11 +2101,11 @@ document.addEventListener('click', (e) => {
   if (dd && !e.target.closest('.nav-user')) dd.style.display = 'none';
 });
 
-// Auth-aware navbar — hide both states initially to prevent flash of wrong state
+// Auth-aware navbar — logged-out buttons show immediately (no delay).
+// Only swap to logged-in state if user is authenticated.
 (function() {
   const lo = document.getElementById('nav-loggedout');
   const li = document.getElementById('nav-loggedin');
-  if (lo) lo.style.visibility = 'hidden';
   fetch('/api/me').then(r => r.json()).then(d => {
     if (d.user) {
       if (lo) lo.style.display = 'none';
@@ -2121,12 +2121,8 @@ document.addEventListener('click', (e) => {
           || 'Account';
       }
       if (dashLink) dashLink.href = d.user.role === 'organiser' ? '/dashboard/organiser' : '/dashboard/vendor';
-    } else {
-      if (lo) lo.style.visibility = '';
     }
-  }).catch(() => {
-    if (lo) lo.style.visibility = '';
-  });
+  }).catch(() => {});
 })();
 
 // Smart stat formatter — always shows "+" to signal growing numbers
