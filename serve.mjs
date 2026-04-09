@@ -6,7 +6,7 @@ import bcrypt from 'bcryptjs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import db, { stmts, txSignupVendor, txSignupOrganiser, txSignupFoodie, prepare } from './server/db.mjs';
-import { sendVerificationEmail, sendVerificationSMS, sendAdminEmail, buildSuspensionEmailHtml, buildSuspensionNoticeHtml } from './server/mailer.mjs';
+import { sendVerificationEmail, sendVerificationSMS, sendAdminEmail, buildSuspensionEmailHtml, buildSuspensionNoticeHtml, buildPostEventOrgHtml, buildPostEventVendorHtml } from './server/mailer.mjs';
 import { analysePli } from './server/pli-analyser.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -228,13 +228,20 @@ async function orgInitData(user) {
 
 async function vendorInitData(user) {
   // Run all queries in parallel — avoids sequential round-trips to Turso
-  const [events, applications, unreadRow, viewsRow] = await Promise.all([
+  const [events, applications, unreadRow, viewsRow, reviews, reviewAvg] = await Promise.all([
     stmts.publishedEventsForVendor.all(user.id).catch(e => { console.error('[vendorInitData] events', e); return []; }),
     stmts.getApplicationsByVendor.all(user.id).catch(e => { console.error('[vendorInitData] applications', e); return []; }),
     stmts.getUnreadMsgCount.get(user.id, user.id, user.id).catch(e => { console.error('[vendorInitData] unread', e); return null; }),
     stmts.getProfileViews30d.get(user.id).catch(() => ({ total: 0 })),
+    stmts.getReviewsByVendor.all(user.id).catch(() => []),
+    stmts.getReviewAvg.get(user.id).catch(() => null),
   ]);
-  return { events, applications, unreadMessages: unreadRow ? Number(unreadRow.count) : 0, viewCount30d: Number(viewsRow?.total ?? 0) };
+  return {
+    events, applications,
+    unreadMessages: unreadRow ? Number(unreadRow.count) : 0,
+    viewCount30d: Number(viewsRow?.total ?? 0),
+    reviews, avgRating: reviewAvg ? Number((reviewAvg.avg || 0).toFixed(1)) : 0, totalReviews: reviewAvg ? reviewAvg.total : 0,
+  };
 }
 
 // ── Auth helpers ───────────────────────────────────────────────────────────
@@ -1065,6 +1072,72 @@ app.get('/api/events/:slug', async (req, res) => {
 const _searchAppearanceCache = new Map();
 setInterval(() => { const cutoff = Date.now() - 300000; for (const [k, t] of _searchAppearanceCache) if (t < cutoff) _searchAppearanceCache.delete(k); }, 60000);
 
+// ── Post-event completion workflow ──────────────────────────────────────────
+
+const SITE_URL = process.env.SITE_URL || 'https://onpitch.com.au';
+
+/** Detect events that have ended, mark them completed, and notify participants. */
+async function processCompletedEvents({ sendEmails = true } = {}) {
+  let processed = 0, notified = 0;
+  try {
+    const events = await stmts.getCompletableEvents.all();
+    for (const ev of events) {
+      await stmts.markEventCompleted.run(ev.id);
+      processed++;
+
+      const vendors = await stmts.getApprovedVendorsForEvent.all(ev.id);
+      if (!vendors.length) continue;
+
+      // Notify organiser
+      const orgInfo = await stmts.getEventWithOrganiser.get(ev.id);
+      if (orgInfo) {
+        const already = await stmts.hasCompletionNotif.get(ev.id, orgInfo.organiser_user_id, 'rate_prompt');
+        if (!already) {
+          let sentEmail = 0;
+          if (sendEmails && orgInfo.notif_post_event && orgInfo.org_email) {
+            try {
+              const vendorNames = vendors.map(v => v.trading_name);
+              const html = buildPostEventOrgHtml(orgInfo.org_first_name, ev.name, vendorNames, `${SITE_URL}/dashboard/organiser/ratings`);
+              await sendAdminEmail(orgInfo.org_email, `${ev.name} has wrapped up — rate your vendors`, html, `Your event "${ev.name}" has ended. Log in to rate the vendors who participated.`);
+              sentEmail = 1;
+            } catch (e) { console.error('[post-event] org email error:', e.message); }
+          }
+          await stmts.insertCompletionNotif.run({ event_id: ev.id, user_id: orgInfo.organiser_user_id, user_role: 'organiser', notif_type: 'rate_prompt', sent_via_email: sentEmail });
+          notified++;
+        }
+      }
+
+      // Notify each approved vendor
+      for (const v of vendors) {
+        const already = await stmts.hasCompletionNotif.get(ev.id, v.vendor_user_id, 'rate_prompt');
+        if (already) continue;
+        let sentEmail = 0;
+        if (sendEmails && v.notif_reviews && v.email) {
+          try {
+            const orgName = orgInfo?.org_name || 'the organiser';
+            const html = buildPostEventVendorHtml(v.trading_name, ev.name, orgName, `${SITE_URL}/dashboard/vendor/reviews`);
+            await sendAdminEmail(v.email, `How was ${ev.name}? Leave a review`, html, `You recently attended "${ev.name}". Log in to share your experience.`);
+            sentEmail = 1;
+          } catch (e) { console.error('[post-event] vendor email error:', e.message); }
+        }
+        await stmts.insertCompletionNotif.run({ event_id: ev.id, user_id: v.vendor_user_id, user_role: 'vendor', notif_type: 'rate_prompt', sent_via_email: sentEmail });
+        notified++;
+      }
+    }
+  } catch (e) { console.error('[post-event] processCompletedEvents error:', e.message); }
+  if (processed) console.log(`[post-event] Processed ${processed} events, notified ${notified} users`);
+  return { processed, notified };
+}
+
+/** Lightweight: just mark events as completed (no emails). Used in notification endpoint fallback. */
+async function markCompletedEventsLazy() {
+  try {
+    const events = await stmts.getCompletableEvents.all();
+    for (const ev of events) await stmts.markEventCompleted.run(ev.id);
+    return events.length;
+  } catch (e) { console.error('[post-event] lazy mark error:', e.message); return 0; }
+}
+
 app.get('/api/vendors', async (req, res) => {
   // Use the cached data layer
   const hit = _apiCache.get('vendors');
@@ -1766,6 +1839,35 @@ app.get('/api/notifications', requireAuth, async (req, res) => {
         }
       }
     }
+
+    // Post-event rating/review prompts (lazy detection — mark completed events without sending emails)
+    try {
+      await markCompletedEventsLazy();
+      if (role === 'vendor') {
+        const pending = await stmts.getPendingReviewsForVendor.all(userId);
+        for (const p of pending.slice(0, 5)) {
+          notifs.push({ id:`rate-${p.event_id}`, icon:'⭐', iconCls:'gold',
+            title:`How was ${p.event_name}?`,
+            desc:`Leave a review for ${p.org_name}.`,
+            time: relTime(p.completed_at), unread: true,
+            action: 'review-organiser', eventId: p.event_id, organiserId: p.organiser_user_id, orgName: p.org_name, eventName: p.event_name });
+        }
+      } else if (role === 'organiser') {
+        const pending = await stmts.getPendingRatingsForOrganiser.all(userId);
+        const byEvent = {};
+        for (const p of pending) {
+          if (!byEvent[p.event_id]) byEvent[p.event_id] = { ...p, count: 0 };
+          byEvent[p.event_id].count++;
+        }
+        for (const ev of Object.values(byEvent).slice(0, 5)) {
+          notifs.push({ id:`rate-${ev.event_id}`, icon:'⭐', iconCls:'gold',
+            title:`Rate your vendors from ${ev.event_name}`,
+            desc:`${ev.count} vendor${ev.count > 1 ? 's' : ''} awaiting your rating.`,
+            time: relTime(ev.completed_at), unread: true,
+            action: 'rate-vendors', eventId: ev.event_id });
+        }
+      }
+    } catch (e) { console.error('[post-event notifs]', e.message); }
 
     // Prepend unread admin announcements targeted at this role
     try {
@@ -3573,6 +3675,16 @@ app.get('/dashboard/organiser/*splat', serveDashboard('pages/organiser-dashboard
 app.get('/admin/login',         page('pages/admin-login.html', { skipBanner: true }));
 app.get('/admin',               requireAdminPage, page('pages/admin-dashboard.html', { skipBanner: true }));
 app.get('/admin/*splat',        requireAdminPage, page('pages/admin-dashboard.html', { skipBanner: true }));
+
+// ── Post-event cron endpoint (Vercel cron or manual trigger) ────────────────
+app.get('/api/cron/post-event', async (req, res) => {
+  const secret = process.env.CRON_SECRET;
+  if (secret && req.headers.authorization !== `Bearer ${secret}`) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+  const result = await processCompletedEvents({ sendEmails: true });
+  res.json({ ok: true, ...result });
+});
 
 // ── Google Search Console verification ─────────────────────────────────────
 app.get('/googleddb675f540d83b36.html', (req, res) => {

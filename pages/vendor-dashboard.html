@@ -1428,14 +1428,14 @@ body::before {
 
 /* ── MARKET HISTORY ───────────────────────────────────────────────────────── */
 .stat-card.no-blob::before { display:none; }
-#panel-history .stat-grid { margin-bottom:20px; }
+#panel-history .stat-grid { margin-bottom:16px; }
 #panel-history .section-sub { font-size:13px; color:var(--text-mid); line-height:1.5; }
 .history-filters {
   display:flex; align-items:center; gap:8px; margin-bottom:14px; flex-wrap:wrap;
 }
 .history-filter-btn {
-  font-family:var(--fb); font-size:12px; font-weight:600; color:var(--text-lo);
-  background:#ffffff08; border:1px solid #ffffff0c; border-radius:8px;
+  font-family:var(--fb); font-size:12px; font-weight:600; color:var(--text-mid);
+  background:#ffffff0a; border:1px solid #ffffff10; border-radius:8px;
   padding:6px 14px; cursor:pointer; transition:border-color 0.12s, color 0.12s, background 0.12s;
 }
 .history-filter-btn:hover { color:var(--text-hi); border-color:#ffffff20; background:#ffffff0e; }
@@ -1457,8 +1457,8 @@ body::before {
 .history-name { font-size:15px; font-weight:700; color:var(--text-hi); margin-bottom:3px; }
 .history-meta { font-size:12px; color:var(--text-lo); line-height:1.5; }
 .history-detail-row { display:flex; gap:16px; flex-wrap:wrap; margin-top:12px; padding-top:12px; border-top:1px solid #ffffff06; }
-.history-detail { font-size:12px; color:var(--text-mid); display:flex; align-items:center; gap:5px; }
-.history-detail-label { color:var(--text-lo); font-weight:600; }
+.history-detail { font-size:12px; color:var(--text-mid); display:flex; align-items:center; gap:5px; font-weight:400; }
+.history-detail-label { color:var(--text-lo); font-weight:700; }
 .history-cat-pill {
   display:inline-flex; font-size:10px; font-weight:700; letter-spacing:0.06em;
   padding:2px 8px; border-radius:6px; background:#ffffff08; color:var(--text-mid);
@@ -5349,9 +5349,16 @@ function starsHtml(rating, size) {
 
 async function loadReviews() {
   try {
-    const r = await pitchFetch('/api/vendor/reviews');
-    if (!r.ok) return;
-    const { reviews, avgRating, totalReviews } = await r.json();
+    // Use pre-loaded data if available, otherwise fetch
+    const init = window.__PITCH_INIT_DATA__;
+    let reviews, avgRating, totalReviews;
+    if (init && init.reviews !== undefined) {
+      reviews = init.reviews; avgRating = init.avgRating; totalReviews = init.totalReviews;
+    } else {
+      const r = await pitchFetch('/api/vendor/reviews');
+      if (!r.ok) return;
+      ({ reviews, avgRating, totalReviews } = await r.json());
+    }
 
     const heroEl = document.getElementById('rating-hero');
     const list = document.getElementById('reviews-list');
@@ -5607,8 +5614,8 @@ async function loadMarketHistory() {
       statsEl.innerHTML = `
         <div class="stat-card ember no-blob"><div class="stat-label">Total Markets</div><div class="stat-value">${history.length}</div></div>
         <div class="stat-card herb no-blob"><div class="stat-label">Attended</div><div class="stat-value">${attended.length}</div></div>
-        <div class="stat-card gold no-blob"><div class="stat-label">Avg Rating</div><div class="stat-value">${avgRating !== '—' ? '★ ' + avgRating : '<span style="font-size:14px;color:var(--text-lo);font-family:var(--fb);font-weight:600;letter-spacing:0;">N/A</span>'}</div></div>
-        <div class="stat-card slate no-blob"><div class="stat-label">Total Fees</div><div class="stat-value">${totalFees > 0 ? '$' + totalFees.toLocaleString() : '<span style="font-size:14px;color:var(--text-lo);font-family:var(--fb);font-weight:600;letter-spacing:0;">$0</span>'}</div></div>
+        <div class="stat-card gold no-blob"><div class="stat-label">Avg Rating</div><div class="stat-value" ${avgRating === '—' ? 'style="color:var(--text-lo);"' : ''}>${avgRating !== '—' ? '★ ' + avgRating : 'N/A'}</div></div>
+        <div class="stat-card slate no-blob"><div class="stat-label">Total Fees</div><div class="stat-value" ${totalFees <= 0 ? 'style="color:var(--text-lo);"' : ''}>${totalFees > 0 ? '$' + totalFees.toLocaleString() : '$0'}</div></div>
       `;
     }
 
