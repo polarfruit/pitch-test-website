@@ -533,6 +533,8 @@ body::before {
 .badge-approved   { background: #2D8B5518; color: #3DA86A; border: 1px solid #2D8B5530; }
 .badge-waitlisted { background: #C9840A18; color: #D9981A; border: 1px solid #C9840A28; }
 .badge-rejected   { background: #C0392B18; color: #D9534F; border: 1px solid #C0392B28; }
+.badge-missing    { background: #C9840A14; color: #D9981A; border: 1px solid #C9840A24; }
+.badge-uploaded   { background: #2B5BA818; color: #5B8BE8; border: 1px solid #2B5BA828; }
 
 .action-link { font-size: 12px; font-weight: 600; color: var(--ember); text-decoration: none; transition: color 0.12s; }
 .action-link:hover { color: var(--ember-glow); }
@@ -709,13 +711,15 @@ body::before {
 .btn-save:hover { background: var(--ember-glow); transform: translateY(-1px); }
 
 /* ── DOCUMENTS ───────────────────────────────────────────────────────────── */
-.doc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px; }
-@media (max-width: 1100px) { .doc-grid { grid-template-columns: 1fr; } }
+.doc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 32px; }
+@media (max-width: 1100px) and (min-width: 769px) { .doc-grid { grid-template-columns: repeat(2, 1fr); } }
 
 .doc-card {
   background: var(--char); border: 1px solid #ffffff09; border-radius: 16px; padding: 22px;
   display: flex; flex-direction: column; gap: 14px;
+  transition: border-color 0.14s ease;
 }
+.doc-card:hover { border-color: #ffffff18; }
 .doc-card.warn { border-color: #C9840A28; background: linear-gradient(to bottom, #C9840A06, var(--char)); }
 .doc-card.missing { border-color: #ffffff0a; border-style: dashed; }
 .doc-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
@@ -733,7 +737,8 @@ body::before {
 .btn-upload {
   font-family: var(--fb); font-size: 12px; font-weight: 700;
   color: var(--ember); background: var(--ember-bg); border: 1px solid #E8500A22;
-  padding: 8px 16px; border-radius: 9px; cursor: pointer; transition: all 0.14s;
+  padding: 8px 16px; border-radius: 9px; cursor: pointer;
+  transition: background 0.14s ease, border-color 0.14s ease;
   width: 100%;
 }
 .btn-upload:hover { background: #E8500A22; }
@@ -1483,7 +1488,7 @@ body::before {
 .menu-item-btn.edit:hover { background:#ffffff14; color:var(--text-hi); }
 .menu-item-btn.del { background:#C0392B18; color:var(--terra); }
 .menu-item-btn.del:hover { background:#C0392B30; }
-.menu-empty { text-align:center; padding:60px 20px; }
+.menu-empty { text-align:center; padding:20px; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:calc(100vh - 280px); }
 .menu-empty-icon { font-size:44px; margin-bottom:16px; }
 .menu-empty-title { font-family:var(--fd); font-size:18px; font-weight:900; color:var(--text-hi); margin-bottom:8px; }
 .menu-empty-desc { font-size:13px; color:var(--text-lo); line-height:1.6; max-width:340px; margin:0 auto 24px; }
@@ -2279,19 +2284,13 @@ body::before {
     <div class="panel" id="panel-menu">
       <div style="max-width:860px;">
         <!-- header -->
-        <div class="menu-header">
+        <div class="menu-header" id="menu-header">
           <div class="menu-header-left">
-            <div class="menu-header-title">My Menu</div>
             <div class="menu-header-sub" id="menu-item-count">Loading…</div>
           </div>
-          <button class="btn-add-item" onclick="openMenuModal()">
+          <button class="btn-add-item" id="menu-add-btn" onclick="openMenuModal()">
             <span style="font-size:16px;">+</span> Add item
           </button>
-        </div>
-        <!-- completeness prompt -->
-        <div class="menu-completeness" id="menu-completeness" style="display:none;">
-          <span class="mc-icon">💡</span>
-          <span class="mc-msg">Add at least 3 items with photos to complete your menu and stand out to organisers.</span>
         </div>
         <!-- drag reorder bar -->
         <div class="menu-order-bar" id="menu-order-bar" style="display:none;">
@@ -2300,11 +2299,16 @@ body::before {
         </div>
         <!-- grid -->
         <div class="menu-grid" id="menu-grid"></div>
+        <!-- completeness prompt (shown above grid when items exist but < 3 with photos) -->
+        <div class="menu-completeness" id="menu-completeness" style="display:none;">
+          <span class="mc-icon">💡</span>
+          <span class="mc-msg">Add at least 3 items with photos to complete your menu and stand out to organisers.</span>
+        </div>
         <!-- empty state -->
         <div class="menu-empty" id="menu-empty" style="display:none;">
           <div class="menu-empty-icon">🍽</div>
           <div class="menu-empty-title">No menu items yet</div>
-          <div class="menu-empty-desc">Add your dishes, snacks, drinks or products. Organisers browse menus when selecting vendors — a complete menu makes your profile stand out.</div>
+          <div class="menu-empty-desc">Organisers browse menus when selecting vendors — a complete menu makes your profile stand out.</div>
           <button class="btn-add-item" onclick="openMenuModal()"><span style="font-size:16px;">+</span> Add your first item</button>
         </div>
       </div>
@@ -4523,30 +4527,32 @@ function renderDocuments(uploadingState, uploadingKey) {
       </div>`;
     }
 
-    return `<div class="doc-card" style="background:var(--ash);border:1px solid #ffffff09;border-radius:16px;padding:20px;">
-      <div style="font-size:28px;margin-bottom:12px;">${d.icon}</div>
-      <div style="font-size:13px;font-weight:700;color:var(--text-hi);margin-bottom:4px;">${d.label}</div>
-      <div style="font-size:12px;color:var(--text-lo);margin-bottom:14px;line-height:1.5;">${d.desc}</div>
+    return `<div class="doc-card">
+      <div style="font-size:22px;">${d.icon}</div>
+      <div style="font-size:14px;font-weight:800;color:var(--text-hi);margin-bottom:2px;">${d.label}</div>
+      <div style="font-size:12px;color:var(--text-lo);line-height:1.5;">${d.desc}</div>
       ${isUploading
-        ? `<span style="font-size:12px;color:var(--text-mid);">⏳ Uploading…</span>`
+        ? `<div style="margin-top:auto;"><span style="font-size:12px;color:var(--text-mid);">⏳ Uploading…</span></div>`
         : isAnalysing
-        ? `<span style="font-size:12px;color:var(--text-mid);">🔍 Analysing document…</span>`
+        ? `<div style="margin-top:auto;"><span style="font-size:12px;color:var(--text-mid);">🔍 Analysing document…</span></div>`
         : uploaded
-          ? `<div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:10px;">
-               <span class="status-badge badge-approved" style="display:inline-flex;">✓ Uploaded</span>
+          ? `<div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px;">
+               <span class="status-badge badge-uploaded" style="display:inline-flex;">✓ Uploaded</span>
                ${viewLink}
              </div>
              ${pliPanel}
-             <div style="display:flex;gap:12px;align-items:center;margin-top:10px;">
-               <label style="cursor:pointer;font-size:11px;color:var(--text-lo);text-decoration:underline;">Replace
+             <div style="display:flex;gap:12px;align-items:center;margin-top:auto;">
+               <label style="cursor:pointer;font-size:11px;color:var(--ember);transition:color 0.12s;">Replace
                  <input type="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none;" onchange="uploadDoc('${d.key}', this)" />
                </label>
-               <button onclick="removeDoc('${d.key}')" style="background:none;border:none;font-size:11px;color:var(--terra);cursor:pointer;font-family:inherit;text-decoration:underline;padding:0;">Remove</button>
+               <button onclick="removeDoc('${d.key}')" style="background:none;border:none;font-size:11px;color:var(--terra);cursor:pointer;font-family:inherit;padding:0;transition:opacity 0.12s;">Remove</button>
              </div>`
-          : `<span class="status-badge badge-rejected" style="margin-bottom:12px;display:inline-flex;">⚠ Not uploaded</span><br>
-             <label style="cursor:pointer;font-size:12px;color:var(--ember);text-decoration:underline;">Upload file
-               <input type="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none;" onchange="uploadDoc('${d.key}', this)" />
-             </label>`
+          : `<div style="margin-top:auto;">
+               <span class="status-badge badge-missing" style="margin-bottom:12px;display:inline-flex;">⚠ Not uploaded</span><br>
+               <label class="btn-upload missing-style" style="display:inline-flex;align-items:center;justify-content:center;margin-top:4px;cursor:pointer;">Upload file
+                 <input type="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none;" onchange="uploadDoc('${d.key}', this)" />
+               </label>
+             </div>`
       }
     </div>`;
   }).join('');
@@ -5549,15 +5555,20 @@ function renderMenuGrid() {
   // completeness
   const comp = document.getElementById('menu-completeness');
   const withPhotos = _menuItems.filter(i => i.photo_url).length;
-  if (comp) comp.style.display = (count < 3 || withPhotos < 3) ? 'flex' : 'none';
+  if (comp) comp.style.display = (count > 0 && (count < 3 || withPhotos < 3)) ? 'flex' : 'none';
   // order bar
   const orderBar = document.getElementById('menu-order-bar');
   if (orderBar) orderBar.style.display = count > 1 ? 'flex' : 'none';
+  // header + add button visibility
+  const addBtn = document.getElementById('menu-add-btn');
+  const menuHeader = document.getElementById('menu-header');
+  if (addBtn) addBtn.style.display = count ? 'flex' : 'none';
+  if (menuHeader) menuHeader.style.display = count ? 'flex' : 'none';
   // empty
   const empty = document.getElementById('menu-empty');
   const grid  = document.getElementById('menu-grid');
   if (!count) {
-    if (empty) empty.style.display = 'block';
+    if (empty) empty.style.display = 'flex';
     if (grid)  grid.innerHTML = '';
     return;
   }
@@ -5920,8 +5931,12 @@ function applySubscriptionGating(plan) {
   const icalBtn = document.getElementById('ical-export-btn');
   const icalTooltip = document.getElementById('ical-tooltip');
   if (isStarter) {
-    if (icalBtn) { icalBtn.classList.add('gate-disabled'); icalBtn.style.cursor = 'not-allowed'; }
-    if (icalTooltip) icalTooltip.textContent = 'Export to calendar is available on Pro and Growth plans.';
+    if (icalBtn) {
+      icalBtn.classList.add('gate-disabled');
+      icalBtn.style.cursor = 'not-allowed';
+      icalBtn.innerHTML = '<span>🔒</span> Export to calendar <span class="gate-lock-tag">Pro</span>';
+    }
+    if (icalTooltip) icalTooltip.textContent = 'Upgrade to Pro or Growth to sync events with your calendar app.';
   }
 
   // ── PDF download button ──
