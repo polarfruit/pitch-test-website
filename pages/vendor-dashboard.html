@@ -1388,7 +1388,7 @@ body::before {
 .cal-legend { display:flex; gap:16px; margin-top:20px; padding-top:16px; border-top:1px solid #ffffff08; flex-wrap:wrap; }
 .cal-legend-item { display:flex; align-items:center; gap:6px; font-size:13px; color:var(--text-mid); }
 .cal-legend-dot { width:12px; height:12px; border-radius:4px; }
-.cal-empty-state { text-align:center; padding:48px 20px; color:var(--text-mid); font-size:14px; line-height:1.6; }
+.cal-empty-state { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:48px 20px; color:var(--text-mid); font-size:14px; line-height:1.6; background:var(--char); border-radius:14px; z-index:2; }
 .cal-empty-state a { color:var(--ember); text-decoration:none; font-weight:700; }
 .cal-empty-state a:hover { text-decoration:underline; }
 
@@ -5325,7 +5325,7 @@ function renderCalendar() {
 
   // Show/hide empty state
   const emptyEl = document.getElementById('cal-empty-state');
-  if (emptyEl) emptyEl.style.display = _calApps.length === 0 ? '' : 'none';
+  if (emptyEl) emptyEl.style.display = _calApps.length === 0 ? 'flex' : 'none';
 }
 
 // ── MARKET HISTORY ──────────────────────────────────────────────────────────
