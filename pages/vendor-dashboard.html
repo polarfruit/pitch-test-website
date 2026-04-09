@@ -938,6 +938,47 @@ body::before {
 .analytics-blurred { filter: blur(5px); user-select: none; pointer-events: none; opacity: 0.4; }
 .analytics-locked-wrap { position: relative; min-height: 140px; border-radius: 14px; overflow: hidden; }
 
+/* ── Vendor analytics date filter ── */
+.van-range-btn { background: #1C1814; border: 1px solid #2A2018; color: #A89880; font-size: 12px; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+.van-range-btn:hover { border-color: #E8500A44; color: #FDF4E7; }
+.van-range-btn.active { background: #E8500A; border-color: #E8500A; color: #fff; font-weight: 600; }
+.van-date-text { width: 96px; height: 34px; background: #1C1814; border: 1px solid #2A2018; border-radius: 6px; padding: 0 10px; font-family: inherit; font-size: 12px; color: #FDF4E7; outline: none; transition: border-color 0.14s, box-shadow 0.14s; }
+.van-date-text:focus { border-color: #E8500A40; box-shadow: 0 0 0 3px #E8500A12; }
+.van-date-text::placeholder { color: #6B5A4A; }
+.van-date-text.has-value { border-color: #E8500A40; }
+.van-cal-toggle { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; background: #1C1814; border: 1px solid #2A2018; border-radius: 6px; cursor: pointer; color: #A89880; transition: border-color 0.14s, color 0.14s, background 0.14s; }
+.van-cal-toggle:hover, .van-cal-toggle.active { border-color: #E8500A40; color: #E8500A; background: #E8500A08; }
+.van-cal-popup { display: none; position: absolute; top: calc(100% + 8px); right: 0; z-index: 500; background: #231E19; border: 1px solid #ffffff12; border-radius: 14px; padding: 18px; box-shadow: 0 24px 64px rgba(0,0,0,0.6), 0 4px 16px rgba(0,0,0,0.4); min-width: 540px; }
+.van-cal-popup.open { display: block; }
+.van-cal-inner { display: flex; gap: 20px; }
+.van-cal-month { flex: 1; min-width: 220px; }
+.van-cal-month-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.van-cal-month-name { font-family: 'Fraunces', serif; font-size: 13px; font-weight: 800; color: #FDF4E7; letter-spacing: -0.01em; }
+.van-cal-nav { background: none; border: none; cursor: pointer; color: #A89880; padding: 4px 8px; border-radius: 6px; font-size: 15px; line-height: 1; transition: color 0.12s, background 0.12s; }
+.van-cal-nav:hover { color: #FDF4E7; background: #ffffff0A; }
+.van-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.van-cal-dow { text-align: center; font-size: 10px; font-weight: 700; color: #6B5A4A; letter-spacing: 0.05em; padding-bottom: 6px; }
+.van-cal-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; color: #A89880; border-radius: 6px; cursor: pointer; border: none; background: none; font-family: 'Instrument Sans', sans-serif; transition: background 0.1s, color 0.1s; }
+.van-cal-day:hover:not(.empty) { background: #ffffff12; color: #FDF4E7; }
+.van-cal-day.empty { cursor: default; color: #6B5A4A; opacity: 0.35; pointer-events: none; }
+.van-cal-day.today { color: #E8500A; font-weight: 700; }
+.van-cal-day.start, .van-cal-day.end, .van-cal-day.hover-end { background: #E8500A; color: #fff; font-weight: 700; }
+.van-cal-day.hover-end { opacity: 0.7; }
+.van-cal-day.in-range { background: #E8500A18; color: #FDF4E7; border-radius: 0; }
+.van-cal-day.start { border-radius: 6px 0 0 6px; }
+.van-cal-day.end   { border-radius: 0 6px 6px 0; }
+.van-cal-day.start.end { border-radius: 6px; }
+.van-cal-divider { width: 1px; background: #ffffff0A; flex-shrink: 0; }
+.van-cal-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; padding-top: 12px; border-top: 1px solid #ffffff0A; }
+.van-cal-label { font-size: 12px; color: #6B5A4A; }
+.van-cal-label strong { color: #A89880; }
+.van-cal-actions { display: flex; gap: 8px; }
+.van-cal-btn-clear { font-family: inherit; font-size: 12px; font-weight: 600; background: none; border: 1px solid #ffffff12; border-radius: 6px; color: #A89880; padding: 6px 12px; cursor: pointer; transition: color 0.12s, border-color 0.12s; }
+.van-cal-btn-clear:hover { color: #FDF4E7; border-color: #ffffff25; }
+.van-cal-btn-apply { font-family: inherit; font-size: 12px; font-weight: 700; background: #E8500A; border: none; border-radius: 6px; color: #fff; padding: 6px 16px; cursor: pointer; transition: background 0.12s; }
+.van-cal-btn-apply:hover { background: #FF6B2B; }
+@media (max-width: 680px) { .van-cal-popup { min-width: calc(100vw - 48px); right: 0; left: auto; } .van-cal-inner { flex-direction: column; } .van-cal-divider { height: 1px; width: 100%; } }
+
 /* ── Danger zone */
 .danger-zone {
   border: 1px solid #C0392B22; border-radius: 14px; padding: 20px 22px;
@@ -1428,6 +1469,7 @@ body::before {
 
 /* ── MARKET HISTORY ───────────────────────────────────────────────────────── */
 .stat-card.no-blob::before { display:none; }
+.stat-card .stat-value.muted { color:var(--text-lo) !important; }
 #panel-history .stat-grid { margin-bottom:16px; }
 #panel-history .section-sub { font-size:13px; color:var(--text-mid); line-height:1.5; }
 .history-filters {
@@ -2467,6 +2509,58 @@ body::before {
     <!-- ── PANEL: ANALYTICS ──────────────────────────────────────────────── -->
     <div class="panel" id="panel-analytics">
       <div style="max-width:820px;">
+
+        <!-- Date range filter -->
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap;" id="van-date-bar">
+          <button class="van-range-btn active" data-range="30d" onclick="setVanRange('30d',this)">Last 30 days</button>
+          <button class="van-range-btn" data-range="7d" onclick="setVanRange('7d',this)">Last 7 days</button>
+          <button class="van-range-btn" data-range="90d" onclick="setVanRange('90d',this)">Last 90 days</button>
+          <button class="van-range-btn" data-range="month" onclick="setVanRange('month',this)">This month</button>
+          <button class="van-range-btn" data-range="all" onclick="setVanRange('all',this)">All time</button>
+          <span style="color:#4A3C30;margin:0 4px;">|</span>
+          <div style="display:flex;align-items:center;gap:6px;position:relative;" id="van-cal-wrap">
+            <input class="van-date-text" id="van-from-text" type="text" placeholder="Start date"
+                   oninput="vanDateInput('from', event)" onblur="vanNormDate('from')" />
+            <span style="color:#6B5A4A;font-size:12px;">&#8594;</span>
+            <input class="van-date-text" id="van-to-text" type="text" placeholder="End date"
+                   oninput="vanDateInput('to', event)" onblur="vanNormDate('to')" />
+            <button class="van-cal-toggle" id="van-cal-btn" onclick="vanToggleCal(event)" title="Open calendar">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <rect x="1.5" y="2.5" width="11" height="10" rx="2" stroke="currentColor" stroke-width="1.4"/>
+                <path d="M1.5 5.5h11M4.5 1v3M9.5 1v3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+              </svg>
+            </button>
+            <div class="van-cal-popup" id="van-cal-popup">
+              <div class="van-cal-inner">
+                <div class="van-cal-month">
+                  <div class="van-cal-month-header">
+                    <button class="van-cal-nav" onclick="vanCalPrev()">&#8249;</button>
+                    <span class="van-cal-month-name" id="van-cal-month-a"></span>
+                    <span></span>
+                  </div>
+                  <div class="van-cal-grid" id="van-cal-grid-a"></div>
+                </div>
+                <div class="van-cal-divider"></div>
+                <div class="van-cal-month">
+                  <div class="van-cal-month-header">
+                    <span></span>
+                    <span class="van-cal-month-name" id="van-cal-month-b"></span>
+                    <button class="van-cal-nav" onclick="vanCalNext()">&#8250;</button>
+                  </div>
+                  <div class="van-cal-grid" id="van-cal-grid-b"></div>
+                </div>
+              </div>
+              <div class="van-cal-footer">
+                <div class="van-cal-label" id="van-cal-label">Click a date to start</div>
+                <div class="van-cal-actions">
+                  <button class="van-cal-btn-clear" onclick="vanCalClear()">Clear</button>
+                  <button class="van-cal-btn-apply" onclick="vanCalApply()">Apply</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <span id="van-range-label" style="font-size:12px;color:#A89880;margin-left:auto;"></span>
+        </div>
 
         <!-- Profile views (Pro + Growth) -->
         <div class="analytics-section">
@@ -5653,8 +5747,8 @@ async function loadMarketHistory() {
       statsEl.innerHTML = `
         <div class="stat-card ember no-blob"><div class="stat-label">Total Markets</div><div class="stat-value">${history.length}</div></div>
         <div class="stat-card herb no-blob"><div class="stat-label">Attended</div><div class="stat-value">${attended.length}</div></div>
-        <div class="stat-card gold no-blob"><div class="stat-label">Avg Rating</div><div class="stat-value" ${avgRating === '—' ? 'style="color:var(--text-lo);"' : ''}>${avgRating !== '—' ? '★ ' + avgRating : 'N/A'}</div></div>
-        <div class="stat-card slate no-blob"><div class="stat-label">Total Fees</div><div class="stat-value" ${totalFees <= 0 ? 'style="color:var(--text-lo);"' : ''}>${totalFees > 0 ? '$' + totalFees.toLocaleString() : '$0'}</div></div>
+        <div class="stat-card gold no-blob"><div class="stat-label">Avg Rating</div><div class="stat-value${avgRating === '—' ? ' muted' : ''}">${avgRating !== '—' ? '★ ' + avgRating : 'N/A'}</div></div>
+        <div class="stat-card slate no-blob"><div class="stat-label">Total Fees</div><div class="stat-value${totalFees <= 0 ? ' muted' : ''}">${totalFees > 0 ? '$' + totalFees.toLocaleString() : '$0'}</div></div>
       `;
     }
 
@@ -6432,6 +6526,278 @@ function _renderRoleBreakdown(containerId, roles) {
   }).join('');
 }
 
+// ── Vendor analytics date range filter ────────────────────────────────────
+let _vanFrom = null, _vanTo = null;
+
+// Default to last 30 days
+(function() {
+  const today = new Date();
+  const from = new Date(today); from.setDate(from.getDate() - 29);
+  const fmt = d => d.toISOString().slice(0,10);
+  _vanFrom = fmt(from); _vanTo = fmt(today);
+})();
+
+function vanParseDate(str) {
+  str = (str||'').trim();
+  if (!str) return '';
+  var m = str.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+  if (m) {
+    var d = m[1].padStart(2,'0'), mo = m[2].padStart(2,'0'), y = m[3];
+    if (y.length === 2) y = '20' + y;
+    var iso = y + '-' + mo + '-' + d;
+    return /^\d{4}-\d{2}-\d{2}$/.test(iso) ? iso : '';
+  }
+  if (/^\d{4}-\d{2}-\d{2}$/.test(str)) return str;
+  return '';
+}
+function vanDisplayDate(iso) {
+  if (!iso) return '';
+  var p = iso.split('-');
+  return p[2] + '/' + p[1] + '/' + p[0];
+}
+function vanIso(y, m, d) {
+  return y + '-' + String(m+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+}
+
+function vanDateInput(field, e) {
+  var inp = document.getElementById('van-' + field + '-text');
+  var isDel = e && (e.inputType === 'deleteContentBackward' || e.inputType === 'deleteContentForward');
+  if (!isDel) {
+    var raw = inp.value;
+    if (raw.length === 2 && /^\d\d$/.test(raw)) inp.value = raw + '/';
+    else if (raw.length === 5 && /^\d\d\/\d\d$/.test(raw)) inp.value = raw + '/';
+  }
+  var iso = vanParseDate(inp.value);
+  inp.classList.toggle('has-value', !!iso);
+  if (iso) {
+    if (field === 'from') { _vanCalStart = iso; _vanFrom = iso; }
+    if (field === 'to')   { _vanCalEnd = iso; _vanTo = iso; }
+    if (_vanFrom && _vanTo) {
+      if (_vanFrom > _vanTo) { var tmp = _vanFrom; _vanFrom = _vanTo; _vanTo = tmp; _vanCalStart = _vanFrom; _vanCalEnd = _vanTo; }
+      document.querySelectorAll('.van-range-btn').forEach(b => b.classList.remove('active'));
+      _vanUpdateLabel();
+      _vanRefresh();
+    }
+  } else if (!inp.value.trim()) {
+    if (field === 'from') { _vanCalStart = null; _vanFrom = null; }
+    if (field === 'to')   { _vanCalEnd = null; _vanTo = null; }
+    if (!_vanFrom && !_vanTo) {
+      document.querySelectorAll('.van-range-btn').forEach(b => b.classList.remove('active'));
+      document.querySelector('.van-range-btn[data-range="30d"]').classList.add('active');
+      const today = new Date();
+      const from = new Date(today); from.setDate(from.getDate() - 29);
+      const fmt = d => d.toISOString().slice(0,10);
+      _vanFrom = fmt(from); _vanTo = fmt(today);
+      document.getElementById('van-range-label').textContent = '';
+      _vanRefresh();
+    }
+  }
+}
+function vanNormDate(field) {
+  var inp = document.getElementById('van-' + field + '-text');
+  var iso = vanParseDate(inp.value);
+  if (iso) inp.value = vanDisplayDate(iso);
+}
+function _vanUpdateLabel() {
+  if (_vanFrom && _vanTo) {
+    var f = new Date(_vanFrom + 'T00:00:00').toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'});
+    var t = new Date(_vanTo + 'T00:00:00').toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'});
+    document.getElementById('van-range-label').textContent = f + ' \u2014 ' + t;
+  } else {
+    document.getElementById('van-range-label').textContent = '';
+  }
+}
+function _vanSyncTextInputs() {
+  var fi = document.getElementById('van-from-text');
+  var ti = document.getElementById('van-to-text');
+  fi.value = vanDisplayDate(_vanFrom); fi.classList.toggle('has-value', !!_vanFrom);
+  ti.value = vanDisplayDate(_vanTo);   ti.classList.toggle('has-value', !!_vanTo);
+}
+function _vanRefresh() {
+  _analyticsLoaded = false;
+  loadAnalyticsData();
+}
+
+function setVanRange(range, btn) {
+  document.querySelectorAll('.van-range-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const today = new Date();
+  const fmt = d => d.toISOString().slice(0,10);
+  if (range === 'all') {
+    _vanFrom = null; _vanTo = null;
+    _vanCalStart = null; _vanCalEnd = null;
+    document.getElementById('van-range-label').textContent = '';
+  } else if (range === '7d') {
+    const from = new Date(today); from.setDate(from.getDate() - 6);
+    _vanFrom = fmt(from); _vanTo = fmt(today);
+  } else if (range === '30d') {
+    const from = new Date(today); from.setDate(from.getDate() - 29);
+    _vanFrom = fmt(from); _vanTo = fmt(today);
+  } else if (range === '90d') {
+    const from = new Date(today); from.setDate(from.getDate() - 89);
+    _vanFrom = fmt(from); _vanTo = fmt(today);
+  } else if (range === 'month') {
+    _vanFrom = fmt(new Date(today.getFullYear(), today.getMonth(), 1));
+    _vanTo = fmt(today);
+  }
+  _vanCalStart = _vanFrom; _vanCalEnd = _vanTo;
+  _vanSyncTextInputs();
+  _vanUpdateLabel();
+  _vanRefresh();
+}
+
+// ── Calendar popup ──
+var _vanCalVY, _vanCalVM;
+var _vanCalStart = null, _vanCalEnd = null, _vanCalHover = null;
+
+function vanCalInit() {
+  var base = _vanCalStart ? new Date(_vanCalStart + 'T00:00:00') : new Date();
+  _vanCalVY = base.getFullYear();
+  _vanCalVM = base.getMonth();
+  vanCalRender();
+}
+function vanCalRender() {
+  vanCalRenderMonth('a', _vanCalVY, _vanCalVM);
+  var nM = _vanCalVM === 11 ? 0 : _vanCalVM + 1;
+  var nY = _vanCalVM === 11 ? _vanCalVY + 1 : _vanCalVY;
+  vanCalRenderMonth('b', nY, nM);
+  vanCalUpdateLabel();
+}
+function vanCalRenderMonth(slot, year, month) {
+  var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var DAYS = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+  document.getElementById('van-cal-month-' + slot).textContent = MONTHS[month] + ' ' + year;
+  var grid = document.getElementById('van-cal-grid-' + slot);
+  var html = DAYS.map(d => '<div class="van-cal-dow">' + d + '</div>').join('');
+  var firstDay = new Date(year, month, 1).getDay();
+  var dim = new Date(year, month + 1, 0).getDate();
+  var today = vanIso(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+  for (var i = 0; i < firstDay; i++) html += '<div class="van-cal-day empty"></div>';
+  for (var d = 1; d <= dim; d++) {
+    var iso = vanIso(year, month, d);
+    var cls = ['van-cal-day'];
+    if (iso === today) cls.push('today');
+    if (_vanCalStart && iso === _vanCalStart) cls.push('start');
+    if (_vanCalEnd && iso === _vanCalEnd) cls.push('end');
+    if (_vanCalStart && _vanCalEnd && iso > _vanCalStart && iso < _vanCalEnd) cls.push('in-range');
+    html += '<button class="' + cls.join(' ') + '" data-iso="' + iso + '">' + d + '</button>';
+  }
+  grid.innerHTML = html;
+}
+function vanCalUpdateLabel() {
+  var lbl = document.getElementById('van-cal-label');
+  if (!_vanCalStart && !_vanCalEnd) lbl.innerHTML = 'Click a date to start';
+  else if (_vanCalStart && !_vanCalEnd) lbl.innerHTML = '<strong>' + vanDisplayDate(_vanCalStart) + '</strong> \u2192 pick end date';
+  else lbl.innerHTML = '<strong>' + vanDisplayDate(_vanCalStart) + '</strong> \u2192 <strong>' + vanDisplayDate(_vanCalEnd) + '</strong>';
+}
+function vanCalPrev() { if (_vanCalVM === 0) { _vanCalVM = 11; _vanCalVY--; } else _vanCalVM--; vanCalRender(); }
+function vanCalNext() { if (_vanCalVM === 11) { _vanCalVM = 0; _vanCalVY++; } else _vanCalVM++; vanCalRender(); }
+function vanCalClear() {
+  _vanCalStart = null; _vanCalEnd = null; _vanCalHover = null;
+  const today = new Date();
+  const from = new Date(today); from.setDate(from.getDate() - 29);
+  const fmt = d => d.toISOString().slice(0,10);
+  _vanFrom = fmt(from); _vanTo = fmt(today);
+  _vanSyncTextInputs();
+  document.getElementById('van-range-label').textContent = '';
+  document.getElementById('van-cal-btn').classList.remove('active');
+  document.querySelectorAll('.van-range-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.van-range-btn[data-range="30d"]').classList.add('active');
+  vanCalRender();
+  vanCloseCal();
+  _vanRefresh();
+}
+function vanCalApply() {
+  if (_vanCalStart && !_vanCalEnd) { _vanCalEnd = _vanCalStart; }
+  if (_vanCalStart) {
+    _vanFrom = _vanCalStart; _vanTo = _vanCalEnd;
+    document.querySelectorAll('.van-range-btn').forEach(b => b.classList.remove('active'));
+    _vanSyncTextInputs();
+    _vanUpdateLabel();
+    _vanRefresh();
+  }
+  vanCloseCal();
+}
+function vanToggleCal(e) {
+  e.stopPropagation();
+  var popup = document.getElementById('van-cal-popup');
+  if (popup.classList.contains('open')) { vanCloseCal(); return; }
+  if (_vanFrom) _vanCalStart = _vanFrom;
+  if (_vanTo) _vanCalEnd = _vanTo;
+  vanCalInit();
+  popup.classList.add('open');
+  document.getElementById('van-cal-btn').classList.add('active');
+}
+function vanCloseCal() {
+  document.getElementById('van-cal-popup').classList.remove('open');
+  document.getElementById('van-cal-btn').classList.remove('active');
+}
+// Delegated click + hover on vendor calendar
+(function() {
+  var popup = document.getElementById('van-cal-popup');
+  if (!popup) return;
+  popup.addEventListener('click', function(e) {
+    e.stopPropagation();
+    var day = e.target.closest('.van-cal-day');
+    if (!day || day.classList.contains('empty') || !day.dataset.iso) return;
+    var iso = day.dataset.iso;
+    if (!_vanCalStart || (_vanCalStart && _vanCalEnd)) {
+      _vanCalStart = iso; _vanCalEnd = null; _vanCalHover = null;
+      document.getElementById('van-from-text').value = vanDisplayDate(iso);
+      document.getElementById('van-from-text').classList.add('has-value');
+      document.getElementById('van-to-text').value = '';
+      document.getElementById('van-to-text').classList.remove('has-value');
+      vanCalRender();
+    } else {
+      if (iso === _vanCalStart) {
+        _vanCalStart = null; _vanCalEnd = null; _vanCalHover = null;
+        _vanSyncTextInputs();
+      } else {
+        if (iso < _vanCalStart) { _vanCalEnd = _vanCalStart; _vanCalStart = iso; }
+        else _vanCalEnd = iso;
+        _vanCalHover = null;
+        _vanSyncTextInputs();
+      }
+      vanCalRender();
+    }
+  });
+  popup.addEventListener('mouseover', function(e) {
+    if (!_vanCalStart || _vanCalEnd) return;
+    var day = e.target.closest('.van-cal-day');
+    if (!day || day.classList.contains('empty') || !day.dataset.iso) return;
+    var iso = day.dataset.iso;
+    if (iso === _vanCalHover) return;
+    _vanCalHover = iso;
+    vanCalUpdateHover();
+  });
+  popup.addEventListener('mouseleave', function() {
+    if (!_vanCalHover) return;
+    _vanCalHover = null;
+    vanCalUpdateHover();
+  });
+})();
+function vanCalUpdateHover() {
+  document.querySelectorAll('#van-cal-popup .van-cal-day[data-iso]').forEach(function(el) {
+    el.classList.remove('hover-end', 'in-range');
+    var iso = el.dataset.iso;
+    if (_vanCalStart && _vanCalEnd && iso > _vanCalStart && iso < _vanCalEnd) el.classList.add('in-range');
+    if (_vanCalStart && !_vanCalEnd && _vanCalHover && _vanCalHover !== _vanCalStart) {
+      var hMin = _vanCalHover < _vanCalStart ? _vanCalHover : _vanCalStart;
+      var hMax = _vanCalHover < _vanCalStart ? _vanCalStart : _vanCalHover;
+      if (iso > hMin && iso < hMax) el.classList.add('in-range');
+      if (iso === _vanCalHover) el.classList.add('hover-end');
+    }
+  });
+}
+// Close vendor calendar on outside click
+document.addEventListener('click', function(e) {
+  var popup = document.getElementById('van-cal-popup');
+  var btn = document.getElementById('van-cal-btn');
+  if (popup && popup.classList.contains('open') && !popup.contains(e.target) && e.target !== btn && !btn.contains(e.target)) {
+    vanCloseCal();
+  }
+});
+
 // ── Analytics: data loader ────────────────────────────────────────────────
 let _analyticsLoaded = false;
 async function loadAnalyticsData() {
@@ -6440,7 +6806,9 @@ async function loadAnalyticsData() {
   if (plan === 'free') return;
 
   try {
-    const res = await fetch('/api/vendor/analytics', {
+    let url = '/api/vendor/analytics';
+    if (_vanFrom && _vanTo) url += '?from=' + _vanFrom + '&to=' + _vanTo;
+    const res = await fetch(url, {
       headers: { 'X-Pitch-Auth': window.__PITCH_TOKEN__ }
     });
     if (!res.ok) return;
