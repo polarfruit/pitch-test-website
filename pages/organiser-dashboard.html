@@ -276,7 +276,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .step-line.done { background:#2D8B5540; }
 
 .step-panel { display:none; }
-.step-panel.active { display:block; }
+.step-panel.active { display:block; max-width:840px; }
 .step-nav { display:flex; align-items:center; justify-content:space-between; margin-top:32px; padding-top:24px; border-top:1px solid #ffffff08; }
 .btn-step-back { font-family:var(--fb); font-size:13px; font-weight:600; color:var(--text-mid);
   background:transparent; border:1px solid #ffffff10; padding:11px 22px; border-radius:10px; cursor:pointer; transition:all 0.14s; }
@@ -423,7 +423,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 }
 
 /* ── Date picker (matches events.html calendar) ───────────────────── */
-.ne-date-wrap { position:relative; display:inline-flex; align-items:flex-end; gap:6px; }
+.ne-date-wrap { position:relative; display:inline-flex; align-items:flex-end; gap:6px; background:#ffffff04; border:1px solid #ffffff08; border-radius:12px; padding:10px 12px; }
 .date-field { display:flex; flex-direction:column; gap:2px; }
 .date-field-label { font-size:10px; font-weight:700; color:var(--text-lo); letter-spacing:0.06em; text-transform:uppercase; padding-left:2px; }
 .date-text-input {
@@ -634,7 +634,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
           <div class="notif-list" id="notif-list"></div>
         </div>
       </div>
-      <button class="btn-topbar" onclick="showPanel('new-event',null)">+ Post an Event</button>
+      <button class="btn-topbar" id="topbar-post-btn" onclick="showPanel('new-event',null)">+ Post an Event</button>
     </div>
   </div>
 
@@ -792,9 +792,9 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
       <!-- Step 1: Basics -->
       <div class="step-panel active" id="step-1">
         <div class="card">
-          <div class="form-row">
+          <div class="form-row" style="grid-template-columns:2fr 1fr;">
             <div class="form-group"><label class="form-label">Event name</label><input class="form-input" id="ne-name" placeholder="e.g. Rundle Mall Night Eats" /></div>
-            <div class="form-group"><label class="form-label">Category</label><select class="form-select" id="ne-category"><option value="">Select category…</option><option>Night Market</option><option>Fair</option><option>Festival</option><option>Farmers Market</option><option>Private Event</option><option>Other</option></select></div>
+            <div class="form-group"><label class="form-label">Category</label><select class="form-select" id="ne-category" style="width:100%;"><option value="">Select category…</option><option>Night Market</option><option>Fair</option><option>Festival</option><option>Farmers Market</option><option>Private Event</option><option>Other</option></select></div>
           </div>
           <div class="form-group">
             <label class="form-label">Event date</label>
@@ -848,11 +848,12 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
             <div class="form-group"><label class="form-label">State</label><select class="form-select" id="ne-state"><option>SA</option><option>VIC</option><option>NSW</option><option>QLD</option><option>WA</option><option>TAS</option><option>ACT</option><option>NT</option></select></div>
           </div>
           <div class="form-group"><label class="form-label">Full address / Venue name</label><input class="form-input" id="ne-venue" placeholder="Street address for vendors" /></div>
+          <div style="height:1px;background:#ffffff08;margin:8px 0 20px;"></div>
           <div class="form-row">
             <div class="form-group"><label class="form-label">Expected attendance</label><input class="form-input" type="number" placeholder="e.g. 5000" /></div>
             <div class="form-group"><label class="form-label">Event website (optional)</label><input class="form-input" type="url" placeholder="https://…" /></div>
           </div>
-          <div class="form-group"><label class="form-label">Public description</label><textarea class="form-textarea" id="ne-description" placeholder="Describe your event to potential vendors — what makes it special, your audience, the vibe…" style="min-height:120px;"></textarea></div>
+          <div class="form-group"><label class="form-label">Public description</label><textarea class="form-textarea" id="ne-description" placeholder="Describe your event to potential vendors — what makes it special, your audience, the vibe…" style="min-height:80px;" maxlength="500" oninput="document.getElementById('ne-desc-count').textContent=this.value.length+'/500'"></textarea><div id="ne-desc-count" style="text-align:right;font-size:11px;color:var(--text-lo);margin-top:4px;">0/500</div></div>
           <div id="ne-error" style="display:none;margin-top:12px;padding:11px 14px;background:rgba(192,57,43,0.1);border:1px solid rgba(192,57,43,0.25);border-radius:8px;font-size:13px;color:#C0392B;"></div>
         </div>
         <div class="step-nav"><div></div><button class="btn-step-next" onclick="validateStep1()">Next: Booth specs →</button></div>
@@ -1324,6 +1325,8 @@ function showPanel(name, clickedEl, pushHistory = true) {
   }
   document.getElementById('topbar-title').textContent = PANEL_TITLES[name] || name;
   document.getElementById('topbar-subtitle').textContent = '';
+  const postBtn = document.getElementById('topbar-post-btn');
+  if (postBtn) postBtn.style.display = name === 'new-event' ? 'none' : '';
   if (pushHistory && PANEL_PATHS_ORG[name]) {
     history.pushState({ panel: name }, '', PANEL_PATHS_ORG[name]);
   }
