@@ -867,27 +867,28 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
             <div class="form-group"><label class="form-label">Total vendor spots</label><input class="form-input" id="ne-spots" type="number" placeholder="e.g. 20" oninput="validateSpotsInput(this)" onchange="validateSpotsInput(this)" /><div id="ne-spots-err" style="display:none;color:#C0392B;font-size:12px;margin-top:4px;font-weight:600;"></div></div>
             <div class="form-group"><label class="form-label">Standard booth size</label><input class="form-input" id="ne-booth-size" placeholder="e.g. 3m × 3m tent with 1m frontage" /></div>
           </div>
-          <div class="form-group">
+          <div class="form-group" style="margin-bottom:24px;">
             <label class="form-label">Power available</label>
             <div style="display:flex;flex-direction:column;gap:10px;">
               <div class="toggle-row"><span class="toggle-label">Power available at this event</span><label class="toggle-switch"><input type="checkbox" checked id="power-toggle" onchange="document.getElementById('power-amps').style.display=this.checked?'block':'none'" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
-              <div id="power-amps" style="padding-left:0;"><div class="form-group" style="margin-bottom:0;"><label class="form-label">Amps available</label><select class="form-select" style="width:100%;max-width:300px;"><option>15A single phase</option><option>20A single phase</option><option>32A single phase</option><option>3-phase available</option></select></div></div>
+              <div id="power-amps" style="padding-left:16px;"><div class="form-group" style="margin-bottom:0;"><label class="form-label">Amps available</label><select class="form-select" style="width:100%;max-width:300px;"><option>15A single phase</option><option>20A single phase</option><option>32A single phase</option><option>3-phase available</option></select></div></div>
             </div>
           </div>
           <div class="form-group">
             <label class="form-label">Water available</label>
             <div class="toggle-row"><span class="toggle-label">Water connection available at this event</span><label class="toggle-switch"><input type="checkbox" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
           </div>
-          <div style="height:1px;background:#ffffff08;margin:8px 0 20px;"></div>
+          <div style="height:1px;background:#ffffff08;margin:12px 0 20px;"></div>
           <div class="form-group">
             <label class="form-label">Booth fee range</label>
             <div class="fee-range-row">
-              <div style="position:relative;flex:1;max-width:180px;"><span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-lo);font-size:14px;">$</span><input class="fee-input" id="ne-fee-min" type="number" placeholder="Min" style="padding-left:26px;width:100%;max-width:none;" /></div>
+              <div style="position:relative;flex:1;max-width:200px;"><span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-lo);font-size:14px;">$</span><input class="fee-input" id="ne-fee-min" type="number" placeholder="Min" style="padding-left:26px;width:100%;max-width:none;" /></div>
               <span class="fee-sep">—</span>
-              <div style="position:relative;flex:1;max-width:180px;"><span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-lo);font-size:14px;">$</span><input class="fee-input" id="ne-fee-max" type="number" placeholder="Max" style="padding-left:26px;width:100%;max-width:none;" /></div>
-              <span style="font-size:12px;color:var(--text-lo);flex-shrink:0;white-space:nowrap;">GST inclusive</span>
+              <div style="position:relative;flex:1;max-width:200px;"><span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-lo);font-size:14px;">$</span><input class="fee-input" id="ne-fee-max" type="number" placeholder="Max" style="padding-left:26px;width:100%;max-width:none;" /></div>
+              <span style="font-size:11px;color:var(--text-lo);flex-shrink:0;white-space:nowrap;margin-left:2px;">GST inclusive</span>
             </div>
           </div>
+          <div style="height:1px;background:#ffffff08;margin:8px 0 20px;"></div>
           <div class="form-row">
             <div class="form-group"><label class="form-label">Setup time</label><input class="form-input" id="ne-setup-time" placeholder="e.g. 2:00pm – 4:30pm" /></div>
             <div class="form-group"><label class="form-label">Pack-down time</label><input class="form-input" id="ne-packdown-time" placeholder="e.g. 10:00pm – 11:30pm" /></div>
