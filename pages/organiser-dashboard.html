@@ -2899,18 +2899,15 @@ async function loadNotifications() {
     _notifs = data.notifications || [];
     const dot = document.getElementById('notif-dot');
     if (dot) dot.style.display = data.unreadCount > 0 ? '' : 'none';
-    // Show announcement banner for new announcements
+    // Show announcement banner for unread announcements (server filters out dismissed)
     const anns = _notifs.filter(n => n.isAnnouncement);
     if (anns.length) {
-      const lastDismissed = localStorage.getItem('pitch_ann_dismissed') || '0';
       const newest = anns.reduce((a, b) => (a.id > b.id ? a : b));
-      if (String(newest.id) !== lastDismissed) {
-        const banner = document.getElementById('ann-banner');
-        document.getElementById('ann-banner-subject').textContent = newest.title;
-        const bodySnippet = newest.desc.length > 80 ? newest.desc.slice(0, 80) + '…' : newest.desc;
-        document.getElementById('ann-banner-body').textContent = bodySnippet;
-        if (banner) banner.style.display = 'flex';
-      }
+      const banner = document.getElementById('ann-banner');
+      document.getElementById('ann-banner-subject').textContent = newest.title;
+      const bodySnippet = newest.desc.length > 80 ? newest.desc.slice(0, 80) + '…' : newest.desc;
+      document.getElementById('ann-banner-body').textContent = bodySnippet;
+      if (banner) banner.style.display = 'flex';
     }
   } catch(e) { console.error('[notifications]', e); }
 }
@@ -2919,9 +2916,9 @@ function dismissAnnBanner() {
   const banner = document.getElementById('ann-banner');
   if (banner) banner.style.display = 'none';
   const anns = (_notifs || []).filter(n => n.isAnnouncement);
-  if (anns.length) {
-    const newest = anns.reduce((a, b) => (a.id > b.id ? a : b));
-    localStorage.setItem('pitch_ann_dismissed', String(newest.id));
+  for (const a of anns) {
+    const annId = String(a.id).replace('ann-', '');
+    pitchFetch(`/api/announcements/${annId}/dismiss`, { method: 'POST' }).catch(() => {});
   }
 }
 
