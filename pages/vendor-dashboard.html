@@ -4351,13 +4351,13 @@ function renderApplicationsData(applications) {
     pending:   '<span class="status-badge badge-review">⏳ Pending</span>',
     approved:  '<span class="status-badge badge-approved">✓ Approved</span>',
     rejected:  '<span class="status-badge badge-rejected">✕ Not accepted</span>',
-    withdrawn: '<span class="status-badge" style="color:var(--text-lo);">— Withdrawn</span>',
+    withdrawn: '<span class="status-badge" style="background:#ffffff0a;color:var(--text-lo);border:1px solid #ffffff10;">↩ Withdrawn</span>',
   };
   tbody.innerHTML = applications.map(a => `
     <tr data-status="${a.status}">
       <td style="padding-left:24px;">
         <div class="td-event-name">${a.event_name}</div>
-        <div class="td-event-date">${a.date_sort || 'TBC'} · ${a.suburb || ''}${a.state ? ', ' + a.state : ''}</div>
+        <div class="td-event-date">${a.date_sort ? new Date(a.date_sort + 'T00:00').toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'}) : 'TBC'} · ${a.suburb || ''}${a.state ? ', ' + a.state : ''}</div>
       </td>
       <td>${a.category || '—'}</td>
       <td>${statusBadge[a.status] || a.status}</td>
@@ -4368,7 +4368,7 @@ function renderApplicationsData(applications) {
             ? `<button onclick="withdrawApp(${a.event_id}, this)" style="background:none;border:none;color:var(--text-lo);cursor:pointer;font-size:12px;font-family:inherit;text-decoration:underline;">Withdraw</button>`
             : `<a class="action-link" href="/events/${a.event_slug||a.event_id}" target="_blank" rel="noopener">View →</a>`
           }
-          <button onclick="startChatWithOrganiser(${a.organiser_user_id||0},'${(a.organiser_name||'Organiser').replace(/'/g,"\\'")}','${(a.event_name||'').replace(/'/g,"\\'")}',false,${a.event_id||0})" style="font-family:var(--fb);font-size:11px;font-weight:700;color:var(--ember);background:var(--ember-bg);border:1px solid #E8500A22;padding:4px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;">💬 Message</button>
+          ${a.status !== 'withdrawn' ? `<button onclick="startChatWithOrganiser(${a.organiser_user_id||0},'${(a.organiser_name||'Organiser').replace(/'/g,"\\'")}','${(a.event_name||'').replace(/'/g,"\\'")}',false,${a.event_id||0})" style="font-family:var(--fb);font-size:11px;font-weight:700;color:var(--ember);background:var(--ember-bg);border:1px solid #E8500A22;padding:4px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;">💬 Message</button>` : ''}
         </div>
       </td>
     </tr>
