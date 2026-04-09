@@ -1346,10 +1346,17 @@ body::before {
 }
 
 /* ── REVIEWS ──────────────────────────────────────────────────────────────── */
-.rating-hero { display:flex; align-items:center; gap:32px; background:var(--char); border:1px solid #ffffff08; border-radius:16px; padding:24px 28px; margin-bottom:24px; }
-.rating-big { font-family:var(--fd); font-size:56px; font-weight:900; letter-spacing:-0.04em; color:var(--text-hi); line-height:1; }
-.rating-stars-lg { font-size:22px; letter-spacing:2px; margin-bottom:4px; }
-.rating-count { font-size:13px; color:var(--text-lo); }
+.rating-hero { display:flex; align-items:center; gap:28px; background:var(--char); border:1px solid #ffffff08; border-radius:16px; padding:24px 28px; margin-bottom:24px; }
+.rating-left { display:flex; flex-direction:column; align-items:center; min-width:100px; }
+.rating-big { font-family:var(--fd); font-size:48px; font-weight:900; letter-spacing:-0.04em; color:var(--text-hi); line-height:1; margin-bottom:6px; }
+.rating-big.empty { font-size:36px; color:var(--text-lo); opacity:0.4; }
+.rating-stars-lg { font-size:20px; letter-spacing:2px; margin-bottom:4px; }
+.rating-stars-lg.empty { opacity:0.3; }
+.rating-count { font-size:12px; color:var(--text-lo); }
+.reviews-empty { display:flex; flex-direction:column; align-items:center; text-align:center; padding:56px 24px; }
+.reviews-empty-icon { font-size:44px; margin-bottom:14px; opacity:0.4; }
+.reviews-empty-title { font-size:15px; font-weight:700; color:var(--text-hi); margin-bottom:6px; }
+.reviews-empty-sub { font-size:12.5px; color:var(--text-lo); line-height:1.6; max-width:320px; }
 .review-card { background:var(--char); border:1px solid #ffffff08; border-radius:14px; padding:18px 20px; margin-bottom:12px; }
 .review-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
 .review-meta { display:flex; align-items:center; gap:10px; }
@@ -1420,15 +1427,18 @@ body::before {
 .cal-feed-secondary a:hover { text-decoration:underline; }
 
 /* ── MARKET HISTORY ───────────────────────────────────────────────────────── */
+.stat-card.no-blob::before { display:none; }
+#panel-history .stat-grid { margin-bottom:20px; }
+#panel-history .section-sub { font-size:13px; color:var(--text-mid); line-height:1.5; }
 .history-filters {
-  display:flex; align-items:center; gap:8px; margin-bottom:18px; flex-wrap:wrap;
+  display:flex; align-items:center; gap:8px; margin-bottom:14px; flex-wrap:wrap;
 }
 .history-filter-btn {
   font-family:var(--fb); font-size:12px; font-weight:600; color:var(--text-lo);
-  background:#ffffff06; border:1px solid #ffffff0a; border-radius:8px;
-  padding:6px 14px; cursor:pointer; transition:border-color 0.12s, color 0.12s;
+  background:#ffffff08; border:1px solid #ffffff0c; border-radius:8px;
+  padding:6px 14px; cursor:pointer; transition:border-color 0.12s, color 0.12s, background 0.12s;
 }
-.history-filter-btn:hover { color:var(--text-mid); border-color:#ffffff18; }
+.history-filter-btn:hover { color:var(--text-hi); border-color:#ffffff20; background:#ffffff0e; }
 .history-filter-btn.active { color:var(--ember); border-color:#E8500A30; background:#E8500A0a; }
 .history-filter-sep { width:1px; height:20px; background:#ffffff12; margin:0 4px; }
 .history-best {
@@ -1448,11 +1458,11 @@ body::before {
 .history-meta { font-size:12px; color:var(--text-lo); line-height:1.5; }
 .history-detail-row { display:flex; gap:16px; flex-wrap:wrap; margin-top:12px; padding-top:12px; border-top:1px solid #ffffff06; }
 .history-detail { font-size:12px; color:var(--text-mid); display:flex; align-items:center; gap:5px; }
-.history-detail-label { color:var(--text-lo); }
+.history-detail-label { color:var(--text-lo); font-weight:600; }
 .history-cat-pill {
   display:inline-flex; font-size:10px; font-weight:700; letter-spacing:0.06em;
   padding:2px 8px; border-radius:6px; background:#ffffff08; color:var(--text-mid);
-  text-transform:uppercase; vertical-align:middle; margin-left:6px;
+  text-transform:uppercase; vertical-align:middle; margin-right:8px;
 }
 .history-reviews { margin-top:10px; padding-top:10px; border-top:1px solid #ffffff06; }
 .history-review-item { font-size:12px; color:var(--text-mid); display:flex; gap:8px; align-items:flex-start; margin-bottom:6px; }
@@ -2364,13 +2374,13 @@ body::before {
     <div class="panel" id="panel-reviews">
       <div style="max-width:700px;">
         <div class="rating-hero" id="rating-hero">
-          <div>
-            <div class="rating-big" id="rating-avg">—</div>
-            <div class="rating-stars-lg" id="rating-stars-lg">☆☆☆☆☆</div>
+          <div class="rating-left">
+            <div class="rating-big empty" id="rating-avg">—</div>
+            <div class="rating-stars-lg empty" id="rating-stars-lg">☆☆☆☆☆</div>
             <div class="rating-count" id="rating-count">No reviews yet</div>
           </div>
           <div style="flex:1;color:var(--text-lo);font-size:13px;line-height:1.7;">
-            Consumers who visited a market where you traded can leave a review of your stall. Your average rating appears on your public profile. You can flag any review you believe is inappropriate for admin review.
+            Consumers who visited a market where you traded can leave a review of your stall. Your average rating appears on your public profile.
           </div>
         </div>
         <div id="reviews-list"><div style="text-align:center;padding:40px;color:var(--text-lo);font-size:13px;">Loading reviews…</div></div>
@@ -2455,21 +2465,35 @@ body::before {
     <div class="panel" id="panel-analytics">
       <div style="max-width:820px;">
 
-        <!-- Profile views section -->
+        <!-- Profile views (Pro + Growth) -->
         <div class="analytics-section">
           <div class="analytics-section-title">Profile views</div>
           <div class="analytics-locked-wrap gate-wrap" id="analytics-views-wrap">
             <div class="card">
-              <div style="display:flex;align-items:flex-end;gap:16px;margin-bottom:12px;">
+              <div style="display:flex;align-items:flex-end;gap:16px;margin-bottom:4px;">
                 <div style="font-family:var(--fd);font-size:48px;font-weight:900;letter-spacing:-0.04em;color:#5B8BE8;line-height:1;" id="analytics-views-count">—</div>
                 <div style="font-size:13px;color:var(--text-mid);padding-bottom:10px;" id="analytics-views-label">views in the last 30 days</div>
               </div>
-              <div class="analytics-blurred" style="height:60px;background:linear-gradient(90deg,#2B5BA820 0%,#2B5BA840 40%,#5B8BE860 70%,#2B5BA830 100%);border-radius:8px;" id="analytics-views-graph"></div>
+              <div style="font-size:12px;color:var(--text-lo);margin-bottom:14px;" id="analytics-views-unique"></div>
+              <canvas id="analytics-views-canvas" width="760" height="180" style="width:100%;height:180px;border-radius:8px;"></canvas>
+              <!-- Growth: source + role breakdown -->
+              <div id="analytics-views-extra" style="display:none;margin-top:16px;">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                  <div>
+                    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-lo);margin-bottom:8px;">Traffic source</div>
+                    <div id="analytics-views-sources"></div>
+                  </div>
+                  <div>
+                    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-lo);margin-bottom:8px;">Viewer type</div>
+                    <div id="analytics-views-roles"></div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Application analytics section -->
+        <!-- Application analytics (Pro + Growth) -->
         <div class="analytics-section">
           <div class="analytics-section-title">Application analytics</div>
           <div class="analytics-locked-wrap gate-wrap" id="analytics-apps-wrap">
@@ -2485,24 +2509,88 @@ body::before {
                 </div>
               </div>
               <div id="analytics-app-breakdown" style="display:none;"></div>
+              <div style="font-size:12px;color:var(--text-mid);margin-top:12px;" id="analytics-app-response"></div>
+              <div style="margin-top:12px;">
+                <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-lo);margin-bottom:8px;">6-month trend</div>
+                <canvas id="analytics-apps-trend-canvas" width="760" height="50" style="width:100%;height:50px;"></canvas>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Competitor insights (Growth only) -->
-        <div class="analytics-section" id="analytics-competitor-section" style="display:none;">
-          <div class="analytics-section-title">Competition insights</div>
-          <div class="card" id="analytics-competitor-wrap">
-            <div style="font-size:13px;color:var(--text-lo);text-align:center;padding:24px;line-height:1.6;" id="analytics-competitor-content">No competition data yet. As more vendors in your category apply to the same events, you'll see how you compare.</div>
+        <!-- Revenue summary (Pro + Growth) -->
+        <div class="analytics-section" id="analytics-revenue-section" style="display:none;">
+          <div class="analytics-section-title">Revenue summary</div>
+          <div class="card">
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;">
+              <div>
+                <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-lo);margin-bottom:6px;">Total earned</div>
+                <div style="font-family:var(--fd);font-size:28px;font-weight:900;color:var(--herb);" id="analytics-rev-earned">$0</div>
+              </div>
+              <div>
+                <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-lo);margin-bottom:6px;">Outstanding</div>
+                <div style="font-family:var(--fd);font-size:28px;font-weight:900;color:var(--gold);" id="analytics-rev-outstanding">$0</div>
+              </div>
+              <div>
+                <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-lo);margin-bottom:6px;">Events</div>
+                <div style="font-family:var(--fd);font-size:28px;font-weight:900;color:var(--text-hi);" id="analytics-rev-events">0</div>
+              </div>
+            </div>
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-lo);margin-bottom:8px;">Monthly revenue (6 months)</div>
+            <canvas id="analytics-rev-canvas" width="760" height="120" style="width:100%;height:120px;"></canvas>
           </div>
         </div>
 
-        <!-- Shortlist tracking (Growth only) -->
-        <div class="analytics-section" id="analytics-shortlist-section" style="display:none;">
-          <div class="analytics-section-title">Close calls</div>
-          <div class="card" id="analytics-shortlist-wrap">
-            <p style="font-size:12px;color:var(--text-mid);margin-bottom:16px;line-height:1.6;">Events where you were shortlisted but ultimately not approved — your best opportunities to learn and improve.</p>
-            <div style="font-size:13px;color:var(--text-mid);text-align:center;padding:20px;" id="analytics-shortlist-content">No shortlist data yet.</div>
+        <!-- Review trends (Pro + Growth) -->
+        <div class="analytics-section" id="analytics-reviews-section" style="display:none;">
+          <div class="analytics-section-title">Reviews &amp; ratings</div>
+          <div class="card">
+            <div style="display:flex;align-items:center;gap:20px;margin-bottom:16px;">
+              <div>
+                <div style="font-family:var(--fd);font-size:36px;font-weight:900;color:var(--gold);line-height:1;" id="analytics-review-avg">—</div>
+                <div style="font-size:11px;color:var(--text-lo);margin-top:4px;" id="analytics-review-stars"></div>
+              </div>
+              <div style="font-size:12px;color:var(--text-mid);" id="analytics-review-count">0 reviews</div>
+            </div>
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-lo);margin-bottom:8px;">Rating trend (6 months)</div>
+            <canvas id="analytics-review-canvas" width="760" height="50" style="width:100%;height:50px;"></canvas>
+          </div>
+        </div>
+
+        <!-- Search & Discovery (Growth only) -->
+        <div class="analytics-section" id="analytics-search-section" style="display:none;">
+          <div class="analytics-section-title">Search &amp; discovery</div>
+          <div class="card">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:16px;">
+              <div>
+                <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-lo);margin-bottom:6px;">Search appearances</div>
+                <div style="font-family:var(--fd);font-size:28px;font-weight:900;color:var(--slate);" id="analytics-search-count">0</div>
+              </div>
+              <div>
+                <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-lo);margin-bottom:6px;">View conversion</div>
+                <div style="font-family:var(--fd);font-size:28px;font-weight:900;color:var(--ember);" id="analytics-search-conv">0%</div>
+              </div>
+            </div>
+            <div id="analytics-funnel" style="margin-bottom:16px;"></div>
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-lo);margin-bottom:8px;">Daily appearances</div>
+            <canvas id="analytics-search-canvas" width="760" height="50" style="width:100%;height:50px;"></canvas>
+          </div>
+        </div>
+
+        <!-- Peak Hours (Growth only) -->
+        <div class="analytics-section" id="analytics-peak-section" style="display:none;">
+          <div class="analytics-section-title">Peak viewing hours</div>
+          <div class="card">
+            <div id="analytics-peak-chart" style="margin-bottom:12px;"></div>
+            <div style="font-size:12px;color:var(--text-mid);line-height:1.6;" id="analytics-peak-insight"></div>
+          </div>
+        </div>
+
+        <!-- Competition Insights (Growth only) -->
+        <div class="analytics-section" id="analytics-competitor-section" style="display:none;">
+          <div class="analytics-section-title">Competition insights</div>
+          <div class="card" id="analytics-competitor-wrap">
+            <div id="analytics-competitor-content" style="padding:4px 0;"></div>
           </div>
         </div>
 
@@ -2512,7 +2600,7 @@ body::before {
     <!-- ── PANEL: MARKET HISTORY ─────────────────────────────────────────── -->
     <div class="panel" id="panel-history">
       <div style="max-width:800px;">
-        <div class="section-head" style="margin-bottom:20px;">
+        <div class="section-head" style="margin-bottom:14px;">
           <div class="section-sub">Every market you've been approved for through Pitch. Organisers can see this on your public profile.</div>
         </div>
 
@@ -2903,6 +2991,7 @@ function showPanel(name, clickedEl, pushHistory = true) {
   if (name === 'payments') loadStallFees();
   if (name === 'calendar') loadCalendar();
   if (name === 'history')  loadMarketHistory();
+  if (name === 'analytics') loadAnalyticsData();
 
   if (name === 'messages') {
     loadAllThreads();
@@ -5264,15 +5353,23 @@ async function loadReviews() {
     if (!r.ok) return;
     const { reviews, avgRating, totalReviews } = await r.json();
 
-    document.getElementById('rating-avg').textContent = totalReviews ? avgRating.toFixed(1) : '—';
-    document.getElementById('rating-stars-lg').textContent = totalReviews ? starsHtml(avgRating) : '☆☆☆☆☆';
+    const avgEl = document.getElementById('rating-avg');
+    const starsEl = document.getElementById('rating-stars-lg');
+    avgEl.textContent = totalReviews ? avgRating.toFixed(1) : '—';
+    avgEl.classList.toggle('empty', !totalReviews);
+    starsEl.textContent = totalReviews ? starsHtml(avgRating) : '☆☆☆☆☆';
+    starsEl.classList.toggle('empty', !totalReviews);
     document.getElementById('rating-count').textContent = totalReviews
       ? `${totalReviews} review${totalReviews === 1 ? '' : 's'}`
       : 'No reviews yet';
 
     const list = document.getElementById('reviews-list');
     if (!reviews.length) {
-      list.innerHTML = `<div style="text-align:center;padding:48px 20px;color:var(--text-lo);font-size:13px;">No reviews yet. Reviews appear here after consumers visit a market where you trade.</div>`;
+      list.innerHTML = `<div class="reviews-empty">
+        <div class="reviews-empty-icon">⭐</div>
+        <div class="reviews-empty-title">No reviews yet</div>
+        <div class="reviews-empty-sub">Reviews appear here after consumers visit a market where you trade. Your average rating will show on your public profile.</div>
+      </div>`;
       return;
     }
     list.innerHTML = reviews.map(rv => `
@@ -5507,10 +5604,10 @@ async function loadMarketHistory() {
     if (statsEl) {
       statsEl.style.display = '';
       statsEl.innerHTML = `
-        <div class="stat-card ember"><div class="stat-label">Total Markets</div><div class="stat-value">${history.length}</div></div>
-        <div class="stat-card herb"><div class="stat-label">Attended</div><div class="stat-value">${attended.length}</div></div>
-        <div class="stat-card gold"><div class="stat-label">Avg Rating</div><div class="stat-value">${avgRating !== '—' ? '★ ' + avgRating : '—'}</div></div>
-        <div class="stat-card slate"><div class="stat-label">Total Fees</div><div class="stat-value">${totalFees > 0 ? '$' + totalFees.toLocaleString() : '—'}</div></div>
+        <div class="stat-card ember no-blob"><div class="stat-label">Total Markets</div><div class="stat-value">${history.length}</div></div>
+        <div class="stat-card herb no-blob"><div class="stat-label">Attended</div><div class="stat-value">${attended.length}</div></div>
+        <div class="stat-card gold no-blob"><div class="stat-label">Avg Rating</div><div class="stat-value">${avgRating !== '—' ? '★ ' + avgRating : '<span style="font-size:14px;color:var(--text-lo);font-family:var(--fb);font-weight:600;letter-spacing:0;">N/A</span>'}</div></div>
+        <div class="stat-card slate no-blob"><div class="stat-label">Total Fees</div><div class="stat-value">${totalFees > 0 ? '$' + totalFees.toLocaleString() : '<span style="font-size:14px;color:var(--text-lo);font-family:var(--fb);font-weight:600;letter-spacing:0;">$0</span>'}</div></div>
       `;
     }
 
@@ -5657,8 +5754,8 @@ function renderHistoryList() {
     return `<div class="history-card">
       <div class="history-header">
         <div>
-          <div class="history-name">${h.event_name}${catPill}</div>
-          <div class="history-meta">${h.date_sort ? _fmtDate(h.date_sort) : '—'} · ${[h.suburb, h.state].filter(Boolean).join(', ') || '—'}${daysLabel}</div>
+          <div class="history-name">${h.event_name}</div>
+          <div class="history-meta">${catPill}${h.date_sort ? _fmtDate(h.date_sort) : '—'} · ${[h.suburb, h.state].filter(Boolean).join(', ') || '—'}${daysLabel}</div>
         </div>
         <span class="status-badge ${isPast ? 'badge-approved' : 'badge-review'}" style="flex-shrink:0;">${isPast ? 'Attended' : 'Upcoming'}</span>
       </div>
@@ -6013,6 +6110,458 @@ function _gateOverlay(wrapId, { title, desc, ctaText, ctaHref }) {
   wrap.appendChild(overlay);
 }
 
+// ── Analytics: Canvas chart rendering ─────────────────────────────────────
+function _renderBarChart(canvasId, dailyData, opts = {}) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.parentElement.getBoundingClientRect();
+  const W = rect.width || 760;
+  const H = opts.height || 180;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.scale(dpr, dpr);
+
+  // Fill 30 days
+  const today = new Date();
+  const days = [];
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const key = d.toISOString().slice(0, 10);
+    const found = dailyData.find(r => r.day === key);
+    days.push({ date: d, key, value: found ? Number(found.views || found.appearances || found.total || 0) : 0 });
+  }
+
+  const padL = 36, padR = 12, padT = 16, padB = 28;
+  const chartW = W - padL - padR;
+  const chartH = H - padT - padB;
+  const barW = (chartW / 30) - 2;
+  const maxVal = Math.max(1, ...days.map(d => d.value));
+
+  // Gridlines
+  ctx.strokeStyle = '#ffffff0a';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = padT + (chartH / 4) * i;
+    ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
+    ctx.fillStyle = '#6B5A4A';
+    ctx.font = '10px "Instrument Sans", sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(Math.round(maxVal - (maxVal / 4) * i), padL - 6, y + 3);
+  }
+
+  // Bars with animation
+  const grad = ctx.createLinearGradient(0, padT + chartH, 0, padT);
+  grad.addColorStop(0, '#E8500A');
+  grad.addColorStop(1, '#FF6B2B');
+
+  let animProgress = 0;
+  const _barPositions = [];
+
+  function drawFrame() {
+    animProgress = Math.min(1, animProgress + 0.04);
+    const ease = 1 - Math.pow(1 - animProgress, 3);
+    ctx.clearRect(padL, padT, chartW + padR, chartH + padB);
+
+    // Redraw gridlines
+    ctx.strokeStyle = '#ffffff0a';
+    for (let i = 0; i <= 4; i++) {
+      const y = padT + (chartH / 4) * i;
+      ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
+    }
+
+    _barPositions.length = 0;
+    for (let i = 0; i < 30; i++) {
+      const x = padL + (chartW / 30) * i + 1;
+      const h = (days[i].value / maxVal) * chartH * ease;
+      const y = padT + chartH - h;
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.roundRect(x, y, barW, h, [2, 2, 0, 0]);
+      ctx.fill();
+      _barPositions.push({ x, y, w: barW, h, idx: i });
+
+      // X-axis labels every 5th bar
+      if (i % 5 === 0 || i === 29) {
+        ctx.fillStyle = '#6B5A4A';
+        ctx.font = '10px "Instrument Sans", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(days[i].date.getDate(), x + barW / 2, H - 8);
+      }
+    }
+    if (animProgress < 1) requestAnimationFrame(drawFrame);
+  }
+  drawFrame();
+
+  // Hover tooltip
+  let _tooltipActive = false;
+  canvas.onmousemove = (e) => {
+    const r = canvas.getBoundingClientRect();
+    const mx = e.clientX - r.left;
+    const my = e.clientY - r.top;
+    const bar = _barPositions.find(b => mx >= b.x && mx <= b.x + b.w);
+    if (!bar) { if (_tooltipActive) { drawFrame(); _tooltipActive = false; } return; }
+    _tooltipActive = true;
+    const d = days[bar.idx];
+    const label = d.date.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' });
+    const text = `${label}: ${d.value} view${d.value !== 1 ? 's' : ''}`;
+
+    // Redraw then overlay tooltip
+    animProgress = 1;
+    drawFrame();
+
+    // Highlight bar
+    ctx.fillStyle = '#FF6B2B';
+    ctx.beginPath();
+    ctx.roundRect(bar.x, bar.y, bar.w, bar.h, [2, 2, 0, 0]);
+    ctx.fill();
+
+    // Tooltip box
+    ctx.font = '11px "Instrument Sans", sans-serif';
+    const tw = ctx.measureText(text).width + 16;
+    const tx = Math.min(Math.max(bar.x + bar.w / 2 - tw / 2, 4), W - tw - 4);
+    const ty = bar.y - 30;
+    ctx.fillStyle = '#231E19';
+    ctx.strokeStyle = '#E8500A';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.roundRect(tx, ty, tw, 22, 4);
+    ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#FDF4E7';
+    ctx.textAlign = 'left';
+    ctx.fillText(text, tx + 8, ty + 15);
+  };
+  canvas.onmouseleave = () => { _tooltipActive = false; animProgress = 1; drawFrame(); };
+}
+
+function _renderSparkline(canvasId, data, color, valueKey) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas || !data.length) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.parentElement.getBoundingClientRect();
+  const W = rect.width || 760;
+  const H = 50;
+  canvas.width = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  ctx.scale(dpr, dpr);
+
+  const vals = data.map(d => Number(d[valueKey] || 0));
+  const maxV = Math.max(1, ...vals);
+  const pad = 4;
+  const stepX = (W - pad * 2) / Math.max(1, vals.length - 1);
+
+  // Area fill
+  const grad = ctx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, color + '40');
+  grad.addColorStop(1, color + '05');
+
+  ctx.beginPath();
+  ctx.moveTo(pad, H - pad);
+  vals.forEach((v, i) => {
+    const x = pad + i * stepX;
+    const y = H - pad - (v / maxV) * (H - pad * 2);
+    if (i === 0) ctx.lineTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.lineTo(pad + (vals.length - 1) * stepX, H - pad);
+  ctx.closePath();
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // Line
+  ctx.beginPath();
+  vals.forEach((v, i) => {
+    const x = pad + i * stepX;
+    const y = H - pad - (v / maxV) * (H - pad * 2);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Dots at each point
+  vals.forEach((v, i) => {
+    const x = pad + i * stepX;
+    const y = H - pad - (v / maxV) * (H - pad * 2);
+    ctx.beginPath();
+    ctx.arc(x, y, 3, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+  });
+
+  // Labels below
+  ctx.fillStyle = '#6B5A4A';
+  ctx.font = '9px "Instrument Sans", sans-serif';
+  ctx.textAlign = 'center';
+  data.forEach((d, i) => {
+    if (i === 0 || i === data.length - 1 || data.length <= 6) {
+      const x = pad + i * stepX;
+      const label = d.month ? d.month.slice(5) : (d.day || '').slice(5);
+      ctx.fillText(label, x, H - 1);
+    }
+  });
+}
+
+function _renderPeakHours(containerId, hoursData) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  const maxV = Math.max(1, ...hoursData.map(h => h.views));
+  el.innerHTML = '<div style="display:flex;align-items:flex-end;gap:2px;height:60px;">' +
+    Array.from({ length: 24 }, (_, i) => {
+      const row = hoursData.find(h => h.hour === i);
+      const v = row ? row.views : 0;
+      const pct = (v / maxV) * 100;
+      const opacity = 0.2 + (v / maxV) * 0.8;
+      return `<div style="flex:1;background:var(--ember);opacity:${opacity.toFixed(2)};height:${Math.max(4, pct)}%;border-radius:2px 2px 0 0;" title="${i}:00 — ${v} views"></div>`;
+    }).join('') +
+    '</div>' +
+    '<div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text-lo);margin-top:4px;">' +
+    '<span>12am</span><span>6am</span><span>12pm</span><span>6pm</span><span>11pm</span></div>';
+}
+
+function _renderFunnel(containerId, funnel) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  const steps = [
+    { label: 'Search appearances', value: funnel.searchAppearances, color: 'var(--slate)' },
+    { label: 'Profile views', value: funnel.profileViews, color: '#5B8BE8' },
+    { label: 'Applications', value: funnel.applicationsTotal, color: 'var(--gold)' },
+    { label: 'Accepted', value: funnel.acceptances, color: 'var(--herb)' },
+  ];
+  const maxV = Math.max(1, steps[0].value);
+  el.innerHTML = steps.map((s, i) => {
+    const pct = maxV > 0 ? (s.value / maxV) * 100 : 0;
+    const drop = i > 0 && steps[i - 1].value > 0 ? Math.round(((steps[i - 1].value - s.value) / steps[i - 1].value) * 100) : null;
+    return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+      <div style="width:110px;font-size:11px;color:var(--text-mid);text-align:right;">${s.label}</div>
+      <div style="flex:1;height:20px;background:#ffffff08;border-radius:4px;overflow:hidden;">
+        <div style="width:${pct}%;height:100%;background:${s.color};border-radius:4px;transition:width .4s;"></div>
+      </div>
+      <div style="width:50px;font-size:12px;font-weight:700;color:var(--text-hi);">${s.value}</div>
+      ${drop !== null ? `<div style="width:40px;font-size:10px;color:var(--terra);">-${drop}%</div>` : '<div style="width:40px;"></div>'}
+    </div>`;
+  }).join('');
+}
+
+function _renderSourceBreakdown(containerId, sources) {
+  const el = document.getElementById(containerId);
+  if (!el || !sources.length) { if (el) el.innerHTML = '<div style="font-size:12px;color:var(--text-lo);">No data yet</div>'; return; }
+  const total = sources.reduce((s, r) => s + r.views, 0);
+  const colors = { direct: '#5B8BE8', event_page: 'var(--herb)', vendors_list: 'var(--gold)', search: 'var(--ember)' };
+  const labels = { direct: 'Direct', event_page: 'From events', vendors_list: 'Browse page', search: 'Search' };
+  el.innerHTML = sources.map(s => {
+    const pct = total > 0 ? Math.round((s.views / total) * 100) : 0;
+    const col = colors[s.referrer] || 'var(--text-mid)';
+    return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+      <span style="width:8px;height:8px;border-radius:50%;background:${col};flex-shrink:0;"></span>
+      <span style="font-size:12px;color:var(--text-mid);flex:1;">${labels[s.referrer] || s.referrer}</span>
+      <span style="font-size:12px;font-weight:600;color:var(--text-hi);">${pct}%</span>
+    </div>`;
+  }).join('');
+}
+
+function _renderRoleBreakdown(containerId, roles) {
+  const el = document.getElementById(containerId);
+  if (!el || !roles.length) { if (el) el.innerHTML = '<div style="font-size:12px;color:var(--text-lo);">No data yet</div>'; return; }
+  const total = roles.reduce((s, r) => s + r.views, 0);
+  const labels = { organiser: 'Organisers', vendor: 'Vendors', foodie: 'Foodies', anonymous: 'Anonymous' };
+  const colors = { organiser: 'var(--herb)', vendor: 'var(--ember)', foodie: 'var(--gold)', anonymous: 'var(--text-lo)' };
+  el.innerHTML = roles.map(r => {
+    const pct = total > 0 ? Math.round((r.views / total) * 100) : 0;
+    const col = colors[r.viewer_role] || 'var(--text-mid)';
+    return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+      <span style="width:8px;height:8px;border-radius:50%;background:${col};flex-shrink:0;"></span>
+      <span style="font-size:12px;color:var(--text-mid);flex:1;">${labels[r.viewer_role] || r.viewer_role}</span>
+      <span style="font-size:12px;font-weight:600;color:var(--text-hi);">${pct}%</span>
+    </div>`;
+  }).join('');
+}
+
+// ── Analytics: data loader ────────────────────────────────────────────────
+let _analyticsLoaded = false;
+async function loadAnalyticsData() {
+  if (_analyticsLoaded) return;
+  const plan = (window.__PITCH_PROFILE__ || {}).plan || 'free';
+  if (plan === 'free') return;
+
+  try {
+    const res = await fetch('/api/vendor/analytics', {
+      headers: { 'X-Pitch-Auth': window.__PITCH_TOKEN__ }
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data.locked) return;
+    _analyticsLoaded = true;
+
+    // ── Views ──
+    const viewsEl = document.getElementById('analytics-views-count');
+    const uniqueEl = document.getElementById('analytics-views-unique');
+    if (viewsEl) viewsEl.textContent = data.views.total;
+    if (uniqueEl) uniqueEl.textContent = data.views.unique + ' unique visitor' + (data.views.unique !== 1 ? 's' : '');
+
+    // Bar chart
+    _renderBarChart('analytics-views-canvas', data.views.daily);
+
+    // Growth extras
+    if (plan === 'growth' && data.views.bySource) {
+      const extra = document.getElementById('analytics-views-extra');
+      if (extra) extra.style.display = 'block';
+      _renderSourceBreakdown('analytics-views-sources', data.views.bySource);
+      _renderRoleBreakdown('analytics-views-roles', data.views.byRole || []);
+    }
+
+    // ── Applications ──
+    const rateEl = document.getElementById('analytics-acc-rate');
+    const countEl = document.getElementById('analytics-app-count');
+    const stats = data.applications.stats || [];
+    const approved = (stats.find(s => s.status === 'approved') || {}).count || 0;
+    const totalApps = stats.filter(s => s.status !== 'withdrawn').reduce((s, r) => s + r.count, 0);
+    const rate = totalApps > 0 ? Math.round((approved / totalApps) * 100) : null;
+    if (rateEl) rateEl.textContent = rate !== null ? rate + '%' : '—';
+    if (countEl) countEl.textContent = totalApps;
+
+    // Breakdown bar
+    const breakdownEl = document.getElementById('analytics-app-breakdown');
+    if (breakdownEl && totalApps > 0) {
+      const pending = (stats.find(s => s.status === 'pending') || {}).count || 0;
+      const rejected = (stats.find(s => s.status === 'rejected') || {}).count || 0;
+      const segments = [
+        { count: approved, color: 'var(--herb)', label: 'Approved' },
+        { count: pending, color: 'var(--gold)', label: 'Pending' },
+        { count: rejected, color: 'var(--terra)', label: 'Rejected' },
+      ].filter(s => s.count > 0);
+      breakdownEl.style.display = 'block';
+      breakdownEl.innerHTML = `
+        <div style="display:flex;border-radius:6px;overflow:hidden;height:10px;margin-bottom:10px;">
+          ${segments.map(s => `<div style="flex:${s.count};background:${s.color};" title="${s.label}: ${s.count}"></div>`).join('')}
+        </div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;">
+          ${segments.map(s => `<span style="font-size:11px;color:var(--text-mid);display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;border-radius:50%;background:${s.color};"></span>${s.label} (${s.count})</span>`).join('')}
+        </div>`;
+    }
+
+    // Response time
+    const respEl = document.getElementById('analytics-app-response');
+    if (respEl && data.applications.avgResponseDays != null) {
+      respEl.textContent = `Organisers typically respond in ~${data.applications.avgResponseDays} days`;
+    }
+
+    // Apps trend sparkline
+    if (data.applications.monthly?.length) {
+      // Aggregate by month
+      const byMonth = {};
+      data.applications.monthly.forEach(r => {
+        byMonth[r.month] = (byMonth[r.month] || 0) + r.count;
+      });
+      const monthlyArr = Object.entries(byMonth).map(([month, total]) => ({ month, total }));
+      _renderSparkline('analytics-apps-trend-canvas', monthlyArr, '#2D8B55', 'total');
+    }
+
+    // ── Revenue ──
+    const revSection = document.getElementById('analytics-revenue-section');
+    if (revSection) {
+      revSection.style.display = 'block';
+      document.getElementById('analytics-rev-earned').textContent = '$' + (data.revenue.total_paid || 0).toLocaleString('en-AU', { minimumFractionDigits: 0 });
+      document.getElementById('analytics-rev-outstanding').textContent = '$' + (data.revenue.total_outstanding || 0).toLocaleString('en-AU', { minimumFractionDigits: 0 });
+      document.getElementById('analytics-rev-events').textContent = data.revenue.events_count || 0;
+      if (data.revenue.monthly?.length) {
+        _renderSparkline('analytics-rev-canvas', data.revenue.monthly, '#E8500A', 'total');
+      }
+    }
+
+    // ── Reviews ──
+    const reviewSection = document.getElementById('analytics-reviews-section');
+    if (reviewSection) {
+      reviewSection.style.display = 'block';
+      const avgEl = document.getElementById('analytics-review-avg');
+      const starsEl = document.getElementById('analytics-review-stars');
+      const cntEl = document.getElementById('analytics-review-count');
+      if (avgEl) avgEl.textContent = data.reviews.avg_rating != null ? data.reviews.avg_rating.toFixed(1) : '—';
+      if (starsEl && data.reviews.avg_rating != null) {
+        const full = Math.floor(data.reviews.avg_rating);
+        starsEl.textContent = '★'.repeat(full) + '☆'.repeat(5 - full);
+      }
+      if (cntEl) cntEl.textContent = data.reviews.total_reviews + ' review' + (data.reviews.total_reviews !== 1 ? 's' : '');
+      if (data.reviews.trend?.length) {
+        _renderSparkline('analytics-review-canvas', data.reviews.trend, '#C9840A', 'avg_rating');
+      }
+    }
+
+    // ── Growth-only sections ──
+    if (plan === 'growth') {
+      // Search & Discovery
+      if (data.search) {
+        const searchSection = document.getElementById('analytics-search-section');
+        if (searchSection) searchSection.style.display = 'block';
+        document.getElementById('analytics-search-count').textContent = data.search.appearances;
+        document.getElementById('analytics-search-conv').textContent = data.search.conversionRate + '%';
+        if (data.search.daily?.length) {
+          _renderSparkline('analytics-search-canvas', data.search.daily, '#2B5BA8', 'appearances');
+        }
+      }
+
+      // Funnel
+      if (data.funnel) {
+        _renderFunnel('analytics-funnel', data.funnel);
+      }
+
+      // Peak Hours
+      if (data.peakHours?.length) {
+        const peakSection = document.getElementById('analytics-peak-section');
+        if (peakSection) peakSection.style.display = 'block';
+        _renderPeakHours('analytics-peak-chart', data.peakHours);
+        // Find peak hour range
+        const sorted = [...data.peakHours].sort((a, b) => b.views - a.views);
+        if (sorted[0]?.views > 0) {
+          const peakH = sorted[0].hour;
+          const fmt = h => (h % 12 || 12) + (h < 12 ? 'am' : 'pm');
+          document.getElementById('analytics-peak-insight').textContent =
+            `Your profile gets the most views around ${fmt(peakH)} — keep it updated and looking sharp!`;
+        }
+      }
+
+      // Competition
+      if (data.competition) {
+        const compSection = document.getElementById('analytics-competitor-section');
+        if (compSection) compSection.style.display = 'block';
+        const c = data.competition;
+        const content = document.getElementById('analytics-competitor-content');
+        if (content) {
+          if (c.categoryCount > 1) {
+            content.innerHTML = `
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
+                <div>
+                  <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-lo);margin-bottom:6px;">Your acceptance rate</div>
+                  <div style="font-family:var(--fd);font-size:28px;font-weight:900;color:var(--herb);">${c.yourRate}%</div>
+                </div>
+                <div>
+                  <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-lo);margin-bottom:6px;">${c.primaryCuisine} category avg</div>
+                  <div style="font-family:var(--fd);font-size:28px;font-weight:900;color:var(--text-mid);">${c.categoryRate}%</div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <div style="background:${c.yourRate >= c.categoryRate ? 'var(--herb)' : 'var(--gold)'};color:#fff;font-size:12px;font-weight:700;padding:4px 10px;border-radius:20px;">
+                  #${c.yourRank} of ${c.categoryCount}
+                </div>
+                <span style="font-size:12px;color:var(--text-mid);">${c.primaryCuisine} vendors in your area</span>
+              </div>`;
+          } else {
+            content.innerHTML = '<div style="font-size:13px;color:var(--text-lo);text-align:center;padding:16px;">Not enough vendors in your category yet for comparison data.</div>';
+          }
+        }
+      }
+    }
+  } catch (e) {
+    console.error('[analytics]', e);
+  }
+}
+
 function applySubscriptionGating(plan) {
   const isStarter = plan === 'free' || !plan;
   const isPro     = plan === 'pro';
@@ -6084,12 +6633,12 @@ function applySubscriptionGating(plan) {
       card.onclick = () => window.location.href = '/pricing';
     }
   } else {
-    // Pro/Growth: if profile views is 0 or dash, show encouraging copy
+    // Pro/Growth: show real 30-day view count from init data
     const viewsVal = document.getElementById('stat-views-value');
     const viewsSub = document.getElementById('stat-views-sub');
-    if (viewsVal && (viewsVal.textContent === '—' || viewsVal.textContent === '0')) {
-      viewsSub.textContent = 'Complete your profile to boost visibility';
-    }
+    const vc = (window.__PITCH_INIT_DATA__ || {}).viewCount30d || 0;
+    if (viewsVal) viewsVal.textContent = vc;
+    if (viewsSub) viewsSub.textContent = vc > 0 ? 'views in the last 30 days' : 'Complete your profile to boost visibility';
   }
 
   // ── Recommended events label ──
@@ -6110,83 +6659,35 @@ function applySubscriptionGating(plan) {
   if (isStarter) {
     _gateOverlay('analytics-views-wrap', {
       title: 'Unlock analytics — upgrade to Pro',
-      desc: 'See how many organisers viewed your profile and track your application acceptance rate.',
+      desc: 'See how many organisers viewed your profile, track acceptance rates, revenue, and more.',
       ctaText: 'Upgrade to Pro — $29/month →',
       ctaHref: '/pricing',
     });
     _gateOverlay('analytics-apps-wrap', {
       title: 'Application analytics — Pro & Growth',
-      desc: 'Track your acceptance rate and identify where you win most often.',
+      desc: 'Track your acceptance rate, response times, and monthly trends.',
       ctaText: 'Upgrade to Pro — $29/month →',
       ctaHref: '/pricing',
     });
-  } else {
-    // Pro & Growth: populate analytics data
-    const apps = window.__PITCH_ALL_APPS__ || [];
-    const approved = apps.filter(a => a.status === 'approved').length;
-    const total = apps.filter(a => a.status !== 'withdrawn').length;
-    const rate = total > 0 ? Math.round((approved / total) * 100) : null;
-    const rateEl = document.getElementById('analytics-acc-rate');
-    const countEl = document.getElementById('analytics-app-count');
-    if (rateEl) rateEl.textContent = rate !== null ? rate + '%' : '—';
-    if (countEl) countEl.textContent = total;
-    // Application status breakdown bar
-    const breakdownEl = document.getElementById('analytics-app-breakdown');
-    if (breakdownEl && total > 0) {
-      const pending = apps.filter(a => a.status === 'pending').length;
-      const rejected = apps.filter(a => a.status === 'rejected').length;
-      const segments = [
-        { count: approved, color: 'var(--herb)', label: 'Approved' },
-        { count: pending, color: 'var(--gold)', label: 'Pending' },
-        { count: rejected, color: 'var(--terra)', label: 'Rejected' },
-      ].filter(s => s.count > 0);
-      breakdownEl.style.display = 'block';
-      breakdownEl.innerHTML = `
-        <div style="display:flex;border-radius:6px;overflow:hidden;height:10px;margin-bottom:10px;">
-          ${segments.map(s => `<div style="flex:${s.count};background:${s.color};" title="${s.label}: ${s.count}"></div>`).join('')}
-        </div>
-        <div style="display:flex;gap:16px;flex-wrap:wrap;">
-          ${segments.map(s => `<span style="font-size:11px;color:var(--text-mid);display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;border-radius:50%;background:${s.color};"></span>${s.label} (${s.count})</span>`).join('')}
-        </div>`;
-    }
-    const viewsEl = document.getElementById('analytics-views-count');
-    const viewsLabel = document.getElementById('analytics-views-label');
-    // Use real view_count from profile if available, otherwise 0
-    const viewCount = (window.__PITCH_PROFILE__ || {}).view_count || 0;
-    if (viewsEl) viewsEl.textContent = viewCount;
-
-    if (isGrowth) {
-      // Growth: show trend graph and source breakdown
-      if (viewsLabel) viewsLabel.textContent = 'views in the last 30 days — with source & trend breakdown';
-      const graph = document.getElementById('analytics-views-graph');
-      if (graph) {
-        graph.classList.remove('analytics-blurred');
-        graph.innerHTML = '<div style="display:flex;align-items:flex-end;gap:4px;height:60px;padding:0 4px;">' +
-          [30,45,38,52,60,44,38,55,68,72,58,64,70,75,80,68,72,85,90,78,82,95,88,75,82,90,100,88,92,95]
-          .map((h,i) => `<div style="flex:1;background:linear-gradient(to top,#E8500A,#FF6B2B);border-radius:3px 3px 0 0;height:${h}%;opacity:${0.5+h/200};" title="Day ${i+1}"></div>`).join('') +
-          '</div>';
-      }
-    } else {
-      // Pro: numbers only, no trend graph
-      if (viewsLabel) viewsLabel.textContent = 'views in the last 30 days';
-      const graph = document.getElementById('analytics-views-graph');
-      if (graph) { graph.classList.remove('analytics-blurred'); graph.style.display = 'none'; }
-    }
-  }
-
-  // Growth-only analytics sections
-  const compSection = document.getElementById('analytics-competitor-section');
-  const shortSection = document.getElementById('analytics-shortlist-section');
-  if (compSection) compSection.style.display = isGrowth ? 'block' : 'none';
-  if (shortSection) shortSection.style.display = isGrowth ? 'block' : 'none';
-
-  // Lock analytics sections for Starter (show as locked rather than hide)
-  if (isStarter) {
     const analyticsNavBtn = document.querySelector('.nav-link[onclick*="analytics"]');
     if (analyticsNavBtn && !analyticsNavBtn.querySelector('.nav-lock-icon')) {
       analyticsNavBtn.insertAdjacentHTML('beforeend', '<span class="nav-lock-icon">🔒</span>');
     }
+  } else {
+    // Pro/Growth: use real view count from init data for the overview stat card
+    const viewCount = (window.__PITCH_INIT_DATA__ || {}).viewCount30d || 0;
+    const viewsEl = document.getElementById('analytics-views-count');
+    if (viewsEl) viewsEl.textContent = viewCount;
+
+    // Pro: hide canvas until data loads (loadAnalyticsData will show it)
+    // Growth-only sections are shown/hidden by loadAnalyticsData based on API response
   }
+
+  // Hide all Growth-only sections initially (loadAnalyticsData reveals them for Growth)
+  ['analytics-search-section', 'analytics-peak-section', 'analytics-competitor-section'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = 'none';
+  });
 
   // ── Acceptance rate bar in applications tab ──
   const bar = document.getElementById('acceptance-rate-bar');
