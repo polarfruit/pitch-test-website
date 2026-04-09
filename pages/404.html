@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="64x64" href="/favicon.png">
+<title>Page Not Found — Pitch.</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="/fonts/fonts.css">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --ember:#E8500A;--ember-glow:#FF6B2B;--coal:#1A1612;--char:#231E19;
+  --parchment:#FDF4E7;--text-hi:#FDF4E7;--text-mid:#A89880;--text-lo:#6B5A4A;
+  --fd:'Fraunces',Georgia,serif;--fb:'Instrument Sans','Helvetica Neue',sans-serif;
+}
+html { height: 100%; }
+body {
+  background: var(--coal);
+  color: var(--text-hi);
+  font-family: var(--fb);
+  line-height: 1.5;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 24px;
+}
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 0; opacity: 0.45;
+}
+.wrap { position: relative; z-index: 1; max-width: 520px; }
+.logo {
+  font-family: var(--fd);
+  font-weight: 900;
+  font-size: 28px;
+  color: var(--text-hi);
+  text-decoration: none;
+  letter-spacing: -0.03em;
+  display: inline-block;
+  margin-bottom: 48px;
+}
+.logo .dot { color: var(--ember); }
+.code {
+  font-family: var(--fd);
+  font-weight: 900;
+  font-size: clamp(80px, 15vw, 140px);
+  line-height: 1;
+  letter-spacing: -0.04em;
+  background: linear-gradient(135deg, var(--ember) 0%, var(--ember-glow) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 16px;
+}
+h1 {
+  font-family: var(--fd);
+  font-weight: 900;
+  font-size: clamp(22px, 4vw, 32px);
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+  margin-bottom: 12px;
+}
+.desc {
+  color: var(--text-mid);
+  font-size: 15px;
+  line-height: 1.7;
+  margin-bottom: 36px;
+}
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+}
+.links a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 22px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--fb);
+  text-decoration: none;
+  transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), opacity 0.2s;
+}
+.links a:hover { transform: translateY(-1px); }
+.links a:active { transform: translateY(0); }
+.links a:focus-visible {
+  outline: 2px solid var(--ember);
+  outline-offset: 2px;
+}
+.btn-primary {
+  background: var(--ember);
+  color: #fff;
+  box-shadow: 0 2px 12px rgba(232,80,10,0.25), 0 1px 3px rgba(232,80,10,0.15);
+}
+.btn-primary:hover { background: var(--ember-glow); }
+.btn-ghost {
+  background: rgba(253,244,231,0.06);
+  color: var(--text-hi);
+  border: 1px solid rgba(253,244,231,0.1);
+}
+.btn-ghost:hover { background: rgba(253,244,231,0.1); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="/" class="logo">Pitch<span class="dot">.</span></a>
+  <div class="code">404</div>
+  <h1>This page doesn't exist</h1>
+  <p class="desc">The page you're looking for may have been moved or no longer exists. Head back to explore food vendors, events, and more.</p>
+  <div class="links">
+    <a href="/" class="btn-primary">Back to Home</a>
+    <a href="/vendors" class="btn-ghost">Browse Vendors</a>
+    <a href="/events" class="btn-ghost">Find Events</a>
+  </div>
+</div>
+</body>
+</html>
