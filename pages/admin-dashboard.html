@@ -4320,23 +4320,23 @@
         </div>` : ''}`;
 
       // ── Reviews & Quality ──
-      const rev = data.reviews || {};
-      const maxDist = Math.max(...(rev.ratingDistribution || []).map(r => r.count), 1);
+      const rvw = data.reviews || {};
+      const maxDist = Math.max(...(rvw.ratingDistribution || []).map(r => r.count), 1);
       document.getElementById('an-reviews').innerHTML = `
         <div style="display:flex;gap:16px;flex-wrap:wrap;">
-          ${_statBlock('Vendor rating', rev.vendorAvg ? rev.vendorAvg + ' ★' : '—', rev.vendorTotal + ' reviews')}
-          ${_statBlock('Organiser rating', rev.orgAvg ? rev.orgAvg + ' ★' : '—', rev.orgTotal + ' reviews')}
-          ${_statBlock('Rebook rate', rev.totalRatings > 0 ? rev.rebookRate + '%' : '—', rev.totalRatings + ' ratings')}
+          ${_statBlock('Vendor rating', rvw.vendorAvg ? rvw.vendorAvg + ' ★' : '—', rvw.vendorTotal + ' reviews')}
+          ${_statBlock('Organiser rating', rvw.orgAvg ? rvw.orgAvg + ' ★' : '—', rvw.orgTotal + ' reviews')}
+          ${_statBlock('Rebook rate', rvw.totalRatings > 0 ? rvw.rebookRate + '%' : '—', rvw.totalRatings + ' ratings')}
         </div>
         <div style="margin-top:4px;">
           <div style="font-size:11px;color:#6B5A4A;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Vendor rating distribution</div>
-          ${rev.ratingDistribution && rev.ratingDistribution.length ? rev.ratingDistribution.map(r => {
+          ${rvw.ratingDistribution && rvw.ratingDistribution.length ? rvw.ratingDistribution.map(r => {
             const stars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
             return _barRow(stars, r.count, Math.round((r.count / maxDist) * 100), r.rating >= 4 ? '#2D8B55' : r.rating >= 3 ? '#C9840A' : '#C0392B');
           }).join('') : '<div style="color:#6B5A4A;font-size:12px;">No reviews yet.</div>'}
         </div>
         <div style="margin-top:6px;font-size:12px;color:#A89880;">
-          ${rev.vendorsWithReviews} vendor${rev.vendorsWithReviews===1?'':'s'} with reviews · ${rev.vendorsNoReviews} without
+          ${rvw.vendorsWithReviews} vendor${rvw.vendorsWithReviews===1?'':'s'} with reviews · ${rvw.vendorsNoReviews} without
         </div>`;
 
       // ── Application Response ──
