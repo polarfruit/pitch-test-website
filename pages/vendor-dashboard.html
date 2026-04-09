@@ -5460,43 +5460,119 @@ async function loadMarketHistory() {
     const r = await pitchFetch('/api/vendor/history');
     if (!r.ok) return;
     const { history } = await r.json();
+    _historyData = history;
 
     const list = document.getElementById('history-list');
+    const statsEl = document.getElementById('history-stats');
+    const filtersEl = document.getElementById('history-filters');
+
     if (!history.length) {
-      list.innerHTML = `<div style="text-align:center;padding:48px 20px;color:var(--text-lo);font-size:13px;">No market history yet. Once you've been approved and attended a market, it will appear here.</div>`;
+      if (statsEl) statsEl.style.display = 'none';
+      if (filtersEl) filtersEl.style.display = 'none';
+      list.innerHTML = `<div style="text-align:center;padding:48px 20px;">
+        <div style="font-size:36px;margin-bottom:12px;opacity:0.4;">🗓</div>
+        <div style="font-size:14px;font-weight:700;color:var(--text-hi);margin-bottom:6px;">No markets yet</div>
+        <div style="font-size:12px;color:var(--text-lo);line-height:1.6;max-width:300px;margin:0 auto;">Once you've been approved and attended a market through Pitch, your history will appear here.</div>
+        <a href="#" onclick="event.preventDefault();showPanel('browse',null)" style="display:inline-block;margin-top:16px;font-size:12px;font-weight:700;color:var(--ember);text-decoration:none;">Browse events →</a>
+      </div>`;
       return;
     }
 
+    // Compute stats
     const now = new Date();
-    list.innerHTML = history.map(h => {
-      const eventDate = h.date_sort ? new Date(h.date_sort + 'T00:00:00') : null;
-      const isPast = eventDate && eventDate < now;
-      const reviewsHtml = h.reviews && h.reviews.length
-        ? `<div class="history-reviews">
-            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-lo);margin-bottom:8px;">Reviews received</div>
-            ${h.reviews.map(rv => `
-              <div class="history-review-item">
-                <span style="color:#C9840A;">${starsHtml(rv.rating)}</span>
-                <span>${rv.body || '—'}</span>
-              </div>`).join('')}
-           </div>`
-        : '';
-      return `<div class="history-card">
-        <div class="history-header">
-          <div>
-            <div class="history-name">${h.event_name}</div>
-            <div class="history-meta">${h.date_sort ? _fmtDate(h.date_sort) : '—'} · ${[h.suburb, h.state].filter(Boolean).join(', ')} · ${h.category || '—'}</div>
-          </div>
-          <span style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:6px;${isPast ? 'background:#2D8B5518;color:var(--herb);' : 'background:#C9840A18;color:var(--gold);'}">${isPast ? 'Attended' : 'Upcoming'}</span>
-        </div>
-        ${reviewsHtml}
-      </div>`;
-    }).join('');
+    const attended = history.filter(h => h.date_sort && new Date(h.date_sort + 'T00:00:00') < now);
+    const upcoming = history.filter(h => !h.date_sort || new Date(h.date_sort + 'T00:00:00') >= now);
+    const allReviews = history.flatMap(h => h.reviews || []);
+    const avgRating = allReviews.length
+      ? (allReviews.reduce((s, rv) => s + (rv.rating || 0), 0) / allReviews.length).toFixed(1)
+      : '—';
+    const uniqueLocations = new Set(history.map(h => [h.suburb, h.state].filter(Boolean).join(', ')).filter(Boolean));
+
+    if (statsEl) {
+      statsEl.style.display = '';
+      statsEl.innerHTML = `
+        <div class="history-stat"><div class="history-stat-val">${history.length}</div><div class="history-stat-label">Total Markets</div></div>
+        <div class="history-stat"><div class="history-stat-val">${attended.length}</div><div class="history-stat-label">Attended</div></div>
+        <div class="history-stat"><div class="history-stat-val">${avgRating !== '—' ? '★ ' + avgRating : '—'}</div><div class="history-stat-label">Avg Rating</div></div>
+        <div class="history-stat"><div class="history-stat-val">${uniqueLocations.size}</div><div class="history-stat-label">Locations</div></div>
+      `;
+    }
+
+    // Wire up filter buttons
+    if (filtersEl) {
+      filtersEl.style.display = '';
+      filtersEl.querySelectorAll('.history-filter-btn').forEach(btn => {
+        btn.onclick = () => {
+          filtersEl.querySelectorAll('.history-filter-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          _historyFilter = btn.dataset.filter;
+          renderHistoryList();
+        };
+      });
+    }
+
+    renderHistoryList();
   } catch(e) {
     console.error('[history]', e);
     const list = document.getElementById('history-list');
     if (list) list.innerHTML = '<div style="text-align:center;padding:48px 20px;color:var(--text-lo);font-size:13px;">Could not load market history.</div>';
   }
+}
+
+function renderHistoryList() {
+  const list = document.getElementById('history-list');
+  if (!list) return;
+  const now = new Date();
+
+  const filtered = _historyData.filter(h => {
+    const eventDate = h.date_sort ? new Date(h.date_sort + 'T00:00:00') : null;
+    const isPast = eventDate && eventDate < now;
+    if (_historyFilter === 'attended') return isPast;
+    if (_historyFilter === 'upcoming') return !isPast;
+    return true;
+  });
+
+  if (!filtered.length) {
+    list.innerHTML = `<div style="text-align:center;padding:32px 20px;color:var(--text-lo);font-size:13px;">No ${_historyFilter === 'all' ? '' : _historyFilter + ' '}markets to show.</div>`;
+    return;
+  }
+
+  list.innerHTML = filtered.map(h => {
+    const eventDate = h.date_sort ? new Date(h.date_sort + 'T00:00:00') : null;
+    const isPast = eventDate && eventDate < now;
+
+    const reviewsHtml = h.reviews && h.reviews.length
+      ? `<div class="history-reviews">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:var(--text-lo);margin-bottom:8px;">Reviews received</div>
+          ${h.reviews.map(rv => `
+            <div class="history-review-item">
+              <span style="color:#C9840A;">${starsHtml(rv.rating)}</span>
+              <span>${rv.body || '—'}</span>
+            </div>`).join('')}
+         </div>`
+      : '';
+
+    const details = [];
+    if (h.category) details.push(`<span class="history-detail"><span class="history-detail-label">Type:</span> ${h.category}</span>`);
+    if (h.organiser_name) details.push(`<span class="history-detail"><span class="history-detail-label">Organiser:</span> ${h.organiser_name}</span>`);
+    const fee = h.stall_fee_min && h.stall_fee_max && h.stall_fee_min !== h.stall_fee_max
+      ? `$${h.stall_fee_min}–$${h.stall_fee_max}`
+      : h.stall_fee_min ? `$${h.stall_fee_min}` : h.stall_fee_max ? `$${h.stall_fee_max}` : null;
+    if (fee) details.push(`<span class="history-detail"><span class="history-detail-label">Fee:</span> ${fee}</span>`);
+    const detailsHtml = details.length ? `<div class="history-detail-row">${details.join('')}</div>` : '';
+
+    return `<div class="history-card">
+      <div class="history-header">
+        <div>
+          <div class="history-name">${h.event_name}</div>
+          <div class="history-meta">${h.date_sort ? _fmtDate(h.date_sort) : '—'} · ${[h.suburb, h.state].filter(Boolean).join(', ') || '—'}</div>
+        </div>
+        <span class="status-badge ${isPast ? 'badge-approved' : 'badge-review'}" style="flex-shrink:0;">${isPast ? 'Attended' : 'Upcoming'}</span>
+      </div>
+      ${detailsHtml}
+      ${reviewsHtml}
+    </div>`;
+  }).join('');
 }
 
 // ── SETTINGS ────────────────────────────────────────────────────────────────
