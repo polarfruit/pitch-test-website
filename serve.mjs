@@ -3258,6 +3258,11 @@ app.get('/admin/login',         page('pages/admin-login.html', { skipBanner: tru
 app.get('/admin',               requireAdminPage, page('pages/admin-dashboard.html', { skipBanner: true }));
 app.get('/admin/*splat',        requireAdminPage, page('pages/admin-dashboard.html', { skipBanner: true }));
 
+// ── Google Search Console verification ─────────────────────────────────────
+app.get('/googleddb675f540d83b36.html', (req, res) => {
+  res.type('text/html').send('google-site-verification: googleddb675f540d83b36.html');
+});
+
 // ── SEO: robots.txt & sitemap.xml ──────────────────────────────────────────
 app.get('/robots.txt', (req, res) => {
   res.type('text/plain').send(`User-agent: *
