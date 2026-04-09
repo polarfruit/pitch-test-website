@@ -266,7 +266,7 @@ body::before {
 .divider { height: 1px; background: #ffffff07; margin: 24px 0; }
 
 /* ── OVERVIEW ────────────────────────────────────────────────────────────── */
-.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 8px; margin-bottom: 32px; }
 @media (max-width: 1100px) { .stat-grid { grid-template-columns: repeat(2, 1fr); } }
 
 .stat-card {
@@ -290,12 +290,12 @@ body::before {
 .stat-card.herb  .stat-value { color: var(--herb); }
 .stat-card.gold  .stat-value { color: var(--gold); }
 .stat-card.slate .stat-value { color: #5B8BE8; }
-.stat-delta { font-size: 12px; color: var(--text-lo); }
+.stat-delta { font-size: 13px; color: var(--text-mid); }
 .stat-delta.up { color: var(--herb); }
 .stat-delta.down { color: var(--terra); }
 .stat-trend {
   display: inline-flex; align-items: center; gap: 3px;
-  font-size: 10px; font-weight: 700; padding: 2px 8px;
+  font-size: 11px; font-weight: 700; padding: 3px 8px;
   border-radius: 6px; margin-left: 4px; vertical-align: middle;
 }
 .stat-trend.up   { color: var(--herb); background: #2D8B5518; }
@@ -304,7 +304,10 @@ body::before {
 
 /* Two-col overview layout */
 .overview-grid { display: grid; grid-template-columns: 1fr 360px; gap: 24px; align-items: start; }
-@media (max-width: 1100px) { .overview-grid { grid-template-columns: 1fr; } }
+@media (max-width: 1100px) { .overview-grid { grid-template-columns: 1fr; } .overview-grid > :last-child { position: static; } .overview-grid > :last-child .card { min-height: auto; } }
+.overview-grid > :last-child { position: sticky; top: 80px; }
+.overview-grid > :last-child .card { min-height: 320px; display: flex; flex-direction: column; }
+.overview-grid > :last-child .card .feed-list { flex: 1; }
 
 /* Recommended events */
 .event-mini-list { display: flex; flex-direction: column; gap: 12px; }
@@ -323,7 +326,7 @@ body::before {
 .event-mini-body { flex: 1; min-width: 0; }
 .event-mini-name { font-size: 13px; font-weight: 700; color: var(--text-hi); margin-bottom: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .event-mini-meta { font-size: 11px; color: var(--text-lo); }
-.event-mini-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+.event-mini-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; min-width: 72px; }
 .event-mini-fee { font-size: 12px; font-weight: 700; color: var(--text-hi); }
 .event-mini-spots { font-size: 11px; color: var(--text-lo); }
 .btn-apply-mini {
@@ -462,6 +465,12 @@ body::before {
 .feed-text a { color: var(--ember); text-decoration: none; }
 .feed-text a:hover { text-decoration: underline; }
 .feed-time { font-size: 11px; color: var(--text-lo); margin-top: 3px; }
+.feed-empty { padding: 24px 16px; text-align: center; color: var(--text-mid); font-size: 13px; line-height: 1.6; }
+.feed-empty-icon { font-size: 24px; margin-bottom: 8px; opacity: 0.6; }
+.feed-item:not(:last-child)::after {
+  content: ''; position: absolute; left: 4px; top: 28px; bottom: -1px;
+  width: 2px; background: #ffffff08; border-radius: 1px;
+}
 
 /* ── APPLICATIONS ────────────────────────────────────────────────────────── */
 .app-filter-row { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
@@ -4239,7 +4248,7 @@ function renderActivityData(applications) {
   const feed = document.getElementById('activity-feed');
   if (!feed) return;
   if (!applications.length) {
-    feed.innerHTML = '<div style="padding:16px 0;font-size:13px;color:var(--text-lo);">No activity yet — apply to an event to get started.</div>';
+    feed.innerHTML = '<div class="feed-empty"><div class="feed-empty-icon">📋</div><div>No activity yet — apply to an event to get started.</div></div>';
     return;
   }
   const dotClass = { pending: 'submitted', approved: 'approved', rejected: 'rejected', withdrawn: 'review' };
@@ -4260,6 +4269,9 @@ function renderActivityData(applications) {
       </div>
     </div>`;
   }).join('');
+  if (applications.length <= 2) {
+    feed.innerHTML += '<div class="feed-empty" style="padding-top:16px;border-top:1px solid #ffffff06;">Activity builds as you apply to events</div>';
+  }
 }
 
 async function withdrawApp(eventId, btn) {
@@ -5685,7 +5697,7 @@ function applySubscriptionGating(plan) {
     const card = document.getElementById('stat-card-views');
     if (card) {
       document.getElementById('stat-views-value').innerHTML = '🔒';
-      document.getElementById('stat-views-sub').innerHTML = '<span style="font-size:10px;">Upgrade to track who views your profile →</span>';
+      document.getElementById('stat-views-sub').innerHTML = '<span style="font-size:11px;color:var(--text-mid);">Upgrade to track who views your profile →</span>';
       card.style.cursor = 'pointer';
       card.title = 'Profile view tracking is available on Pro and Growth plans.';
       card.onclick = () => window.location.href = '/pricing';
