@@ -798,6 +798,9 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
           <div class="recent-apps-list" id="overview-recent-apps"></div>
         </div>
       </div>
+
+      <!-- Post-event rating prompts -->
+      <div id="pending-ratings-banner" style="display:none;margin-top:24px;"></div>
     </div>
 
     <!-- ── MY EVENTS ── -->
@@ -1374,6 +1377,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
           <span style="font-size:14px;flex-shrink:0;margin-top:1px;">🔒</span>
           <div style="font-size:12.5px;color:var(--text-mid);line-height:1.6;">Private ratings you've given to vendors who attended your markets. Vendors don't see exact scores but they contribute to their trust signal.</div>
         </div>
+        <div id="pending-ratings-section" style="display:none;margin-bottom:20px;"></div>
         <div id="ratings-list"><div style="text-align:center;padding:40px;color:var(--text-lo);font-size:13px;">Loading…</div></div>
       </div>
     </div>
@@ -3590,7 +3594,7 @@ function _renderVendors(d) {
   let html = `<div class="analytics-summary" style="margin-bottom:24px;">
     <div class="analytics-stat-card"><div class="analytics-stat-value">${d.total_unique}</div><div class="analytics-stat-label">Unique Vendors</div></div>
     <div class="analytics-stat-card"><div class="analytics-stat-value">${d.repeat_vendors}</div><div class="analytics-stat-label">Repeat Vendors</div></div>
-    <div class="analytics-stat-card"><div class="analytics-stat-value" style="color:var(--ember);">${d.repeat_rate}%</div><div class="analytics-stat-label">Repeat Rate</div></div>
+    <div class="analytics-stat-card"><div class="analytics-stat-value" style="color:${d.repeat_rate > 0 ? 'var(--ember)' : 'var(--text-hi)'};">${d.repeat_rate}%</div><div class="analytics-stat-label">Repeat Rate</div></div>
     <div class="analytics-stat-card"><div class="analytics-stat-value">${d.quality?.total_rated || 0}</div><div class="analytics-stat-label">Vendors Rated</div></div>
   </div>`;
   // Top vendors

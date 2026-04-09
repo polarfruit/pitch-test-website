@@ -1500,7 +1500,7 @@
         </div>
       </div>
       <div class="card">
-        <div class="card-header"><span style="font-size:16px;">📈</span><span class="card-title">Event fill rates</span><span class="card-sub" style="margin-left:auto;">Avg stall fee: <strong id="an-avg-fee">—</strong> · Avg apps/event: <strong id="an-avg-apps">—</strong></span></div>
+        <div class="card-header" style="flex-wrap:wrap;gap:6px;"><span style="font-size:16px;">📈</span><span class="card-title">Event fill rates</span><span class="card-sub" style="margin-left:auto;font-size:11px;white-space:nowrap;">Avg fee: <strong id="an-avg-fee">—</strong> · Avg apps/evt: <strong id="an-avg-apps">—</strong></span></div>
         <div style="padding:12px 20px;max-height:240px;overflow-y:auto;" id="an-fill-rates">
           <div style="color:#6B5A4A;font-size:13px;">Loading…</div>
         </div>
@@ -3971,7 +3971,9 @@
     return `<div class="analytics-bar-row"><span class="analytics-bar-label">${label}</span><div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:${Math.max(pct,2)}%;background:${color};"></div></div><span class="analytics-bar-val">${n}</span></div>`;
   }
   function _growthDelta(el, cur, prev) {
-    if (!prev) { el.textContent = cur ? '+' + cur + ' new' : 'No change'; el.className = 'kpi-delta ' + (cur ? 'up' : 'neutral'); return; }
+    if (!cur && !prev) { el.textContent = 'No change'; el.className = 'kpi-delta neutral'; return; }
+    if (!prev) { el.textContent = '+' + cur + ' new'; el.className = 'kpi-delta up'; return; }
+    if (!cur) { el.textContent = 'No activity this month'; el.className = 'kpi-delta down'; return; }
     const pct = Math.round(((cur - prev) / prev) * 100);
     const sign = pct >= 0 ? '+' : '';
     el.textContent = sign + pct + '% vs last month';
@@ -4081,7 +4083,7 @@
 
       // ── Vendor plan breakdown ──
       const plans = data.vendorsByPlan || [];
-      const planColors = { growth:'#E8500A', pro:'#C9840A', basic:'#2B5BA8', free:'#6B5A4A' };
+      const planColors = { growth:'#2D8B55', pro:'#2B5BA8', basic:'#C9840A', free:'#6B5A4A' };
       const planLabels = { growth:'Growth', pro:'Pro', basic:'Basic', free:'Free' };
       const maxPlan = plans.length ? Math.max(...plans.map(p=>p.n)) : 1;
       document.getElementById('an-plan-breakdown').innerHTML = plans.length
@@ -4102,14 +4104,19 @@
         const monthMap = {};
         revMonths.forEach(m => { monthMap[m.month] = m.total; });
         const maxRev = Math.max(1, ...months.map(m => monthMap[m]||0));
-        revChart.innerHTML = months.map(m => {
-          const val = monthMap[m] || 0;
-          const h = Math.max(val ? Math.round((val/maxRev)*90) : 0, 2);
-          return `<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;">
-            <div style="font-size:10px;color:#A89880;margin-bottom:4px;">$${val.toLocaleString()}</div>
-            <div style="width:100%;height:${h}px;background:#E8500A;border-radius:4px;"></div>
-          </div>`;
-        }).join('');
+        const hasAnyRev = months.some(m => monthMap[m] > 0);
+        if (!hasAnyRev) {
+          revChart.innerHTML = `<div style="flex:1;display:flex;align-items:center;justify-content:center;height:90px;color:#6B5A4A;font-size:12px;">No revenue recorded yet</div>`;
+        } else {
+          revChart.innerHTML = months.map(m => {
+            const val = monthMap[m] || 0;
+            const h = Math.max(val ? Math.round((val/maxRev)*90) : 0, 2);
+            return `<div style="flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;">
+              <div style="font-size:10px;color:#A89880;margin-bottom:4px;">$${val.toLocaleString()}</div>
+              <div style="width:100%;height:${h}px;background:#E8500A;border-radius:4px;"></div>
+            </div>`;
+          }).join('');
+        }
         revLabels.innerHTML = months.map(m => {
           const d = new Date(m + '-01T00:00:00');
           return `<span>${d.toLocaleDateString('en-AU',{month:'short'})}</span>`;
@@ -4117,11 +4124,16 @@
       }
 
       // ── Applications by status ──
-      const colors = { approved:'#2D8B55', pending:'#C9840A', declined:'#C0392B', withdrawn:'#6B5A4A' };
-      document.getElementById('an-app-breakdown').innerHTML = appStatus.length
-        ? appStatus.map(a => {
-            const pct = totalApps > 0 ? Math.round((a.n / totalApps) * 100) : 0;
-            return _barRow(a.status.charAt(0).toUpperCase()+a.status.slice(1), a.n, pct, colors[a.status]||'#6B5A4A');
+      const colors = { approved:'#2D8B55', pending:'#C9840A', rejected:'#C0392B', declined:'#C0392B', withdrawn:'#6B5A4A' };
+      const allStatuses = ['approved','pending','rejected','withdrawn'];
+      const statusMap = {};
+      appStatus.forEach(a => { statusMap[a.status] = a.n; });
+      const statusLabels = { approved:'Approved', pending:'Pending', rejected:'Declined', withdrawn:'Withdrawn' };
+      document.getElementById('an-app-breakdown').innerHTML = totalApps > 0 || appStatus.length
+        ? allStatuses.map(s => {
+            const n = statusMap[s] || 0;
+            const pct = totalApps > 0 ? Math.round((n / totalApps) * 100) : 0;
+            return _barRow(statusLabels[s], n, pct, colors[s]);
           }).join('')
         : '<div style="color:#6B5A4A;font-size:13px;padding:8px 0;">No applications yet.</div>';
 
@@ -4188,7 +4200,7 @@
       document.getElementById('an-moderation').innerHTML =
         _statBlock('Open reports', mod.openReports || 0, mod.openReports > 0 ? 'Need attention' : 'All clear') +
         _statBlock('Open flags', mod.openFlags || 0, mod.openFlags > 0 ? 'Pending review' : 'All clear') +
-        _statBlock('Avg resolution', mod.avgResolutionHours != null ? (mod.avgResolutionHours < 24 ? mod.avgResolutionHours + 'h' : Math.round(mod.avgResolutionHours/24) + 'd') : '—', 'Time to resolve');
+        _statBlock('Avg resolve time', mod.avgResolutionHours != null ? (mod.avgResolutionHours < 24 ? mod.avgResolutionHours + 'h' : Math.round(mod.avgResolutionHours/24) + 'd') : '—', mod.avgResolutionHours != null ? 'Per report' : 'No data yet');
 
       // ── Doc compliance ──
       const dc = data.docCompliance || {};
@@ -4209,10 +4221,10 @@
       const top = data.topVendors || [];
       document.getElementById('an-top-vendors').innerHTML = top.length
         ? `<table style="width:100%;font-size:12px;border-collapse:collapse;">
-            <tr style="color:#6B5A4A;text-align:left;"><th style="padding:6px 8px;font-weight:600;width:30px;">#</th><th style="padding:6px 8px;font-weight:600;">Vendor</th><th style="padding:6px 8px;font-weight:600;width:80px;">Applications</th><th style="padding:6px 8px;font-weight:600;width:80px;">Approved</th><th style="padding:6px 8px;font-weight:600;width:80px;">Rate</th></tr>
+            <tr style="color:#6B5A4A;"><th style="padding:6px 8px;font-weight:600;width:30px;text-align:left;">#</th><th style="padding:6px 8px;font-weight:600;text-align:left;">Vendor</th><th style="padding:6px 8px;font-weight:600;width:80px;text-align:right;">Applications</th><th style="padding:6px 8px;font-weight:600;width:80px;text-align:right;">Approved</th><th style="padding:6px 8px;font-weight:600;width:60px;text-align:right;">Rate</th></tr>
             ${top.map((v,i) => {
               const rate = v.total_apps > 0 ? Math.round((v.approved/v.total_apps)*100) : 0;
-              return `<tr style="border-top:1px solid #2A2018;"><td style="padding:6px 8px;color:#6B5A4A;font-weight:700;">${i+1}</td><td style="padding:6px 8px;color:#FDF4E7;font-weight:600;">${v.trading_name}</td><td style="padding:6px 8px;color:#A89880;">${v.total_apps}</td><td style="padding:6px 8px;color:#2D8B55;">${v.approved}</td><td style="padding:6px 8px;color:#FDF4E7;font-weight:600;">${rate}%</td></tr>`;
+              return `<tr style="border-top:1px solid #2A2018;"><td style="padding:6px 8px;color:#6B5A4A;font-weight:700;">${i+1}</td><td style="padding:6px 8px;color:#FDF4E7;font-weight:600;">${v.trading_name}</td><td style="padding:6px 8px;color:#A89880;text-align:right;">${v.total_apps}</td><td style="padding:6px 8px;color:#2D8B55;text-align:right;">${v.approved}</td><td style="padding:6px 8px;color:#FDF4E7;font-weight:600;text-align:right;">${rate}%</td></tr>`;
             }).join('')}
           </table>`
         : '<div style="color:#6B5A4A;font-size:13px;padding:8px 0;">No vendor applications yet.</div>';
