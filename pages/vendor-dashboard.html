@@ -623,7 +623,7 @@ body::before {
 /* Price range */
 .price-group { display: flex; gap: 8px; }
 .price-btn {
-  width: 52px; height: 42px; border-radius: 10px; cursor: pointer;
+  min-width: 64px; height: 42px; padding: 0 12px; border-radius: 10px; cursor: pointer;
   border: 1px solid #ffffff10; background: transparent;
   font-family: var(--fd); font-size: 15px; font-weight: 900; color: var(--text-mid);
   transition: all 0.12s;
@@ -664,7 +664,7 @@ body::before {
   outline: none; transition: border-color 0.14s; text-align: center;
 }
 .dim-input:focus { border-color: #E8500A40; }
-.dim-sep { font-size: 14px; color: var(--text-lo); }
+.dim-sep { font-size: 16px; font-weight: 600; color: var(--text-mid); }
 
 /* Profile preview card */
 .preview-card {
@@ -692,6 +692,10 @@ body::before {
 .preview-tag { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 100px; background: #E8500A14; color: var(--ember); border: 1px solid #E8500A22; }
 .preview-stats { display: flex; align-items: center; gap: 10px; padding-top: 10px; border-top: 1px solid #EDE3CC; font-size: 11px; }
 .preview-rating { color: #C9840A; font-weight: 700; }
+.preview-bio-text {
+  font-size: 12px; color: #5A4A3A; line-height: 1.5; margin-bottom: 10px;
+  overflow: hidden; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical;
+}
 .preview-events { color: var(--text-lo); }
 
 .btn-save {
@@ -1642,7 +1646,7 @@ body::before {
     </button>
     <button class="nav-link" onclick="showPanel('documents', this)">
       <span class="nav-icon">📄</span> Documents
-      <span class="nav-badge" style="background:var(--gold);">!</span>
+      <span class="nav-badge" id="doc-nav-badge" style="display:none;background:var(--gold);">0</span>
     </button>
     <button class="nav-link" onclick="showPanel('menu', this)">
       <span class="nav-icon">🍽</span> Menu
@@ -2076,7 +2080,7 @@ body::before {
             </div>
             <div class="photo-grid" id="photo-grid"></div>
             <!-- Growth: gallery naming -->
-            <div id="gallery-naming-section" style="display:none;margin-top:12px;padding:12px 14px;background:#ffffff05;border:1px solid #ffffff0A;border-radius:10px;">
+            <div id="gallery-naming-section" style="display:none;margin-top:16px;padding:14px 14px;background:#ffffff05;border:1px solid #ffffff0A;border-radius:10px;border-top:2px solid #ffffff10;">
               <div style="font-size:12px;font-weight:700;color:var(--text-mid);margin-bottom:8px;display:flex;align-items:center;gap:6px;">
                 🖼 Named gallery
                 <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:100px;background:#E8500A18;color:var(--ember);border:1px solid #E8500A28;">Growth</span>
@@ -2104,7 +2108,7 @@ body::before {
                 <span class="preview-tag">BBQ</span>
                 <span class="preview-tag">Food Truck</span>
               </div>
-              <div id="preview-bio" style="font-size:12px;color:#5A4A3A;line-height:1.5;margin-bottom:10px;display:none;"></div>
+              <div id="preview-bio" class="preview-bio-text" style="display:none;"></div>
               <div class="preview-stats" id="preview-stats">
                 <span style="font-size:10px;color:var(--text-lo);">📍 <span id="preview-location">—</span></span>
                 <span id="preview-price" style="font-size:10px;color:var(--ember);font-weight:700;display:none;"></span>
@@ -3232,7 +3236,7 @@ function updatePreview() {
   // Bio
   const bio = (document.getElementById('prof-bio') || {}).value || '';
   const bioEl = document.getElementById('preview-bio');
-  if (bioEl) { bioEl.textContent = bio; bioEl.style.display = bio ? '' : 'none'; }
+  if (bioEl) { bioEl.textContent = bio; bioEl.style.display = bio ? '-webkit-box' : 'none'; }
 
   // Price
   const activePrice = document.querySelector('.price-btn.active');
@@ -4497,6 +4501,10 @@ function renderDocuments(uploadingState, uploadingKey) {
       }
     </div>`;
   }).join('');
+  // Update Documents nav badge — show count of missing docs
+  const missing = docs.filter(d => !profile[d.key + '_url']).length;
+  const docBadge = document.getElementById('doc-nav-badge');
+  if (docBadge) { docBadge.textContent = missing; docBadge.style.display = missing > 0 ? '' : 'none'; }
 }
 
 function uploadDoc(key, input) {
