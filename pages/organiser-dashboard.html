@@ -275,8 +275,8 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .step-line { flex:1; height:2px; background:#ffffff0a; margin-bottom:22px; }
 .step-line.done { background:#2D8B5540; }
 
-.step-panel { display:none; }
-.step-panel.active { display:block; max-width:840px; }
+.step-panel { display:none; max-width:840px; }
+.step-panel.active { display:block; }
 .step-nav { display:flex; align-items:center; justify-content:space-between; margin-top:32px; padding-top:24px; border-top:1px solid #ffffff08; }
 .btn-step-back { font-family:var(--fb); font-size:13px; font-weight:600; color:var(--text-mid);
   background:transparent; border:1px solid #ffffff10; padding:11px 22px; border-radius:10px; cursor:pointer; transition:all 0.14s; }
@@ -318,7 +318,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .tag-opt:hover { border-color:#E8500A30; color:var(--text-hi); }
 .tag-opt.sel { background:var(--ember-bg); border-color:#E8500A30; color:var(--ember); }
 .fee-range-row { display:flex; align-items:center; gap:12px; }
-.fee-input { width:110px; height:42px; padding:0 14px; background:#ffffff08; border:1px solid #ffffff10;
+.fee-input { width:140px; height:42px; padding:0 14px; background:#ffffff08; border:1px solid #ffffff10;
   border-radius:10px; font-family:var(--fb); font-size:14px; color:var(--text-hi); outline:none; }
 .fee-sep { color:var(--text-lo); font-size:14px; }
 
@@ -870,13 +870,14 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
             <label class="form-label">Power available</label>
             <div style="display:flex;flex-direction:column;gap:12px;">
               <div class="toggle-row"><span class="toggle-label">Power available at this event</span><label class="toggle-switch"><input type="checkbox" checked id="power-toggle" onchange="document.getElementById('power-amps').style.display=this.checked?'block':'none'" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
-              <div id="power-amps"><div class="form-group" style="margin-bottom:0;"><label class="form-label">Amps available</label><select class="form-select" style="width:200px;"><option>15A single phase</option><option>20A single phase</option><option>32A single phase</option><option>3-phase available</option></select></div></div>
+              <div id="power-amps"><div class="form-group" style="margin-bottom:0;"><label class="form-label">Amps available</label><select class="form-select" style="width:280px;"><option>15A single phase</option><option>20A single phase</option><option>32A single phase</option><option>3-phase available</option></select></div></div>
             </div>
           </div>
           <div class="form-group">
             <label class="form-label">Water available</label>
             <div class="toggle-row"><span class="toggle-label">Water connection available at this event</span><label class="toggle-switch"><input type="checkbox" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
           </div>
+          <div style="height:1px;background:#ffffff08;margin:8px 0 20px;"></div>
           <div class="form-group">
             <label class="form-label">Booth fee range</label>
             <div class="fee-range-row">
