@@ -2197,7 +2197,7 @@ function renderOrgEventsData(events) {
       ? Math.round((approvedCount / ev.stalls_available) * 100) + '%'
       : '—';
     const fillColor = fillRate === '—' ? 'var(--text-lo)' : parseInt(fillRate) >= 80 ? 'var(--herb)' : parseInt(fillRate) >= 40 ? 'var(--gold)' : 'var(--text-mid)';
-    const rowOpacity = isPast && ev.status !== 'archived' ? 'opacity:0.6;' : '';
+    const rowOpacity = isPast || ev.status === 'archived' ? 'opacity:0.6;' : '';
     return `
       <tr data-event-id="${ev.id}" style="${rowOpacity}">
         <td style="padding-left:24px;"><div class="td-event">${ev.name}</div><div class="td-sub" style="color:var(--text-mid);opacity:0.7;">${ev.category || ''} · ${ev.suburb || ''}${ev.state ? ', ' + ev.state : ''}</div></td>
