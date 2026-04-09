@@ -1397,6 +1397,21 @@ body::before {
 .cal-empty-state { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:48px 20px; color:var(--text-mid); font-size:14px; line-height:1.6; background:var(--char); border-radius:14px; z-index:2; }
 .cal-empty-state a { color:var(--ember); text-decoration:none; font-weight:700; }
 .cal-empty-state a:hover { text-decoration:underline; }
+.cal-feed-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:1000; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
+.cal-feed-modal { background:var(--char); border:1px solid #ffffff12; border-radius:18px; padding:28px 32px; max-width:480px; width:90%; box-shadow:0 24px 64px rgba(0,0,0,0.5); position:relative; }
+.cal-feed-modal h3 { font-family:var(--fd); font-size:20px; font-weight:900; color:var(--text-hi); margin-bottom:6px; }
+.cal-feed-modal p { font-size:13px; color:var(--text-mid); line-height:1.5; margin-bottom:16px; }
+.cal-feed-url { display:flex; gap:8px; margin-bottom:16px; }
+.cal-feed-url input { flex:1; font-family:var(--fb); font-size:12px; background:#ffffff08; border:1px solid #ffffff12; color:var(--text-hi); padding:10px 12px; border-radius:8px; outline:none; }
+.cal-feed-url button { font-family:var(--fb); font-size:12px; font-weight:700; color:#fff; background:var(--ember); border:none; padding:10px 16px; border-radius:8px; cursor:pointer; white-space:nowrap; transition:background 0.14s; }
+.cal-feed-url button:hover { background:var(--ember-glow); }
+.cal-feed-links { display:flex; flex-direction:column; gap:10px; margin-bottom:16px; }
+.cal-feed-links a { display:flex; align-items:center; gap:10px; font-size:13px; font-weight:600; color:var(--text-hi); text-decoration:none; padding:10px 14px; background:#ffffff06; border:1px solid #ffffff0a; border-radius:10px; transition:background 0.14s; }
+.cal-feed-links a:hover { background:#ffffff10; }
+.cal-feed-links a span.icon { font-size:18px; }
+.cal-feed-secondary { font-size:12px; color:var(--text-lo); text-align:center; padding-top:12px; border-top:1px solid #ffffff08; }
+.cal-feed-secondary a { color:var(--ember); text-decoration:none; cursor:pointer; }
+.cal-feed-secondary a:hover { text-decoration:underline; }
 
 /* ── MARKET HISTORY ───────────────────────────────────────────────────────── */
 .history-card { background:var(--char); border:1px solid #ffffff08; border-radius:14px; padding:18px 20px; margin-bottom:12px; }
@@ -6006,58 +6021,82 @@ function applySubscriptionGating(plan) {
 }
 
 // Placeholder functions for new gated actions
-function exportICal() {
+async function exportICal() {
   const plan = (window.__PITCH_PROFILE__ && window.__PITCH_PROFILE__.plan) || 'free';
-  if (plan === 'free') { alert('iCal export is available on Pro and Growth plans.'); return; }
+  if (plan === 'free') { alert('Calendar sync is available on Pro and Growth plans.'); return; }
 
-  // Filter to pending + approved only
+  // Get or create the feed token
+  const btn = document.getElementById('ical-export-btn');
+  if (btn) btn.style.opacity = '0.5';
+  try {
+    const r = await pitchFetch('/api/vendor/calendar-token', { method: 'POST' });
+    if (!r.ok) { const d = await r.json().catch(() => ({})); alert(d.error || 'Could not generate calendar link.'); return; }
+    const { url } = await r.json();
+    const webcalUrl = url.replace(/^https?:/, 'webcal:');
+    const googleUrl = 'https://calendar.google.com/calendar/r?cid=' + encodeURIComponent(webcalUrl);
+
+    // Remove existing modal if any
+    document.getElementById('cal-feed-overlay')?.remove();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'cal-feed-overlay';
+    overlay.className = 'cal-feed-overlay';
+    overlay.onclick = e => { if (e.target === overlay) overlay.remove(); };
+    overlay.innerHTML = `
+      <div class="cal-feed-modal">
+        <h3>📅 Subscribe to Calendar</h3>
+        <p>This calendar stays in sync — new events and status changes appear automatically in your calendar app.</p>
+        <div class="cal-feed-url">
+          <input type="text" value="${url}" readonly id="cal-feed-url-input" onclick="this.select()">
+          <button onclick="navigator.clipboard.writeText(document.getElementById('cal-feed-url-input').value).then(()=>{this.textContent='Copied!';setTimeout(()=>this.textContent='Copy URL',1500);})">Copy URL</button>
+        </div>
+        <div class="cal-feed-links">
+          <a href="${webcalUrl}" onclick="event.stopPropagation();">
+            <span class="icon">🍎</span>
+            <div><div style="font-weight:700;">Add to Apple Calendar</div><div style="font-size:11px;color:var(--text-lo);margin-top:2px;">Opens Calendar app directly</div></div>
+          </a>
+          <a href="${googleUrl}" target="_blank" rel="noopener" onclick="event.stopPropagation();">
+            <span class="icon">📆</span>
+            <div><div style="font-weight:700;">Add to Google Calendar</div><div style="font-size:11px;color:var(--text-lo);margin-top:2px;">Opens in a new tab</div></div>
+          </a>
+        </div>
+        <div style="font-size:12px;color:var(--text-lo);line-height:1.5;margin-bottom:14px;">
+          <strong style="color:var(--text-mid);">Outlook / Other:</strong> Copy the URL above and add it as a subscription calendar in your app's settings.
+        </div>
+        <div class="cal-feed-secondary">
+          <a onclick="event.preventDefault();document.getElementById('cal-feed-overlay').remove();downloadIcsSnapshot();">Or download a one-time .ics file instead</a>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+  } catch (e) {
+    console.error('[exportICal]', e);
+    alert('Something went wrong. Please try again.');
+  } finally {
+    if (btn) btn.style.opacity = '';
+  }
+}
+
+function downloadIcsSnapshot() {
   const exportable = _calApps.filter(a => a.status === 'pending' || a.status === 'approved');
   if (!exportable.length) { alert('No events to export. Apply to events first!'); return; }
-
-  const icsEscape = s => (s || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
-  const toIcsDate = iso => (iso || '').replace(/-/g, '');
-  const nextDay = iso => {
-    const d = new Date(iso + 'T00:00:00');
-    d.setDate(d.getDate() + 1);
-    return d.toISOString().slice(0, 10).replace(/-/g, '');
-  };
+  const icsEsc = s => (s || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
+  const toD = iso => (iso || '').replace(/-/g, '');
+  const nextD = iso => { const d = new Date(iso + 'T00:00:00'); d.setDate(d.getDate() + 1); return d.toISOString().slice(0, 10).replace(/-/g, ''); };
   const uid = window.__PITCH_USER__?.id || 0;
   const now = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
-
-  const events = exportable.map(a => {
-    const dtStart = toIcsDate(a.date_sort);
-    const dtEnd = a.date_end ? nextDay(a.date_end) : nextDay(a.date_sort);
-    const location = [a.suburb, a.state].filter(Boolean).join(', ');
-    const status = a.status === 'approved' ? 'CONFIRMED' : 'TENTATIVE';
-    return [
-      'BEGIN:VEVENT',
-      `UID:pitch-${a.event_id}-${uid}@onpitch.com.au`,
-      `DTSTAMP:${now}`,
-      `DTSTART;VALUE=DATE:${dtStart}`,
-      `DTEND;VALUE=DATE:${dtEnd}`,
-      `SUMMARY:${icsEscape(a.event_name)}`,
-      location ? `LOCATION:${icsEscape(location)}` : '',
-      `DESCRIPTION:${icsEscape('Status: ' + a.status + ' | Category: ' + (a.category || 'Event'))}`,
-      `STATUS:${status}`,
-      'END:VEVENT'
-    ].filter(Boolean).join('\r\n');
+  const vevents = exportable.map(a => {
+    const loc = [a.suburb, a.state].filter(Boolean).join(', ');
+    return ['BEGIN:VEVENT',`UID:pitch-${a.event_id}-${uid}@onpitch.com.au`,`DTSTAMP:${now}`,
+      `DTSTART;VALUE=DATE:${toD(a.date_sort)}`,`DTEND;VALUE=DATE:${a.date_end?nextD(a.date_end):nextD(a.date_sort)}`,
+      `SUMMARY:${icsEsc(a.event_name)}`,loc?`LOCATION:${icsEsc(loc)}`:null,
+      `DESCRIPTION:${icsEsc('Status: '+a.status+' | Category: '+(a.category||'Event'))}`,
+      `STATUS:${a.status==='approved'?'CONFIRMED':'TENTATIVE'}`,'END:VEVENT'].filter(Boolean).join('\r\n');
   });
-
-  const ics = [
-    'BEGIN:VCALENDAR',
-    'VERSION:2.0',
-    'PRODID:-//Pitch//Events//EN',
-    'CALSCALE:GREGORIAN',
-    'X-WR-CALNAME:Pitch Events',
-    ...events,
-    'END:VCALENDAR'
-  ].join('\r\n');
-
+  const ics = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Pitch//Events//EN','CALSCALE:GREGORIAN','X-WR-CALNAME:Pitch Events',...vevents,'END:VCALENDAR'].join('\r\n');
   const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = 'pitch-events.ics'; a.click();
-  URL.revokeObjectURL(url);
+  const u = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = u; a.download = 'pitch-events.ics'; a.click();
+  URL.revokeObjectURL(u);
 }
 
 function downloadPaymentPDF() {

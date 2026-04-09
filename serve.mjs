@@ -1,6 +1,6 @@
 import express from 'express';
 import compression from 'compression';
-import { createHmac } from 'crypto';
+import { createHmac, randomBytes } from 'crypto';
 import fs from 'fs';
 import bcrypt from 'bcryptjs';
 import path from 'path';
@@ -2181,6 +2181,80 @@ app.get('/api/vendor/calendar', requireAuth, async (req, res) => {
   if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Vendors only' });
   const apps = await stmts.getVendorCalendar.all(req.session.userId);
   res.json({ applications: apps });
+});
+
+// ── API: Calendar feed token (generate/retrieve subscription URL) ──────────
+app.post('/api/vendor/calendar-token', requireAuth, async (req, res) => {
+  if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Vendors only' });
+  const vendor = await stmts.getVendorByUserId.get(req.session.userId);
+  if (!vendor) return res.status(404).json({ error: 'Vendor not found' });
+  if (vendor.plan === 'free') return res.status(403).json({ error: 'Calendar sync is available on Pro and Growth plans.' });
+
+  let token = vendor.calendar_feed_token;
+  if (!token) {
+    token = randomBytes(24).toString('base64url');
+    await stmts.setVendorCalToken.run({ token, user_id: req.session.userId });
+  }
+  const host = req.headers.host || 'onpitch.com.au';
+  const proto = req.headers['x-forwarded-proto'] || req.protocol || 'https';
+  res.json({ token, url: `${proto}://${host}/cal/${token}.ics` });
+});
+
+// ── Public calendar feed (.ics) ────────────────────────────────────────────
+app.get('/cal/:token.ics', async (req, res) => {
+  const row = await stmts.getVendorByCalToken.get(req.params.token);
+  if (!row) return res.status(404).send('Calendar not found');
+
+  const apps = await stmts.getVendorCalendar.all(row.user_id);
+  const exportable = apps.filter(a => a.status === 'pending' || a.status === 'approved');
+
+  const icsEsc = s => (s || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
+  const toD = iso => (iso || '').replace(/-/g, '');
+  const nextD = iso => {
+    const d = new Date(iso + 'T00:00:00');
+    d.setDate(d.getDate() + 1);
+    return d.toISOString().slice(0, 10).replace(/-/g, '');
+  };
+  const now = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
+
+  const vevents = exportable.map(a => {
+    const dtStart = toD(a.date_sort);
+    const dtEnd = a.date_end ? nextD(a.date_end) : nextD(a.date_sort);
+    const loc = [a.suburb, a.state].filter(Boolean).join(', ');
+    const st = a.status === 'approved' ? 'CONFIRMED' : 'TENTATIVE';
+    return [
+      'BEGIN:VEVENT',
+      `UID:pitch-${a.event_id}-${row.user_id}@onpitch.com.au`,
+      `DTSTAMP:${now}`,
+      `DTSTART;VALUE=DATE:${dtStart}`,
+      `DTEND;VALUE=DATE:${dtEnd}`,
+      `SUMMARY:${icsEsc(a.event_name)}`,
+      loc ? `LOCATION:${icsEsc(loc)}` : null,
+      `DESCRIPTION:${icsEsc('Status: ' + a.status + ' | Category: ' + (a.category || 'Event'))}`,
+      `STATUS:${st}`,
+      'END:VEVENT'
+    ].filter(Boolean).join('\r\n');
+  });
+
+  const ics = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Pitch//Events//EN',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    'X-WR-CALNAME:Pitch Events',
+    'X-WR-TIMEZONE:Australia/Adelaide',
+    'REFRESH-INTERVAL;VALUE=DURATION:PT1H',
+    ...vevents,
+    'END:VCALENDAR'
+  ].join('\r\n');
+
+  res.set({
+    'Content-Type': 'text/calendar; charset=utf-8',
+    'Content-Disposition': 'inline; filename="pitch-events.ics"',
+    'Cache-Control': 'no-cache, max-age=0',
+  });
+  res.send(ics);
 });
 
 // ── API: Vendor market history ─────────────────────────────────────────────

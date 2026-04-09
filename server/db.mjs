@@ -385,6 +385,7 @@ await _safeExec(`ALTER TABLE vendors ADD COLUMN apps_this_month INTEGER NOT NULL
 await _safeExec(`ALTER TABLE vendors ADD COLUMN apps_reset_month TEXT NOT NULL DEFAULT ''`);
 await _safeExec(`ALTER TABLE vendors ADD COLUMN trial_ends_at DATETIME`);
 await _safeExec(`ALTER TABLE vendors ADD COLUMN subscription_status TEXT NOT NULL DEFAULT 'active'`);
+await _safeExec(`ALTER TABLE vendors ADD COLUMN calendar_feed_token TEXT UNIQUE`);
 
 // ── Vendors: add 'growth' to plan CHECK constraint ───────────────────────────
 {
@@ -1290,6 +1291,8 @@ export const stmts = {
 
   // vendor calendar (approved apps with future events)
   getVendorCalendar:   prepare(`SELECT ea.*,e.name as event_name,e.date_sort,e.date_end,e.suburb,e.state,e.category FROM event_applications ea JOIN events e ON ea.event_id=e.id WHERE ea.vendor_user_id=? ORDER BY e.date_sort ASC`),
+  getVendorByCalToken: prepare(`SELECT user_id FROM vendors WHERE calendar_feed_token=?`),
+  setVendorCalToken:   prepare(`UPDATE vendors SET calendar_feed_token=@token WHERE user_id=@user_id`),
 
   // vendor market history (approved apps for past events)
   getVendorHistory:    prepare(`SELECT ea.*,e.name as event_name,e.date_sort,e.suburb,e.state,e.category,e.organiser_name FROM event_applications ea JOIN events e ON ea.event_id=e.id WHERE ea.vendor_user_id=? AND ea.status='approved' ORDER BY e.date_sort DESC`),
