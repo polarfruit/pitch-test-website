@@ -357,10 +357,16 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .fee-sep { color:var(--text-lo); font-size:14px; flex-shrink:0; }
 
 /* Review step */
-.review-field { display:flex; gap:16px; padding:12px 0; border-bottom:1px solid #ffffff07; }
+.review-section { margin-bottom:8px; }
+.review-section-head { display:flex; align-items:center; justify-content:space-between; padding:10px 0 6px; margin-bottom:4px; border-bottom:1px solid #ffffff0a; }
+.review-section-title { font-family:var(--fd); font-size:13px; font-weight:800; color:var(--text-mid); letter-spacing:-0.01em; }
+.review-section-edit { font-size:11px; font-weight:600; color:var(--ember); background:none; border:none; cursor:pointer; font-family:var(--fb); padding:2px 6px; border-radius:6px; transition:all 0.12s; }
+.review-section-edit:hover { background:#E8500A12; }
+.review-field { display:flex; gap:16px; padding:14px 0; border-bottom:1px solid #ffffff07; }
 .review-field:last-child { border-bottom:none; }
-.review-field-label { font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-lo); width:140px; flex-shrink:0; padding-top:2px; }
+.review-field-label { font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-lo); width:160px; flex-shrink:0; padding-top:2px; }
 .review-field-value { font-size:13px; color:var(--text-hi); flex:1; line-height:1.6; }
+.review-field-value.not-set { color:var(--text-lo); font-style:italic; }
 
 /* ── MESSAGES ── */
 .messages-layout { display:grid; grid-template-columns:280px 1fr; gap:0; height:calc(100vh - 60px - 64px); }
@@ -1032,25 +1038,42 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
       <!-- Step 5: Review -->
       <div class="step-panel" id="step-5">
         <div class="card">
-          <div style="font-size:13px;color:var(--text-mid);margin-bottom:20px;">Review your event listing before publishing. You can go back and edit any step.</div>
-          <div class="review-field"><div class="review-field-label">Event name</div><div class="review-field-value" id="rv-name">—</div></div>
-          <div class="review-field"><div class="review-field-label">Category</div><div class="review-field-value" id="rv-category">—</div></div>
-          <div class="review-field"><div class="review-field-label">Date</div><div class="review-field-value" id="rv-date">—</div></div>
-          <div class="review-field"><div class="review-field-label">Location</div><div class="review-field-value" id="rv-location">—</div></div>
-          <div class="review-field"><div class="review-field-label">Venue / address</div><div class="review-field-value" id="rv-venue">—</div></div>
-          <div class="review-field"><div class="review-field-label">Description</div><div class="review-field-value" id="rv-description" style="white-space:pre-wrap;">—</div></div>
-          <div class="review-field"><div class="review-field-label">Total spots</div><div class="review-field-value" id="rv-spots">—</div></div>
-          <div class="review-field"><div class="review-field-label">Booth size</div><div class="review-field-value" id="rv-booth-size">—</div></div>
-          <div class="review-field"><div class="review-field-label">Booth fee</div><div class="review-field-value" id="rv-fee">—</div></div>
-          <div class="review-field"><div class="review-field-label">Setup time</div><div class="review-field-value" id="rv-setup">—</div></div>
-          <div class="review-field"><div class="review-field-label">Pack-down</div><div class="review-field-value" id="rv-packdown">—</div></div>
-          <div class="review-field"><div class="review-field-label">App. deadline</div><div class="review-field-value" id="rv-deadline">—</div></div>
-          <div class="review-field"><div class="review-field-label">Cuisines wanted</div><div class="review-field-value" id="rv-cuisines">—</div></div>
-          <div class="review-field"><div class="review-field-label">What we're looking for</div><div class="review-field-value" id="rv-looking-for" style="white-space:pre-wrap;">—</div></div>
-          <div class="review-field"><div class="review-field-label">Exclusivity</div><div class="review-field-value" id="rv-exclusivity">—</div></div>
-          <div class="review-field"><div class="review-field-label">Payment terms</div><div class="review-field-value" id="rv-payment">—</div></div>
+          <div style="font-size:13px;color:var(--text-mid);margin-bottom:16px;">Review your event listing before publishing. You can edit any section below.</div>
+
+          <div class="review-section">
+            <div class="review-section-head"><span class="review-section-title">Basics</span><button class="review-section-edit" onclick="goStep(1)">Edit</button></div>
+            <div class="review-field"><div class="review-field-label">Event name</div><div class="review-field-value" id="rv-name">—</div></div>
+            <div class="review-field"><div class="review-field-label">Category</div><div class="review-field-value" id="rv-category">—</div></div>
+            <div class="review-field"><div class="review-field-label">Date</div><div class="review-field-value" id="rv-date">—</div></div>
+            <div class="review-field"><div class="review-field-label">Location</div><div class="review-field-value" id="rv-location">—</div></div>
+            <div class="review-field"><div class="review-field-label">Venue / address</div><div class="review-field-value" id="rv-venue">—</div></div>
+            <div class="review-field"><div class="review-field-label">Description</div><div class="review-field-value" id="rv-description" style="white-space:pre-wrap;">—</div></div>
+          </div>
+
+          <div class="review-section">
+            <div class="review-section-head"><span class="review-section-title">Booth specs</span><button class="review-section-edit" onclick="goStep(2)">Edit</button></div>
+            <div class="review-field"><div class="review-field-label">Total spots</div><div class="review-field-value" id="rv-spots">—</div></div>
+            <div class="review-field"><div class="review-field-label">Booth size</div><div class="review-field-value" id="rv-booth-size">—</div></div>
+            <div class="review-field"><div class="review-field-label">Booth fee</div><div class="review-field-value" id="rv-fee">—</div></div>
+            <div class="review-field"><div class="review-field-label">Setup time</div><div class="review-field-value" id="rv-setup">—</div></div>
+            <div class="review-field"><div class="review-field-label">Pack-down</div><div class="review-field-value" id="rv-packdown">—</div></div>
+          </div>
+
+          <div class="review-section">
+            <div class="review-section-head"><span class="review-section-title">Requirements</span><button class="review-section-edit" onclick="goStep(3)">Edit</button></div>
+            <div class="review-field"><div class="review-field-label">App. deadline</div><div class="review-field-value" id="rv-deadline">—</div></div>
+            <div class="review-field"><div class="review-field-label">Cuisines wanted</div><div class="review-field-value" id="rv-cuisines">—</div></div>
+            <div class="review-field"><div class="review-field-label">Looking for</div><div class="review-field-value" id="rv-looking-for" style="white-space:pre-wrap;">—</div></div>
+            <div class="review-field"><div class="review-field-label">Exclusivity</div><div class="review-field-value" id="rv-exclusivity">—</div></div>
+          </div>
+
+          <div class="review-section" style="margin-bottom:0;">
+            <div class="review-section-head"><span class="review-section-title">Terms</span><button class="review-section-edit" onclick="goStep(4)">Edit</button></div>
+            <div class="review-field"><div class="review-field-label">Cancellation</div><div class="review-field-value" id="rv-cancel-policy" style="white-space:pre-wrap;">—</div></div>
+            <div class="review-field"><div class="review-field-label">Payment terms</div><div class="review-field-value" id="rv-payment">—</div></div>
+          </div>
         </div>
-        <div class="step-nav"><button class="btn-step-back" onclick="goStep(4)">← Back</button><button class="btn-step-next btn-publish" onclick="publishEvent()">🚀 Publish event</button></div>
+        <div class="step-nav"><button class="btn-step-back" onclick="goStep(4)">← Back</button><button class="btn-step-next btn-publish" onclick="publishEvent()">Publish event</button></div>
       </div>
     </div>
 
@@ -1775,52 +1798,58 @@ async function deleteEventConfirm(evId, evName) {
 
 function populateReview() {
   var v = function(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; };
+  function setRv(id, val) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    if (val && val !== '—') { el.textContent = val; el.classList.remove('not-set'); }
+    else { el.textContent = 'Not set'; el.classList.add('not-set'); }
+  }
 
   // Step 1 — Basics
-  document.getElementById('rv-name').textContent     = v('ne-name')        || '—';
-  document.getElementById('rv-category').textContent = v('ne-category')    || '—';
+  setRv('rv-name', v('ne-name'));
+  setRv('rv-category', v('ne-category'));
 
-  // Date: from display inputs (already formatted DD/MM/YYYY)
   var fromDisp = v('ne-date-display');
   var toDisp   = v('ne-enddate-display');
-  document.getElementById('rv-date').textContent = fromDisp ? (toDisp ? fromDisp + ' → ' + toDisp : fromDisp + ' (one day)') : '—';
+  setRv('rv-date', fromDisp ? (toDisp ? fromDisp + ' → ' + toDisp : fromDisp + ' (one day)') : '');
 
-  // Location
   var suburb = v('ne-suburb'), state = v('ne-state');
-  document.getElementById('rv-location').textContent = suburb ? suburb + ', ' + state : '—';
-  document.getElementById('rv-venue').textContent     = v('ne-venue')       || '—';
-  document.getElementById('rv-description').textContent = v('ne-description') || '—';
+  setRv('rv-location', suburb ? suburb + ', ' + state : '');
+  setRv('rv-venue', v('ne-venue'));
+  setRv('rv-description', v('ne-description'));
 
   // Step 2 — Booth specs
-  document.getElementById('rv-spots').textContent     = v('ne-spots')       || '—';
-  document.getElementById('rv-booth-size').textContent = v('ne-booth-size') || '—';
+  setRv('rv-spots', v('ne-spots'));
+  setRv('rv-booth-size', v('ne-booth-size'));
 
   var feeMin = v('ne-fee-min'), feeMax = v('ne-fee-max');
-  var fee = feeMin && feeMax ? '$' + feeMin + ' – $' + feeMax + ' (GST inc.)' : feeMin ? '$' + feeMin : feeMax ? 'Up to $' + feeMax : '—';
-  document.getElementById('rv-fee').textContent       = fee;
-  document.getElementById('rv-setup').textContent     = v('ne-setup-time')   || '—';
-  document.getElementById('rv-packdown').textContent  = v('ne-packdown-time')|| '—';
+  var fee = feeMin && feeMax ? '$' + feeMin + ' – $' + feeMax + ' (GST inc.)' : feeMin ? '$' + feeMin : feeMax ? 'Up to $' + feeMax : '';
+  setRv('rv-fee', fee);
+  setRv('rv-setup', v('ne-setup-time'));
+  setRv('rv-packdown', v('ne-packdown-time'));
 
   // Step 3 — Requirements
-  var deadlineDisp = v('ne-deadline-display');
-  document.getElementById('rv-deadline').textContent = deadlineDisp || '—';
+  setRv('rv-deadline', v('ne-deadline-display'));
 
   var cuisineBtns = document.querySelectorAll('.tag-selector .tag-opt.sel');
   var cuisines = Array.from(cuisineBtns).map(function(b) { return b.textContent; });
   var cuisineEl = document.getElementById('rv-cuisines');
   if (cuisines.length > 0) {
     cuisineEl.innerHTML = cuisines.map(function(c) { return '<span class="app-tag">' + c + '</span>'; }).join(' ');
+    cuisineEl.classList.remove('not-set');
   } else {
     cuisineEl.textContent = 'None selected';
+    cuisineEl.classList.add('not-set');
   }
 
   var excl = document.getElementById('ne-exclusivity');
   document.getElementById('rv-exclusivity').textContent = (excl && excl.checked) ? 'One vendor per cuisine' : 'No exclusivity rules';
 
-  document.getElementById('rv-looking-for').textContent = v('ne-looking-for') || '—';
+  setRv('rv-looking-for', v('ne-looking-for'));
 
   // Step 4 — Terms
-  document.getElementById('rv-payment').textContent = v('ne-payment-terms') || '—';
+  setRv('rv-cancel-policy', v('ne-cancel-policy'));
+  setRv('rv-payment', v('ne-payment-terms'));
 }
 
 function goStep(n) {
@@ -3158,7 +3187,7 @@ function renderInbox(arr) {
     if (a.stall_w && a.stall_d) setupParts.push(`${a.stall_w}m × ${a.stall_d}m`);
     if (a.power) setupParts.push('⚡ Power');
     if (a.water) setupParts.push('💧 Water');
-    if (a.price_range) setupParts.push(a.price_range);
+    if (a.price_range && a.price_range.length > 1) setupParts.push(a.price_range);
 
     const actions = a.status === 'pending' ? `
       <div class="inbox-card-actions">
@@ -3171,6 +3200,10 @@ function renderInbox(arr) {
       </div>
     ` : '';
 
+    // Inline single tag with the meta line; show tag row only for 2+
+    const inlineTags = tags.length === 1 ? `<span class="inbox-inline-tag">${tags[0]}</span>` : '';
+    const tagRow = tags.length > 1 ? `<div class="inbox-card-tags">${tags.map(t => `<span class="app-tag">${t}</span>`).join('')}</div>` : '';
+
     return `
     <div class="inbox-card">
       <div class="inbox-card-top">
@@ -3180,8 +3213,8 @@ function renderInbox(arr) {
             <a href="/vendors/${a.vendor_user_id}" class="inbox-card-name">${a.trading_name}<span class="inbox-name-arrow">→</span></a>
             <span class="inbox-status-badge" style="background:${statusColor[a.status]}18;color:${statusColor[a.status]};">${statusLabel[a.status] || a.status}</span>
           </div>
-          <div class="inbox-card-meta">${a.event_name} · Applied ${_orgFmtDate(a.created_at)}${location ? ' · 📍 ' + location : ''}</div>
-          ${tags.length ? `<div class="inbox-card-tags">${tags.map(t => `<span class="app-tag">${t}</span>`).join('')}</div>` : ''}
+          <div class="inbox-card-meta">${a.event_name} · Applied ${_orgFmtDate(a.created_at)}${location ? ' · 📍 ' + location : ''}${inlineTags}</div>
+          ${tagRow}
           ${setupParts.length ? `<div class="inbox-card-detail">${setupParts.map(p => `<span class="inbox-detail-chip">${p}</span>`).join('')}</div>` : ''}
         </div>
         <div class="inbox-card-right">
