@@ -617,6 +617,51 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .analytics-empty-title { font-size:15px; font-weight:700; color:var(--text-hi); margin-bottom:6px; }
 .analytics-empty-sub { font-size:13px; color:var(--text-lo); margin-bottom:20px; line-height:1.5; }
 
+/* Analytics extended */
+.analytics-section { display:none; }
+.analytics-section.active { display:block; }
+.analytics-tab-strip { display:flex; gap:6px; margin-bottom:24px; flex-wrap:wrap; }
+.analytics-tab { font-size:12px; font-weight:700; color:var(--text-lo); background:#ffffff08; border:1px solid #ffffff10; border-radius:8px; padding:8px 16px; cursor:pointer; transition:border-color 0.14s, color 0.14s; font-family:var(--fb); }
+.analytics-tab:hover { color:var(--text-mid); border-color:#ffffff18; }
+.analytics-tab.active { color:var(--ember); background:var(--ember-bg); border-color:#E8500A30; }
+.analytics-section-title { font-size:13px; font-weight:700; color:var(--text-mid); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:14px; margin-top:4px; }
+.analytics-table { width:100%; border-collapse:collapse; font-size:13px; }
+.analytics-table th { text-align:left; font-size:10px; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-lo); padding:8px 12px; border-bottom:1px solid #ffffff10; font-weight:700; }
+.analytics-table td { padding:10px 12px; border-bottom:1px solid #ffffff06; color:var(--text-mid); }
+.analytics-table tr:hover td { background:#ffffff04; }
+.analytics-cuisine-pill { display:inline-block; font-size:10px; font-weight:700; padding:3px 8px; border-radius:6px; background:#ffffff10; color:var(--text-mid); margin:2px 2px 2px 0; }
+.analytics-big-number { font-size:48px; font-family:var(--fd); font-weight:900; letter-spacing:-0.03em; line-height:1; }
+.analytics-review-card { background:#ffffff06; border:1px solid #ffffff08; border-radius:10px; padding:14px 16px; margin-bottom:10px; }
+.analytics-review-card:last-child { margin-bottom:0; }
+.analytics-stars { color:var(--gold); letter-spacing:1px; }
+.analytics-funnel { display:flex; height:24px; border-radius:6px; overflow:hidden; margin-bottom:8px; }
+.analytics-funnel-seg { height:100%; transition:width 0.5s; min-width:2px; }
+.analytics-funnel-legend { display:flex; flex-wrap:wrap; gap:12px; font-size:11px; color:var(--text-lo); margin-bottom:20px; }
+.analytics-funnel-legend span { display:flex; align-items:center; gap:5px; }
+.analytics-funnel-legend i { width:8px; height:8px; border-radius:2px; display:inline-block; }
+.analytics-month-bar { display:flex; align-items:center; gap:10px; margin-bottom:6px; font-size:12px; }
+.analytics-month-bar .bar { flex:1; height:18px; background:#ffffff08; border-radius:4px; overflow:hidden; }
+.analytics-month-bar .bar-fill { height:100%; border-radius:4px; background:var(--ember); transition:width 0.5s; }
+.analytics-month-bar .label { width:60px; color:var(--text-lo); font-size:11px; flex-shrink:0; }
+.analytics-month-bar .count { width:30px; text-align:right; color:var(--text-mid); font-weight:600; font-size:12px; flex-shrink:0; }
+.analytics-vendor-row { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid #ffffff06; }
+.analytics-vendor-row:last-child { border-bottom:none; }
+.analytics-vendor-rank { width:24px; height:24px; border-radius:6px; background:#ffffff08; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:var(--text-lo); flex-shrink:0; }
+.analytics-vendor-info { flex:1; min-width:0; }
+.analytics-vendor-name { font-size:13px; font-weight:700; color:var(--text-hi); }
+.analytics-vendor-meta { font-size:11px; color:var(--text-lo); margin-top:2px; }
+.analytics-vendor-count { font-size:14px; font-weight:700; color:var(--ember); flex-shrink:0; }
+.analytics-quality-row { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+.analytics-quality-row .qlabel { font-size:12px; color:var(--text-lo); width:100px; flex-shrink:0; }
+.analytics-quality-row .qbar { flex:1; height:8px; background:#ffffff08; border-radius:4px; overflow:hidden; }
+.analytics-quality-row .qfill { height:100%; border-radius:4px; transition:width 0.5s; }
+.analytics-quality-row .qval { font-size:13px; font-weight:700; color:var(--text-mid); width:40px; text-align:right; flex-shrink:0; }
+.analytics-demand-badge { font-size:10px; font-weight:700; padding:3px 8px; border-radius:6px; display:inline-block; }
+.analytics-demand-high { background:#2D8B5520; color:var(--herb); }
+.analytics-demand-mod { background:#C9840A20; color:var(--gold); }
+.analytics-demand-low { background:#C0392B20; color:var(--terra); }
+.analytics-fill-pct { font-size:24px; font-family:var(--fd); font-weight:900; letter-spacing:-0.02em; line-height:1; }
+
 /* Org settings expansion */
 .org-settings-input { width:100%; height:42px; padding:0 14px; background:#ffffff08; border:1px solid #ffffff10; border-radius:10px; font-family:var(--fb); font-size:14px; color:var(--text-hi); outline:none; transition:border-color 0.14s; }
 .org-settings-input:focus { border-color:#E8500A50; }
@@ -1298,14 +1343,27 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 
     <!-- ── PANEL: ANALYTICS ───────────────────────────────────────────────── -->
     <div class="panel" id="panel-analytics">
-      <div style="max-width:900px;">
-        <div style="margin-bottom:28px;">
+      <div style="max-width:920px;">
+        <div style="margin-bottom:24px;">
           <div style="font-size:20px;font-family:var(--fd);font-weight:900;letter-spacing:-0.02em;color:var(--text-hi);margin-bottom:6px;">Market Analytics</div>
-          <div style="font-size:13px;color:var(--text-lo);">Application and approval stats for each of your events.</div>
+          <div style="font-size:13px;color:var(--text-lo);">Real-time insights across revenue, applications, vendors, and events.</div>
         </div>
-        <div class="analytics-summary" id="analytics-summary" style="display:none;"></div>
-        <div style="font-size:13px;font-weight:700;color:var(--text-mid);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:14px;">By Event</div>
-        <div class="analytics-grid" id="analytics-grid"><div style="text-align:center;padding:40px;color:var(--text-lo);font-size:13px;">Loading…</div></div>
+        <!-- Top-level summary -->
+        <div class="analytics-summary" id="analytics-top-summary" style="display:none;"></div>
+        <!-- Tab strip -->
+        <div class="analytics-tab-strip" id="analytics-tab-strip">
+          <button class="analytics-tab active" onclick="_anaTab('revenue',this)">Revenue</button>
+          <button class="analytics-tab" onclick="_anaTab('applications',this)">Applications</button>
+          <button class="analytics-tab" onclick="_anaTab('vendors',this)">Vendors</button>
+          <button class="analytics-tab" onclick="_anaTab('events',this)">Events</button>
+          <button class="analytics-tab" onclick="_anaTab('reputation',this)">Reputation</button>
+        </div>
+        <!-- Sections -->
+        <div class="analytics-section active" id="ana-revenue"><div style="text-align:center;padding:40px;color:var(--text-lo);font-size:13px;">Loading…</div></div>
+        <div class="analytics-section" id="ana-applications"></div>
+        <div class="analytics-section" id="ana-vendors"></div>
+        <div class="analytics-section" id="ana-events"></div>
+        <div class="analytics-section" id="ana-reputation"></div>
       </div>
     </div>
 
@@ -3440,58 +3498,234 @@ function downloadIcsSnapshot() {
 }
 
 // ── Analytics ────────────────────────────────────────────────────────────────
+function _anaTab(name, btn) {
+  document.querySelectorAll('.analytics-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.analytics-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('ana-' + name)?.classList.add('active');
+  btn?.classList.add('active');
+}
+
+function _anaEmpty(icon, title, sub) {
+  return `<div class="analytics-empty"><div class="analytics-empty-icon">${icon}</div><div class="analytics-empty-title">${title}</div><div class="analytics-empty-sub">${sub}</div></div>`;
+}
+
+function _anaFmtMoney(n) { return '$' + Number(n || 0).toLocaleString('en-AU'); }
+function _anaFmtHours(h) { if (!h || h <= 0) return '—'; if (h < 24) return Math.round(h) + 'h'; const d = Math.floor(h / 24); const rem = Math.round(h % 24); return d + 'd' + (rem > 0 ? ' ' + rem + 'h' : ''); }
+function _anaStars(n) { return '<span class="analytics-stars">' + '★'.repeat(Math.round(n || 0)) + '☆'.repeat(5 - Math.round(n || 0)) + '</span>'; }
+function _anaMonthLabel(ym) { const [y, m] = ym.split('-'); const names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; return (names[parseInt(m)-1] || m) + ' ' + y.slice(2); }
+
+function _renderRevenue(d) {
+  const el = document.getElementById('ana-revenue');
+  if (!d || (d.collected === 0 && d.outstanding === 0 && !d.by_event?.length)) {
+    el.innerHTML = _anaEmpty('💰', 'No revenue data yet', 'Stall fee data will appear here once you start invoicing vendors.');
+    return;
+  }
+  let html = `<div class="analytics-summary" style="margin-bottom:24px;">
+    <div class="analytics-stat-card"><div class="analytics-stat-value" style="color:var(--herb);">${_anaFmtMoney(d.collected)}</div><div class="analytics-stat-label">Collected</div></div>
+    <div class="analytics-stat-card"><div class="analytics-stat-value" style="color:var(--gold);">${_anaFmtMoney(d.outstanding)}</div><div class="analytics-stat-label">Outstanding</div></div>
+    <div class="analytics-stat-card"><div class="analytics-stat-value">${_anaFmtMoney(d.avg_fee)}</div><div class="analytics-stat-label">Avg Fee</div></div>
+    <div class="analytics-stat-card"><div class="analytics-stat-value">${d.collection_rate}%</div><div class="analytics-stat-label">Collection Rate</div></div>
+  </div>`;
+  if (d.by_event?.length) {
+    html += `<div class="analytics-section-title">Revenue by Event</div>
+    <table class="analytics-table"><thead><tr><th>Event</th><th>Collected</th><th>Outstanding</th><th style="width:200px;">Progress</th></tr></thead><tbody>`;
+    for (const e of d.by_event) {
+      const total = e.collected + e.outstanding;
+      const pct = total > 0 ? Math.round(e.collected / total * 100) : 0;
+      html += `<tr><td><div style="font-weight:600;color:var(--text-hi);">${e.name}</div><div style="font-size:11px;color:var(--text-lo);margin-top:2px;">${_orgFmtDate(e.date_sort)} · ${e.total_invoices} invoice${e.total_invoices !== 1 ? 's' : ''}</div></td>
+        <td style="color:var(--herb);font-weight:600;">${_anaFmtMoney(e.collected)}</td>
+        <td style="color:var(--gold);font-weight:600;">${_anaFmtMoney(e.outstanding)}</td>
+        <td><div class="analytics-bar-track" style="height:8px;"><div class="analytics-bar-fill" style="width:${pct}%;background:var(--herb);"></div></div><div style="font-size:10px;color:var(--text-lo);margin-top:3px;">${pct}% collected</div></td></tr>`;
+    }
+    html += '</tbody></table>';
+  }
+  el.innerHTML = html;
+}
+
+function _renderApplications(d) {
+  const el = document.getElementById('ana-applications');
+  if (!d || d.total === 0) {
+    el.innerHTML = _anaEmpty('📋', 'No applications yet', 'Application analytics will appear once vendors start applying to your events.');
+    return;
+  }
+  const decided = d.approved + d.rejected;
+  let html = `<div class="analytics-summary" style="margin-bottom:24px;">
+    <div class="analytics-stat-card"><div class="analytics-stat-value">${d.total}</div><div class="analytics-stat-label">Total Apps</div></div>
+    <div class="analytics-stat-card"><div class="analytics-stat-value" style="color:var(--herb);">${d.approval_rate}%</div><div class="analytics-stat-label">Approval Rate</div></div>
+    <div class="analytics-stat-card"><div class="analytics-stat-value">${_anaFmtHours(d.avg_response_hours)}</div><div class="analytics-stat-label">Avg Response</div></div>
+    <div class="analytics-stat-card"><div class="analytics-stat-value" style="color:var(--gold);">${d.pending}</div><div class="analytics-stat-label">Pending</div></div>
+  </div>`;
+  // Funnel
+  const total = d.total || 1;
+  html += `<div class="analytics-section-title">Application Funnel</div>
+    <div class="analytics-funnel">
+      <div class="analytics-funnel-seg" style="width:${d.approved/total*100}%;background:var(--herb);"></div>
+      <div class="analytics-funnel-seg" style="width:${d.pending/total*100}%;background:var(--gold);"></div>
+      <div class="analytics-funnel-seg" style="width:${d.rejected/total*100}%;background:var(--terra);"></div>
+      <div class="analytics-funnel-seg" style="width:${d.withdrawn/total*100}%;background:var(--smoke);"></div>
+    </div>
+    <div class="analytics-funnel-legend">
+      <span><i style="background:var(--herb);"></i> Approved (${d.approved})</span>
+      <span><i style="background:var(--gold);"></i> Pending (${d.pending})</span>
+      <span><i style="background:var(--terra);"></i> Declined (${d.rejected})</span>
+      ${d.withdrawn > 0 ? `<span><i style="background:var(--smoke);"></i> Withdrawn (${d.withdrawn})</span>` : ''}
+    </div>`;
+  // Monthly trend
+  if (d.by_month?.length) {
+    const maxApps = Math.max(...d.by_month.map(m => m.apps), 1);
+    html += `<div class="analytics-section-title">Monthly Trend</div>`;
+    for (const m of d.by_month) {
+      html += `<div class="analytics-month-bar"><div class="label">${_anaMonthLabel(m.month)}</div><div class="bar"><div class="bar-fill" style="width:${m.apps/maxApps*100}%;"></div></div><div class="count">${m.apps}</div></div>`;
+    }
+  }
+  el.innerHTML = html;
+}
+
+function _renderVendors(d) {
+  const el = document.getElementById('ana-vendors');
+  if (!d || d.total_unique === 0) {
+    el.innerHTML = _anaEmpty('👥', 'No vendor data yet', 'Vendor insights will appear once you approve vendors to your events.');
+    return;
+  }
+  let html = `<div class="analytics-summary" style="margin-bottom:24px;">
+    <div class="analytics-stat-card"><div class="analytics-stat-value">${d.total_unique}</div><div class="analytics-stat-label">Unique Vendors</div></div>
+    <div class="analytics-stat-card"><div class="analytics-stat-value">${d.repeat_vendors}</div><div class="analytics-stat-label">Repeat Vendors</div></div>
+    <div class="analytics-stat-card"><div class="analytics-stat-value" style="color:var(--ember);">${d.repeat_rate}%</div><div class="analytics-stat-label">Repeat Rate</div></div>
+    <div class="analytics-stat-card"><div class="analytics-stat-value">${d.quality?.total_rated || 0}</div><div class="analytics-stat-label">Vendors Rated</div></div>
+  </div>`;
+  // Top vendors
+  if (d.top_vendors?.length) {
+    html += `<div class="analytics-section-title">Top Vendors</div>`;
+    d.top_vendors.forEach((v, i) => {
+      let tags = '';
+      try { const arr = JSON.parse(v.cuisine_tags || '[]'); tags = arr.slice(0, 3).map(t => `<span class="analytics-cuisine-pill">${t}</span>`).join(''); } catch(_) {}
+      html += `<div class="analytics-vendor-row">
+        <div class="analytics-vendor-rank">${i + 1}</div>
+        <div class="analytics-vendor-info">
+          <div class="analytics-vendor-name">${v.trading_name || 'Unknown'}</div>
+          <div class="analytics-vendor-meta">${v.suburb || ''}${v.suburb && v.state ? ', ' : ''}${v.state || ''} ${tags ? '· ' : ''}${tags}</div>
+        </div>
+        <div class="analytics-vendor-count">${v.times_booked}x</div>
+      </div>`;
+    });
+  }
+  // Cuisine mix
+  if (d.cuisine_mix?.length) {
+    const maxC = Math.max(...d.cuisine_mix.map(c => c.count), 1);
+    const colors = ['var(--ember)', 'var(--herb)', 'var(--gold)', 'var(--slate)', 'var(--terra)', '#9B59B6', '#1ABC9C', '#E67E22'];
+    html += `<div class="analytics-section-title" style="margin-top:24px;">Cuisine Breakdown</div>`;
+    d.cuisine_mix.forEach((c, i) => {
+      html += `<div class="analytics-month-bar"><div class="label" style="width:80px;">${c.tag}</div><div class="bar"><div class="bar-fill" style="width:${c.count/maxC*100}%;background:${colors[i % colors.length]};"></div></div><div class="count">${c.count}</div></div>`;
+    });
+  }
+  // Quality ratings
+  if (d.quality?.total_rated > 0) {
+    html += `<div class="analytics-section-title" style="margin-top:24px;">Vendor Quality (Your Ratings)</div>`;
+    const punc = d.quality.avg_punctual || 0;
+    const pres = d.quality.avg_presentation || 0;
+    const rebook = d.quality.rebook_rate || 0;
+    html += `<div class="analytics-quality-row"><div class="qlabel">Punctuality</div><div class="qbar"><div class="qfill" style="width:${punc/5*100}%;background:var(--herb);"></div></div><div class="qval">${punc}/5</div></div>`;
+    html += `<div class="analytics-quality-row"><div class="qlabel">Presentation</div><div class="qbar"><div class="qfill" style="width:${pres/5*100}%;background:var(--slate);"></div></div><div class="qval">${pres}/5</div></div>`;
+    html += `<div class="analytics-quality-row"><div class="qlabel">Would Rebook</div><div class="qbar"><div class="qfill" style="width:${rebook}%;background:var(--ember);"></div></div><div class="qval">${rebook}%</div></div>`;
+  }
+  el.innerHTML = html;
+}
+
+function _renderEvents(d) {
+  const el = document.getElementById('ana-events');
+  if (!d?.events?.length) {
+    el.innerHTML = _anaEmpty('📅', 'No events yet', 'Event comparison data will appear once you create events.');
+    return;
+  }
+  let html = `<div class="analytics-section-title">Event Performance</div>
+    <table class="analytics-table"><thead><tr><th>Event</th><th>Stalls</th><th>Apps</th><th>Fill Rate</th><th>Demand</th></tr></thead><tbody>`;
+  for (const e of d.events) {
+    const fillColor = e.fill_rate >= 80 ? 'var(--herb)' : e.fill_rate >= 50 ? 'var(--gold)' : 'var(--terra)';
+    const demandCls = e.demand_ratio >= 2 ? 'analytics-demand-high' : e.demand_ratio >= 1 ? 'analytics-demand-mod' : 'analytics-demand-low';
+    const demandLabel = e.demand_ratio >= 2 ? 'High' : e.demand_ratio >= 1 ? 'Moderate' : 'Low';
+    html += `<tr>
+      <td><div style="font-weight:600;color:var(--text-hi);">${e.name}</div><div style="font-size:11px;color:var(--text-lo);margin-top:2px;">${_orgFmtDate(e.date_sort)} · ${e.category || '—'}</div></td>
+      <td>${e.stalls_available || '—'}</td>
+      <td>${e.total_apps}</td>
+      <td><span class="analytics-fill-pct" style="color:${fillColor};font-size:16px;">${e.fill_rate}%</span></td>
+      <td><span class="analytics-demand-badge ${demandCls}">${e.demand_ratio}x ${demandLabel}</span></td>
+    </tr>`;
+  }
+  html += '</tbody></table>';
+  // Category breakdown
+  if (d.by_category?.length) {
+    html += `<div class="analytics-section-title" style="margin-top:24px;">By Category</div>
+      <table class="analytics-table"><thead><tr><th>Category</th><th>Events</th><th>Avg Apps</th><th>Avg Fill Rate</th></tr></thead><tbody>`;
+    for (const c of d.by_category) {
+      const fillColor = c.avg_fill_rate >= 80 ? 'var(--herb)' : c.avg_fill_rate >= 50 ? 'var(--gold)' : 'var(--terra)';
+      html += `<tr><td style="font-weight:600;color:var(--text-hi);">${c.category}</td><td>${c.event_count}</td><td>${c.avg_apps || 0}</td><td style="color:${fillColor};font-weight:600;">${c.avg_fill_rate || 0}%</td></tr>`;
+    }
+    html += '</tbody></table>';
+  }
+  el.innerHTML = html;
+}
+
+function _renderReputation(d) {
+  const el = document.getElementById('ana-reputation');
+  if (!d || d.total_reviews === 0) {
+    el.innerHTML = _anaEmpty('⭐', 'No reviews yet', 'Your reputation score will appear once vendors leave reviews about your events.');
+    return;
+  }
+  const ratingColor = d.avg_rating >= 4 ? 'var(--herb)' : d.avg_rating >= 3 ? 'var(--gold)' : 'var(--terra)';
+  let html = `<div style="display:flex;align-items:center;gap:24px;margin-bottom:28px;">
+    <div><div class="analytics-big-number" style="color:${ratingColor};">${d.avg_rating}</div><div style="margin-top:4px;">${_anaStars(d.avg_rating)}</div></div>
+    <div><div style="font-size:13px;color:var(--text-lo);">from <strong style="color:var(--text-hi);">${d.total_reviews}</strong> vendor review${d.total_reviews !== 1 ? 's' : ''}</div></div>
+  </div>`;
+  // Distribution
+  html += `<div class="analytics-section-title">Rating Distribution</div>`;
+  const maxDist = Math.max(...Object.values(d.distribution), 1);
+  for (let i = 5; i >= 1; i--) {
+    const cnt = d.distribution[i] || 0;
+    html += `<div class="analytics-month-bar"><div class="label" style="width:40px;">${i} ★</div><div class="bar"><div class="bar-fill" style="width:${cnt/maxDist*100}%;background:var(--gold);"></div></div><div class="count">${cnt}</div></div>`;
+  }
+  // Recent reviews
+  if (d.recent_reviews?.length) {
+    html += `<div class="analytics-section-title" style="margin-top:24px;">Recent Reviews</div>`;
+    for (const r of d.recent_reviews) {
+      html += `<div class="analytics-review-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <div style="font-size:13px;font-weight:700;color:var(--text-hi);">${r.trading_name || 'Vendor'}</div>
+          <div>${_anaStars(r.rating)}</div>
+        </div>
+        ${r.body ? `<div style="font-size:12.5px;color:var(--text-mid);line-height:1.5;">${r.body}</div>` : ''}
+        <div style="font-size:11px;color:var(--text-lo);margin-top:6px;">${r.event_name ? r.event_name + ' · ' : ''}${_orgFmtDate(r.created_at)}</div>
+      </div>`;
+    }
+  }
+  el.innerHTML = html;
+}
+
 async function loadOrgAnalytics() {
   try {
     const r = await pitchFetch('/api/organiser/analytics');
     if (!r.ok) return;
-    const { stats } = await r.json();
-    const grid = document.getElementById('analytics-grid');
-    const summaryEl = document.getElementById('analytics-summary');
-    if (!stats.length) {
-      summaryEl.style.display = 'none';
-      document.querySelector('#panel-analytics [style*="By Event"]')?.style.setProperty('display','none');
-      grid.innerHTML = `<div class="analytics-empty">
-        <div class="analytics-empty-icon">📊</div>
-        <div class="analytics-empty-title">No analytics yet</div>
-        <div class="analytics-empty-sub">Post your first market and analytics will<br>appear here once vendors start applying.</div>
-        <button onclick="showPanel('new-event',null)" style="background:var(--ember);color:#fff;border:none;font-family:var(--fb);font-size:13px;font-weight:700;padding:10px 22px;border-radius:10px;cursor:pointer;transition:background 0.14s;" onmouseover="this.style.background='var(--ember-glow)'" onmouseout="this.style.background='var(--ember)'">+ Post an Event</button>
-      </div>`;
-      return;
-    }
-    // Summary totals
-    const totals = stats.reduce((a, s) => ({ events: a.events + 1, apps: a.apps + s.total_apps, approved: a.approved + s.approved, pending: a.pending + s.pending, rejected: a.rejected + (s.rejected || 0) }), { events:0, apps:0, approved:0, pending:0, rejected:0 });
+    const data = await r.json();
+    const summaryEl = document.getElementById('analytics-top-summary');
+    // Top summary row — 6 key metrics
+    const apps = data.applications || {};
+    const rev = data.revenue || {};
+    const vend = data.vendors || {};
+    const rep = data.reputation || {};
     summaryEl.style.display = '';
     summaryEl.innerHTML = `
-      <div class="analytics-stat-card"><div class="analytics-stat-value">${totals.events}</div><div class="analytics-stat-label">Events</div></div>
-      <div class="analytics-stat-card"><div class="analytics-stat-value">${totals.apps}</div><div class="analytics-stat-label">Applications</div></div>
-      <div class="analytics-stat-card"><div class="analytics-stat-value" style="color:var(--herb);">${totals.approved}</div><div class="analytics-stat-label">Approved</div></div>
-      <div class="analytics-stat-card"><div class="analytics-stat-value" style="color:var(--gold);">${totals.pending}</div><div class="analytics-stat-label">Pending</div></div>
+      <div class="analytics-stat-card"><div class="analytics-stat-value" style="color:var(--herb);">${_anaFmtMoney(rev.collected)}</div><div class="analytics-stat-label">Revenue</div></div>
+      <div class="analytics-stat-card"><div class="analytics-stat-value">${apps.total || 0}</div><div class="analytics-stat-label">Applications</div></div>
+      <div class="analytics-stat-card"><div class="analytics-stat-value" style="color:var(--herb);">${apps.approval_rate || 0}%</div><div class="analytics-stat-label">Approval Rate</div></div>
+      <div class="analytics-stat-card"><div class="analytics-stat-value">${_anaFmtHours(apps.avg_response_hours)}</div><div class="analytics-stat-label">Response Time</div></div>
+      <div class="analytics-stat-card"><div class="analytics-stat-value">${vend.total_unique || 0}</div><div class="analytics-stat-label">Vendors</div></div>
+      <div class="analytics-stat-card"><div class="analytics-stat-value" style="color:${(rep.avg_rating||0)>=4?'var(--herb)':(rep.avg_rating||0)>=3?'var(--gold)':'var(--text-mid)'};">${rep.avg_rating || '—'}</div><div class="analytics-stat-label">Rating</div></div>
     `;
-    grid.innerHTML = stats.map(s => {
-      const total = s.total_apps || 1;
-      const approvePct = Math.round((s.approved / total) * 100);
-      const pendingPct = Math.round((s.pending / total) * 100);
-      const rejectedPct = Math.round(((s.rejected || 0) / total) * 100);
-      return `<div class="analytics-event-card" onclick="showPanel('events',null)">
-        <div class="analytics-event-name">${s.name}</div>
-        <div class="analytics-event-date">${_orgFmtDate(s.date_sort)} · ${s.category || '—'}</div>
-        <div class="analytics-bar-row">
-          <div class="analytics-bar-label"><span>Total Applications</span><span>${s.total_apps}</span></div>
-        </div>
-        <div class="analytics-bar-row">
-          <div class="analytics-bar-label"><span>Approved</span><span>${s.approved}</span></div>
-          <div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:${approvePct}%;background:var(--herb);"></div></div>
-        </div>
-        <div class="analytics-bar-row">
-          <div class="analytics-bar-label"><span>Pending</span><span>${s.pending}</span></div>
-          <div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:${pendingPct}%;background:var(--gold);"></div></div>
-        </div>
-        ${(s.rejected || 0) > 0 ? `<div class="analytics-bar-row">
-          <div class="analytics-bar-label"><span>Declined</span><span>${s.rejected}</span></div>
-          <div class="analytics-bar-track"><div class="analytics-bar-fill" style="width:${rejectedPct}%;background:var(--terracotta);"></div></div>
-        </div>` : ''}
-      </div>`;
-    }).join('');
+    // Render each section
+    _renderRevenue(data.revenue);
+    _renderApplications(data.applications);
+    _renderVendors(data.vendors);
+    _renderEvents(data.events_comparison);
+    _renderReputation(data.reputation);
   } catch(e) { console.error('[analytics]', e); }
 }
 

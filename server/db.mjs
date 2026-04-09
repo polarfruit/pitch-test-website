@@ -142,7 +142,7 @@ if (process.env.TURSO_DATABASE_URL) {
 
 // ── Schema version — bump this whenever migrations are added ─────────────────
 // On a versioned DB the entire migration block is skipped (1 read vs 50+ calls).
-const SCHEMA_VERSION = 17;
+const SCHEMA_VERSION = 18;
 let _schemaVersion = 0;
 try {
   const _ver = await prepare(`SELECT v FROM _schema_meta LIMIT 1`).get();
@@ -680,6 +680,27 @@ await _safeExec(`
   )
 `);
 await _safeExec(`CREATE INDEX IF NOT EXISTS idx_menu_vendor ON menu_items(vendor_user_id, sort_order)`);
+
+// ── Analytics tracking tables ────────────────────────────────────────────────
+await _safeExec(`CREATE TABLE IF NOT EXISTS vendor_profile_views (
+  id             INTEGER PRIMARY KEY AUTOINCREMENT,
+  vendor_user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  viewer_user_id INTEGER,
+  viewer_role    TEXT,
+  viewer_ip_hash TEXT,
+  referrer       TEXT DEFAULT 'direct',
+  created_at     DATETIME DEFAULT (datetime('now'))
+)`);
+await _safeExec(`CREATE INDEX IF NOT EXISTS idx_vpv_vendor_date ON vendor_profile_views(vendor_user_id, created_at)`);
+await _safeExec(`CREATE INDEX IF NOT EXISTS idx_vpv_vendor_ip   ON vendor_profile_views(vendor_user_id, viewer_ip_hash, created_at)`);
+
+await _safeExec(`CREATE TABLE IF NOT EXISTS vendor_search_appearances (
+  id             INTEGER PRIMARY KEY AUTOINCREMENT,
+  vendor_user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  context        TEXT NOT NULL DEFAULT 'vendors_list',
+  created_at     DATETIME DEFAULT (datetime('now'))
+)`);
+await _safeExec(`CREATE INDEX IF NOT EXISTS idx_vsa_vendor_date ON vendor_search_appearances(vendor_user_id, created_at)`);
 
 if (_needsSeed) {
   const _ins = prepare(`INSERT OR IGNORE INTO events (slug,name,category,suburb,state,date_sort,organiser_name) VALUES (@slug,@name,@category,@suburb,@state,@date_sort,@organiser_name)`);
@@ -1271,6 +1292,22 @@ export const stmts = {
   // organiser analytics (applications per event)
   getOrgEventStats:      prepare(`SELECT e.id,e.name,e.date_sort,e.category, COUNT(ea.id) as total_apps, SUM(CASE WHEN ea.status='approved' THEN 1 ELSE 0 END) as approved, SUM(CASE WHEN ea.status='pending' THEN 1 ELSE 0 END) as pending, SUM(CASE WHEN ea.status='rejected' THEN 1 ELSE 0 END) as rejected FROM events e LEFT JOIN event_applications ea ON ea.event_id=e.id WHERE e.organiser_user_id=? GROUP BY e.id ORDER BY e.date_sort DESC`),
 
+  // ── Organiser analytics (extended) ──────────────────────────────────────────
+  getOrgRevenueCollected:   prepare(`SELECT COALESCE(SUM(sf.amount),0) as total FROM stall_fees sf JOIN events e ON sf.event_id=e.id WHERE e.organiser_user_id=? AND sf.status='paid'`),
+  getOrgRevenueOutstanding: prepare(`SELECT COALESCE(SUM(sf.amount),0) as total FROM stall_fees sf JOIN events e ON sf.event_id=e.id WHERE e.organiser_user_id=? AND sf.status='unpaid'`),
+  getOrgRevenueByEvent:     prepare(`SELECT e.id,e.name,e.date_sort, COALESCE(SUM(CASE WHEN sf.status='paid' THEN sf.amount ELSE 0 END),0) as collected, COALESCE(SUM(CASE WHEN sf.status='unpaid' THEN sf.amount ELSE 0 END),0) as outstanding, COUNT(sf.id) as total_invoices FROM events e LEFT JOIN stall_fees sf ON sf.event_id=e.id WHERE e.organiser_user_id=? GROUP BY e.id HAVING total_invoices>0 ORDER BY e.date_sort DESC`),
+  getOrgAvgStallFee:        prepare(`SELECT ROUND(AVG(sf.amount),0) as avg_fee FROM stall_fees sf JOIN events e ON sf.event_id=e.id WHERE e.organiser_user_id=? AND sf.status IN ('paid','unpaid')`),
+  getOrgAppStats:           prepare(`SELECT COUNT(*) as total, SUM(CASE WHEN ea.status='approved' THEN 1 ELSE 0 END) as approved, SUM(CASE WHEN ea.status='rejected' THEN 1 ELSE 0 END) as rejected, SUM(CASE WHEN ea.status='pending' THEN 1 ELSE 0 END) as pending, SUM(CASE WHEN ea.status='withdrawn' THEN 1 ELSE 0 END) as withdrawn FROM event_applications ea JOIN events e ON ea.event_id=e.id WHERE e.organiser_user_id=?`),
+  getOrgAvgResponseTime:    prepare(`SELECT ROUND(AVG((julianday(ea.approved_at)-julianday(ea.created_at))*24),1) as avg_hours FROM event_applications ea JOIN events e ON ea.event_id=e.id WHERE e.organiser_user_id=? AND ea.approved_at IS NOT NULL AND ea.status IN ('approved','rejected')`),
+  getOrgAppsByMonth:        prepare(`SELECT strftime('%Y-%m',ea.created_at) as month, COUNT(*) as apps FROM event_applications ea JOIN events e ON ea.event_id=e.id WHERE e.organiser_user_id=? AND ea.created_at>=date('now','-5 months','start of month') GROUP BY strftime('%Y-%m',ea.created_at) ORDER BY month ASC`),
+  getOrgTopVendors:         prepare(`SELECT v.trading_name,v.cuisine_tags,v.suburb,v.state, COUNT(ea.id) as times_booked, MAX(e.date_sort) as last_event_date FROM event_applications ea JOIN events e ON ea.event_id=e.id JOIN vendors v ON v.user_id=ea.vendor_user_id WHERE e.organiser_user_id=? AND ea.status='approved' GROUP BY ea.vendor_user_id ORDER BY times_booked DESC LIMIT 10`),
+  getOrgCuisineMix:         prepare(`SELECT v.cuisine_tags FROM event_applications ea JOIN events e ON ea.event_id=e.id JOIN vendors v ON v.user_id=ea.vendor_user_id WHERE e.organiser_user_id=? AND ea.status='approved'`),
+  getOrgRepeatVendors:      prepare(`SELECT COUNT(*) as total_unique, SUM(CASE WHEN cnt>=2 THEN 1 ELSE 0 END) as repeat_vendors FROM (SELECT ea.vendor_user_id, COUNT(DISTINCT ea.event_id) as cnt FROM event_applications ea JOIN events e ON ea.event_id=e.id WHERE e.organiser_user_id=? AND ea.status='approved' GROUP BY ea.vendor_user_id)`),
+  getOrgVendorQuality:      prepare(`SELECT ROUND(AVG(punctual),1) as avg_punctual, ROUND(AVG(presentation),1) as avg_presentation, ROUND(SUM(would_rebook)*100.0/COUNT(*),0) as rebook_rate, COUNT(*) as total_rated FROM organiser_vendor_ratings WHERE organiser_user_id=?`),
+  getOrgEventComparison:    prepare(`SELECT e.id,e.name,e.date_sort,e.category,e.suburb, COALESCE(e.stalls_available,0) as stalls_available, COUNT(ea.id) as total_apps, SUM(CASE WHEN ea.status='approved' THEN 1 ELSE 0 END) as approved, CASE WHEN COALESCE(e.stalls_available,0)>0 THEN ROUND(SUM(CASE WHEN ea.status='approved' THEN 1 ELSE 0 END)*100.0/e.stalls_available,0) ELSE 0 END as fill_rate, CASE WHEN COALESCE(e.stalls_available,0)>0 THEN ROUND(COUNT(ea.id)*1.0/e.stalls_available,1) ELSE 0 END as demand_ratio FROM events e LEFT JOIN event_applications ea ON ea.event_id=e.id WHERE e.organiser_user_id=? AND e.status!='deleted' GROUP BY e.id ORDER BY fill_rate DESC,total_apps DESC`),
+  getOrgCategoryPerformance:prepare(`SELECT COALESCE(e.category,'Uncategorised') as category, COUNT(DISTINCT e.id) as event_count, ROUND(AVG(sub.total_apps),1) as avg_apps, ROUND(AVG(sub.fill_rate),0) as avg_fill_rate FROM events e LEFT JOIN (SELECT ea.event_id, COUNT(ea.id) as total_apps, CASE WHEN COALESCE(e2.stalls_available,0)>0 THEN SUM(CASE WHEN ea.status='approved' THEN 1 ELSE 0 END)*100.0/e2.stalls_available ELSE 0 END as fill_rate FROM event_applications ea JOIN events e2 ON ea.event_id=e2.id WHERE e2.organiser_user_id=? GROUP BY ea.event_id) sub ON sub.event_id=e.id WHERE e.organiser_user_id=? AND e.status!='deleted' GROUP BY e.category ORDER BY avg_apps DESC`),
+  getOrgReviewDistribution: prepare(`SELECT rating, COUNT(*) as count FROM organiser_reviews WHERE organiser_user_id=? GROUP BY rating ORDER BY rating DESC`),
+
   // organiser settings
   updateOrganiserSettings: prepare(`UPDATE organisers SET notif_new_apps=@notif_new_apps,notif_deadlines=@notif_deadlines,notif_messages=@notif_messages,notif_payments=@notif_payments WHERE user_id=@user_id`),
   pauseOrganiser:          prepare(`UPDATE organisers SET paused=? WHERE user_id=?`),
@@ -1386,6 +1423,119 @@ export const stmts = {
   getAllSettings:   prepare(`SELECT key, value FROM platform_settings`),
   getSetting:       prepare(`SELECT value FROM platform_settings WHERE key = ?`),
   upsertSetting:    prepare(`INSERT INTO platform_settings (key,value) VALUES (?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value`),
+
+  // ── Analytics: profile views ──────────────────────────────────────────────
+  recordProfileView: prepare(`INSERT INTO vendor_profile_views (vendor_user_id, viewer_user_id, viewer_role, viewer_ip_hash, referrer) VALUES (?,?,?,?,?)`),
+  getProfileViews30d: prepare(`SELECT COUNT(*) as total FROM vendor_profile_views WHERE vendor_user_id=? AND created_at >= datetime('now','-30 days')`),
+  getProfileViewsDaily30d: prepare(`
+    SELECT date(created_at) as day, COUNT(*) as views
+    FROM vendor_profile_views
+    WHERE vendor_user_id=? AND created_at >= datetime('now','-30 days')
+    GROUP BY date(created_at) ORDER BY day ASC
+  `),
+  getProfileViewsUnique30d: prepare(`SELECT COUNT(DISTINCT viewer_ip_hash) as unique_visitors FROM vendor_profile_views WHERE vendor_user_id=? AND created_at >= datetime('now','-30 days')`),
+  getProfileViewsBySource30d: prepare(`
+    SELECT COALESCE(referrer,'direct') as referrer, COUNT(*) as views
+    FROM vendor_profile_views
+    WHERE vendor_user_id=? AND created_at >= datetime('now','-30 days')
+    GROUP BY referrer ORDER BY views DESC
+  `),
+  getProfileViewsByRole30d: prepare(`
+    SELECT COALESCE(viewer_role,'anonymous') as viewer_role, COUNT(*) as views
+    FROM vendor_profile_views
+    WHERE vendor_user_id=? AND created_at >= datetime('now','-30 days')
+    GROUP BY viewer_role ORDER BY views DESC
+  `),
+  getProfileViewsHourly30d: prepare(`
+    SELECT CAST(strftime('%H', created_at) AS INTEGER) as hour, COUNT(*) as views
+    FROM vendor_profile_views
+    WHERE vendor_user_id=? AND created_at >= datetime('now','-30 days')
+    GROUP BY hour ORDER BY hour ASC
+  `),
+
+  // ── Analytics: applications ─────────────────────────────────────────────
+  getApplicationStats: prepare(`SELECT status, COUNT(*) as count FROM event_applications WHERE vendor_user_id=? GROUP BY status`),
+  getApplicationsMonthly6m: prepare(`
+    SELECT strftime('%Y-%m', created_at) as month, status, COUNT(*) as count
+    FROM event_applications
+    WHERE vendor_user_id=? AND created_at >= datetime('now','-6 months')
+    GROUP BY month, status ORDER BY month ASC
+  `),
+  getAvgResponseTime: prepare(`
+    SELECT AVG(julianday(e.date_sort) - julianday(ea.created_at)) as avg_days
+    FROM event_applications ea
+    JOIN events e ON e.id = ea.event_id
+    WHERE ea.vendor_user_id=? AND ea.status IN ('approved','rejected')
+  `),
+
+  // ── Analytics: revenue ──────────────────────────────────────────────────
+  getRevenueTotals: prepare(`
+    SELECT
+      SUM(CASE WHEN status='paid' THEN amount ELSE 0 END) as total_paid,
+      SUM(CASE WHEN status='unpaid' OR status='pending' THEN amount ELSE 0 END) as total_outstanding,
+      COUNT(DISTINCT event_id) as events_count
+    FROM stall_fees WHERE vendor_user_id=?
+  `),
+  getRevenueMonthly6m: prepare(`
+    SELECT strftime('%Y-%m', paid_at) as month, SUM(amount) as total, COUNT(*) as events
+    FROM stall_fees
+    WHERE vendor_user_id=? AND status='paid' AND paid_at >= datetime('now','-6 months')
+    GROUP BY month ORDER BY month ASC
+  `),
+
+  // ── Analytics: reviews ──────────────────────────────────────────────────
+  getReviewSummary: prepare(`SELECT AVG(rating) as avg_rating, COUNT(*) as total_reviews FROM vendor_reviews WHERE vendor_user_id=?`),
+  getReviewTrend6m: prepare(`
+    SELECT strftime('%Y-%m', created_at) as month, AVG(rating) as avg_rating, COUNT(*) as count
+    FROM vendor_reviews
+    WHERE vendor_user_id=? AND created_at >= datetime('now','-6 months')
+    GROUP BY month ORDER BY month ASC
+  `),
+
+  // ── Analytics: search appearances ───────────────────────────────────────
+  recordSearchAppearance: prepare(`INSERT INTO vendor_search_appearances (vendor_user_id, context) VALUES (?,?)`),
+  getSearchAppearances30d: prepare(`SELECT COUNT(*) as total FROM vendor_search_appearances WHERE vendor_user_id=? AND created_at >= datetime('now','-30 days')`),
+  getSearchAppearancesDaily30d: prepare(`
+    SELECT date(created_at) as day, COUNT(*) as appearances
+    FROM vendor_search_appearances
+    WHERE vendor_user_id=? AND created_at >= datetime('now','-30 days')
+    GROUP BY date(created_at) ORDER BY day ASC
+  `),
+
+  // ── Analytics: competition ──────────────────────────────────────────────
+  getCategoryAcceptanceRate: prepare(`
+    SELECT
+      COUNT(*) as total_apps,
+      SUM(CASE WHEN ea.status='approved' THEN 1 ELSE 0 END) as approved_apps
+    FROM event_applications ea
+    JOIN vendors v ON v.user_id = ea.vendor_user_id
+    WHERE v.cuisine_tags LIKE '%' || ? || '%'
+      AND ea.vendor_user_id != ?
+  `),
+  getVendorAcceptanceRate: prepare(`
+    SELECT
+      COUNT(*) as total_apps,
+      SUM(CASE WHEN status='approved' THEN 1 ELSE 0 END) as approved_apps
+    FROM event_applications WHERE vendor_user_id=?
+  `),
+  getCategoryVendorCount: prepare(`
+    SELECT COUNT(*) as count FROM vendors WHERE cuisine_tags LIKE '%' || ? || '%'
+  `),
+  getCategoryRank: prepare(`
+    SELECT COUNT(*) + 1 as rank FROM (
+      SELECT ea2.vendor_user_id,
+        CAST(SUM(CASE WHEN ea2.status='approved' THEN 1 ELSE 0 END) AS REAL) / MAX(COUNT(*), 1) as rate
+      FROM event_applications ea2
+      JOIN vendors v2 ON v2.user_id = ea2.vendor_user_id
+      WHERE v2.cuisine_tags LIKE '%' || ? || '%'
+        AND ea2.vendor_user_id != ?
+      GROUP BY ea2.vendor_user_id
+      HAVING rate > (
+        SELECT CAST(SUM(CASE WHEN status='approved' THEN 1 ELSE 0 END) AS REAL) / MAX(COUNT(*), 1)
+        FROM event_applications WHERE vendor_user_id=?
+      )
+    )
+  `),
 
   // danger zone
   purgeDraftEvents: prepare(`DELETE FROM events WHERE status='draft'`),

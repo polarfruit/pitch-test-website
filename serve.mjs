@@ -1,6 +1,6 @@
 import express from 'express';
 import compression from 'compression';
-import { createHmac, randomBytes } from 'crypto';
+import { createHmac, createHash, randomBytes } from 'crypto';
 import fs from 'fs';
 import bcrypt from 'bcryptjs';
 import path from 'path';
@@ -228,12 +228,13 @@ async function orgInitData(user) {
 
 async function vendorInitData(user) {
   // Run all queries in parallel — avoids sequential round-trips to Turso
-  const [events, applications, unreadRow] = await Promise.all([
+  const [events, applications, unreadRow, viewsRow] = await Promise.all([
     stmts.publishedEventsForVendor.all(user.id).catch(e => { console.error('[vendorInitData] events', e); return []; }),
     stmts.getApplicationsByVendor.all(user.id).catch(e => { console.error('[vendorInitData] applications', e); return []; }),
     stmts.getUnreadMsgCount.get(user.id, user.id, user.id).catch(e => { console.error('[vendorInitData] unread', e); return null; }),
+    stmts.getProfileViews30d.get(user.id).catch(() => ({ total: 0 })),
   ]);
-  return { events, applications, unreadMessages: unreadRow ? Number(unreadRow.count) : 0 };
+  return { events, applications, unreadMessages: unreadRow ? Number(unreadRow.count) : 0, viewCount30d: Number(viewsRow?.total ?? 0) };
 }
 
 // ── Auth helpers ───────────────────────────────────────────────────────────
@@ -1060,19 +1061,42 @@ app.get('/api/events/:slug', async (req, res) => {
 
 // ── API: Public vendors ────────────────────────────────────────────────────
 
+// Rate-limit search appearance tracking: max once per IP per 5 minutes
+const _searchAppearanceCache = new Map();
+setInterval(() => { const cutoff = Date.now() - 300000; for (const [k, t] of _searchAppearanceCache) if (t < cutoff) _searchAppearanceCache.delete(k); }, 60000);
 
-app.get('/api/vendors', apiCached('vendors', 60000, async () => {
-  try {
-    const rows = await stmts.publicVendors.all();
-    return { vendors: rows.map(v => ({
-      ...v,
-      cuisine_tags: (() => { try { return JSON.parse(v.cuisine_tags || '[]'); } catch { return []; } })(),
-    })) };
-  } catch(e) {
-    console.error('[/api/vendors] query failed:', e.message, e.stack);
-    return { vendors: [], error: e.message };
+app.get('/api/vendors', async (req, res) => {
+  // Use the cached data layer
+  const hit = _apiCache.get('vendors');
+  let data;
+  if (hit && Date.now() - hit.ts < 60000) {
+    data = hit.data;
+  } else {
+    try {
+      const rows = await stmts.publicVendors.all();
+      data = { vendors: rows.map(v => ({
+        ...v,
+        cuisine_tags: (() => { try { return JSON.parse(v.cuisine_tags || '[]'); } catch { return []; } })(),
+      })) };
+      _apiCache.set('vendors', { data, ts: Date.now() });
+    } catch(e) {
+      console.error('[/api/vendors] query failed:', e.message, e.stack);
+      data = { vendors: [], error: e.message };
+    }
   }
-}));
+  res.setHeader('Cache-Control', 'no-cache');
+  res.json(data);
+  // Fire-and-forget: track search appearances (rate-limited by IP)
+  try {
+    const ipKey = createHash('sha256').update(req.ip || '').digest('hex').slice(0, 12);
+    if (!_searchAppearanceCache.has(ipKey) && data.vendors?.length) {
+      _searchAppearanceCache.set(ipKey, Date.now());
+      for (const v of data.vendors) {
+        try { stmts.recordSearchAppearance.run(v.user_id, 'vendors_list'); } catch {}
+      }
+    }
+  } catch {}
+});
 
 app.get('/api/vendors/:userId', async (req, res) => {
   const row = await stmts.publicVendorById.get(req.params.userId);
@@ -1972,6 +1996,111 @@ app.get('/api/vendor/subscription-info', requireAuth, async (req, res) => {
   }
 });
 
+// ── API: Vendor Analytics ──────────────────────────────────────────────────
+app.get('/api/vendor/analytics', requireAuth, async (req, res) => {
+  if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Vendors only' });
+  const uid = req.session.userId;
+  try {
+    const vendorRow = await stmts.getVendorByUserId.get(uid);
+    const plan = vendorRow?.plan || 'free';
+    if (plan === 'free') return res.json({ locked: true });
+
+    // Pro + Growth data — run all queries in parallel
+    const [views30d, viewsUnique, viewsDaily, appStats, appsMonthly, avgResp, revTotals, revMonthly, reviewSum, reviewTrend] = await Promise.all([
+      stmts.getProfileViews30d.get(uid).catch(() => ({ total: 0 })),
+      stmts.getProfileViewsUnique30d.get(uid).catch(() => ({ unique_visitors: 0 })),
+      stmts.getProfileViewsDaily30d.all(uid).catch(() => []),
+      stmts.getApplicationStats.all(uid).catch(() => []),
+      stmts.getApplicationsMonthly6m.all(uid).catch(() => []),
+      stmts.getAvgResponseTime.get(uid).catch(() => ({ avg_days: null })),
+      stmts.getRevenueTotals.get(uid).catch(() => ({ total_paid: 0, total_outstanding: 0, events_count: 0 })),
+      stmts.getRevenueMonthly6m.all(uid).catch(() => []),
+      stmts.getReviewSummary.get(uid).catch(() => ({ avg_rating: null, total_reviews: 0 })),
+      stmts.getReviewTrend6m.all(uid).catch(() => []),
+    ]);
+
+    const result = {
+      views: {
+        total: Number(views30d?.total ?? 0),
+        unique: Number(viewsUnique?.unique_visitors ?? 0),
+        daily: viewsDaily,
+      },
+      applications: {
+        stats: appStats,
+        monthly: appsMonthly,
+        avgResponseDays: avgResp?.avg_days != null ? Math.round(avgResp.avg_days * 10) / 10 : null,
+      },
+      revenue: {
+        total_paid: Number(revTotals?.total_paid ?? 0),
+        total_outstanding: Number(revTotals?.total_outstanding ?? 0),
+        events_count: Number(revTotals?.events_count ?? 0),
+        monthly: revMonthly,
+      },
+      reviews: {
+        avg_rating: reviewSum?.avg_rating != null ? Math.round(reviewSum.avg_rating * 10) / 10 : null,
+        total_reviews: Number(reviewSum?.total_reviews ?? 0),
+        trend: reviewTrend,
+      },
+    };
+
+    // Growth-only features
+    if (plan === 'growth') {
+      const cuisineTags = (() => { try { return JSON.parse(vendorRow.cuisine_tags || '[]'); } catch { return []; } })();
+      const primaryCuisine = cuisineTags[0] || '';
+
+      const [viewsBySource, viewsByRole, viewsHourly, search30d, searchDaily, vendorRate, catRate, catCount, catRank] = await Promise.all([
+        stmts.getProfileViewsBySource30d.all(uid).catch(() => []),
+        stmts.getProfileViewsByRole30d.all(uid).catch(() => []),
+        stmts.getProfileViewsHourly30d.all(uid).catch(() => []),
+        stmts.getSearchAppearances30d.get(uid).catch(() => ({ total: 0 })),
+        stmts.getSearchAppearancesDaily30d.all(uid).catch(() => []),
+        stmts.getVendorAcceptanceRate.get(uid).catch(() => ({ total_apps: 0, approved_apps: 0 })),
+        primaryCuisine ? stmts.getCategoryAcceptanceRate.get(primaryCuisine, uid).catch(() => ({ total_apps: 0, approved_apps: 0 })) : Promise.resolve({ total_apps: 0, approved_apps: 0 }),
+        primaryCuisine ? stmts.getCategoryVendorCount.get(primaryCuisine).catch(() => ({ count: 0 })) : Promise.resolve({ count: 0 }),
+        primaryCuisine ? stmts.getCategoryRank.get(primaryCuisine, uid, uid).catch(() => ({ rank: 0 })) : Promise.resolve({ rank: 0 }),
+      ]);
+
+      result.views.bySource = viewsBySource;
+      result.views.byRole = viewsByRole;
+
+      const searchTotal = Number(search30d?.total ?? 0);
+      const viewTotal = result.views.total;
+      const totalApps = Number(vendorRate?.total_apps ?? 0);
+      const approvedApps = Number(vendorRate?.approved_apps ?? 0);
+
+      result.search = {
+        appearances: searchTotal,
+        daily: searchDaily,
+        conversionRate: searchTotal > 0 ? Math.round((viewTotal / searchTotal) * 100) : 0,
+      };
+
+      result.peakHours = viewsHourly;
+
+      const catTotalApps = Number(catRate?.total_apps ?? 0);
+      const catApproved = Number(catRate?.approved_apps ?? 0);
+      result.competition = {
+        yourRate: totalApps > 0 ? Math.round((approvedApps / totalApps) * 100) : 0,
+        categoryRate: catTotalApps > 0 ? Math.round((catApproved / catTotalApps) * 100) : 0,
+        categoryCount: Number(catCount?.count ?? 0),
+        yourRank: Number(catRank?.rank ?? 0),
+        primaryCuisine,
+      };
+
+      result.funnel = {
+        searchAppearances: searchTotal,
+        profileViews: viewTotal,
+        applicationsTotal: totalApps,
+        acceptances: approvedApps,
+      };
+    }
+
+    res.json(result);
+  } catch (e) {
+    console.error('[vendor/analytics]', e);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // ── API: Messaging ─────────────────────────────────────────────────────────
 // GET /api/messages — list all threads for current user with unread counts
 app.get('/api/messages', requireAuth, async (req, res) => {
@@ -2605,11 +2734,50 @@ app.post('/api/organiser/calendar-token', requireAuth, async (req, res) => {
   }
 });
 
-// GET /api/organiser/analytics
+// GET /api/organiser/analytics (extended)
 app.get('/api/organiser/analytics', requireAuth, async (req, res) => {
   if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
-  const stats = await stmts.getOrgEventStats.all(req.session.userId);
-  res.json({ stats });
+  const uid = req.session.userId;
+  try {
+    const [stats, revCollected, revOutstanding, revByEvent, avgFee, appStats, avgResp, appsByMonth, topVendors, cuisineRaw, repeatVendors, vendorQuality, eventComp, catPerf, reviewDist, reviewAvg, recentReviews] = await Promise.all([
+      stmts.getOrgEventStats.all(uid),
+      stmts.getOrgRevenueCollected.get(uid),
+      stmts.getOrgRevenueOutstanding.get(uid),
+      stmts.getOrgRevenueByEvent.all(uid),
+      stmts.getOrgAvgStallFee.get(uid),
+      stmts.getOrgAppStats.get(uid),
+      stmts.getOrgAvgResponseTime.get(uid),
+      stmts.getOrgAppsByMonth.all(uid),
+      stmts.getOrgTopVendors.all(uid),
+      stmts.getOrgCuisineMix.all(uid),
+      stmts.getOrgRepeatVendors.get(uid),
+      stmts.getOrgVendorQuality.get(uid),
+      stmts.getOrgEventComparison.all(uid),
+      stmts.getOrgCategoryPerformance.all(uid, uid),
+      stmts.getOrgReviewDistribution.all(uid),
+      stmts.getOrgReviewAvg.get(uid),
+      stmts.getOrgReviews.all(uid),
+    ]);
+    // Aggregate cuisine tags
+    const cuisineCounts = {};
+    for (const row of cuisineRaw) {
+      try { const tags = JSON.parse(row.cuisine_tags || '[]'); for (const t of tags) { const tag = t.trim(); if (tag) cuisineCounts[tag] = (cuisineCounts[tag] || 0) + 1; } } catch (_) {}
+    }
+    const cuisineMix = Object.entries(cuisineCounts).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([tag, count]) => ({ tag, count }));
+    // Review distribution 1-5
+    const distMap = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+    for (const r of reviewDist) distMap[r.rating] = r.count;
+    const collected = revCollected?.total || 0;
+    const outstanding = revOutstanding?.total || 0;
+    res.json({
+      stats,
+      revenue: { collected, outstanding, avg_fee: avgFee?.avg_fee || 0, collection_rate: (collected + outstanding) > 0 ? Math.round(collected / (collected + outstanding) * 100) : 0, by_event: revByEvent },
+      applications: { total: appStats?.total || 0, approved: appStats?.approved || 0, rejected: appStats?.rejected || 0, pending: appStats?.pending || 0, withdrawn: appStats?.withdrawn || 0, approval_rate: (appStats?.approved + appStats?.rejected) > 0 ? Math.round(appStats.approved / (appStats.approved + appStats.rejected) * 100) : 0, avg_response_hours: avgResp?.avg_hours || null, by_month: appsByMonth },
+      vendors: { total_unique: repeatVendors?.total_unique || 0, repeat_vendors: repeatVendors?.repeat_vendors || 0, repeat_rate: (repeatVendors?.total_unique || 0) > 0 ? Math.round((repeatVendors.repeat_vendors || 0) / repeatVendors.total_unique * 100) : 0, top_vendors: topVendors, cuisine_mix: cuisineMix, quality: vendorQuality || { avg_punctual: null, avg_presentation: null, rebook_rate: null, total_rated: 0 } },
+      events_comparison: { events: eventComp, by_category: catPerf },
+      reputation: { avg_rating: reviewAvg?.avg ? Math.round(reviewAvg.avg * 10) / 10 : null, total_reviews: reviewAvg?.total || 0, distribution: distMap, recent_reviews: (recentReviews || []).slice(0, 5) },
+    });
+  } catch (e) { console.error('[analytics]', e); res.status(500).json({ error: 'Failed to load analytics' }); }
 });
 
 // GET /api/organiser/vendor-ratings — ratings I've given to vendors
@@ -3381,6 +3549,14 @@ app.get('/vendors/:id', async (req, res) => {
         vendor.cuisine_tags = (() => { try { return JSON.parse(row.cuisine_tags || '[]'); } catch { return []; } })();
         vendor.photos       = (() => { try { return JSON.parse(row.photos       || '[]'); } catch { return []; } })();
         delete vendor.password_hash;
+        // Fire-and-forget view tracking
+        try {
+          const ipHash = createHash('sha256').update(req.ip || '').digest('hex').slice(0, 16);
+          const viewerUserId = req.session?.userId || null;
+          const viewerRole = req.session?.role || null;
+          const ref = req.query.ref || (req.headers.referer?.includes('/events/') ? 'event_page' : req.headers.referer?.includes('/vendors') ? 'vendors_list' : 'direct');
+          stmts.recordProfileView.run(Number(id), viewerUserId, viewerRole, ipHash, ref);
+        } catch (e) { /* non-blocking */ }
         let html = readHtml('pages/vendor-detail.html');
         html = html.replace('</head>', `<script>window.__PITCH_VENDOR__=${JSON.stringify(vendor)};</script></head>`);
         return res.send(html);
