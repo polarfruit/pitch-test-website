@@ -357,14 +357,15 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .fee-sep { color:var(--text-lo); font-size:14px; flex-shrink:0; }
 
 /* Review step */
-.review-section { margin-bottom:16px; }
+.review-section { margin-bottom:0; }
+.review-section + .review-section { margin-top:20px; }
 .review-section-head { display:flex; align-items:center; justify-content:space-between; padding:10px 0 6px; margin-bottom:4px; border-bottom:1px solid #ffffff0a; }
 .review-section-title { font-family:var(--fd); font-size:13px; font-weight:800; color:var(--text-mid); letter-spacing:-0.01em; }
 .review-section-edit { font-size:11px; font-weight:700; color:var(--ember); background:none; border:none; cursor:pointer; font-family:var(--fb); padding:3px 8px; border-radius:6px; transition:all 0.12s; display:flex; align-items:center; gap:4px; }
 .review-section-edit:hover { background:#E8500A12; }
 .review-field { display:flex; gap:16px; padding:12px 0; border-bottom:1px solid #ffffff07; }
 .review-field:last-child { border-bottom:none; }
-.review-field-label { font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-lo); width:160px; flex-shrink:0; padding-top:2px; }
+.review-field-label { font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-lo); width:180px; flex-shrink:0; padding-top:2px; }
 .review-field-value { font-size:13px; color:var(--text-hi); flex:1; line-height:1.6; }
 .review-field-value.not-set { color:var(--text-lo); font-style:italic; }
 .review-field-value.long-text { font-size:12px; line-height:1.5; color:var(--text-mid); }
@@ -559,19 +560,23 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 /* Org calendar */
 .org-cal-nav { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
 .org-cal-month { font-family:var(--fd); font-size:20px; font-weight:900; letter-spacing:-0.02em; color:var(--text-hi); }
-.org-cal-nav-btn { background:#ffffff08; border:1px solid #ffffff10; color:var(--text-mid); width:34px; height:34px; border-radius:9px; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center; transition:all 0.12s; }
-.org-cal-nav-btn:hover { background:#ffffff14; color:var(--text-hi); }
+.org-cal-nav-btn { background:#ffffff08; border:1px solid #ffffff10; color:var(--text-mid); width:38px; height:38px; border-radius:10px; cursor:pointer; font-size:18px; font-weight:700; display:flex; align-items:center; justify-content:center; transition:background 0.12s, color 0.12s, border-color 0.12s; }
+.org-cal-nav-btn:hover { background:#ffffff14; color:var(--text-hi); border-color:#ffffff18; }
 .org-cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; }
 .org-cal-day-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-lo); text-align:center; padding:8px 0; }
-.org-cal-day { min-height:72px; background:#ffffff04; border:1px solid #ffffff06; border-radius:10px; padding:6px; }
+.org-cal-day { min-height:72px; background:#ffffff04; border:1px solid #ffffff06; border-radius:10px; padding:8px 7px 6px; cursor:default; transition:background 0.12s, border-color 0.12s; }
+.org-cal-day:hover { background:#ffffff08; border-color:#ffffff0a; }
 .org-cal-day.today { border-color:var(--ember); }
-.org-cal-day.other-month { opacity:0.3; }
+.org-cal-day.today:hover { background:#E8500A08; }
+.org-cal-day.other-month { opacity:0.18; }
+.org-cal-day.other-month:hover { opacity:0.18; background:#ffffff04; border-color:#ffffff06; }
 .org-cal-day-num { font-size:11px; font-weight:600; color:var(--text-lo); margin-bottom:4px; }
-.org-cal-day.today .org-cal-day-num { color:var(--ember); }
+.org-cal-day.today .org-cal-day-num { color:var(--ember); font-weight:700; }
 .org-cal-event { font-size:9px; font-weight:700; padding:2px 5px; border-radius:4px; margin-bottom:2px; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .org-cal-event.live { background:#2D8B5520; color:var(--herb); }
 .org-cal-event.deadline { background:#C9840A20; color:var(--gold); }
 .org-cal-event.archived { background:#ffffff10; color:var(--text-lo); }
+.org-cal-empty { text-align:center; padding:24px 16px; color:var(--text-lo); font-size:12.5px; line-height:1.6; }
 
 /* Analytics */
 .analytics-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:16px; margin-bottom:24px; }
@@ -1068,7 +1073,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
             <div class="review-field"><div class="review-field-label">Exclusivity</div><div class="review-field-value" id="rv-exclusivity">—</div></div>
           </div>
 
-          <div class="review-section" style="margin-bottom:0;">
+          <div class="review-section">
             <div class="review-section-head"><span class="review-section-title">Terms</span><button class="review-section-edit" onclick="goStep(4)">✎ Edit</button></div>
             <div class="review-field"><div class="review-field-label">Cancellation</div><div class="review-field-value long-text" id="rv-cancel-policy" style="white-space:pre-wrap;">—</div></div>
             <div class="review-field"><div class="review-field-label">Payment terms</div><div class="review-field-value" id="rv-payment">—</div></div>
@@ -1247,10 +1252,11 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
             <div class="org-cal-day-label">Thu</div><div class="org-cal-day-label">Fri</div><div class="org-cal-day-label">Sat</div>
             <div class="org-cal-day-label">Sun</div>
           </div>
-          <div style="display:flex;gap:16px;margin-top:16px;flex-wrap:wrap;">
-            <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-lo);"><div style="width:10px;height:10px;border-radius:3px;background:var(--herb);"></div> Live event</div>
-            <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-lo);"><div style="width:10px;height:10px;border-radius:3px;background:var(--gold);"></div> Deadline</div>
-            <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-lo);"><div style="width:10px;height:10px;border-radius:3px;background:#ffffff30;"></div> Past</div>
+          <div id="org-cal-empty-hint" class="org-cal-empty" style="display:none;">No events this month. <a href="#" onclick="showPanel('new-event',document.querySelector('.nav-link'));return false;" style="color:var(--ember);text-decoration:none;font-weight:600;">Post an event</a> to see it here.</div>
+          <div style="display:flex;gap:18px;margin-top:16px;flex-wrap:wrap;">
+            <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-mid);"><div style="width:8px;height:8px;border-radius:50%;background:var(--herb);"></div> Live event</div>
+            <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-mid);"><div style="width:8px;height:8px;border-radius:50%;background:var(--gold);"></div> Deadline</div>
+            <div style="display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-mid);"><div style="width:8px;height:8px;border-radius:50%;background:#ffffff30;"></div> Past</div>
           </div>
         </div>
       </div>
@@ -3308,6 +3314,14 @@ function renderOrgCalendar() {
   const rem = total % 7 === 0 ? 0 : 7 - (total % 7);
   for (let i = 1; i <= rem; i++) {
     grid.appendChild(Object.assign(document.createElement('div'), { className: 'org-cal-day other-month', innerHTML: `<div class="org-cal-day-num">${i}</div>` }));
+  }
+
+  // Show empty month hint if no events this month
+  const monthPrefix = `${_orgCalYear}-${String(_orgCalMonth+1).padStart(2,'0')}`;
+  const hasEvents = Object.keys(dayMap).some(k => k.startsWith(monthPrefix));
+  const emptyHint = document.getElementById('org-cal-empty-hint');
+  if (emptyHint) {
+    emptyHint.style.display = hasEvents ? 'none' : '';
   }
 }
 
