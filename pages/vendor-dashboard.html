@@ -2869,7 +2869,7 @@ body::before {
         <div class="settings-section" id="exports-section" style="display:none;">
           <div class="settings-section-title">Exports</div>
           <div class="card" style="display:flex;flex-direction:column;gap:10px;">
-            <button onclick="downloadBookkeeping()" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--text-hi);background:#ffffff08;border:1px solid #ffffff12;padding:11px 18px;border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .14s;text-align:left;" onmouseover="this.style.background='#ffffff12'" onmouseout="this.style.background='#ffffff08'">
+            <button onclick="downloadApplicationCSV()" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--text-hi);background:#ffffff08;border:1px solid #ffffff12;padding:11px 18px;border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .14s;text-align:left;" onmouseover="this.style.background='#ffffff12'" onmouseout="this.style.background='#ffffff08'">
               📊 <span>Download application CSV</span>
               <span style="margin-left:auto;font-size:11px;color:var(--text-lo);font-weight:400;">Includes all applications and statuses</span>
             </button>
@@ -3028,6 +3028,8 @@ body::before {
   </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.4/jspdf.plugin.autotable.min.js"></script>
 <script>
 /* ── Navigate to messages panel and open a specific organiser thread ─────── */
 function msgOrg(orgId, orgName, eventName) {
@@ -5557,6 +5559,7 @@ async function loadStallFees() {
       if (!r.ok) return;
       ({ fees } = await r.json());
     }
+    window.__PITCH_ALL_FEES__ = fees;
 
     const outstanding = fees.filter(f => f.status === 'unpaid');
     const history = fees.filter(f => f.status !== 'unpaid');
@@ -7319,18 +7322,262 @@ function downloadIcsSnapshot() {
   URL.revokeObjectURL(u);
 }
 
-function downloadPaymentPDF() {
+/* ── Export helpers ──────────────────────────────────────────────────────── */
+function _csvEscape(val) {
+  if (val == null) return '';
+  const s = String(val);
+  return (s.includes(',') || s.includes('"') || s.includes('\n')) ? '"' + s.replace(/"/g, '""') + '"' : s;
+}
+function _csvDownload(rows, filename) {
+  const csv = rows.map(r => r.map(_csvEscape).join(',')).join('\r\n');
+  const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' });
+  const u = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = u; a.download = filename; a.click();
+  URL.revokeObjectURL(u);
+}
+async function _getStallFees() {
+  if (window.__PITCH_ALL_FEES__ && window.__PITCH_ALL_FEES__.length) return window.__PITCH_ALL_FEES__;
+  const init = window.__PITCH_INIT_DATA__;
+  if (init && init.stallFees && init.stallFees.length) return init.stallFees;
+  try {
+    const r = await pitchFetch('/api/vendor/stall-fees');
+    if (r.ok) { const d = await r.json(); return d.fees || []; }
+  } catch(e) { console.error('[getStallFees]', e); }
+  return [];
+}
+function _isoDate(val) {
+  if (!val) return '';
+  try { return new Date(val).toISOString().slice(0, 10); } catch { return ''; }
+}
+
+/* ── Download Payment PDF ───────────────────────────────────────────────── */
+async function downloadPaymentPDF() {
   const plan = (window.__PITCH_PROFILE__ && window.__PITCH_PROFILE__.plan) || 'free';
   if (plan === 'free') { alert('Payment history PDF download is available on Pro and Growth plans.'); return; }
-  alert('Generating PDF… (feature coming soon)');
+  if (typeof jspdf === 'undefined') { alert('PDF library failed to load. Please refresh and try again.'); return; }
+
+  const btn = document.getElementById('btn-pdf-download');
+  const origText = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.textContent = 'Generating…'; }
+
+  try {
+    const fees = await _getStallFees();
+    if (!fees.length) { alert('No payment data to export.'); return; }
+
+    const { jsPDF } = jspdf;
+    const doc = new jsPDF('p', 'mm', 'a4');
+    const pw = doc.internal.pageSize.getWidth();
+    const EMBER = [232, 80, 10];
+    const COAL = [26, 22, 18];
+    const PARCHMENT = [253, 244, 231];
+    const WHITE = [255, 255, 255];
+    const vendorName = (window.__PITCH_PROFILE__ && window.__PITCH_PROFILE__.trading_name)
+      || ((window.__PITCH_USER__ ? (window.__PITCH_USER__.first_name + ' ' + window.__PITCH_USER__.last_name) : 'Vendor'));
+    const today = new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    // Header band
+    doc.setFillColor(...EMBER);
+    doc.rect(0, 0, pw, 38, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(22);
+    doc.setTextColor(...WHITE);
+    doc.text('Pitch.', 14, 18);
+    doc.setFontSize(13);
+    doc.text('Payment Statement', 14, 28);
+    doc.setFontSize(11);
+    doc.setFont('helvetica', 'normal');
+    doc.text(vendorName, pw - 14, 18, { align: 'right' });
+    doc.setFontSize(9);
+    doc.text('Generated ' + today, pw - 14, 26, { align: 'right' });
+
+    // Summary totals
+    const sum = (status) => fees.filter(f => f.status === status).reduce((t, f) => t + Number(f.amount || 0), 0);
+    const totalPaid = sum('paid'), totalOutstanding = sum('unpaid'), totalRefunded = sum('refunded'), totalCancelled = sum('cancelled');
+
+    const sy = 46;
+    doc.setFillColor(...PARCHMENT);
+    doc.roundedRect(14, sy, pw - 28, 24, 3, 3, 'F');
+    doc.setFontSize(8);
+    doc.setTextColor(100, 100, 100);
+    const labels = ['Total Paid', 'Outstanding', 'Refunded', 'Cancelled'];
+    const values = [totalPaid, totalOutstanding, totalRefunded, totalCancelled];
+    const colors = [[45, 139, 85], [201, 132, 10], [43, 91, 168], [107, 90, 74]];
+    const colW = (pw - 28) / 4;
+    labels.forEach((lbl, i) => {
+      const cx = 14 + colW * i + colW / 2;
+      doc.setFontSize(8);
+      doc.setTextColor(100, 100, 100);
+      doc.text(lbl, cx, sy + 9, { align: 'center' });
+      doc.setFontSize(13);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(...colors[i]);
+      doc.text('$' + values[i].toFixed(2), cx, sy + 18, { align: 'center' });
+      doc.setFont('helvetica', 'normal');
+    });
+
+    // Table
+    const rows = fees.map(f => [
+      f.event_name || '',
+      '$' + Number(f.amount || 0).toFixed(2),
+      f.due_date ? _isoDate(f.due_date) : '—',
+      (f.status || '').charAt(0).toUpperCase() + (f.status || '').slice(1),
+      f.paid_at ? _isoDate(f.paid_at) : '—'
+    ]);
+
+    doc.autoTable({
+      startY: sy + 32,
+      head: [['Event', 'Amount', 'Due Date', 'Status', 'Paid Date']],
+      body: rows,
+      margin: { left: 14, right: 14 },
+      styles: { font: 'helvetica', fontSize: 9, textColor: COAL, cellPadding: 4 },
+      headStyles: { fillColor: EMBER, textColor: WHITE, fontStyle: 'bold', fontSize: 9 },
+      alternateRowStyles: { fillColor: [250, 245, 238] },
+      columnStyles: {
+        1: { halign: 'right', fontStyle: 'bold' },
+        2: { halign: 'center' },
+        4: { halign: 'center' }
+      },
+      didParseCell: function(data) {
+        if (data.section === 'body' && data.column.index === 3) {
+          const v = (data.cell.raw || '').toLowerCase();
+          if (v === 'paid') data.cell.styles.textColor = [45, 139, 85];
+          else if (v === 'unpaid') data.cell.styles.textColor = [201, 132, 10];
+          else if (v === 'refunded') data.cell.styles.textColor = [43, 91, 168];
+          else if (v === 'cancelled') data.cell.styles.textColor = [107, 90, 74];
+        }
+      },
+      didDrawPage: function(data) {
+        doc.setFontSize(8);
+        doc.setTextColor(150, 150, 150);
+        doc.text('Generated by Pitch. — onpitch.com.au', 14, doc.internal.pageSize.getHeight() - 10);
+        doc.text('Page ' + doc.internal.getNumberOfPages(), pw - 14, doc.internal.pageSize.getHeight() - 10, { align: 'right' });
+      }
+    });
+
+    doc.save('pitch-payment-statement.pdf');
+  } catch(e) {
+    console.error('[downloadPaymentPDF]', e);
+    alert('Failed to generate PDF. Please try again.');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = origText; }
+  }
 }
 
-function downloadBookkeeping() {
-  alert('Generating application CSV… (feature coming soon)');
+/* ── Download Stall Fees CSV (Bookkeeping) ──────────────────────────────── */
+async function downloadBookkeeping() {
+  const btn = document.getElementById('btn-bookkeeping');
+  const origText = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.textContent = 'Generating…'; }
+  try {
+    const fees = await _getStallFees();
+    if (!fees.length) { alert('No stall fee data to export.'); return; }
+    const rows = [['Date', 'Event', 'Amount ($)', 'Due Date', 'Status', 'Paid Date']];
+    fees.forEach(f => {
+      rows.push([
+        _isoDate(f.created_at),
+        f.event_name || '',
+        Number(f.amount || 0).toFixed(2),
+        _isoDate(f.due_date),
+        f.status || '',
+        _isoDate(f.paid_at)
+      ]);
+    });
+    _csvDownload(rows, 'pitch-stall-fees.csv');
+  } catch(e) {
+    console.error('[downloadBookkeeping]', e);
+    alert('Failed to generate CSV. Please try again.');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = origText; }
+  }
 }
 
-function downloadBookkeepingSummary() {
-  alert('Generating bookkeeping summary… (feature coming soon)');
+/* ── Download Application CSV ───────────────────────────────────────────── */
+async function downloadApplicationCSV() {
+  try {
+    let apps = window.__PITCH_ALL_APPS__;
+    if (!apps || !apps.length) {
+      try {
+        const r = await pitchFetch('/api/vendor/applications');
+        if (r.ok) { const d = await r.json(); apps = d.applications || []; }
+      } catch(e) { console.error('[fetchApps]', e); }
+    }
+    if (!apps || !apps.length) { alert('No application data to export.'); return; }
+    const rows = [['Event', 'Date', 'Location', 'Category', 'Status', 'Applied Date']];
+    apps.forEach(a => {
+      rows.push([
+        a.event_name || '',
+        _isoDate(a.date_sort),
+        [a.suburb, a.state].filter(Boolean).join(', '),
+        a.category || '',
+        a.status || '',
+        _isoDate(a.created_at)
+      ]);
+    });
+    _csvDownload(rows, 'pitch-applications.csv');
+  } catch(e) {
+    console.error('[downloadApplicationCSV]', e);
+    alert('Failed to generate CSV. Please try again.');
+  }
+}
+
+/* ── Download Bookkeeping Summary (combined CSV) ────────────────────────── */
+async function downloadBookkeepingSummary() {
+  try {
+    const fees = await _getStallFees();
+    const apps = window.__PITCH_ALL_APPS__ || [];
+    if (!fees.length && !apps.length) { alert('No data to export.'); return; }
+
+    const sum = (status) => fees.filter(f => f.status === status).reduce((t, f) => t + Number(f.amount || 0), 0);
+    const rows = [];
+
+    // Section 1: Summary
+    rows.push(['=== SUMMARY ===']);
+    rows.push(['Metric', 'Value']);
+    rows.push(['Total Paid', '$' + sum('paid').toFixed(2)]);
+    rows.push(['Total Outstanding', '$' + sum('unpaid').toFixed(2)]);
+    rows.push(['Total Refunded', '$' + sum('refunded').toFixed(2)]);
+    rows.push(['Total Cancelled', '$' + sum('cancelled').toFixed(2)]);
+    rows.push(['Total Fees', String(fees.length)]);
+    rows.push(['Total Applications', String(apps.length)]);
+    rows.push(['Approved Applications', String(apps.filter(a => a.status === 'approved').length)]);
+    rows.push(['Pending Applications', String(apps.filter(a => a.status === 'pending').length)]);
+    rows.push([]);
+
+    // Section 2: Stall Fees
+    rows.push(['=== STALL FEES ===']);
+    rows.push(['Date', 'Event', 'Amount ($)', 'Due Date', 'Status', 'Refund Status', 'Paid Date']);
+    fees.forEach(f => {
+      rows.push([
+        _isoDate(f.created_at),
+        f.event_name || '',
+        Number(f.amount || 0).toFixed(2),
+        _isoDate(f.due_date),
+        f.status || '',
+        f.refund_status || '',
+        _isoDate(f.paid_at)
+      ]);
+    });
+    rows.push([]);
+
+    // Section 3: Applications
+    rows.push(['=== APPLICATIONS ===']);
+    rows.push(['Event', 'Event Date', 'Location', 'Category', 'Status', 'Applied Date']);
+    apps.forEach(a => {
+      rows.push([
+        a.event_name || '',
+        _isoDate(a.date_sort),
+        [a.suburb, a.state].filter(Boolean).join(', '),
+        a.category || '',
+        a.status || '',
+        _isoDate(a.created_at)
+      ]);
+    });
+
+    _csvDownload(rows, 'pitch-bookkeeping-summary.csv');
+  } catch(e) {
+    console.error('[downloadBookkeepingSummary]', e);
+    alert('Failed to generate bookkeeping summary. Please try again.');
+  }
 }
 
 function sendTeamInvite() {
