@@ -43,11 +43,11 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .nav-link:hover { background:#ffffff08; color:var(--text-hi); }
 .nav-link.active { background:var(--ember-bg); color:var(--ember); border:1px solid #E8500A18; }
 .nav-icon { font-size:15px; flex-shrink:0; width:20px; text-align:center; }
-.nav-badge { margin-left:auto; background:var(--ember); color:#fff; font-size:10px; font-weight:700; padding:1px 6px; border-radius:100px; }
-.sidebar-footer { padding:16px 12px; border-top:1px solid #ffffff07; display:flex; flex-direction:column; gap:4px; }
-.sidebar-footer-link { display:flex; align-items:center; gap:10px; padding:8px 12px; border-radius:8px; cursor:pointer;
-  font-size:12px; font-weight:500; color:var(--text-lo); transition:all 0.14s; text-decoration:none; border:none; background:transparent; width:100%; font-family:var(--fb); }
-.sidebar-footer-link:hover { color:var(--text-mid); background:#ffffff06; }
+.nav-badge { margin-left:auto; background:var(--ember); color:#fff; font-size:9px; font-weight:700; padding:1px 5px; border-radius:100px; min-width:16px; text-align:center; }
+.sidebar-footer { padding:16px 12px; border-top:1px solid #ffffff0a; display:flex; flex-direction:column; gap:4px; }
+.sidebar-footer-link { display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:8px; cursor:pointer;
+  font-size:12px; font-weight:600; color:var(--text-mid); transition:all 0.14s; text-decoration:none; border:none; background:transparent; width:100%; font-family:var(--fb); }
+.sidebar-footer-link:hover { color:var(--text-hi); background:#ffffff08; }
 
 /* ── MAIN ── */
 .main { margin-left:var(--sidebar-w); flex:1; min-height:100vh; position:relative; z-index:1; }
@@ -103,13 +103,17 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 /* ── SHARED ── */
 .section-title { font-family:var(--fd); font-size:16px; font-weight:900; letter-spacing:-0.02em; color:var(--text-hi); margin-bottom:16px; }
 .card { background:var(--char); border:1px solid #ffffff08; border-radius:16px; padding:24px; }
-.stat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:32px; }
-.stat-card { background:var(--char); border:1px solid #ffffff09; border-radius:16px; padding:22px 24px; position:relative; overflow:hidden; }
+.stat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:40px; }
+.stat-card { background:var(--char); border:1px solid #ffffff09; border-radius:16px; padding:22px 24px; position:relative; overflow:hidden;
+  box-shadow:0 2px 8px rgba(0,0,0,0.18), 0 0 0 1px rgba(255,255,255,0.03); transition:box-shadow 0.2s, transform 0.2s; }
+.stat-card:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(0,0,0,0.28), 0 0 0 1px rgba(255,255,255,0.05); }
 .stat-card::before { content:''; position:absolute; top:-30px; right:-30px; width:80px; height:80px; border-radius:50%; opacity:0.07; }
 .stat-card.ember::before { background:var(--ember); }
 .stat-card.herb::before { background:var(--herb); }
 .stat-card.gold::before { background:var(--gold); }
 .stat-card.slate::before { background:var(--slate); }
+.stat-card.zero-state .stat-value { opacity:0.4; }
+.stat-card.zero-state .stat-delta { color:var(--ember); font-weight:600; }
 .stat-label { font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-lo); margin-bottom:8px; }
 .stat-value { font-family:var(--fd); font-size:36px; font-weight:900; letter-spacing:-0.03em; line-height:1; margin-bottom:6px; }
 .stat-card.ember .stat-value { color:var(--ember); }
@@ -2055,17 +2059,34 @@ function renderOrgOverview(d) {
 
   // Stat cards
   const appsEl = document.getElementById('stat-total-apps');
-  if (appsEl) appsEl.textContent = d.total_apps;
+  if (appsEl) {
+    appsEl.textContent = d.total_apps;
+    const card = appsEl.closest('.stat-card');
+    if (card) card.classList.toggle('zero-state', d.total_apps === 0);
+  }
   const fillEl = document.getElementById('stat-fill-rate');
-  if (fillEl) fillEl.textContent = d.fill_rate > 0 ? d.fill_rate + '%' : '—';
+  if (fillEl) {
+    fillEl.textContent = d.fill_rate > 0 ? Math.round(d.fill_rate) + '%' : '—';
+    const card = fillEl.closest('.stat-card');
+    if (card) card.classList.toggle('zero-state', !d.fill_rate || d.fill_rate === 0);
+  }
   const approvedEl = document.getElementById('stat-vendors-approved');
-  if (approvedEl) approvedEl.textContent = d.vendors_approved;
+  if (approvedEl) {
+    approvedEl.textContent = d.vendors_approved;
+    const card = approvedEl.closest('.stat-card');
+    if (card) card.classList.toggle('zero-state', d.vendors_approved === 0);
+  }
 
   // Upcoming events
   const upcomingEl = document.getElementById('overview-upcoming-list');
   if (upcomingEl) {
     if (!d.upcoming.length) {
-      upcomingEl.innerHTML = `<div style="color:var(--text-lo);font-size:13px;padding:16px 0;">No upcoming events. <button onclick="showPanel('new-event',null)" style="background:none;border:none;color:var(--ember);cursor:pointer;font-family:inherit;font-size:13px;">Post your first event →</button></div>`;
+      upcomingEl.innerHTML = `<div style="text-align:center;padding:32px 16px;">
+        <div style="font-size:36px;margin-bottom:12px;opacity:0.7;">📅</div>
+        <div style="font-size:14px;font-weight:700;color:var(--text-hi);margin-bottom:6px;">No upcoming events</div>
+        <div style="font-size:12px;color:var(--text-lo);margin-bottom:16px;">Create your first event and start receiving vendor applications</div>
+        <button onclick="showPanel('new-event',null)" style="font-family:var(--fb);font-size:12px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:9px 20px;border-radius:9px;cursor:pointer;transition:background 0.14s;" onmouseover="this.style.background='var(--ember-glow)'" onmouseout="this.style.background='var(--ember)'">+ Post an Event</button>
+      </div>`;
     } else {
       upcomingEl.innerHTML = d.upcoming.map((ev, i) => {
         const date = ev.date_sort ? new Date(ev.date_sort).toLocaleDateString('en-AU', {weekday:'short',day:'numeric',month:'short'}) : 'TBC';
@@ -2087,7 +2108,11 @@ function renderOrgOverview(d) {
   const recentEl = document.getElementById('overview-recent-apps');
   if (recentEl) {
     if (!d.recent_apps.length) {
-      recentEl.innerHTML = `<div style="color:var(--text-lo);font-size:13px;padding:16px 0;">No applications yet. Once vendors apply to your events they'll appear here.</div>`;
+      recentEl.innerHTML = `<div style="text-align:center;padding:32px 16px;">
+        <div style="font-size:36px;margin-bottom:12px;opacity:0.7;">📋</div>
+        <div style="font-size:14px;font-weight:700;color:var(--text-hi);margin-bottom:6px;">No applications yet</div>
+        <div style="font-size:12px;color:var(--text-lo);">Once vendors apply to your events they'll appear here</div>
+      </div>`;
     } else {
       recentEl.innerHTML = d.recent_apps.map(a => `
         <div class="recent-app-row">
@@ -2144,7 +2169,11 @@ async function loadOrgEvents() {
 function renderOrgEventsData(events) {
   const liveCount = events.filter(e => e.status === 'published').length;
   const statEl = document.getElementById('stat-live-events');
-  if (statEl) statEl.textContent = liveCount;
+  if (statEl) {
+    statEl.textContent = liveCount;
+    const card = statEl.closest('.stat-card');
+    if (card) card.classList.toggle('zero-state', liveCount === 0);
+  }
   const deltaEl = document.getElementById('stat-live-delta');
   if (deltaEl) deltaEl.textContent = liveCount === 1 ? '1 event live' : liveCount > 0 ? liveCount + ' events live' : 'No live events yet';
 
