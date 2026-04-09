@@ -5980,7 +5980,55 @@ function applySubscriptionGating(plan) {
 function exportICal() {
   const plan = (window.__PITCH_PROFILE__ && window.__PITCH_PROFILE__.plan) || 'free';
   if (plan === 'free') { alert('iCal export is available on Pro and Growth plans.'); return; }
-  alert('Generating iCal file… (feature coming soon)');
+
+  // Filter to pending + approved only
+  const exportable = _calApps.filter(a => a.status === 'pending' || a.status === 'approved');
+  if (!exportable.length) { alert('No events to export. Apply to events first!'); return; }
+
+  const icsEscape = s => (s || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
+  const toIcsDate = iso => (iso || '').replace(/-/g, '');
+  const nextDay = iso => {
+    const d = new Date(iso + 'T00:00:00');
+    d.setDate(d.getDate() + 1);
+    return d.toISOString().slice(0, 10).replace(/-/g, '');
+  };
+  const uid = window.__PITCH_USER__?.id || 0;
+  const now = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
+
+  const events = exportable.map(a => {
+    const dtStart = toIcsDate(a.date_sort);
+    const dtEnd = a.date_end ? nextDay(a.date_end) : nextDay(a.date_sort);
+    const location = [a.suburb, a.state].filter(Boolean).join(', ');
+    const status = a.status === 'approved' ? 'CONFIRMED' : 'TENTATIVE';
+    return [
+      'BEGIN:VEVENT',
+      `UID:pitch-${a.event_id}-${uid}@onpitch.com.au`,
+      `DTSTAMP:${now}`,
+      `DTSTART;VALUE=DATE:${dtStart}`,
+      `DTEND;VALUE=DATE:${dtEnd}`,
+      `SUMMARY:${icsEscape(a.event_name)}`,
+      location ? `LOCATION:${icsEscape(location)}` : '',
+      `DESCRIPTION:${icsEscape('Status: ' + a.status + ' | Category: ' + (a.category || 'Event'))}`,
+      `STATUS:${status}`,
+      'END:VEVENT'
+    ].filter(Boolean).join('\r\n');
+  });
+
+  const ics = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Pitch//Events//EN',
+    'CALSCALE:GREGORIAN',
+    'X-WR-CALNAME:Pitch Events',
+    ...events,
+    'END:VCALENDAR'
+  ].join('\r\n');
+
+  const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'pitch-events.ics'; a.click();
+  URL.revokeObjectURL(url);
 }
 
 function downloadPaymentPDF() {
