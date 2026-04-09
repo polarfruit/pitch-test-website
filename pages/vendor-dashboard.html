@@ -6205,14 +6205,16 @@ function _renderBarChart(canvasId, dailyData, opts = {}) {
   }
   drawFrame();
 
-  // Hover tooltip
+  // Hover tooltip — only when cursor is inside the chart area AND over a bar with height
   let _tooltipActive = false;
   canvas.onmousemove = (e) => {
     const r = canvas.getBoundingClientRect();
     const mx = e.clientX - r.left;
     const my = e.clientY - r.top;
-    const bar = _barPositions.find(b => mx >= b.x && mx <= b.x + b.w);
-    if (!bar) { if (_tooltipActive) { drawFrame(); _tooltipActive = false; } return; }
+    // Must be within chart bounds vertically
+    if (my < padT || my > padT + chartH) { if (_tooltipActive) { animProgress = 1; drawFrame(); _tooltipActive = false; } return; }
+    const bar = _barPositions.find(b => mx >= b.x && mx <= b.x + b.w && b.h > 0);
+    if (!bar) { if (_tooltipActive) { animProgress = 1; drawFrame(); _tooltipActive = false; } return; }
     _tooltipActive = true;
     const d = days[bar.idx];
     const label = d.date.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric', month: 'short' });
