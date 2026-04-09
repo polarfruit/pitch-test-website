@@ -385,7 +385,9 @@ await _safeExec(`ALTER TABLE vendors ADD COLUMN apps_this_month INTEGER NOT NULL
 await _safeExec(`ALTER TABLE vendors ADD COLUMN apps_reset_month TEXT NOT NULL DEFAULT ''`);
 await _safeExec(`ALTER TABLE vendors ADD COLUMN trial_ends_at DATETIME`);
 await _safeExec(`ALTER TABLE vendors ADD COLUMN subscription_status TEXT NOT NULL DEFAULT 'active'`);
-await _safeExec(`ALTER TABLE vendors ADD COLUMN calendar_feed_token TEXT UNIQUE`);
+await _safeExec(`ALTER TABLE vendors ADD COLUMN calendar_feed_token TEXT`);
+await _safeExec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_vendors_cal_token ON vendors(calendar_feed_token)`);
+
 
 // ── Vendors: add 'growth' to plan CHECK constraint ───────────────────────────
 {
