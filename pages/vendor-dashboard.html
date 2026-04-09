@@ -1832,6 +1832,9 @@ body::before {
         </div>
       </div>
 
+      <!-- Post-event review prompts -->
+      <div id="vendor-pending-reviews-banner" style="display:none;margin-bottom:20px;"></div>
+
       <!-- Two-col: recommended events + activity feed -->
       <div class="overview-grid">
 
@@ -5421,9 +5424,15 @@ function _feeStatusBadge(status, refund) {
 
 async function loadStallFees() {
   try {
-    const r = await pitchFetch('/api/vendor/stall-fees');
-    if (!r.ok) return;
-    const { fees } = await r.json();
+    const init = window.__PITCH_INIT_DATA__;
+    let fees;
+    if (init && init.stallFees !== undefined) {
+      fees = init.stallFees;
+    } else {
+      const r = await pitchFetch('/api/vendor/stall-fees');
+      if (!r.ok) return;
+      ({ fees } = await r.json());
+    }
 
     const outstanding = fees.filter(f => f.status === 'unpaid');
     const history = fees.filter(f => f.status !== 'unpaid');

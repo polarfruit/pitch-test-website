@@ -228,16 +228,17 @@ async function orgInitData(user) {
 
 async function vendorInitData(user) {
   // Run all queries in parallel — avoids sequential round-trips to Turso
-  const [events, applications, unreadRow, viewsRow, reviews, reviewAvg] = await Promise.all([
+  const [events, applications, unreadRow, viewsRow, reviews, reviewAvg, stallFees] = await Promise.all([
     stmts.publishedEventsForVendor.all(user.id).catch(e => { console.error('[vendorInitData] events', e); return []; }),
     stmts.getApplicationsByVendor.all(user.id).catch(e => { console.error('[vendorInitData] applications', e); return []; }),
     stmts.getUnreadMsgCount.get(user.id, user.id, user.id).catch(e => { console.error('[vendorInitData] unread', e); return null; }),
     stmts.getProfileViews30d.get(user.id).catch(() => ({ total: 0 })),
     stmts.getReviewsByVendor.all(user.id).catch(() => []),
     stmts.getReviewAvg.get(user.id).catch(() => null),
+    stmts.getStallFeesByVendor.all(user.id).catch(() => []),
   ]);
   return {
-    events, applications,
+    events, applications, stallFees,
     unreadMessages: unreadRow ? Number(unreadRow.count) : 0,
     viewCount30d: Number(viewsRow?.total ?? 0),
     reviews, avgRating: reviewAvg ? Number((reviewAvg.avg || 0).toFixed(1)) : 0, totalReviews: reviewAvg ? reviewAvg.total : 0,
@@ -2107,23 +2108,42 @@ app.get('/api/vendor/analytics', requireAuth, async (req, res) => {
     const plan = vendorRow?.plan || 'free';
     if (plan === 'free') return res.json({ locked: true });
 
-    // Pro + Growth data — run all queries in parallel
-    const [views30d, viewsUnique, viewsDaily, appStats, appsMonthly, avgResp, revTotals, revMonthly, reviewSum, reviewTrend] = await Promise.all([
-      stmts.getProfileViews30d.get(uid).catch(() => ({ total: 0 })),
-      stmts.getProfileViewsUnique30d.get(uid).catch(() => ({ unique_visitors: 0 })),
-      stmts.getProfileViewsDaily30d.all(uid).catch(() => []),
-      stmts.getApplicationStats.all(uid).catch(() => []),
-      stmts.getApplicationsMonthly6m.all(uid).catch(() => []),
-      stmts.getAvgResponseTime.get(uid).catch(() => ({ avg_days: null })),
-      stmts.getRevenueTotals.get(uid).catch(() => ({ total_paid: 0, total_outstanding: 0, events_count: 0 })),
-      stmts.getRevenueMonthly6m.all(uid).catch(() => []),
-      stmts.getReviewSummary.get(uid).catch(() => ({ avg_rating: null, total_reviews: 0 })),
-      stmts.getReviewTrend6m.all(uid).catch(() => []),
+    // Date range: ?from=YYYY-MM-DD&to=YYYY-MM-DD (optional)
+    const fromQ = req.query.from, toQ = req.query.to;
+    const hasRange = fromQ && toQ && /^\d{4}-\d{2}-\d{2}$/.test(fromQ) && /^\d{4}-\d{2}-\d{2}$/.test(toQ);
+    // SQL date conditions for views and search tables
+    const vDateCond = hasRange
+      ? `AND created_at >= '${fromQ}' AND created_at < date('${toQ}','+1 day')`
+      : `AND created_at >= datetime('now','-30 days')`;
+    const appDateCond = hasRange
+      ? `AND created_at >= '${fromQ}' AND created_at < date('${toQ}','+1 day')`
+      : '';
+    const revDateCond = hasRange
+      ? `AND paid_at >= '${fromQ}' AND paid_at < date('${toQ}','+1 day')`
+      : `AND paid_at >= datetime('now','-6 months')`;
+    const reviewDateCond = hasRange
+      ? `AND created_at >= '${fromQ}' AND created_at < date('${toQ}','+1 day')`
+      : `AND created_at >= datetime('now','-6 months')`;
+
+    // Dynamic queries for date-filtered analytics
+    const q = (sql) => prepare(sql);
+
+    const [viewsTotal, viewsUnique, viewsDaily, appStats, appsMonthly, avgResp, revTotals, revMonthly, reviewSum, reviewTrend] = await Promise.all([
+      q(`SELECT COUNT(*) as total FROM vendor_profile_views WHERE vendor_user_id=? ${vDateCond}`).get(uid).catch(() => ({ total: 0 })),
+      q(`SELECT COUNT(DISTINCT viewer_ip_hash) as unique_visitors FROM vendor_profile_views WHERE vendor_user_id=? ${vDateCond}`).get(uid).catch(() => ({ unique_visitors: 0 })),
+      q(`SELECT date(created_at) as day, COUNT(*) as views FROM vendor_profile_views WHERE vendor_user_id=? ${vDateCond} GROUP BY date(created_at) ORDER BY day ASC`).all(uid).catch(() => []),
+      q(`SELECT status, COUNT(*) as count FROM event_applications WHERE vendor_user_id=? ${appDateCond} GROUP BY status`).all(uid).catch(() => []),
+      q(`SELECT strftime('%Y-%m', created_at) as month, status, COUNT(*) as count FROM event_applications WHERE vendor_user_id=? ${appDateCond.replace(/created_at/g, 'created_at')} GROUP BY month, status ORDER BY month ASC`).all(uid).catch(() => []),
+      q(`SELECT AVG(julianday(e.date_sort) - julianday(ea.created_at)) as avg_days FROM event_applications ea JOIN events e ON e.id=ea.event_id WHERE ea.vendor_user_id=? AND ea.status IN ('approved','rejected') ${appDateCond.replace(/created_at/g, 'ea.created_at')}`).get(uid).catch(() => ({ avg_days: null })),
+      q(`SELECT SUM(CASE WHEN status='paid' THEN amount ELSE 0 END) as total_paid, SUM(CASE WHEN status IN ('unpaid','pending') THEN amount ELSE 0 END) as total_outstanding, COUNT(DISTINCT event_id) as events_count FROM stall_fees WHERE vendor_user_id=? ${hasRange ? appDateCond.replace(/created_at/g, 'created_at') : ''}`).get(uid).catch(() => ({ total_paid: 0, total_outstanding: 0, events_count: 0 })),
+      q(`SELECT strftime('%Y-%m', paid_at) as month, SUM(amount) as total, COUNT(*) as events FROM stall_fees WHERE vendor_user_id=? AND status='paid' ${revDateCond} GROUP BY month ORDER BY month ASC`).all(uid).catch(() => []),
+      q(`SELECT AVG(rating) as avg_rating, COUNT(*) as total_reviews FROM vendor_reviews WHERE vendor_user_id=? ${hasRange ? reviewDateCond : ''}`).get(uid).catch(() => ({ avg_rating: null, total_reviews: 0 })),
+      q(`SELECT strftime('%Y-%m', created_at) as month, AVG(rating) as avg_rating, COUNT(*) as count FROM vendor_reviews WHERE vendor_user_id=? ${reviewDateCond} GROUP BY month ORDER BY month ASC`).all(uid).catch(() => []),
     ]);
 
     const result = {
       views: {
-        total: Number(views30d?.total ?? 0),
+        total: Number(viewsTotal?.total ?? 0),
         unique: Number(viewsUnique?.unique_visitors ?? 0),
         daily: viewsDaily,
       },
@@ -2145,17 +2165,19 @@ app.get('/api/vendor/analytics', requireAuth, async (req, res) => {
       },
     };
 
+    if (hasRange) result.dateRange = { from: fromQ, to: toQ };
+
     // Growth-only features
     if (plan === 'growth') {
       const cuisineTags = (() => { try { return JSON.parse(vendorRow.cuisine_tags || '[]'); } catch { return []; } })();
       const primaryCuisine = cuisineTags[0] || '';
 
-      const [viewsBySource, viewsByRole, viewsHourly, search30d, searchDaily, vendorRate, catRate, catCount, catRank] = await Promise.all([
-        stmts.getProfileViewsBySource30d.all(uid).catch(() => []),
-        stmts.getProfileViewsByRole30d.all(uid).catch(() => []),
-        stmts.getProfileViewsHourly30d.all(uid).catch(() => []),
-        stmts.getSearchAppearances30d.get(uid).catch(() => ({ total: 0 })),
-        stmts.getSearchAppearancesDaily30d.all(uid).catch(() => []),
+      const [viewsBySource, viewsByRole, viewsHourly, searchTotal, searchDaily, vendorRate, catRate, catCount, catRank] = await Promise.all([
+        q(`SELECT COALESCE(referrer,'direct') as referrer, COUNT(*) as views FROM vendor_profile_views WHERE vendor_user_id=? ${vDateCond} GROUP BY referrer ORDER BY views DESC`).all(uid).catch(() => []),
+        q(`SELECT COALESCE(viewer_role,'anonymous') as viewer_role, COUNT(*) as views FROM vendor_profile_views WHERE vendor_user_id=? ${vDateCond} GROUP BY viewer_role ORDER BY views DESC`).all(uid).catch(() => []),
+        q(`SELECT CAST(strftime('%H', created_at) AS INTEGER) as hour, COUNT(*) as views FROM vendor_profile_views WHERE vendor_user_id=? ${vDateCond} GROUP BY hour ORDER BY hour ASC`).all(uid).catch(() => []),
+        q(`SELECT COUNT(*) as total FROM vendor_search_appearances WHERE vendor_user_id=? ${vDateCond}`).get(uid).catch(() => ({ total: 0 })),
+        q(`SELECT date(created_at) as day, COUNT(*) as appearances FROM vendor_search_appearances WHERE vendor_user_id=? ${vDateCond} GROUP BY date(created_at) ORDER BY day ASC`).all(uid).catch(() => []),
         stmts.getVendorAcceptanceRate.get(uid).catch(() => ({ total_apps: 0, approved_apps: 0 })),
         primaryCuisine ? stmts.getCategoryAcceptanceRate.get(primaryCuisine, uid).catch(() => ({ total_apps: 0, approved_apps: 0 })) : Promise.resolve({ total_apps: 0, approved_apps: 0 }),
         primaryCuisine ? stmts.getCategoryVendorCount.get(primaryCuisine).catch(() => ({ count: 0 })) : Promise.resolve({ count: 0 }),
@@ -2165,15 +2187,15 @@ app.get('/api/vendor/analytics', requireAuth, async (req, res) => {
       result.views.bySource = viewsBySource;
       result.views.byRole = viewsByRole;
 
-      const searchTotal = Number(search30d?.total ?? 0);
+      const searchCount = Number(searchTotal?.total ?? 0);
       const viewTotal = result.views.total;
       const totalApps = Number(vendorRate?.total_apps ?? 0);
       const approvedApps = Number(vendorRate?.approved_apps ?? 0);
 
       result.search = {
-        appearances: searchTotal,
+        appearances: searchCount,
         daily: searchDaily,
-        conversionRate: searchTotal > 0 ? Math.round((viewTotal / searchTotal) * 100) : 0,
+        conversionRate: searchCount > 0 ? Math.round((viewTotal / searchCount) * 100) : 0,
       };
 
       result.peakHours = viewsHourly;
@@ -2189,7 +2211,7 @@ app.get('/api/vendor/analytics', requireAuth, async (req, res) => {
       };
 
       result.funnel = {
-        searchAppearances: searchTotal,
+        searchAppearances: searchCount,
         profileViews: viewTotal,
         applicationsTotal: totalApps,
         acceptances: approvedApps,
@@ -2889,11 +2911,41 @@ app.get('/api/organiser/vendor-ratings', requireAuth, async (req, res) => {
   res.json({ ratings });
 });
 
+// GET /api/organiser/pending-ratings — completed events with unrated approved vendors
+app.get('/api/organiser/pending-ratings', requireAuth, async (req, res) => {
+  if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
+  try {
+    const rows = stmts.getPendingRatingsForOrganiser.all(req.session.userId);
+    // Group by event
+    const eventsMap = {};
+    for (const r of rows) {
+      if (!eventsMap[r.event_id]) {
+        eventsMap[r.event_id] = { event_id: r.event_id, event_name: r.event_name, completed_at: r.completed_at, vendors: [] };
+      }
+      eventsMap[r.event_id].vendors.push({
+        vendor_user_id: r.vendor_user_id,
+        trading_name: r.trading_name,
+      });
+    }
+    res.json({ pending: Object.values(eventsMap) });
+  } catch (e) { console.error('[pending-ratings]', e); res.status(500).json({ error: 'Server error' }); }
+});
+
 // POST /api/organiser/vendor-ratings — rate a vendor
 app.post('/api/organiser/vendor-ratings', requireAuth, async (req, res) => {
   if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
   const { vendor_user_id, event_id, punctual, presentation, would_rebook, notes } = req.body;
   if (!vendor_user_id) return res.status(400).json({ error: 'vendor_user_id required' });
+  // Validate event has ended if event_id provided
+  if (event_id) {
+    const ev = stmts.getEventById.get(Number(event_id));
+    if (ev) {
+      const endDate = ev.date_end || ev.date_sort;
+      if (endDate && new Date(endDate) > new Date()) {
+        return res.status(400).json({ error: 'Cannot rate vendors before the event has ended' });
+      }
+    }
+  }
   await stmts.upsertVendorRating.run({
     organiser_user_id: req.session.userId,
     vendor_user_id: Number(vendor_user_id),
@@ -2966,11 +3018,36 @@ app.post('/api/organiser/settings/pause', requireAuth, async (req, res) => {
   res.json({ ok: true, paused: !!paused });
 });
 
+// GET /api/vendor/pending-reviews — completed events where vendor hasn't reviewed organiser
+app.get('/api/vendor/pending-reviews', requireAuth, async (req, res) => {
+  if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Vendors only' });
+  try {
+    const rows = stmts.getPendingReviewsForVendor.all(req.session.userId);
+    res.json({ pending: rows.map(r => ({
+      event_id: r.event_id,
+      event_name: r.event_name,
+      completed_at: r.completed_at,
+      organiser_user_id: r.organiser_user_id,
+      organiser_name: r.org_name,
+    })) });
+  } catch (e) { console.error('[pending-reviews]', e); res.status(500).json({ error: 'Server error' }); }
+});
+
 // Vendor leaves a review of an organiser
 app.post('/api/vendor/organiser-review', requireAuth, async (req, res) => {
   if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Vendors only' });
   const { organiser_user_id, event_id, event_name, rating, body } = req.body;
   if (!organiser_user_id || !rating) return res.status(400).json({ error: 'organiser_user_id and rating required' });
+  // Validate event has ended if event_id provided
+  if (event_id) {
+    const ev = stmts.getEventById.get(Number(event_id));
+    if (ev) {
+      const endDate = ev.date_end || ev.date_sort;
+      if (endDate && new Date(endDate) > new Date()) {
+        return res.status(400).json({ error: 'Cannot review before the event has ended' });
+      }
+    }
+  }
   await stmts.createOrgReview.run({
     organiser_user_id: Number(organiser_user_id),
     vendor_user_id: req.session.userId,
