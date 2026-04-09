@@ -352,6 +352,11 @@ body::before {
   height: 140px; display: flex; align-items: center; justify-content: center;
   font-size: 52px; position: relative;
   background: linear-gradient(135deg, #1A1208, #3D2C10);
+  background-size: cover; background-position: center;
+}
+.browse-card-header img {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover; z-index: 0;
 }
 .browse-card-header-overlay {
   position: absolute; inset: 0;
@@ -3892,8 +3897,9 @@ function renderBrowseGrid(events) {
     return `<div class="browse-card${appliedClass}" style="${statusBorderStyle}" onclick="openEventDetail(${ev.id})">
       <div class="browse-card-accent" style="background:${cc.accent};"></div>
       <div class="browse-card-header" style="background-image:${cc.pattern},linear-gradient(135deg,${cc.grad[0]},${cc.grad[1]});position:relative;">
+        ${ev.cover_image ? `<img src="${ev.cover_image}" alt="${ev.name}" onerror="this.remove()">` : ''}
         <div class="browse-card-header-overlay"></div>
-        <span style="position:relative;z-index:1;font-size:72px;filter:drop-shadow(0 0 20px ${cc.accent}44);">${cc.icon}</span>
+        ${!ev.cover_image ? `<span style="position:relative;z-index:1;font-size:72px;filter:drop-shadow(0 0 20px ${cc.accent}44);">${cc.icon}</span>` : ''}
         ${ev.category ? `<span class="browse-card-cat" style="background:${cc.pillBg};color:${cc.pillText};${catPillPos}">${ev.category}</span>` : ''}
         ${total > 0 ? `<span class="browse-card-spots-badge" style="background:${spotsBg};color:${spotsCol};border:1px solid ${spotsCol}33;">${spotsTxt}</span>` : ''}
         ${showEarlyAccess ? `<span class="early-access-badge">⚡ Early access</span>` : ''}
