@@ -8,7 +8,8 @@
         "memory": 1024,
         "bundle": false,
         "includeFiles": [
-          "*.html",
+          "pages/**/*.html",
+          "server/**/*.mjs",
           "*.mjs",
           "*.js",
           "*.ico",

@@ -8,9 +8,12 @@ node_modules/
 # Screenshots (generated, not source)
 screenshots/
 temporary screenshots/
+screencapture-*.jpg
+Screenshot*.png
 
 # Screenshot helper scripts (local dev only)
 screenshot*.mjs
+scripts/screenshot*.mjs
 
 # Environment / secrets
 .env

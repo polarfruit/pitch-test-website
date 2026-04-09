@@ -5,9 +5,9 @@ import fs from 'fs';
 import bcrypt from 'bcryptjs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import db, { stmts, txSignupVendor, txSignupOrganiser, txSignupFoodie, prepare } from './db.mjs';
-import { sendVerificationEmail, sendVerificationSMS, sendAdminEmail, buildSuspensionEmailHtml, buildSuspensionNoticeHtml } from './mailer.mjs';
-import { analysePli } from './pli-analyser.mjs';
+import db, { stmts, txSignupVendor, txSignupOrganiser, txSignupFoodie, prepare } from './server/db.mjs';
+import { sendVerificationEmail, sendVerificationSMS, sendAdminEmail, buildSuspensionEmailHtml, buildSuspensionNoticeHtml } from './server/mailer.mjs';
+import { analysePli } from './server/pli-analyser.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -2640,6 +2640,72 @@ app.put('/api/admin/users/:id/role', requireAdmin, async (req, res) => {
   res.json({ ok: true });
 });
 
+// Admin force-verify entire user account (email + ABN + PLI status)
+app.post('/api/admin/users/:id/force-verify', requireAdmin, async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const user = await stmts.getUserById.get(userId);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    // 1. Mark email + phone as verified + set force_verified flag
+    await stmts.setEmailVerified.run(userId);
+    await prepare(`UPDATE users SET phone_verified=1, force_verified=1 WHERE id=?`).run(userId);
+
+    // 2. If vendor — force ABN verified + set PLI status to verified
+    if (user.role === 'vendor') {
+      const vendor = await stmts.getVendorByUserId.get(userId);
+      if (vendor) {
+        // If no ABN exists, set a placeholder so the badge doesn't show "Incomplete"
+        if (!vendor.abn) {
+          await prepare(`UPDATE vendors SET abn='00000000000' WHERE user_id=?`).run(userId);
+        }
+        await stmts.updateVendorAbnVerification.run({
+          abn_verified: 1,
+          abn_entity_name: vendor.abn_entity_name || vendor.trading_name || 'Force verified',
+          abn_match: 'match',
+          user_id: userId,
+        });
+        // Mark PLI as verified
+        await stmts.updateVendorPliAnalysis.run({
+          pli_insured_name: vendor.pli_insured_name || vendor.trading_name || '',
+          pli_policy_number: vendor.pli_policy_number || 'FORCE-VERIFIED',
+          pli_coverage_amount: vendor.pli_coverage_amount || '',
+          pli_expiry: vendor.pli_expiry || '',
+          pli_status: 'verified',
+          pli_flags: '',
+          user_id: userId,
+        });
+      }
+    }
+
+    // 3. If organiser — force ABN verified
+    if (user.role === 'organiser') {
+      const org = await stmts.getOrganiserByUserId.get(userId);
+      if (org) {
+        if (!org.abn) {
+          await prepare(`UPDATE organisers SET abn='00000000000' WHERE user_id=?`).run(userId);
+        }
+        await stmts.updateOrganiserAbnVerification.run({
+          abn_verified: 1,
+          abn_entity_name: org.abn_entity_name || org.org_name || 'Force verified',
+          abn_match: 'match',
+          user_id: userId,
+        });
+      }
+    }
+
+    // 4. Activate the user if they're still pending
+    if (user.status === 'pending') {
+      await prepare(`UPDATE users SET status='active' WHERE id=?`).run(userId);
+    }
+
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('[force-verify] Error:', err);
+    res.status(500).json({ error: 'Internal server error: ' + err.message });
+  }
+});
+
 app.post('/api/admin/users/:id/password-reset', requireAdmin, async (req, res) => {
   const user = await stmts.getUserById.get(req.params.id);
   if (!user) return res.status(404).json({ error: 'User not found' });
@@ -3038,8 +3104,8 @@ function page(file, opts) {
   };
 }
 
-app.get('/',                    page('index.html'));
-app.get('/how-it-works',        page('how-it-works.html'));
+app.get('/',                    page('pages/index.html'));
+app.get('/how-it-works',        page('pages/how-it-works.html'));
 let _eventsPageCache = null;
 let _eventsPageCacheTs = 0;
 const EVENTS_PAGE_TTL = 60000;
@@ -3069,7 +3135,7 @@ app.get('/events', async (req, res) => {
         venue_name: e.venue_name || '',
       }));
     const token = process.env.MAPBOX_TOKEN || '';
-    let html = readHtml('events.html');
+    let html = readHtml('pages/events.html');
     html = html.replace('</head>', `<script>
 window.__PITCH_MAP_EVENTS__ = ${JSON.stringify(mapData)};
 window.__MAPBOX_TOKEN__ = ${JSON.stringify(token)};
@@ -3081,17 +3147,17 @@ window.__MAPBOX_TOKEN__ = ${JSON.stringify(token)};
     res.send(html);
   } catch (e) {
     console.error('[events page]', e);
-    res.send(injectBanner(readHtml('events.html')));
+    res.send(injectBanner(readHtml('pages/events.html')));
   }
 });
-app.get('/vendors',             page('vendors.html'));
-app.get('/pricing',             page('pricing.html'));
-app.get('/about',               page('about.html'));
-app.get('/contact',             page('contact.html'));
-app.get('/terms',               page('terms.html'));
-app.get('/privacy',             page('privacy.html'));
-app.get('/blog',                page('blog.html'));
-app.get('/forgot-password',     page('forgot-password.html', { skipBanner: true }));
+app.get('/vendors',             page('pages/vendors.html'));
+app.get('/pricing',             page('pages/pricing.html'));
+app.get('/about',               page('pages/about.html'));
+app.get('/contact',             page('pages/contact.html'));
+app.get('/terms',               page('pages/terms.html'));
+app.get('/privacy',             page('pages/privacy.html'));
+app.get('/blog',                page('pages/blog.html'));
+app.get('/forgot-password',     page('pages/forgot-password.html', { skipBanner: true }));
 app.get('/events/new',          (req, res) => {
   const sess = req.session;
   if (sess && sess.userId && sess.role === 'organiser') {
@@ -3099,14 +3165,14 @@ app.get('/events/new',          (req, res) => {
   }
   return res.redirect('/signup/organiser');
 });
-app.get('/login',               page('login.html', { skipBanner: true }));
-app.get('/signup',              page('signup.html', { skipBanner: true }));
-app.get('/signup/vendor',       page('signup-vendor.html', { skipBanner: true }));
-app.get('/signup/organiser',    page('signup-organiser.html', { skipBanner: true }));
-app.get('/signup/foodie',       page('signup-foodie.html', { skipBanner: true }));
-app.get('/discover',            page('foodie-feed.html'));
-app.get('/verify/email',        page('verify-email.html', { skipBanner: true }));
-app.get('/verify/phone',        page('verify-phone.html', { skipBanner: true }));
+app.get('/login',               page('pages/login.html', { skipBanner: true }));
+app.get('/signup',              page('pages/signup.html', { skipBanner: true }));
+app.get('/signup/vendor',       page('pages/signup-vendor.html', { skipBanner: true }));
+app.get('/signup/organiser',    page('pages/signup-organiser.html', { skipBanner: true }));
+app.get('/signup/foodie',       page('pages/signup-foodie.html', { skipBanner: true }));
+app.get('/discover',            page('pages/foodie-feed.html'));
+app.get('/verify/email',        page('pages/verify-email.html', { skipBanner: true }));
+app.get('/verify/phone',        page('pages/verify-phone.html', { skipBanner: true }));
 app.get('/events/*splat', async (req, res) => {
   const slug = req.params.splat;
   try {
@@ -3131,13 +3197,13 @@ app.get('/events/*splat', async (req, res) => {
           setup_type: v.setup_type || '',
         })),
       };
-      let html = readHtml('event-detail.html');
+      let html = readHtml('pages/event-detail.html');
       html = html.replace('</head>', `<script>window.__PITCH_DB_EVENT__=${JSON.stringify(pageData)};</script></head>`);
       return res.send(html);
     }
   } catch (e) { console.error('[event page]', e); }
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  res.send(readHtml('event-detail.html'));
+  res.send(readHtml('pages/event-detail.html'));
 });
 app.get('/vendors/:id', async (req, res) => {
   const id = req.params.id;
@@ -3150,22 +3216,22 @@ app.get('/vendors/:id', async (req, res) => {
         vendor.cuisine_tags = (() => { try { return JSON.parse(row.cuisine_tags || '[]'); } catch { return []; } })();
         vendor.photos       = (() => { try { return JSON.parse(row.photos       || '[]'); } catch { return []; } })();
         delete vendor.password_hash;
-        let html = readHtml('vendor-detail.html');
+        let html = readHtml('pages/vendor-detail.html');
         html = html.replace('</head>', `<script>window.__PITCH_VENDOR__=${JSON.stringify(vendor)};</script></head>`);
         return res.send(html);
       }
     } catch (e) { console.error('[vendor page]', e); }
   }
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  res.send(readHtml('vendor-detail.html'));
+  res.send(readHtml('pages/vendor-detail.html'));
 });
-app.get('/dashboard/vendor',           serveDashboard('vendor-dashboard.html',     'vendor',    vendorInitData));
-app.get('/dashboard/vendor/*splat',    serveDashboard('vendor-dashboard.html',     'vendor',    vendorInitData));
-app.get('/dashboard/organiser',        serveDashboard('organiser-dashboard.html',  'organiser', orgInitData));
-app.get('/dashboard/organiser/*splat', serveDashboard('organiser-dashboard.html',  'organiser', orgInitData));
-app.get('/admin/login',         page('admin-login.html', { skipBanner: true }));
-app.get('/admin',               requireAdminPage, page('admin-dashboard.html', { skipBanner: true }));
-app.get('/admin/*splat',        requireAdminPage, page('admin-dashboard.html', { skipBanner: true }));
+app.get('/dashboard/vendor',           serveDashboard('pages/vendor-dashboard.html',     'vendor',    vendorInitData));
+app.get('/dashboard/vendor/*splat',    serveDashboard('pages/vendor-dashboard.html',     'vendor',    vendorInitData));
+app.get('/dashboard/organiser',        serveDashboard('pages/organiser-dashboard.html',  'organiser', orgInitData));
+app.get('/dashboard/organiser/*splat', serveDashboard('pages/organiser-dashboard.html',  'organiser', orgInitData));
+app.get('/admin/login',         page('pages/admin-login.html', { skipBanner: true }));
+app.get('/admin',               requireAdminPage, page('pages/admin-dashboard.html', { skipBanner: true }));
+app.get('/admin/*splat',        requireAdminPage, page('pages/admin-dashboard.html', { skipBanner: true }));
 
 // Block direct static access to sensitive dashboard HTML files
 app.get('/admin-dashboard.html',      requireAdminPage, (req, res) => res.redirect('/admin'));
