@@ -682,10 +682,6 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 
     <!-- ── MY EVENTS ── -->
     <div class="panel" id="panel-events">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
-        <div></div>
-        <button class="btn-topbar" onclick="showPanel('new-event',null)">+ Post an Event</button>
-      </div>
       <div class="card" style="padding:0;overflow:hidden;">
         <table class="events-table">
           <thead>
@@ -2187,19 +2183,27 @@ function renderOrgEventsData(events) {
 
   tbody.innerHTML = events.map(ev => {
     const date = ev.date_sort ? new Date(ev.date_sort).toLocaleDateString('en-AU', {day:'numeric',month:'short',year:'numeric'}) : 'TBC';
+    const isPast = ev.date_sort && new Date(ev.date_sort) < new Date();
     const statusBadge = ev.status === 'archived'
       ? `<span class="badge" style="color:var(--gold);background:#C9840A12;border:1px solid #C9840A30;">● Archived</span>`
-      : `<span class="badge badge-live">● Live</span>`;
+      : isPast
+        ? `<span class="badge badge-past">● Past</span>`
+        : `<span class="badge badge-live">● Live</span>`;
     const approvedCount = ev.approved_count || 0;
     const spotsText = ev.stalls_available
       ? `<span style="color:${approvedCount >= ev.stalls_available ? 'var(--herb)' : 'inherit'}">${approvedCount}</span>/${ev.stalls_available}`
       : '—';
+    const fillRate = ev.stalls_available && ev.stalls_available > 0
+      ? Math.round((approvedCount / ev.stalls_available) * 100) + '%'
+      : '—';
+    const fillColor = fillRate === '—' ? 'var(--text-lo)' : parseInt(fillRate) >= 80 ? 'var(--herb)' : parseInt(fillRate) >= 40 ? 'var(--gold)' : 'var(--text-mid)';
+    const rowOpacity = isPast && ev.status !== 'archived' ? 'opacity:0.6;' : '';
     return `
-      <tr data-event-id="${ev.id}">
-        <td style="padding-left:24px;"><div class="td-event">${ev.name}</div><div class="td-sub">${ev.category || ''} · ${ev.suburb || ''}${ev.state ? ', ' + ev.state : ''}</div></td>
+      <tr data-event-id="${ev.id}" style="${rowOpacity}">
+        <td style="padding-left:24px;"><div class="td-event">${ev.name}</div><div class="td-sub" style="color:var(--text-mid);opacity:0.7;">${ev.category || ''} · ${ev.suburb || ''}${ev.state ? ', ' + ev.state : ''}</div></td>
         <td style="white-space:nowrap;">${date}</td>
         <td><span class="spots-text" id="spots-text-${ev.id}">${spotsText}</span></td>
-        <td><span style="color:var(--text-lo);">—</span></td>
+        <td><span style="color:${fillColor};font-weight:600;">${fillRate}</span></td>
         <td>${statusBadge}</td>
         <td>${approvedCount}</td>
         <td style="padding-right:24px;"><div class="action-btns"><button class="btn-action btn-manage" onclick="openEventMgmt(${ev.id},'${ev.name.replace(/'/g,"\\'")}')">Manage</button></div></td>
