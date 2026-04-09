@@ -711,7 +711,7 @@ body::before {
 .btn-save:hover { background: var(--ember-glow); transform: translateY(-1px); }
 
 /* ── DOCUMENTS ───────────────────────────────────────────────────────────── */
-.doc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 24px; align-items: start; }
+.doc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 24px; }
 .doc-hint { font-size: 12px; color: var(--text-lo); line-height: 1.5; }
 @media (max-width: 1100px) and (min-width: 769px) { .doc-grid { grid-template-columns: repeat(2, 1fr); } }
 
@@ -4556,13 +4556,13 @@ function renderDocuments(uploadingState, uploadingKey) {
                ${viewLink}
              </div>
              ${pliPanel}
-             <div style="display:flex;gap:12px;align-items:center;margin-top:6px;">
+             <div style="display:flex;gap:12px;align-items:center;margin-top:auto;padding-top:6px;">
                <label style="cursor:pointer;font-size:11px;color:var(--ember);transition:color 0.12s;">Replace
                  <input type="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none;" onchange="uploadDoc('${d.key}', this)" />
                </label>
                <button onclick="removeDoc('${d.key}')" style="background:none;border:none;font-size:11px;color:var(--terra);cursor:pointer;font-family:inherit;padding:0;transition:opacity 0.12s;">Remove</button>
              </div>`
-          : `<div>
+          : `<div style="margin-top:auto;">
                <span class="status-badge badge-missing" style="margin-bottom:10px;display:inline-flex;">⚠ Not uploaded</span>
                <label class="btn-upload missing-style" style="display:flex;align-items:center;justify-content:center;margin-top:10px;cursor:pointer;">Upload file
                  <input type="file" accept=".pdf,.jpg,.jpeg,.png" style="display:none;" onchange="uploadDoc('${d.key}', this)" />
