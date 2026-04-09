@@ -3503,11 +3503,11 @@ async function loadOrgRatings() {
     const r = await pitchFetch('/api/organiser/vendor-ratings');
     if (!r.ok) {
       const el = document.getElementById('ratings-list');
-      if (el) el.innerHTML = '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:56px 24px;text-align:center;">
+      if (el) el.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:56px 24px;text-align:center;">
         <div style="font-size:44px;margin-bottom:14px;opacity:0.5;">⭐</div>
         <div style="font-size:15px;font-weight:700;color:var(--text-hi);margin-bottom:6px;">No vendor ratings yet</div>
         <div style="font-size:12.5px;color:var(--text-lo);line-height:1.6;max-width:300px;">After a market wraps up, come here to rate the vendors who attended. Your ratings help build trust across the platform.</div>
-      </div>';
+      </div>`;
       return;
     }
     const { ratings } = await r.json();
