@@ -2979,6 +2979,10 @@ app.patch('/api/admin/vendors/:id/abn-verify', requireAdmin, async (req, res) =>
     abn_match: verified ? 'match' : (req.body.abn_match || 'unknown'),
     user_id: req.params.id,
   });
+  // Clear force_verified flag when removing verification
+  if (!verified) {
+    await prepare(`UPDATE users SET force_verified=0 WHERE id=?`).run(req.params.id);
+  }
   res.json({ ok: true });
 });
 
@@ -2990,6 +2994,10 @@ app.patch('/api/admin/organisers/:id/abn-verify', requireAdmin, async (req, res)
     abn_match: verified ? 'match' : (req.body.abn_match || 'unknown'),
     user_id: req.params.id,
   });
+  // Clear force_verified flag when removing verification
+  if (!verified) {
+    await prepare(`UPDATE users SET force_verified=0 WHERE id=?`).run(req.params.id);
+  }
   res.json({ ok: true });
 });
 
