@@ -2484,7 +2484,7 @@ body::before {
         <div class="analytics-section" id="analytics-competitor-section" style="display:none;">
           <div class="analytics-section-title">Competition insights</div>
           <div class="card" id="analytics-competitor-wrap">
-            <div style="font-size:13px;color:var(--text-mid);text-align:center;padding:20px;" id="analytics-competitor-content">Loading…</div>
+            <div style="font-size:13px;color:var(--text-lo);text-align:center;padding:24px;line-height:1.6;" id="analytics-competitor-content">No competition data yet. As more vendors in your category apply to the same events, you'll see how you compare.</div>
           </div>
         </div>
 
@@ -5452,6 +5452,9 @@ function renderCalendar() {
 }
 
 // ── MARKET HISTORY ──────────────────────────────────────────────────────────
+let _historyData = [];
+let _historyFilter = 'all';
+
 async function loadMarketHistory() {
   try {
     const r = await pitchFetch('/api/vendor/history');
