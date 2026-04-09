@@ -21,10 +21,11 @@ const BYPASS_AUTH = true;
 app.use(compression());
 
 // ── HTML file reader ────────────────────────────────────────────────────────
-// Cache locally for performance; skip cache on Vercel so deploys take effect immediately.
+// Cache locally for performance; skip cache on Vercel and in dev so edits take effect immediately.
 const _htmlCache = new Map();
+const _isDev = !process.env.VERCEL;
 function readHtml(file) {
-  if (process.env.VERCEL) {
+  if (_isDev || process.env.VERCEL) {
     return fs.readFileSync(path.join(__dirname, file), 'utf8');
   }
   if (!_htmlCache.has(file)) {
@@ -3256,6 +3257,51 @@ app.get('/dashboard/organiser/*splat', serveDashboard('pages/organiser-dashboard
 app.get('/admin/login',         page('pages/admin-login.html', { skipBanner: true }));
 app.get('/admin',               requireAdminPage, page('pages/admin-dashboard.html', { skipBanner: true }));
 app.get('/admin/*splat',        requireAdminPage, page('pages/admin-dashboard.html', { skipBanner: true }));
+
+// ── SEO: robots.txt & sitemap.xml ──────────────────────────────────────────
+app.get('/robots.txt', (req, res) => {
+  res.type('text/plain').send(`User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin/*
+Disallow: /dashboard/*
+Disallow: /api/
+Disallow: /login
+Disallow: /signup*
+Disallow: /verify-*
+Disallow: /forgot-password
+
+Sitemap: https://onpitch.com.au/sitemap.xml
+`);
+});
+
+app.get('/sitemap.xml', (req, res) => {
+  const base = 'https://onpitch.com.au';
+  const pages = [
+    { loc: '/',             priority: '1.0', changefreq: 'weekly' },
+    { loc: '/about',        priority: '0.8', changefreq: 'monthly' },
+    { loc: '/vendors',      priority: '0.9', changefreq: 'daily' },
+    { loc: '/events',       priority: '0.9', changefreq: 'daily' },
+    { loc: '/pricing',      priority: '0.7', changefreq: 'monthly' },
+    { loc: '/how-it-works', priority: '0.7', changefreq: 'monthly' },
+    { loc: '/contact',      priority: '0.6', changefreq: 'monthly' },
+    { loc: '/blog',         priority: '0.7', changefreq: 'weekly' },
+    { loc: '/privacy',      priority: '0.3', changefreq: 'yearly' },
+    { loc: '/terms',        priority: '0.3', changefreq: 'yearly' },
+  ];
+  const today = new Date().toISOString().split('T')[0];
+  const urls = pages.map(p => `  <url>
+    <loc>${base}${p.loc}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>${p.changefreq}</changefreq>
+    <priority>${p.priority}</priority>
+  </url>`).join('\n');
+
+  res.type('application/xml').send(`<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls}
+</urlset>`);
+});
 
 // Block direct static access to sensitive dashboard HTML files
 app.get('/admin-dashboard.html',      requireAdminPage, (req, res) => res.redirect('/admin'));

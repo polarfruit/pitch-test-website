@@ -3013,21 +3013,16 @@
 
   async function adminForceVerify(userId, role, verified, entityName) {
     if (verified) {
-      // Use the full force-verify endpoint — sets ABN, email, force_verified flag, everything
       try {
         const r = await fetch(`/api/admin/users/${userId}/force-verify`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
         });
         const data = await r.json().catch(() => ({}));
-        if (!r.ok) {
-          toast(data.error || 'Force verify failed', 'error');
-          return;
-        }
+        if (!r.ok) { toast(data.error || 'Force verify failed', 'error'); return; }
         toast('Account force-verified ✓', 'success');
-      } catch (e) { console.error('[force verify]', e); toast('Network error', 'error'); return; }
+      } catch (e) { toast('Network error', 'error'); return; }
     } else {
-      // Remove verification — use the ABN-specific endpoint
       const endpoint = role === 'organiser'
         ? `/api/admin/organisers/${userId}/abn-verify`
         : `/api/admin/vendors/${userId}/abn-verify`;
@@ -3037,24 +3032,20 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ verified: false, entity_name: entityName || '', abn_match: 'unknown' }),
         });
-        if (!r.ok) {
-          const err = await r.json().catch(() => ({}));
-          toast(err.error || 'Remove verification failed', 'error');
-          return;
-        }
+        const data = await r.json().catch(() => ({}));
+        if (!r.ok) { toast(data.error || 'Remove verification failed', 'error'); return; }
         toast('ABN verification removed', 'info');
-      } catch (e) { console.error('[force verify]', e); toast('Network error', 'error'); return; }
+      } catch (e) { toast('Network error', 'error'); return; }
     }
-    // Refresh list caches + detail panel so UI updates immediately
+    // Instantly re-open the detail panel (single fetch) — list refresh happens in background
     if (role === 'organiser') {
-      await loadOrganisers();
       openOrganiserDetail(userId);
+      loadOrganisers().catch(() => {});
     } else {
-      await loadVendors();
       openVendorDetail(userId);
+      loadVendors().catch(() => {});
     }
-    // Also refresh users table cache if it's been loaded
-    if (_usersCache.length) loadAllUsers();
+    if (_usersCache.length) loadAllUsers().catch(() => {});
   }
 
   async function forceFullVerify(userId, name, btn) {
