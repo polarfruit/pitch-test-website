@@ -357,16 +357,17 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .fee-sep { color:var(--text-lo); font-size:14px; flex-shrink:0; }
 
 /* Review step */
-.review-section { margin-bottom:8px; }
+.review-section { margin-bottom:16px; }
 .review-section-head { display:flex; align-items:center; justify-content:space-between; padding:10px 0 6px; margin-bottom:4px; border-bottom:1px solid #ffffff0a; }
 .review-section-title { font-family:var(--fd); font-size:13px; font-weight:800; color:var(--text-mid); letter-spacing:-0.01em; }
-.review-section-edit { font-size:11px; font-weight:600; color:var(--ember); background:none; border:none; cursor:pointer; font-family:var(--fb); padding:2px 6px; border-radius:6px; transition:all 0.12s; }
+.review-section-edit { font-size:11px; font-weight:700; color:var(--ember); background:none; border:none; cursor:pointer; font-family:var(--fb); padding:3px 8px; border-radius:6px; transition:all 0.12s; display:flex; align-items:center; gap:4px; }
 .review-section-edit:hover { background:#E8500A12; }
-.review-field { display:flex; gap:16px; padding:14px 0; border-bottom:1px solid #ffffff07; }
+.review-field { display:flex; gap:16px; padding:12px 0; border-bottom:1px solid #ffffff07; }
 .review-field:last-child { border-bottom:none; }
 .review-field-label { font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-lo); width:160px; flex-shrink:0; padding-top:2px; }
 .review-field-value { font-size:13px; color:var(--text-hi); flex:1; line-height:1.6; }
 .review-field-value.not-set { color:var(--text-lo); font-style:italic; }
+.review-field-value.long-text { font-size:12px; line-height:1.5; color:var(--text-mid); }
 
 /* ── MESSAGES ── */
 .messages-layout { display:grid; grid-template-columns:280px 1fr; gap:0; height:calc(100vh - 60px - 64px); }
@@ -1041,7 +1042,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
           <div style="font-size:13px;color:var(--text-mid);margin-bottom:16px;">Review your event listing before publishing. You can edit any section below.</div>
 
           <div class="review-section">
-            <div class="review-section-head"><span class="review-section-title">Basics</span><button class="review-section-edit" onclick="goStep(1)">Edit</button></div>
+            <div class="review-section-head"><span class="review-section-title">Basics</span><button class="review-section-edit" onclick="goStep(1)">✎ Edit</button></div>
             <div class="review-field"><div class="review-field-label">Event name</div><div class="review-field-value" id="rv-name">—</div></div>
             <div class="review-field"><div class="review-field-label">Category</div><div class="review-field-value" id="rv-category">—</div></div>
             <div class="review-field"><div class="review-field-label">Date</div><div class="review-field-value" id="rv-date">—</div></div>
@@ -1051,7 +1052,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
           </div>
 
           <div class="review-section">
-            <div class="review-section-head"><span class="review-section-title">Booth specs</span><button class="review-section-edit" onclick="goStep(2)">Edit</button></div>
+            <div class="review-section-head"><span class="review-section-title">Booth specs</span><button class="review-section-edit" onclick="goStep(2)">✎ Edit</button></div>
             <div class="review-field"><div class="review-field-label">Total spots</div><div class="review-field-value" id="rv-spots">—</div></div>
             <div class="review-field"><div class="review-field-label">Booth size</div><div class="review-field-value" id="rv-booth-size">—</div></div>
             <div class="review-field"><div class="review-field-label">Booth fee</div><div class="review-field-value" id="rv-fee">—</div></div>
@@ -1060,16 +1061,16 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
           </div>
 
           <div class="review-section">
-            <div class="review-section-head"><span class="review-section-title">Requirements</span><button class="review-section-edit" onclick="goStep(3)">Edit</button></div>
+            <div class="review-section-head"><span class="review-section-title">Requirements</span><button class="review-section-edit" onclick="goStep(3)">✎ Edit</button></div>
             <div class="review-field"><div class="review-field-label">App. deadline</div><div class="review-field-value" id="rv-deadline">—</div></div>
             <div class="review-field"><div class="review-field-label">Cuisines wanted</div><div class="review-field-value" id="rv-cuisines">—</div></div>
-            <div class="review-field"><div class="review-field-label">Looking for</div><div class="review-field-value" id="rv-looking-for" style="white-space:pre-wrap;">—</div></div>
+            <div class="review-field"><div class="review-field-label">What we're looking for</div><div class="review-field-value" id="rv-looking-for" style="white-space:pre-wrap;">—</div></div>
             <div class="review-field"><div class="review-field-label">Exclusivity</div><div class="review-field-value" id="rv-exclusivity">—</div></div>
           </div>
 
           <div class="review-section" style="margin-bottom:0;">
-            <div class="review-section-head"><span class="review-section-title">Terms</span><button class="review-section-edit" onclick="goStep(4)">Edit</button></div>
-            <div class="review-field"><div class="review-field-label">Cancellation</div><div class="review-field-value" id="rv-cancel-policy" style="white-space:pre-wrap;">—</div></div>
+            <div class="review-section-head"><span class="review-section-title">Terms</span><button class="review-section-edit" onclick="goStep(4)">✎ Edit</button></div>
+            <div class="review-field"><div class="review-field-label">Cancellation</div><div class="review-field-value long-text" id="rv-cancel-policy" style="white-space:pre-wrap;">—</div></div>
             <div class="review-field"><div class="review-field-label">Payment terms</div><div class="review-field-value" id="rv-payment">—</div></div>
           </div>
         </div>
@@ -1838,7 +1839,7 @@ function populateReview() {
     cuisineEl.innerHTML = cuisines.map(function(c) { return '<span class="app-tag">' + c + '</span>'; }).join(' ');
     cuisineEl.classList.remove('not-set');
   } else {
-    cuisineEl.textContent = 'None selected';
+    cuisineEl.textContent = 'Not set';
     cuisineEl.classList.add('not-set');
   }
 
