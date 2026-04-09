@@ -3261,6 +3261,88 @@ app.get('/api/admin/analytics', requireAdmin, async (req, res) => {
       stmts.organisersWithEvent.get(), stmts.organisersWithApps.get(),
       stmts.topVendorsByApps.all(),
     ]);
+    // ── New panels: verification, retention, reviews, events lifecycle, response time ──
+    const [
+      verTrust, subRetention, revQuality, evtLifecycle, appResponse,
+    ] = await Promise.all([
+      // 1. Verification & Trust
+      (async () => {
+        const vTotal = prepare(`SELECT COUNT(*) as n FROM vendors v JOIN users u ON v.user_id=u.id WHERE u.role='vendor' AND u.status='active'`).get();
+        const vFullyVerified = prepare(`SELECT COUNT(*) as n FROM vendors v JOIN users u ON v.user_id=u.id WHERE u.role='vendor' AND u.status='active' AND v.abn_verified=1 AND v.pli_status='verified' AND (v.food_safety_url IS NOT NULL AND v.food_safety_url!='')`).get();
+        const vPartial = prepare(`SELECT COUNT(*) as n FROM vendors v JOIN users u ON v.user_id=u.id WHERE u.role='vendor' AND u.status='active' AND (v.abn_verified=1 OR v.pli_status='verified' OR (v.food_safety_url IS NOT NULL AND v.food_safety_url!='')) AND NOT (v.abn_verified=1 AND v.pli_status='verified' AND (v.food_safety_url IS NOT NULL AND v.food_safety_url!=''))`).get();
+        const oTotal = prepare(`SELECT COUNT(*) as n FROM organisers o JOIN users u ON o.user_id=u.id WHERE u.role='organiser' AND u.status='active'`).get();
+        const oVerified = prepare(`SELECT COUNT(*) as n FROM organisers o JOIN users u ON o.user_id=u.id WHERE u.role='organiser' AND u.status='active' AND o.abn_verified=1`).get();
+        const forceCount = prepare(`SELECT COUNT(*) as n FROM users WHERE force_verified=1`).get();
+        return {
+          vendorTotal: vTotal.n, fullyVerified: vFullyVerified.n, partiallyVerified: vPartial.n,
+          unverified: vTotal.n - vFullyVerified.n - vPartial.n,
+          orgTotal: oTotal.n, orgVerified: oVerified.n,
+          forceVerified: forceCount.n,
+        };
+      })(),
+      // 2. Subscription & Retention
+      (async () => {
+        const active = prepare(`SELECT COUNT(*) as n FROM vendors v JOIN users u ON v.user_id=u.id WHERE u.role='vendor' AND u.status='active' AND v.paused=0`).get();
+        const paused = prepare(`SELECT COUNT(*) as n FROM vendors v JOIN users u ON v.user_id=u.id WHERE u.role='vendor' AND u.status='active' AND v.paused=1`).get();
+        const subBreakdown = prepare(`SELECT subscription_status as status, COUNT(*) as n FROM vendors v JOIN users u ON v.user_id=u.id WHERE u.role='vendor' GROUP BY subscription_status`).all();
+        const trialExpiring = prepare(`SELECT COUNT(*) as n FROM vendors v JOIN users u ON v.user_id=u.id WHERE u.role='vendor' AND v.trial_ends_at IS NOT NULL AND v.trial_ends_at > datetime('now') AND v.trial_ends_at <= datetime('now','+7 days')`).get();
+        const trialList = prepare(`SELECT v.trading_name, v.trial_ends_at FROM vendors v JOIN users u ON v.user_id=u.id WHERE u.role='vendor' AND v.trial_ends_at IS NOT NULL AND v.trial_ends_at > datetime('now') AND v.trial_ends_at <= datetime('now','+7 days') ORDER BY v.trial_ends_at ASC LIMIT 5`).all();
+        return {
+          active: active.n, paused: paused.n,
+          subscriptionBreakdown: subBreakdown,
+          trialExpiring: trialExpiring.n, trialList,
+        };
+      })(),
+      // 3. Reviews & Quality
+      (async () => {
+        const vAvg = prepare(`SELECT ROUND(AVG(rating),1) as avg, COUNT(*) as total FROM vendor_reviews`).get();
+        const oAvg = prepare(`SELECT ROUND(AVG(rating),1) as avg, COUNT(*) as total FROM organiser_reviews`).get();
+        const vDist = prepare(`SELECT rating, COUNT(*) as count FROM vendor_reviews GROUP BY rating ORDER BY rating DESC`).all();
+        const vendorsWithReviews = prepare(`SELECT COUNT(DISTINCT vendor_user_id) as n FROM vendor_reviews`).get();
+        const vendorsTotal = prepare(`SELECT COUNT(*) as n FROM vendors v JOIN users u ON v.user_id=u.id WHERE u.role='vendor'`).get();
+        const rebookRate = prepare(`SELECT ROUND(SUM(would_rebook)*100.0/NULLIF(COUNT(*),0),0) as rate, COUNT(*) as total FROM organiser_vendor_ratings`).get();
+        return {
+          vendorAvg: vAvg.avg || 0, vendorTotal: vAvg.total || 0,
+          orgAvg: oAvg.avg || 0, orgTotal: oAvg.total || 0,
+          ratingDistribution: vDist,
+          vendorsWithReviews: vendorsWithReviews.n, vendorsNoReviews: vendorsTotal.n - vendorsWithReviews.n,
+          rebookRate: rebookRate.rate || 0, totalRatings: rebookRate.total || 0,
+        };
+      })(),
+      // 4. Event Lifecycle
+      (async () => {
+        const totalEvts = prepare(`SELECT COUNT(*) as n FROM events WHERE status IN ('published','archived')`).get();
+        const cancelled = prepare(`SELECT COUNT(*) as n FROM events WHERE cancelled_at IS NOT NULL`).get();
+        const recurring = prepare(`SELECT COUNT(*) as n FROM events WHERE is_recurring=1 AND status='published'`).get();
+        const oneOff = prepare(`SELECT COUNT(*) as n FROM events WHERE (is_recurring=0 OR is_recurring IS NULL) AND status='published'`).get();
+        const upcoming = prepare(`SELECT COUNT(*) as n FROM events WHERE status='published' AND deadline IS NOT NULL AND deadline >= date('now') AND deadline <= date('now','+7 days')`).get();
+        const upcomingList = prepare(`SELECT name, deadline FROM events WHERE status='published' AND deadline IS NOT NULL AND deadline >= date('now') AND deadline <= date('now','+7 days') ORDER BY deadline ASC LIMIT 5`).all();
+        const avgLeadTime = prepare(`SELECT ROUND(AVG(julianday(date_sort)-julianday(created_at)),0) as n FROM events WHERE status='published' AND date_sort IS NOT NULL`).get();
+        return {
+          total: totalEvts.n, cancelled: cancelled.n,
+          cancelRate: totalEvts.n > 0 ? Math.round((cancelled.n / totalEvts.n) * 100) : 0,
+          recurring: recurring.n, oneOff: oneOff.n,
+          upcomingDeadlines: upcoming.n, upcomingList,
+          avgLeadTimeDays: avgLeadTime.n || 0,
+        };
+      })(),
+      // 5. Application Response Time
+      (async () => {
+        const total = prepare(`SELECT COUNT(*) as n FROM event_applications`).get();
+        const responded = prepare(`SELECT COUNT(*) as n FROM event_applications WHERE status IN ('approved','rejected')`).get();
+        const pending = prepare(`SELECT COUNT(*) as n FROM event_applications WHERE status='pending'`).get();
+        // Best responding organisers (most approved apps)
+        const fastest = prepare(`SELECT o.org_name, COUNT(CASE WHEN ea.status='approved' THEN 1 END) as approved, COUNT(ea.id) as total FROM event_applications ea JOIN events e ON ea.event_id=e.id JOIN organisers o ON o.user_id=e.organiser_user_id GROUP BY e.organiser_user_id HAVING COUNT(ea.id)>0 ORDER BY approved DESC LIMIT 3`).all();
+        // Least responsive (most pending)
+        const slowest = prepare(`SELECT o.org_name, COUNT(CASE WHEN ea.status='pending' THEN 1 END) as pending_count, COUNT(ea.id) as total FROM event_applications ea JOIN events e ON ea.event_id=e.id JOIN organisers o ON o.user_id=e.organiser_user_id GROUP BY e.organiser_user_id HAVING COUNT(CASE WHEN ea.status='pending' THEN 1 END)>0 ORDER BY pending_count DESC LIMIT 3`).all();
+        return {
+          total: total.n, responded: responded.n, pending: pending.n,
+          responseRate: total.n > 0 ? Math.round((responded.n / total.n) * 100) : 0,
+          mostResponsive: fastest, leastResponsive: slowest,
+        };
+      })(),
+    ]);
+
     return res.json({
       dateRange: null,
       totalVendors: vendors.n, totalOrganisers: organisers.n, totalEvents: events.n,
@@ -3275,6 +3357,7 @@ app.get('/api/admin/analytics', requireAdmin, async (req, res) => {
       docCompliance: docComp,
       funnels: { vendorsApproved: vApproved.n, vendorsPaid: vPaid.n, orgsWithEvent: oWithEvent.n, orgsWithApps: oWithApps.n },
       topVendors,
+      verification: verTrust, subscription: subRetention, reviews: revQuality, eventLifecycle: evtLifecycle, appResponseTime: appResponse,
     });
   }
 
@@ -3323,6 +3406,54 @@ app.get('/api/admin/analytics', requireAdmin, async (req, res) => {
     dq(`SELECT COUNT(DISTINCT e.organiser_user_id) as n FROM events e JOIN event_applications ea ON ea.event_id=e.id WHERE e.status='published' ${eD}`, dp),
     dqAll(`SELECT v.trading_name, COUNT(ea.id) as total_apps, SUM(CASE WHEN ea.status='approved' THEN 1 ELSE 0 END) as approved FROM event_applications ea JOIN vendors v ON v.user_id=ea.vendor_user_id WHERE 1=1 ${eaD} GROUP BY ea.vendor_user_id ORDER BY total_apps DESC LIMIT 5`, dp),
   ]);
+  // New panels (not date-filtered — always show current state)
+  const [verTrust, subRetention, revQuality, evtLifecycle, appResponse] = await Promise.all([
+    (async () => {
+      const vTotal = prepare(`SELECT COUNT(*) as n FROM vendors v JOIN users u ON v.user_id=u.id WHERE u.role='vendor' AND u.status='active'`).get();
+      const vFull = prepare(`SELECT COUNT(*) as n FROM vendors v JOIN users u ON v.user_id=u.id WHERE u.role='vendor' AND u.status='active' AND v.abn_verified=1 AND v.pli_status='verified' AND (v.food_safety_url IS NOT NULL AND v.food_safety_url!='')`).get();
+      const vPart = prepare(`SELECT COUNT(*) as n FROM vendors v JOIN users u ON v.user_id=u.id WHERE u.role='vendor' AND u.status='active' AND (v.abn_verified=1 OR v.pli_status='verified' OR (v.food_safety_url IS NOT NULL AND v.food_safety_url!='')) AND NOT (v.abn_verified=1 AND v.pli_status='verified' AND (v.food_safety_url IS NOT NULL AND v.food_safety_url!=''))`).get();
+      const oT = prepare(`SELECT COUNT(*) as n FROM organisers o JOIN users u ON o.user_id=u.id WHERE u.role='organiser' AND u.status='active'`).get();
+      const oV = prepare(`SELECT COUNT(*) as n FROM organisers o JOIN users u ON o.user_id=u.id WHERE u.role='organiser' AND u.status='active' AND o.abn_verified=1`).get();
+      const fc = prepare(`SELECT COUNT(*) as n FROM users WHERE force_verified=1`).get();
+      return { vendorTotal: vTotal.n, fullyVerified: vFull.n, partiallyVerified: vPart.n, unverified: vTotal.n - vFull.n - vPart.n, orgTotal: oT.n, orgVerified: oV.n, forceVerified: fc.n };
+    })(),
+    (async () => {
+      const active = prepare(`SELECT COUNT(*) as n FROM vendors v JOIN users u ON v.user_id=u.id WHERE u.role='vendor' AND u.status='active' AND v.paused=0`).get();
+      const paused = prepare(`SELECT COUNT(*) as n FROM vendors v JOIN users u ON v.user_id=u.id WHERE u.role='vendor' AND u.status='active' AND v.paused=1`).get();
+      const subB = prepare(`SELECT subscription_status as status, COUNT(*) as n FROM vendors v JOIN users u ON v.user_id=u.id WHERE u.role='vendor' GROUP BY subscription_status`).all();
+      const trExp = prepare(`SELECT COUNT(*) as n FROM vendors v JOIN users u ON v.user_id=u.id WHERE u.role='vendor' AND v.trial_ends_at IS NOT NULL AND v.trial_ends_at > datetime('now') AND v.trial_ends_at <= datetime('now','+7 days')`).get();
+      const trList = prepare(`SELECT v.trading_name, v.trial_ends_at FROM vendors v JOIN users u ON v.user_id=u.id WHERE u.role='vendor' AND v.trial_ends_at IS NOT NULL AND v.trial_ends_at > datetime('now') AND v.trial_ends_at <= datetime('now','+7 days') ORDER BY v.trial_ends_at ASC LIMIT 5`).all();
+      return { active: active.n, paused: paused.n, subscriptionBreakdown: subB, trialExpiring: trExp.n, trialList: trList };
+    })(),
+    (async () => {
+      const vA = prepare(`SELECT ROUND(AVG(rating),1) as avg, COUNT(*) as total FROM vendor_reviews`).get();
+      const oA = prepare(`SELECT ROUND(AVG(rating),1) as avg, COUNT(*) as total FROM organiser_reviews`).get();
+      const vD = prepare(`SELECT rating, COUNT(*) as count FROM vendor_reviews GROUP BY rating ORDER BY rating DESC`).all();
+      const vWR = prepare(`SELECT COUNT(DISTINCT vendor_user_id) as n FROM vendor_reviews`).get();
+      const vT = prepare(`SELECT COUNT(*) as n FROM vendors v JOIN users u ON v.user_id=u.id WHERE u.role='vendor'`).get();
+      const rb = prepare(`SELECT ROUND(SUM(would_rebook)*100.0/NULLIF(COUNT(*),0),0) as rate, COUNT(*) as total FROM organiser_vendor_ratings`).get();
+      return { vendorAvg: vA.avg||0, vendorTotal: vA.total||0, orgAvg: oA.avg||0, orgTotal: oA.total||0, ratingDistribution: vD, vendorsWithReviews: vWR.n, vendorsNoReviews: vT.n-vWR.n, rebookRate: rb.rate||0, totalRatings: rb.total||0 };
+    })(),
+    (async () => {
+      const tE = prepare(`SELECT COUNT(*) as n FROM events WHERE status IN ('published','archived')`).get();
+      const cE = prepare(`SELECT COUNT(*) as n FROM events WHERE cancelled_at IS NOT NULL`).get();
+      const rec = prepare(`SELECT COUNT(*) as n FROM events WHERE is_recurring=1 AND status='published'`).get();
+      const oo = prepare(`SELECT COUNT(*) as n FROM events WHERE (is_recurring=0 OR is_recurring IS NULL) AND status='published'`).get();
+      const ud = prepare(`SELECT COUNT(*) as n FROM events WHERE status='published' AND deadline IS NOT NULL AND deadline >= date('now') AND deadline <= date('now','+7 days')`).get();
+      const ul = prepare(`SELECT name, deadline FROM events WHERE status='published' AND deadline IS NOT NULL AND deadline >= date('now') AND deadline <= date('now','+7 days') ORDER BY deadline ASC LIMIT 5`).all();
+      const lt = prepare(`SELECT ROUND(AVG(julianday(date_sort)-julianday(created_at)),0) as n FROM events WHERE status='published' AND date_sort IS NOT NULL`).get();
+      return { total: tE.n, cancelled: cE.n, cancelRate: tE.n>0?Math.round((cE.n/tE.n)*100):0, recurring: rec.n, oneOff: oo.n, upcomingDeadlines: ud.n, upcomingList: ul, avgLeadTimeDays: lt.n||0 };
+    })(),
+    (async () => {
+      const t = prepare(`SELECT COUNT(*) as n FROM event_applications`).get();
+      const r = prepare(`SELECT COUNT(*) as n FROM event_applications WHERE status IN ('approved','rejected')`).get();
+      const p = prepare(`SELECT COUNT(*) as n FROM event_applications WHERE status='pending'`).get();
+      const f = prepare(`SELECT o.org_name, COUNT(CASE WHEN ea.status='approved' THEN 1 END) as approved, COUNT(ea.id) as total FROM event_applications ea JOIN events e ON ea.event_id=e.id JOIN organisers o ON o.user_id=e.organiser_user_id GROUP BY e.organiser_user_id HAVING COUNT(ea.id)>0 ORDER BY approved DESC LIMIT 3`).all();
+      const s = prepare(`SELECT o.org_name, COUNT(CASE WHEN ea.status='pending' THEN 1 END) as pending_count, COUNT(ea.id) as total FROM event_applications ea JOIN events e ON ea.event_id=e.id JOIN organisers o ON o.user_id=e.organiser_user_id GROUP BY e.organiser_user_id HAVING COUNT(CASE WHEN ea.status='pending' THEN 1 END)>0 ORDER BY pending_count DESC LIMIT 3`).all();
+      return { total: t.n, responded: r.n, pending: p.n, responseRate: t.n>0?Math.round((r.n/t.n)*100):0, mostResponsive: f, leastResponsive: s };
+    })(),
+  ]);
+
   res.json({
     dateRange: { from, to },
     totalVendors: vendors.n, totalOrganisers: organisers.n, totalEvents: events.n,
@@ -3337,6 +3468,7 @@ app.get('/api/admin/analytics', requireAdmin, async (req, res) => {
     docCompliance: docComp,
     funnels: { vendorsApproved: vApproved.n, vendorsPaid: vPaid.n, orgsWithEvent: oWithEvent.n, orgsWithApps: oWithApps.n },
     topVendors,
+    verification: verTrust, subscription: subRetention, reviews: revQuality, eventLifecycle: evtLifecycle, appResponseTime: appResponse,
   });
 });
 

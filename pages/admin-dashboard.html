@@ -1569,6 +1569,46 @@
       </div>
     </div>
 
+    <!-- NEW: Verification & Trust / Subscription & Retention -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:16px;margin-bottom:20px;">
+      <div class="card">
+        <div class="card-header"><span style="font-size:16px;">🛡</span><span class="card-title">Verification & trust</span></div>
+        <div style="padding:18px 20px;display:flex;flex-direction:column;gap:14px;" id="an-verification">
+          <div style="color:#6B5A4A;font-size:13px;">Loading…</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span style="font-size:16px;">🔄</span><span class="card-title">Subscription & retention</span></div>
+        <div style="padding:18px 20px;display:flex;flex-direction:column;gap:14px;" id="an-subscription">
+          <div style="color:#6B5A4A;font-size:13px;">Loading…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NEW: Reviews & Quality / Application Response Time -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:16px;margin-bottom:20px;">
+      <div class="card">
+        <div class="card-header"><span style="font-size:16px;">⭐</span><span class="card-title">Reviews & quality</span></div>
+        <div style="padding:18px 20px;display:flex;flex-direction:column;gap:14px;" id="an-reviews">
+          <div style="color:#6B5A4A;font-size:13px;">Loading…</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><span style="font-size:16px;">⏱</span><span class="card-title">Application response</span></div>
+        <div style="padding:18px 20px;display:flex;flex-direction:column;gap:14px;" id="an-app-response">
+          <div style="color:#6B5A4A;font-size:13px;">Loading…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NEW: Event Lifecycle -->
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-header"><span style="font-size:16px;">📅</span><span class="card-title">Event lifecycle</span></div>
+      <div style="padding:18px 20px;" id="an-event-lifecycle">
+        <div style="color:#6B5A4A;font-size:13px;">Loading…</div>
+      </div>
+    </div>
+
   </div>
 
 </div><!-- /main -->
@@ -4228,6 +4268,115 @@
             }).join('')}
           </table>`
         : '<div style="color:#6B5A4A;font-size:13px;padding:8px 0;">No vendor applications yet.</div>';
+
+      // ── Verification & Trust ──
+      const ver = data.verification || {};
+      const vPct = ver.vendorTotal > 0 ? Math.round((ver.fullyVerified / ver.vendorTotal) * 100) : 0;
+      const pPct = ver.vendorTotal > 0 ? Math.round((ver.partiallyVerified / ver.vendorTotal) * 100) : 0;
+      const uPct = ver.vendorTotal > 0 ? Math.round((ver.unverified / ver.vendorTotal) * 100) : 0;
+      const oPct = ver.orgTotal > 0 ? Math.round((ver.orgVerified / ver.orgTotal) * 100) : 0;
+      document.getElementById('an-verification').innerHTML = `
+        <div style="display:flex;gap:16px;flex-wrap:wrap;">
+          ${_statBlock('Fully verified', ver.fullyVerified + ' / ' + ver.vendorTotal, vPct + '% of vendors')}
+          ${_statBlock('Organisers verified', ver.orgVerified + ' / ' + ver.orgTotal, oPct + '%')}
+          ${_statBlock('Force verified', ver.forceVerified, 'Admin overrides')}
+        </div>
+        <div style="margin-top:4px;">
+          <div style="font-size:11px;color:#6B5A4A;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Vendor verification breakdown</div>
+          <div style="display:flex;height:22px;border-radius:6px;overflow:hidden;background:#1A1612;">
+            ${vPct > 0 ? `<div style="width:${vPct}%;background:#2D8B55;" title="Fully verified: ${ver.fullyVerified}"></div>` : ''}
+            ${pPct > 0 ? `<div style="width:${pPct}%;background:#C9840A;" title="Partially verified: ${ver.partiallyVerified}"></div>` : ''}
+            ${uPct > 0 ? `<div style="width:${uPct}%;background:#C0392B;" title="Unverified: ${ver.unverified}"></div>` : ''}
+          </div>
+          <div style="display:flex;gap:16px;margin-top:6px;font-size:11px;">
+            <span style="color:#2D8B55;">● Full ${ver.fullyVerified}</span>
+            <span style="color:#C9840A;">● Partial ${ver.partiallyVerified}</span>
+            <span style="color:#C0392B;">● None ${ver.unverified}</span>
+          </div>
+        </div>`;
+
+      // ── Subscription & Retention ──
+      const sub = data.subscription || {};
+      const subMap = {};
+      (sub.subscriptionBreakdown || []).forEach(s => subMap[s.status] = s.n);
+      document.getElementById('an-subscription').innerHTML = `
+        <div style="display:flex;gap:16px;flex-wrap:wrap;">
+          ${_statBlock('Active vendors', sub.active, 'Currently trading')}
+          ${_statBlock('Paused', sub.paused, 'Temporarily inactive')}
+          ${_statBlock('Trials expiring', sub.trialExpiring, 'Within 7 days')}
+        </div>
+        <div style="margin-top:4px;">
+          <div style="font-size:11px;color:#6B5A4A;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Subscription status</div>
+          ${_barRow('Active', subMap.active || 0, (subMap.active||0) > 0 ? Math.round(((subMap.active||0) / (sub.active+sub.paused||1)) * 100) : 0, '#2D8B55')}
+          ${_barRow('Cancelled', subMap.cancelled || 0, (subMap.cancelled||0) > 0 ? Math.round(((subMap.cancelled||0) / (sub.active+sub.paused||1)) * 100) : 0, '#C0392B')}
+          ${_barRow('Past due', subMap.past_due || 0, (subMap.past_due||0) > 0 ? Math.round(((subMap.past_due||0) / (sub.active+sub.paused||1)) * 100) : 0, '#C9840A')}
+        </div>
+        ${sub.trialList && sub.trialList.length ? `<div style="margin-top:8px;font-size:12px;">
+          <div style="font-size:11px;color:#6B5A4A;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">Trials ending soon</div>
+          ${sub.trialList.map(t => `<div style="display:flex;justify-content:space-between;padding:3px 0;border-top:1px solid #2A2018;">
+            <span style="color:#FDF4E7;">${t.trading_name}</span>
+            <span style="color:#C9840A;">${new Date(t.trial_ends_at).toLocaleDateString('en-AU',{day:'numeric',month:'short'})}</span>
+          </div>`).join('')}
+        </div>` : ''}`;
+
+      // ── Reviews & Quality ──
+      const rev = data.reviews || {};
+      const maxDist = Math.max(...(rev.ratingDistribution || []).map(r => r.count), 1);
+      document.getElementById('an-reviews').innerHTML = `
+        <div style="display:flex;gap:16px;flex-wrap:wrap;">
+          ${_statBlock('Vendor rating', rev.vendorAvg ? rev.vendorAvg + ' ★' : '—', rev.vendorTotal + ' reviews')}
+          ${_statBlock('Organiser rating', rev.orgAvg ? rev.orgAvg + ' ★' : '—', rev.orgTotal + ' reviews')}
+          ${_statBlock('Rebook rate', rev.totalRatings > 0 ? rev.rebookRate + '%' : '—', rev.totalRatings + ' ratings')}
+        </div>
+        <div style="margin-top:4px;">
+          <div style="font-size:11px;color:#6B5A4A;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Vendor rating distribution</div>
+          ${rev.ratingDistribution && rev.ratingDistribution.length ? rev.ratingDistribution.map(r => {
+            const stars = '★'.repeat(r.rating) + '☆'.repeat(5 - r.rating);
+            return _barRow(stars, r.count, Math.round((r.count / maxDist) * 100), r.rating >= 4 ? '#2D8B55' : r.rating >= 3 ? '#C9840A' : '#C0392B');
+          }).join('') : '<div style="color:#6B5A4A;font-size:12px;">No reviews yet.</div>'}
+        </div>
+        <div style="margin-top:6px;font-size:12px;color:#A89880;">
+          ${rev.vendorsWithReviews} vendor${rev.vendorsWithReviews===1?'':'s'} with reviews · ${rev.vendorsNoReviews} without
+        </div>`;
+
+      // ── Application Response ──
+      const ar = data.appResponseTime || {};
+      document.getElementById('an-app-response').innerHTML = `
+        <div style="display:flex;gap:16px;flex-wrap:wrap;">
+          ${_statBlock('Response rate', ar.total > 0 ? ar.responseRate + '%' : '—', ar.responded + ' of ' + ar.total + ' responded')}
+          ${_statBlock('Pending', ar.pending, 'Awaiting response')}
+        </div>
+        ${ar.mostResponsive && ar.mostResponsive.length ? `<div style="margin-top:10px;">
+          <div style="font-size:11px;color:#6B5A4A;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">Most responsive organisers</div>
+          ${ar.mostResponsive.map((o,i) => `<div style="display:flex;justify-content:space-between;padding:4px 0;border-top:1px solid #2A2018;font-size:12px;">
+            <span style="color:#FDF4E7;">${i+1}. ${o.org_name}</span>
+            <span style="color:#2D8B55;">${o.approved} approved</span>
+          </div>`).join('')}
+        </div>` : ''}
+        ${ar.leastResponsive && ar.leastResponsive.length ? `<div style="margin-top:10px;">
+          <div style="font-size:11px;color:#6B5A4A;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">Most pending applications</div>
+          ${ar.leastResponsive.map((o,i) => `<div style="display:flex;justify-content:space-between;padding:4px 0;border-top:1px solid #2A2018;font-size:12px;">
+            <span style="color:#FDF4E7;">${i+1}. ${o.org_name}</span>
+            <span style="color:#C9840A;">${o.pending_count} pending</span>
+          </div>`).join('')}
+        </div>` : ''}`;
+
+      // ── Event Lifecycle ──
+      const el = data.eventLifecycle || {};
+      document.getElementById('an-event-lifecycle').innerHTML = `
+        <div style="display:flex;gap:16px;flex-wrap:wrap;">
+          ${_statBlock('Cancellation rate', el.total > 0 ? el.cancelRate + '%' : '—', el.cancelled + ' of ' + el.total + ' events')}
+          ${_statBlock('Recurring events', el.recurring, 'vs ' + el.oneOff + ' one-off')}
+          ${_statBlock('Avg lead time', el.avgLeadTimeDays > 0 ? el.avgLeadTimeDays + 'd' : '—', 'Creation to event date')}
+          ${_statBlock('Deadlines this week', el.upcomingDeadlines, 'Application cutoffs')}
+        </div>
+        ${el.upcomingList && el.upcomingList.length ? `<div style="margin-top:12px;">
+          <div style="font-size:11px;color:#6B5A4A;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;">Upcoming deadlines</div>
+          ${el.upcomingList.map(e => `<div style="display:flex;justify-content:space-between;padding:4px 0;border-top:1px solid #2A2018;font-size:12px;">
+            <span style="color:#FDF4E7;">${e.name}</span>
+            <span style="color:#C9840A;">${new Date(e.deadline+'T00:00:00').toLocaleDateString('en-AU',{day:'numeric',month:'short'})}</span>
+          </div>`).join('')}
+        </div>` : ''}`;
 
     } catch(e) { console.warn('Analytics load failed', e); }
   }
