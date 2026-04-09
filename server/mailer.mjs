@@ -195,6 +195,31 @@ export async function sendAdminEmail(toEmail, subject, htmlBody, textBody) {
   }
 }
 
+// ── Post-event completion emails ────────────────────────────────────────────
+
+export function buildPostEventOrgHtml(firstName, eventName, vendorNames, dashboardUrl) {
+  const vendorList = vendorNames.map(n => `<li style="font-size:14px;color:#FDF4E7;margin-bottom:4px;">${n}</li>`).join('');
+  return buildAdminNoticeHtml(`
+    <h2 style="font-size:20px;font-weight:700;color:#FDF4E7;margin:0 0 10px;">Your event has wrapped up</h2>
+    <p style="font-size:14px;color:#A89880;margin:0 0 16px;line-height:1.6;">Hi ${firstName},</p>
+    <p style="font-size:14px;color:#A89880;margin:0 0 16px;line-height:1.6;"><strong style="color:#FDF4E7;">${eventName}</strong> has ended. Rate the vendors who participated — your feedback helps build trust across the platform.</p>
+    <div style="background:#2E2720;border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px 20px;margin-bottom:20px;">
+      <div style="font-size:11px;font-weight:700;color:#6B5A4A;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px;">Vendors to rate</div>
+      <ul style="margin:0;padding:0 0 0 18px;">${vendorList}</ul>
+    </div>
+    <a href="${dashboardUrl}" style="display:inline-block;background:#E8500A;color:#fff;font-size:14px;font-weight:700;text-decoration:none;padding:12px 28px;border-radius:10px;">Rate your vendors</a>
+  `);
+}
+
+export function buildPostEventVendorHtml(tradingName, eventName, organiserName, dashboardUrl) {
+  return buildAdminNoticeHtml(`
+    <h2 style="font-size:20px;font-weight:700;color:#FDF4E7;margin:0 0 10px;">How was ${eventName}?</h2>
+    <p style="font-size:14px;color:#A89880;margin:0 0 16px;line-height:1.6;">Hi ${tradingName},</p>
+    <p style="font-size:14px;color:#A89880;margin:0 0 20px;line-height:1.6;">You recently attended <strong style="color:#FDF4E7;">${eventName}</strong> organised by <strong style="color:#FDF4E7;">${organiserName}</strong>. Share your experience — your review helps other vendors decide where to trade.</p>
+    <a href="${dashboardUrl}" style="display:inline-block;background:#E8500A;color:#fff;font-size:14px;font-weight:700;text-decoration:none;padding:12px 28px;border-radius:10px;">Leave a review</a>
+  `);
+}
+
 // ── SMS ─────────────────────────────────────────────────────────────────────
 
 export async function sendVerificationSMS(toPhone, code) {
