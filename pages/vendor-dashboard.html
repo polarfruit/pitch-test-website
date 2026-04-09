@@ -665,7 +665,7 @@ body::before {
 }
 .dim-input:focus { border-color: #E8500A40; }
 .dim-sep { font-size: 16px; font-weight: 600; color: var(--text-mid); }
-.dim-unit { font-size: 13px; font-weight: 400; color: var(--text-lo); }
+.dim-unit { font-size: 13px; font-weight: 400; color: var(--text-lo); margin-left: -4px; }
 
 /* Profile preview card */
 .preview-card {
@@ -703,7 +703,7 @@ body::before {
   font-family: var(--fb); font-size: 14px; font-weight: 700; color: #fff;
   background: var(--ember); border: none; padding: 14px 32px; border-radius: 12px;
   cursor: pointer; box-shadow: 0 4px 16px #E8500A2E; transition: background 0.14s, transform 0.14s, opacity 0.14s;
-  margin-top: 8px; opacity: 0.45;
+  margin-top: 8px; opacity: 0.55;
 }
 .btn-save.dirty { opacity: 1; }
 .btn-save:hover { background: var(--ember-glow); transform: translateY(-1px); }
@@ -3274,6 +3274,11 @@ function abnAutoVerify(rawVal) {
   }
 }
 
+function titleCaseEntity(s) {
+  if (!s) return '';
+  const lower = ['pty', 'ltd', 'of', 'and', 'the', 'atf', 'as', 'trading'];
+  return s.toLowerCase().replace(/\b\w+/g, (w, i) => i === 0 || !lower.includes(w) ? w.charAt(0).toUpperCase() + w.slice(1) : w);
+}
 function abnMatchBadge(match, entityName, tradingNames, details) {
   const colors = { match: 'var(--herb)', partial: 'var(--gold)', mismatch: 'var(--terra)' };
   const icons  = { match: '✓', partial: '⚠', mismatch: '✕' };
@@ -3284,7 +3289,7 @@ function abnMatchBadge(match, entityName, tradingNames, details) {
 
   let html = `<div style="background:${bg};border:1px solid ${border};border-radius:10px;padding:10px 12px;">`;
   html += `<div style="display:flex;align-items:center;gap:6px;"><span style="color:var(--herb);font-weight:700;">✓ ABN Active</span>`;
-  html += `<span style="color:var(--text-hi);">${entityName}</span></div>`;
+  html += `<span style="color:var(--text-hi);">${titleCaseEntity(entityName)}</span></div>`;
   if (tradingNames && tradingNames.length) {
     html += `<div style="font-size:11px;color:var(--text-mid);margin-top:4px;">Trading as: ${tradingNames.join(', ')}</div>`;
   }
@@ -3292,7 +3297,7 @@ function abnMatchBadge(match, entityName, tradingNames, details) {
   html += `<div style="margin-top:6px;padding-top:6px;border-top:1px solid ${border};display:flex;align-items:center;gap:6px;">`;
   html += `<span style="color:${c};font-weight:700;">${icons[match] || '?'} ${labels[match] || 'Could not cross-reference'}</span></div>`;
   if (details && details.length && match !== 'match') {
-    html += `<div style="font-size:11px;color:var(--text-mid);margin-top:4px;">Compared "${entityName}" against your account name and trading name</div>`;
+    html += `<div style="font-size:11px;color:var(--text-mid);margin-top:4px;">Compared "${titleCaseEntity(entityName)}" against your account name and trading name</div>`;
   }
   html += '</div>';
   return html;
@@ -3355,7 +3360,7 @@ async function vendorVerifyAbn() {
     } else {
       resultEl.innerHTML = `<div style="background:rgba(192,57,43,0.1);border:1px solid rgba(192,57,43,0.25);border-radius:10px;padding:10px 12px;">
         <span style="color:var(--terra);font-weight:700;">✕ ${data.error || 'ABN could not be verified'}</span>
-        ${data.entityName ? `<div style="font-size:12px;color:var(--text-mid);margin-top:4px;">Entity: ${data.entityName} · Status: ${data.status || 'Unknown'}</div>` : ''}
+        ${data.entityName ? `<div style="font-size:12px;color:var(--text-mid);margin-top:4px;">Entity: ${titleCaseEntity(data.entityName)} · Status: ${data.status || 'Unknown'}</div>` : ''}
       </div>`;
       inp.dataset.verified = 'false';
     }
@@ -4407,7 +4412,7 @@ function renderPhotoGrid() {
   if (!grid) return;
   if (!_photos.length) { grid.innerHTML = ''; return; }
   grid.innerHTML = _photos.map((src, i) =>
-    `<div class="photo-thumb" style="background:#1A1612;overflow:hidden;position:relative;">
+    `<div class="photo-thumb">
       <img src="${src}" style="width:100%;height:100%;object-fit:cover;display:block;" />
       <button class="photo-thumb-remove" title="Remove" onclick="removePhoto(${i})">✕</button>
     </div>`
