@@ -142,7 +142,7 @@ if (process.env.TURSO_DATABASE_URL) {
 
 // ── Schema version — bump this whenever migrations are added ─────────────────
 // On a versioned DB the entire migration block is skipped (1 read vs 50+ calls).
-const SCHEMA_VERSION = 18;
+const SCHEMA_VERSION = 19;
 let _schemaVersion = 0;
 try {
   const _ver = await prepare(`SELECT v FROM _schema_meta LIMIT 1`).get();
@@ -922,6 +922,22 @@ await _safeExec(`UPDATE reports SET against_user_id = (SELECT o.user_id FROM org
 await _safeExec(`UPDATE reports SET reporter_user_id = (SELECT v.user_id FROM vendors v WHERE LOWER(v.trading_name)=LOWER(reports.reporter_name) LIMIT 1) WHERE reporter_user_id IS NULL AND reporter_name IS NOT NULL`);
 await _safeExec(`UPDATE reports SET reporter_user_id = (SELECT o.user_id FROM organisers o WHERE LOWER(o.org_name)=LOWER(reports.reporter_name) LIMIT 1) WHERE reporter_user_id IS NULL AND reporter_name IS NOT NULL`);
 
+// ── Post-event completion workflow ───────────────────────────────────────────
+await _safeExec(`ALTER TABLE events ADD COLUMN completed_at DATETIME`);
+await _safeExec(`ALTER TABLE organisers ADD COLUMN notif_post_event INTEGER NOT NULL DEFAULT 1`);
+await _safeExec(`
+  CREATE TABLE IF NOT EXISTS event_completion_notifications (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    event_id        INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+    user_id         INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    user_role       TEXT NOT NULL CHECK(user_role IN ('organiser','vendor')),
+    notif_type      TEXT NOT NULL DEFAULT 'rate_prompt',
+    sent_via_email  INTEGER NOT NULL DEFAULT 0,
+    created_at      DATETIME DEFAULT (datetime('now')),
+    UNIQUE(event_id, user_id, notif_type)
+  )
+`);
+
 // ── Prepared statements ──────────────────────────────────────────────────────
 export const stmts = {
   // users
@@ -1542,6 +1558,70 @@ export const stmts = {
   resetPendingApprovals: prepare(`UPDATE users SET status='active' WHERE status='pending'`),
   countDraftEvents: prepare(`SELECT COUNT(*) as n FROM events WHERE status='draft'`),
   countPendingUsers: prepare(`SELECT COUNT(*) as n FROM users WHERE status='pending'`),
+
+  // ── Post-event completion workflow ──────────────────────────────────────────
+  getCompletableEvents: prepare(`
+    SELECT e.id, e.name, e.slug, e.date_sort, e.date_end, e.organiser_user_id
+    FROM events e
+    WHERE e.status = 'published'
+      AND e.completed_at IS NULL
+      AND e.cancelled_at IS NULL
+      AND e.date_sort IS NOT NULL
+      AND e.organiser_user_id IS NOT NULL
+      AND COALESCE(e.date_end, e.date_sort) < date('now')
+  `),
+  markEventCompleted: prepare(`UPDATE events SET completed_at=datetime('now') WHERE id=?`),
+  getApprovedVendorsForEvent: prepare(`
+    SELECT ea.vendor_user_id, ea.event_id, u.email, u.first_name, v.trading_name, v.notif_reviews
+    FROM event_applications ea
+    JOIN users u ON u.id = ea.vendor_user_id
+    JOIN vendors v ON v.user_id = ea.vendor_user_id
+    WHERE ea.event_id = ? AND ea.status = 'approved'
+  `),
+  getEventWithOrganiser: prepare(`
+    SELECT e.id, e.name, e.slug, e.organiser_user_id,
+           u.email as org_email, u.first_name as org_first_name,
+           o.org_name, o.notif_post_event
+    FROM events e
+    JOIN users u ON u.id = e.organiser_user_id
+    JOIN organisers o ON o.user_id = e.organiser_user_id
+    WHERE e.id = ?
+  `),
+  insertCompletionNotif: prepare(`INSERT OR IGNORE INTO event_completion_notifications (event_id, user_id, user_role, notif_type, sent_via_email) VALUES (@event_id, @user_id, @user_role, @notif_type, @sent_via_email)`),
+  hasCompletionNotif: prepare(`SELECT 1 FROM event_completion_notifications WHERE event_id=? AND user_id=? AND notif_type=?`),
+  getPendingRatingsForOrganiser: prepare(`
+    SELECT e.id as event_id, e.name as event_name, e.slug, e.completed_at,
+           ea.vendor_user_id, v.trading_name, u.first_name as vendor_first_name
+    FROM events e
+    JOIN event_applications ea ON ea.event_id = e.id AND ea.status = 'approved'
+    JOIN users u ON u.id = ea.vendor_user_id
+    JOIN vendors v ON v.user_id = ea.vendor_user_id
+    WHERE e.organiser_user_id = ?
+      AND e.completed_at IS NOT NULL
+      AND NOT EXISTS (
+        SELECT 1 FROM organiser_vendor_ratings ovr
+        WHERE ovr.organiser_user_id = e.organiser_user_id
+          AND ovr.vendor_user_id = ea.vendor_user_id
+          AND ovr.event_id = e.id
+      )
+    ORDER BY e.completed_at DESC
+  `),
+  getPendingReviewsForVendor: prepare(`
+    SELECT e.id as event_id, e.name as event_name, e.slug, e.completed_at,
+           e.organiser_user_id, o.org_name
+    FROM events e
+    JOIN event_applications ea ON ea.event_id = e.id AND ea.status = 'approved'
+    JOIN organisers o ON o.user_id = e.organiser_user_id
+    WHERE ea.vendor_user_id = ?
+      AND e.completed_at IS NOT NULL
+      AND NOT EXISTS (
+        SELECT 1 FROM organiser_reviews orv
+        WHERE orv.vendor_user_id = ea.vendor_user_id
+          AND orv.organiser_user_id = e.organiser_user_id
+          AND orv.event_id = e.id
+      )
+    ORDER BY e.completed_at DESC
+  `),
 };
 
 // ── Transactions ─────────────────────────────────────────────────────────────
