@@ -2373,7 +2373,7 @@ body::before {
     <!-- ── PANEL: REVIEWS ────────────────────────────────────────────────── -->
     <div class="panel" id="panel-reviews">
       <div style="max-width:700px;">
-        <div class="rating-hero" id="rating-hero">
+        <div class="rating-hero" id="rating-hero" style="display:none;">
           <div class="rating-left">
             <div class="rating-big empty" id="rating-avg">—</div>
             <div class="rating-stars-lg empty" id="rating-stars-lg">☆☆☆☆☆</div>
@@ -5353,18 +5353,12 @@ async function loadReviews() {
     if (!r.ok) return;
     const { reviews, avgRating, totalReviews } = await r.json();
 
-    const avgEl = document.getElementById('rating-avg');
-    const starsEl = document.getElementById('rating-stars-lg');
-    avgEl.textContent = totalReviews ? avgRating.toFixed(1) : '—';
-    avgEl.classList.toggle('empty', !totalReviews);
-    starsEl.textContent = totalReviews ? starsHtml(avgRating) : '☆☆☆☆☆';
-    starsEl.classList.toggle('empty', !totalReviews);
-    document.getElementById('rating-count').textContent = totalReviews
-      ? `${totalReviews} review${totalReviews === 1 ? '' : 's'}`
-      : 'No reviews yet';
-
+    const heroEl = document.getElementById('rating-hero');
     const list = document.getElementById('reviews-list');
-    if (!reviews.length) {
+
+    if (!totalReviews) {
+      // Hide hero card, show centered empty state only
+      heroEl.style.display = 'none';
       list.innerHTML = `<div class="reviews-empty">
         <div class="reviews-empty-icon">⭐</div>
         <div class="reviews-empty-title">No reviews yet</div>
@@ -5372,6 +5366,13 @@ async function loadReviews() {
       </div>`;
       return;
     }
+    // Has reviews — show hero with real data
+    heroEl.style.display = '';
+    document.getElementById('rating-avg').textContent = avgRating.toFixed(1);
+    document.getElementById('rating-avg').classList.remove('empty');
+    document.getElementById('rating-stars-lg').textContent = starsHtml(avgRating);
+    document.getElementById('rating-stars-lg').classList.remove('empty');
+    document.getElementById('rating-count').textContent = `${totalReviews} review${totalReviews === 1 ? '' : 's'}`;
     list.innerHTML = reviews.map(rv => `
       <div class="review-card">
         <div class="review-header">
