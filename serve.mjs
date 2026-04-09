@@ -2198,19 +2198,24 @@ app.get('/api/vendor/calendar', requireAuth, async (req, res) => {
 
 // ── API: Calendar feed token (generate/retrieve subscription URL) ──────────
 app.post('/api/vendor/calendar-token', requireAuth, async (req, res) => {
-  if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Vendors only' });
-  const vendor = await stmts.getVendorByUserId.get(req.session.userId);
-  if (!vendor) return res.status(404).json({ error: 'Vendor not found' });
-  if (vendor.plan === 'free') return res.status(403).json({ error: 'Calendar sync is available on Pro and Growth plans.' });
+  try {
+    if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Vendors only' });
+    const vendor = await stmts.getVendorByUserId.get(req.session.userId);
+    if (!vendor) return res.status(404).json({ error: 'Vendor not found' });
+    if (!vendor.plan || vendor.plan === 'free') return res.status(403).json({ error: 'Calendar sync is available on Pro and Growth plans.' });
 
-  let token = vendor.calendar_feed_token;
-  if (!token) {
-    token = randomBytes(24).toString('base64url');
-    await stmts.setVendorCalToken.run({ token, user_id: req.session.userId });
+    let token = vendor.calendar_feed_token;
+    if (!token) {
+      token = randomBytes(24).toString('base64url');
+      await stmts.setVendorCalToken.run({ token, user_id: req.session.userId });
+    }
+    const host = req.headers.host || 'onpitch.com.au';
+    const proto = req.headers['x-forwarded-proto'] || req.protocol || 'https';
+    res.json({ token, url: `${proto}://${host}/cal/${token}.ics` });
+  } catch (e) {
+    console.error('[calendar-token]', e);
+    res.status(500).json({ error: 'Failed to generate calendar link.' });
   }
-  const host = req.headers.host || 'onpitch.com.au';
-  const proto = req.headers['x-forwarded-proto'] || req.protocol || 'https';
-  res.json({ token, url: `${proto}://${host}/cal/${token}.ics` });
 });
 
 // ── Public calendar feed (.ics) ────────────────────────────────────────────
