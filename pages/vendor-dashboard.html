@@ -1420,10 +1420,32 @@ body::before {
 .cal-feed-secondary a:hover { text-decoration:underline; }
 
 /* ── MARKET HISTORY ───────────────────────────────────────────────────────── */
-.history-card { background:var(--char); border:1px solid #ffffff08; border-radius:14px; padding:18px 20px; margin-bottom:12px; }
-.history-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:10px; }
+.history-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px; }
+@media (max-width:900px) { .history-stats { grid-template-columns:repeat(2,1fr); } }
+.history-stat {
+  background:var(--char); border:1px solid #ffffff08; border-radius:14px; padding:16px 18px;
+  display:flex; flex-direction:column; gap:4px;
+}
+.history-stat-val { font-family:var(--fd); font-size:24px; font-weight:900; color:var(--text-hi); letter-spacing:-0.03em; }
+.history-stat-label { font-size:11px; font-weight:600; color:var(--text-lo); text-transform:uppercase; letter-spacing:0.08em; }
+.history-filters {
+  display:flex; align-items:center; gap:10px; margin-bottom:18px; flex-wrap:wrap;
+}
+.history-filter-btn {
+  font-family:var(--fb); font-size:12px; font-weight:600; color:var(--text-lo);
+  background:#ffffff06; border:1px solid #ffffff0a; border-radius:8px;
+  padding:6px 14px; cursor:pointer; transition:border-color 0.12s, color 0.12s;
+}
+.history-filter-btn:hover { color:var(--text-mid); border-color:#ffffff18; }
+.history-filter-btn.active { color:var(--ember); border-color:#E8500A30; background:#E8500A0a; }
+.history-card { background:var(--char); border:1px solid #ffffff08; border-radius:14px; padding:18px 20px; margin-bottom:12px; transition:border-color 0.14s; }
+.history-card:hover { border-color:#ffffff18; }
+.history-header { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
 .history-name { font-size:15px; font-weight:700; color:var(--text-hi); margin-bottom:3px; }
-.history-meta { font-size:12px; color:var(--text-lo); }
+.history-meta { font-size:12px; color:var(--text-lo); line-height:1.5; }
+.history-detail-row { display:flex; gap:20px; flex-wrap:wrap; margin-top:12px; padding-top:12px; border-top:1px solid #ffffff06; }
+.history-detail { font-size:12px; color:var(--text-mid); display:flex; align-items:center; gap:5px; }
+.history-detail-label { color:var(--text-lo); }
 .history-reviews { margin-top:10px; padding-top:10px; border-top:1px solid #ffffff06; }
 .history-review-item { font-size:12px; color:var(--text-mid); display:flex; gap:8px; align-items:flex-start; margin-bottom:6px; }
 
@@ -2453,7 +2475,7 @@ body::before {
                   <div style="font-family:var(--fd);font-size:36px;font-weight:900;color:var(--text-hi);" id="analytics-app-count">—</div>
                 </div>
               </div>
-              <div class="analytics-blurred" style="height:80px;background:linear-gradient(90deg,#2D8B5530 0%,#2D8B5550 30%,#2D8B5540 60%,#2D8B5520 100%);border-radius:8px;"></div>
+              <div id="analytics-app-breakdown" style="display:none;"></div>
             </div>
           </div>
         </div>
@@ -2480,11 +2502,21 @@ body::before {
 
     <!-- ── PANEL: MARKET HISTORY ─────────────────────────────────────────── -->
     <div class="panel" id="panel-history">
-      <div style="max-width:700px;">
+      <div style="max-width:800px;">
         <div class="section-head" style="margin-bottom:20px;">
-          <div class="section-title">Market History</div>
           <div class="section-sub">Every market you've been approved for through Pitch. Organisers can see this on your public profile.</div>
         </div>
+
+        <!-- Stats summary -->
+        <div class="history-stats" id="history-stats"></div>
+
+        <!-- Filters -->
+        <div class="history-filters" id="history-filters">
+          <button class="history-filter-btn active" data-filter="all">All</button>
+          <button class="history-filter-btn" data-filter="attended">Attended</button>
+          <button class="history-filter-btn" data-filter="upcoming">Upcoming</button>
+        </div>
+
         <div id="history-list"><div style="text-align:center;padding:40px;color:var(--text-lo);font-size:13px;">Loading…</div></div>
       </div>
     </div>
@@ -2793,6 +2825,7 @@ const PANEL_TITLES = {
   payments:       'Stall Fees & Payments',
   calendar:       'Calendar',
   history:        'Market History',
+  analytics:      'Analytics',
   earnings:       'Earnings',
   messages:       'Messages',
   settings:       'Settings',
@@ -5925,9 +5958,30 @@ function applySubscriptionGating(plan) {
     const countEl = document.getElementById('analytics-app-count');
     if (rateEl) rateEl.textContent = rate !== null ? rate + '%' : '—';
     if (countEl) countEl.textContent = total;
+    // Application status breakdown bar
+    const breakdownEl = document.getElementById('analytics-app-breakdown');
+    if (breakdownEl && total > 0) {
+      const pending = apps.filter(a => a.status === 'pending').length;
+      const rejected = apps.filter(a => a.status === 'rejected').length;
+      const segments = [
+        { count: approved, color: 'var(--herb)', label: 'Approved' },
+        { count: pending, color: 'var(--gold)', label: 'Pending' },
+        { count: rejected, color: 'var(--terra)', label: 'Rejected' },
+      ].filter(s => s.count > 0);
+      breakdownEl.style.display = 'block';
+      breakdownEl.innerHTML = `
+        <div style="display:flex;border-radius:6px;overflow:hidden;height:10px;margin-bottom:10px;">
+          ${segments.map(s => `<div style="flex:${s.count};background:${s.color};" title="${s.label}: ${s.count}"></div>`).join('')}
+        </div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;">
+          ${segments.map(s => `<span style="font-size:11px;color:var(--text-mid);display:flex;align-items:center;gap:5px;"><span style="width:8px;height:8px;border-radius:50%;background:${s.color};"></span>${s.label} (${s.count})</span>`).join('')}
+        </div>`;
+    }
     const viewsEl = document.getElementById('analytics-views-count');
     const viewsLabel = document.getElementById('analytics-views-label');
-    if (viewsEl) viewsEl.textContent = '—';
+    // Use real view_count from profile if available, otherwise 0
+    const viewCount = (window.__PITCH_PROFILE__ || {}).view_count || 0;
+    if (viewsEl) viewsEl.textContent = viewCount;
 
     if (isGrowth) {
       // Growth: show trend graph and source breakdown
