@@ -306,7 +306,7 @@ body::before {
 .overview-grid { display: grid; grid-template-columns: 1fr 360px; gap: 24px; align-items: start; }
 @media (max-width: 1100px) { .overview-grid { grid-template-columns: 1fr; } .overview-grid > :last-child { position: static; } .overview-grid > :last-child .card { min-height: auto; } }
 .overview-grid > :last-child { position: sticky; top: 80px; }
-.overview-grid > :last-child .card { min-height: 320px; display: flex; flex-direction: column; }
+.overview-grid > :last-child .card { min-height: 280px; display: flex; flex-direction: column; }
 .overview-grid > :last-child .card .feed-list { flex: 1; }
 
 /* Recommended events */
@@ -1732,9 +1732,11 @@ body::before {
         </div>
 
         <!-- Activity feed -->
-        <div class="card">
+        <div>
           <div class="section-title" style="margin-bottom:12px;">Recent activity</div>
-          <div class="feed-list" id="activity-feed"><!-- Populated by loadActivity() --></div>
+          <div class="card" style="margin-top:0;">
+            <div class="feed-list" id="activity-feed"><!-- Populated by loadActivity() --></div>
+          </div>
         </div>
 
       </div>
