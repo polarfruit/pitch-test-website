@@ -642,7 +642,7 @@ body::before {
 .upload-hint { font-size: 11px; color: var(--text-lo); }
 .photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 14px; }
 .photo-thumb {
-  aspect-ratio: 4/3; border-radius: 8px; overflow: hidden;
+  aspect-ratio: 4/3; border-radius: 12px; overflow: hidden;
   background: var(--ash); display: flex; align-items: center; justify-content: center;
   font-size: 24px; position: relative;
 }
@@ -665,6 +665,7 @@ body::before {
 }
 .dim-input:focus { border-color: #E8500A40; }
 .dim-sep { font-size: 16px; font-weight: 600; color: var(--text-mid); }
+.dim-unit { font-size: 13px; font-weight: 400; color: var(--text-lo); }
 
 /* Profile preview card */
 .preview-card {
@@ -701,9 +702,10 @@ body::before {
 .btn-save {
   font-family: var(--fb); font-size: 14px; font-weight: 700; color: #fff;
   background: var(--ember); border: none; padding: 14px 32px; border-radius: 12px;
-  cursor: pointer; box-shadow: 0 4px 16px #E8500A2E; transition: all 0.14s;
-  margin-top: 8px;
+  cursor: pointer; box-shadow: 0 4px 16px #E8500A2E; transition: background 0.14s, transform 0.14s, opacity 0.14s;
+  margin-top: 8px; opacity: 0.45;
 }
+.btn-save.dirty { opacity: 1; }
 .btn-save:hover { background: var(--ember-glow); transform: translateY(-1px); }
 
 /* ── DOCUMENTS ───────────────────────────────────────────────────────────── */
@@ -2004,7 +2006,7 @@ body::before {
             <label class="form-label">Stall dimensions (metres)</label>
             <div class="dim-row">
               <input class="dim-input" id="v-stall-w" type="number" value="3" min="1" max="20" /> <span class="dim-sep">×</span>
-              <input class="dim-input" id="v-stall-d" type="number" value="3" min="1" max="20" /> <span class="dim-sep" style="color:var(--text-mid);">m</span>
+              <input class="dim-input" id="v-stall-d" type="number" value="3" min="1" max="20" /> <span class="dim-unit">m</span>
             </div>
           </div>
 
@@ -2080,21 +2082,21 @@ body::before {
             </div>
             <div class="photo-grid" id="photo-grid"></div>
             <!-- Growth: gallery naming -->
-            <div id="gallery-naming-section" style="display:none;margin-top:16px;padding:14px 14px;background:#ffffff05;border:1px solid #ffffff0A;border-radius:10px;border-top:2px solid #ffffff10;">
-              <div style="font-size:12px;font-weight:700;color:var(--text-mid);margin-bottom:8px;display:flex;align-items:center;gap:6px;">
-                🖼 Named gallery
-                <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:100px;background:#E8500A18;color:var(--ember);border:1px solid #E8500A28;">Growth</span>
-              </div>
+            <div id="gallery-naming-section" style="display:none;margin-top:16px;padding:14px 14px;background:#ffffff05;border:1px solid #ffffff0A;border-radius:10px;">
+              <label style="font-size:11px;font-weight:700;color:var(--text-mid);letter-spacing:0.04em;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px;">
+                Gallery name
+                <span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:100px;background:#E8500A18;color:var(--ember);border:1px solid #E8500A28;text-transform:none;letter-spacing:0;">Growth</span>
+              </label>
               <input class="form-input" id="gallery-name" type="text" placeholder="e.g. Events, Markets, Catering…" style="margin-bottom:0;" />
               <div style="font-size:11px;color:var(--text-lo);margin-top:5px;line-height:1.5;">This name appears above your photo gallery on your public profile.</div>
             </div>
           </div>
 
-          <button class="btn-save" onclick="saveProfile(this)">Save changes</button>
+          <button class="btn-save" id="profile-save-btn" onclick="saveProfile(this)">Save changes</button>
         </div>
 
         <!-- Live preview -->
-        <div>
+        <div style="position:sticky;top:24px;align-self:start;">
           <div class="section-title">Live preview</div>
           <p style="font-size:12px;color:var(--text-lo);margin-bottom:14px;">How your card looks to organisers &amp; consumers.</p>
           <div class="preview-card">
@@ -3390,6 +3392,7 @@ async function saveProfile(btn) {
       } catch {}
       btn.textContent = '✓ Saved!'; btn.style.background = 'var(--herb)';
       btn.disabled = false;
+      clearProfileDirty();
       setTimeout(() => { btn.textContent = 'Save changes'; btn.style.background = ''; }, 3000);
     } else {
       const d = await res.json().catch(() => ({}));
@@ -3400,6 +3403,29 @@ async function saveProfile(btn) {
     btn.textContent = '✗ ' + e.message; btn.style.background = 'var(--terra)';
     btn.disabled = false;
   }
+}
+
+/* ── Profile dirty-state tracking ────────────────────────────────────────── */
+function markProfileDirty() {
+  const btn = document.getElementById('profile-save-btn');
+  if (btn && !btn.classList.contains('dirty')) btn.classList.add('dirty');
+}
+function clearProfileDirty() {
+  const btn = document.getElementById('profile-save-btn');
+  if (btn) btn.classList.remove('dirty');
+}
+// Attach listeners after profile hydrates
+function initDirtyTracking() {
+  const form = document.querySelector('#panel-profile .card');
+  if (!form) return;
+  form.querySelectorAll('input, textarea, select').forEach(el => {
+    el.addEventListener('input', markProfileDirty);
+    el.addEventListener('change', markProfileDirty);
+  });
+  // Also hook into tag/price/setup clicks that don't fire input events
+  form.querySelectorAll('.tag-option, .price-btn, input[name="setup"]').forEach(el => {
+    el.addEventListener('click', markProfileDirty);
+  });
 }
 
 /* ── Delete modal ─────────────────────────────────────────────────────────── */
@@ -3711,6 +3737,9 @@ async function initDashboard() {
     }
     updatePreview();
   }
+
+  // Init dirty tracking after hydration (delayed so hydration inputs don't trigger it)
+  setTimeout(initDirtyTracking, 100);
 
   // Logout handled by inline onclick → pitchLogout()
 
