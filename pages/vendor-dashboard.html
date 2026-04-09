@@ -711,7 +711,8 @@ body::before {
 .btn-save:hover { background: var(--ember-glow); transform: translateY(-1px); }
 
 /* ── DOCUMENTS ───────────────────────────────────────────────────────────── */
-.doc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 32px; }
+.doc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 24px; align-items: start; }
+.doc-hint { font-size: 12px; color: var(--text-lo); line-height: 1.5; }
 @media (max-width: 1100px) and (min-width: 769px) { .doc-grid { grid-template-columns: repeat(2, 1fr); } }
 
 .doc-card {
@@ -1508,7 +1509,12 @@ body::before {
   background:var(--char); border:1px solid #ffffff0d; border-radius:20px;
   width:520px; max-width:calc(100vw - 32px); max-height:88vh; overflow-y:auto;
   padding:28px; position:relative;
+  scrollbar-width:thin; scrollbar-color:#ffffff18 transparent;
 }
+.menu-modal::-webkit-scrollbar { width:6px; }
+.menu-modal::-webkit-scrollbar-track { background:transparent; }
+.menu-modal::-webkit-scrollbar-thumb { background:#ffffff18; border-radius:3px; }
+.menu-modal::-webkit-scrollbar-thumb:hover { background:#ffffff28; }
 .menu-modal-title { font-family:var(--fd); font-size:20px; font-weight:900; color:var(--text-hi); letter-spacing:-0.03em; margin-bottom:22px; }
 .menu-modal-close { position:absolute; top:18px; right:18px; background:#ffffff10; border:none; color:var(--text-mid); width:32px; height:32px; border-radius:50%; cursor:pointer; font-size:14px; transition:background 0.14s; }
 .menu-modal-close:hover { background:#ffffff1c; color:var(--text-hi); }
@@ -1522,14 +1528,15 @@ body::before {
 .menu-price-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; }
 .menu-modal-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 .menu-photo-preview { width:100%; height:140px; border-radius:12px; object-fit:cover; margin-top:10px; border:1px solid #ffffff10; }
-.menu-toggle-row { display:flex; align-items:center; justify-content:space-between; padding:12px 0; border-bottom:1px solid #ffffff07; }
+.menu-toggle-row { display:flex; align-items:center; gap:16px; padding:12px 0; border-bottom:1px solid #ffffff07; }
+.menu-toggle-row > div:first-child { flex:1; min-width:0; }
 .menu-toggle-label { font-size:13px; font-weight:600; color:var(--text-hi); }
 .menu-toggle-sub { font-size:12px; color:var(--text-lo); margin-top:2px; }
 .menu-modal-actions { display:flex; gap:10px; margin-top:22px; }
 .btn-modal-save { flex:1; background:var(--ember); color:#fff; border:none; font-family:var(--fb); font-size:14px; font-weight:700; padding:13px; border-radius:12px; cursor:pointer; transition:background 0.14s; }
 .btn-modal-save:hover { background:var(--ember-glow); }
-.btn-modal-cancel { background:#ffffff0a; color:var(--text-mid); border:none; font-family:var(--fb); font-size:14px; font-weight:700; padding:13px 22px; border-radius:12px; cursor:pointer; transition:background 0.14s; }
-.btn-modal-cancel:hover { background:#ffffff14; color:var(--text-hi); }
+.menu-modal .btn-modal-cancel { background:transparent; color:var(--text-lo); border:none; font-family:var(--fb); font-size:13px; font-weight:600; padding:13px 22px; border-radius:12px; cursor:pointer; transition:color 0.14s; }
+.menu-modal .btn-modal-cancel:hover { background:transparent; color:var(--text-hi); }
 .menu-delete-confirm { display:none; background:#C0392B14; border:1px solid #C0392B30; border-radius:12px; padding:14px 16px; margin-top:14px; }
 .menu-delete-confirm.open { display:block; }
 .btn-confirm-del { background:var(--terra); color:#fff; border:none; font-family:var(--fb); font-size:13px; font-weight:700; padding:8px 18px; border-radius:9px; cursor:pointer; }
@@ -1557,8 +1564,15 @@ body::before {
 
     <!-- Photo -->
     <div class="menu-field">
-      <label class="menu-label">Photo (URL)</label>
-      <input class="menu-input" id="mi-photo" type="url" placeholder="https://…" oninput="previewMenuPhoto()" />
+      <label class="menu-label">Photo</label>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <label style="display:flex;align-items:center;gap:8px;background:var(--ember);color:#fff;font-family:var(--fb);font-size:12px;font-weight:700;padding:9px 16px;border-radius:10px;cursor:pointer;white-space:nowrap;transition:background 0.14s;" onmouseover="this.style.background='var(--ember-glow)'" onmouseout="this.style.background='var(--ember)'">
+          📷 Upload photo
+          <input type="file" id="mi-photo-file" accept="image/jpeg,image/png,image/webp" style="display:none;" onchange="handleMenuPhotoFile(this)" />
+        </label>
+        <span style="font-size:11px;color:var(--text-lo);">or</span>
+        <input class="menu-input" id="mi-photo" type="url" placeholder="Paste image URL" style="flex:1;" oninput="previewMenuPhoto()" />
+      </div>
       <img class="menu-photo-preview" id="mi-photo-preview" style="display:none;" alt="preview" />
     </div>
 
@@ -1586,7 +1600,7 @@ body::before {
           <option value="varies">Varies / ask</option>
         </select>
         <input class="menu-input" id="mi-price-min" type="number" min="0" step="0.5" placeholder="$0.00" />
-        <input class="menu-input" id="mi-price-max" type="number" min="0" step="0.5" placeholder="Max $" style="display:none;" id="mi-price-max" />
+        <input class="menu-input" id="mi-price-max" type="number" min="0" step="0.5" placeholder="Max $" style="display:none;" />
       </div>
     </div>
 
@@ -5620,6 +5634,7 @@ function openMenuModal(editIdx) {
   document.getElementById('menu-modal-title').textContent = item ? 'Edit item' : 'Add item';
   document.getElementById('menu-item-id').value  = item ? item.id : '';
   document.getElementById('mi-photo').value      = item?.photo_url || '';
+  const fileInput = document.getElementById('mi-photo-file'); if (fileInput) fileInput.value = '';
   document.getElementById('mi-name').value       = item?.name || '';
   document.getElementById('mi-desc').value       = item?.description || '';
   document.getElementById('mi-price-type').value = item?.price_type || 'exact';
@@ -5703,6 +5718,19 @@ function previewMenuPhoto() {
   const img = document.getElementById('mi-photo-preview');
   if (!img) return;
   if (url) { img.src = url; img.style.display = 'block'; } else { img.style.display = 'none'; }
+}
+function handleMenuPhotoFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { alert('Photo must be under 5MB.'); input.value = ''; return; }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const dataUrl = e.target.result;
+    document.getElementById('mi-photo').value = dataUrl;
+    const img = document.getElementById('mi-photo-preview');
+    if (img) { img.src = dataUrl; img.style.display = 'block'; }
+  };
+  reader.readAsDataURL(file);
 }
 
 // Drag-to-reorder
