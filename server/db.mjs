@@ -922,6 +922,29 @@ await _safeExec(`UPDATE reports SET against_user_id = (SELECT o.user_id FROM org
 await _safeExec(`UPDATE reports SET reporter_user_id = (SELECT v.user_id FROM vendors v WHERE LOWER(v.trading_name)=LOWER(reports.reporter_name) LIMIT 1) WHERE reporter_user_id IS NULL AND reporter_name IS NOT NULL`);
 await _safeExec(`UPDATE reports SET reporter_user_id = (SELECT o.user_id FROM organisers o WHERE LOWER(o.org_name)=LOWER(reports.reporter_name) LIMIT 1) WHERE reporter_user_id IS NULL AND reporter_name IS NOT NULL`);
 
+// ── Subscription override migrations ─────────────────────────────────────────
+await _safeExec(`ALTER TABLE vendors ADD COLUMN plan_override INTEGER NOT NULL DEFAULT 0`);
+await _safeExec(`ALTER TABLE vendors ADD COLUMN plan_override_by INTEGER`);
+await _safeExec(`ALTER TABLE vendors ADD COLUMN plan_override_at DATETIME`);
+await _safeExec(`ALTER TABLE vendors ADD COLUMN plan_override_reason TEXT`);
+await _safeExec(`ALTER TABLE vendors ADD COLUMN plan_override_expires DATETIME`);
+await _safeExec(`
+  CREATE TABLE IF NOT EXISTS subscription_changes (
+    id               INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id          INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    old_plan         TEXT NOT NULL,
+    new_plan         TEXT NOT NULL,
+    changed_by       TEXT NOT NULL CHECK(changed_by IN ('admin','vendor','system')),
+    admin_user_id    INTEGER,
+    reason           TEXT,
+    payment_status   TEXT,
+    is_override      INTEGER NOT NULL DEFAULT 0,
+    override_expires DATETIME,
+    created_at       DATETIME DEFAULT (datetime('now'))
+  )
+`);
+await _safeExec(`CREATE INDEX IF NOT EXISTS idx_sub_changes_user ON subscription_changes(user_id)`);
+
 // ── Post-event completion workflow ───────────────────────────────────────────
 await _safeExec(`ALTER TABLE events ADD COLUMN completed_at DATETIME`);
 await _safeExec(`ALTER TABLE organisers ADD COLUMN notif_post_event INTEGER NOT NULL DEFAULT 1`);
@@ -958,8 +981,8 @@ export const stmts = {
   `),
   getVendorByUserId:  prepare(`SELECT * FROM vendors WHERE user_id = ?`),
   updateVendorPlan:   prepare(`UPDATE vendors SET plan = ? WHERE user_id = ?`),
-  allVendors: prepare(`SELECT u.id as user_id, COALESCE(v.trading_name, u.first_name||' '||u.last_name) as trading_name, u.email, u.first_name, u.last_name, u.status, u.created_at as joined, v.abn, v.abn_verified, v.abn_match, v.abn_entity_name, COALESCE(v.plan,'free') as plan, v.suburb, v.state, v.id as vid, v.created_at, v.food_safety_url, v.pli_url, v.council_url FROM users u LEFT JOIN vendors v ON v.user_id=u.id AND v.id=(SELECT MIN(id) FROM vendors WHERE user_id=u.id) WHERE u.role='vendor' ORDER BY u.id DESC`),
-  vendorsByStatus: prepare(`SELECT u.id as user_id, COALESCE(v.trading_name, u.first_name||' '||u.last_name) as trading_name, u.email, u.first_name, u.last_name, u.status, u.created_at as joined, v.abn, v.abn_verified, v.abn_match, v.abn_entity_name, COALESCE(v.plan,'free') as plan, v.suburb, v.state, v.id as vid, v.created_at, v.food_safety_url, v.pli_url, v.council_url FROM users u LEFT JOIN vendors v ON v.user_id=u.id AND v.id=(SELECT MIN(id) FROM vendors WHERE user_id=u.id) WHERE u.role='vendor' AND u.status=? ORDER BY u.id DESC`),
+  allVendors: prepare(`SELECT u.id as user_id, COALESCE(v.trading_name, u.first_name||' '||u.last_name) as trading_name, u.email, u.first_name, u.last_name, u.status, u.created_at as joined, v.abn, v.abn_verified, v.abn_match, v.abn_entity_name, COALESCE(v.plan,'free') as plan, v.plan_override, v.suburb, v.state, v.id as vid, v.created_at, v.food_safety_url, v.pli_url, v.council_url FROM users u LEFT JOIN vendors v ON v.user_id=u.id AND v.id=(SELECT MIN(id) FROM vendors WHERE user_id=u.id) WHERE u.role='vendor' ORDER BY u.id DESC`),
+  vendorsByStatus: prepare(`SELECT u.id as user_id, COALESCE(v.trading_name, u.first_name||' '||u.last_name) as trading_name, u.email, u.first_name, u.last_name, u.status, u.created_at as joined, v.abn, v.abn_verified, v.abn_match, v.abn_entity_name, COALESCE(v.plan,'free') as plan, v.plan_override, v.suburb, v.state, v.id as vid, v.created_at, v.food_safety_url, v.pli_url, v.council_url FROM users u LEFT JOIN vendors v ON v.user_id=u.id AND v.id=(SELECT MIN(id) FROM vendors WHERE user_id=u.id) WHERE u.role='vendor' AND u.status=? ORDER BY u.id DESC`),
 
   // organisers
   createOrganiser: prepare(`
@@ -1202,7 +1225,7 @@ export const stmts = {
 
   // update profiles (admin)
   updateUserProfile:      prepare(`UPDATE users SET first_name=@first_name,last_name=@last_name,email=@email,status=@status WHERE id=@id`),
-  updateVendorProfile:    prepare(`UPDATE vendors SET trading_name=@trading_name,mobile=@mobile,suburb=@suburb,state=@state,bio=@bio,plan=@plan,instagram=@instagram,setup_type=@setup_type,stall_w=@stall_w,stall_d=@stall_d,power=@power,water=@water,price_range=@price_range,abn=@abn WHERE user_id=@user_id`),
+  updateVendorProfile:    prepare(`UPDATE vendors SET trading_name=@trading_name,mobile=@mobile,suburb=@suburb,state=@state,bio=@bio,instagram=@instagram,setup_type=@setup_type,stall_w=@stall_w,stall_d=@stall_d,power=@power,water=@water,price_range=@price_range,abn=@abn WHERE user_id=@user_id`),
   updateVendorProfileSelf: prepare(`UPDATE vendors SET trading_name=@trading_name,mobile=@mobile,suburb=@suburb,state=@state,bio=@bio,instagram=@instagram,abn=@abn,setup_type=@setup_type,stall_w=@stall_w,stall_d=@stall_d,power=@power,water=@water,price_range=@price_range,cuisine_tags=@cuisine_tags WHERE user_id=@user_id`),
   updateVendorPhotos:     prepare(`UPDATE vendors SET photos=@photos WHERE user_id=@user_id`),
   updateVendorDoc:        prepare(`UPDATE vendors SET food_safety_url=@food_safety_url,pli_url=@pli_url,council_url=@council_url WHERE user_id=@user_id`),
@@ -1346,6 +1369,11 @@ export const stmts = {
   payStallFee:          prepare(`UPDATE stall_fees SET status='paid',paid_at=datetime('now') WHERE id=? AND vendor_user_id=?`),
   getStallFeeById:      prepare(`SELECT * FROM stall_fees WHERE id=?`),
 
+  // vendor earnings
+  getVendorEarningsSummary: prepare(`SELECT COALESCE(SUM(CASE WHEN status='paid' THEN amount ELSE 0 END),0) as total_earned, COUNT(CASE WHEN status='paid' THEN 1 END) as events_completed, COALESCE(SUM(CASE WHEN status='paid' AND paid_at>=date('now','start of month') THEN amount ELSE 0 END),0) as this_month, COUNT(CASE WHEN status='paid' AND paid_at>=date('now','start of month') THEN 1 END) as this_month_events, COALESCE(SUM(CASE WHEN status='paid' AND paid_at>=date('now','start of month','-1 month') AND paid_at<date('now','start of month') THEN amount ELSE 0 END),0) as last_month, COUNT(CASE WHEN status='paid' AND paid_at>=date('now','start of month','-1 month') AND paid_at<date('now','start of month') THEN 1 END) as last_month_events, COALESCE(SUM(CASE WHEN status='unpaid' THEN amount ELSE 0 END),0) as pending FROM stall_fees WHERE vendor_user_id=?`),
+  getVendorEarningsHistory: prepare(`SELECT sf.id,sf.event_name,sf.amount,sf.status,sf.paid_at,sf.created_at, e.date_sort as event_date,e.organiser_name FROM stall_fees sf LEFT JOIN events e ON sf.event_id=e.id WHERE sf.vendor_user_id=? ORDER BY COALESCE(sf.paid_at,sf.created_at) DESC`),
+  getVendorEarningsFY:      prepare(`SELECT COALESCE(SUM(amount),0) as fy_total,COUNT(*) as fy_events FROM stall_fees WHERE vendor_user_id=? AND status='paid' AND paid_at>=? AND paid_at<?`),
+
   // vendor calendar (approved apps with future events)
   getVendorCalendar:   prepare(`SELECT ea.*,e.name as event_name,e.date_sort,e.date_end,e.suburb,e.state,e.category FROM event_applications ea JOIN events e ON ea.event_id=e.id WHERE ea.vendor_user_id=? ORDER BY e.date_sort ASC`),
   getVendorByCalToken: prepare(`SELECT user_id FROM vendors WHERE calendar_feed_token=?`),
@@ -1363,10 +1391,19 @@ export const stmts = {
   pauseVendor:          prepare(`UPDATE vendors SET paused=? WHERE user_id=?`),
 
   // subscription / application quota
-  getVendorSubscription:     prepare(`SELECT plan,apps_this_month,apps_reset_month,trial_ends_at,subscription_status FROM vendors WHERE user_id=?`),
+  getVendorSubscription:     prepare(`SELECT plan,apps_this_month,apps_reset_month,trial_ends_at,subscription_status,plan_override,plan_override_by,plan_override_at,plan_override_reason,plan_override_expires FROM vendors WHERE user_id=?`),
   incrementAppsThisMonth:    prepare(`UPDATE vendors SET apps_this_month=apps_this_month+1, apps_reset_month=? WHERE user_id=?`),
   resetAndIncrementApps:     prepare(`UPDATE vendors SET apps_this_month=1, apps_reset_month=? WHERE user_id=?`),
   resetAppsCounter:          prepare(`UPDATE vendors SET apps_this_month=0, apps_reset_month=? WHERE user_id=?`),
+
+  // subscription management (admin override)
+  updateVendorPlanOverride:  prepare(`UPDATE vendors SET plan=@plan, plan_override=@plan_override, plan_override_by=@plan_override_by, plan_override_at=@plan_override_at, plan_override_reason=@plan_override_reason, plan_override_expires=@plan_override_expires WHERE user_id=@user_id`),
+  clearVendorOverride:       prepare(`UPDATE vendors SET plan_override=0, plan_override_by=NULL, plan_override_at=NULL, plan_override_reason=NULL, plan_override_expires=NULL WHERE user_id=?`),
+  updateVendorTrialEnd:      prepare(`UPDATE vendors SET trial_ends_at=? WHERE user_id=?`),
+  insertSubscriptionChange:  prepare(`INSERT INTO subscription_changes (user_id,old_plan,new_plan,changed_by,admin_user_id,reason,payment_status,is_override,override_expires) VALUES (@user_id,@old_plan,@new_plan,@changed_by,@admin_user_id,@reason,@payment_status,@is_override,@override_expires)`),
+  getSubscriptionChanges:    prepare(`SELECT * FROM subscription_changes WHERE user_id=? ORDER BY created_at DESC LIMIT 20`),
+  getLastPayment:            prepare(`SELECT * FROM payments WHERE user_id=? ORDER BY created_at DESC LIMIT 1`),
+  getExpiredOverrides:        prepare(`SELECT v.user_id, v.plan, v.plan_override_expires, u.email, u.first_name FROM vendors v JOIN users u ON v.user_id=u.id WHERE v.plan_override=1 AND v.plan_override_expires IS NOT NULL AND v.plan_override_expires <= datetime('now')`),
 
   // content flags
   getFlags:            prepare(`SELECT cf.*, COALESCE(u.first_name||' '||u.last_name, '') as target_user_name, COALESCE(u.email,'') as target_email FROM content_flags cf LEFT JOIN users u ON u.id=cf.target_user_id ORDER BY cf.created_at DESC`),
