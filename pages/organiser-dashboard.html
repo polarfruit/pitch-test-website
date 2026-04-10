@@ -539,7 +539,8 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 /* ── ORGANISER NEW PANELS CSS ─────────────────────────────────────────────── */
 .org-rating-hero { display:flex; align-items:center; gap:32px; background:var(--char); border:1px solid #ffffff08; border-radius:16px; padding:24px 28px; margin-bottom:24px; }
 .org-rating-big { font-family:var(--fd); font-size:56px; font-weight:900; letter-spacing:-0.04em; color:var(--text-hi); line-height:1; }
-.org-rating-stars { font-size:22px; letter-spacing:2px; margin-bottom:4px; color:#C9840A; }
+.org-rating-stars { font-size:22px; letter-spacing:2px; margin-bottom:4px; color:var(--text-lo); }
+.org-rating-stars .star-filled { color:#C9840A; }
 .org-rating-count { font-size:13px; color:var(--text-lo); }
 .org-review-card { background:var(--char); border:1px solid #ffffff08; border-radius:14px; padding:18px 20px; margin-bottom:12px; }
 .org-review-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
@@ -633,7 +634,8 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .analytics-big-number { font-size:48px; font-family:var(--fd); font-weight:900; letter-spacing:-0.03em; line-height:1; }
 .analytics-review-card { background:#ffffff06; border:1px solid #ffffff08; border-radius:10px; padding:14px 16px; margin-bottom:10px; }
 .analytics-review-card:last-child { margin-bottom:0; }
-.analytics-stars { color:var(--gold); letter-spacing:1px; }
+.analytics-stars { color:var(--text-lo); letter-spacing:1px; }
+.analytics-stars .star-filled { color:var(--gold); }
 .analytics-funnel { display:flex; height:24px; border-radius:6px; overflow:hidden; margin-bottom:8px; }
 .analytics-funnel-seg { height:100%; transition:width 0.5s; min-width:2px; }
 .analytics-funnel-legend { display:flex; flex-wrap:wrap; gap:12px; font-size:11px; color:var(--text-lo); margin-bottom:20px; }
@@ -661,6 +663,47 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .analytics-demand-mod { background:#C9840A20; color:var(--gold); }
 .analytics-demand-low { background:#C0392B20; color:var(--terra); }
 .analytics-fill-pct { font-size:24px; font-family:var(--fd); font-weight:900; letter-spacing:-0.02em; line-height:1; }
+
+/* Organiser analytics date range filter */
+.oa-range-btn { background: #1C1814; border: 1px solid #2A2018; color: #A89880; font-size: 12px; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-family: inherit; transition: border-color 0.15s, color 0.15s, background 0.15s; }
+.oa-range-btn:hover { border-color: #E8500A44; color: #FDF4E7; }
+.oa-range-btn.active { background: #E8500A; border-color: #E8500A; color: #fff; font-weight: 600; }
+.oa-date-text { width: 96px; height: 34px; background: #1C1814; border: 1px solid #2A2018; border-radius: 6px; padding: 0 10px; font-family: inherit; font-size: 12px; color: #FDF4E7; outline: none; transition: border-color 0.14s, box-shadow 0.14s; }
+.oa-date-text:focus { border-color: #E8500A40; box-shadow: 0 0 0 3px #E8500A12; }
+.oa-date-text::placeholder { color: #6B5A4A; }
+.oa-date-text.has-value { border-color: #E8500A40; }
+.oa-cal-toggle { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; background: #1C1814; border: 1px solid #2A2018; border-radius: 6px; cursor: pointer; color: #A89880; transition: border-color 0.14s, color 0.14s, background 0.14s; }
+.oa-cal-toggle:hover, .oa-cal-toggle.active { border-color: #E8500A40; color: #E8500A; background: #E8500A08; }
+.oa-cal-popup { display: none; position: absolute; top: calc(100% + 8px); right: 0; z-index: 500; background: #231E19; border: 1px solid #ffffff12; border-radius: 14px; padding: 18px; box-shadow: 0 24px 64px rgba(0,0,0,0.6), 0 4px 16px rgba(0,0,0,0.4); min-width: 540px; }
+.oa-cal-popup.open { display: block; }
+.oa-cal-inner { display: flex; gap: 20px; }
+.oa-cal-month { flex: 1; min-width: 220px; }
+.oa-cal-month-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.oa-cal-month-name { font-family: 'Fraunces', serif; font-size: 13px; font-weight: 800; color: #FDF4E7; letter-spacing: -0.01em; }
+.oa-cal-nav { background: none; border: none; cursor: pointer; color: #A89880; padding: 4px 8px; border-radius: 6px; font-size: 15px; line-height: 1; transition: color 0.12s, background 0.12s; }
+.oa-cal-nav:hover { color: #FDF4E7; background: #ffffff0A; }
+.oa-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.oa-cal-dow { text-align: center; font-size: 10px; font-weight: 700; color: #6B5A4A; letter-spacing: 0.05em; padding-bottom: 6px; }
+.oa-cal-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; color: #A89880; border-radius: 6px; cursor: pointer; border: none; background: none; font-family: 'Instrument Sans', sans-serif; transition: background 0.1s, color 0.1s; }
+.oa-cal-day:hover:not(.empty) { background: #ffffff12; color: #FDF4E7; }
+.oa-cal-day.empty { cursor: default; color: #6B5A4A; opacity: 0.35; pointer-events: none; }
+.oa-cal-day.today { color: #E8500A; font-weight: 700; }
+.oa-cal-day.start, .oa-cal-day.end, .oa-cal-day.hover-end { background: #E8500A; color: #fff; font-weight: 700; }
+.oa-cal-day.hover-end { opacity: 0.7; }
+.oa-cal-day.in-range { background: #E8500A18; color: #FDF4E7; border-radius: 0; }
+.oa-cal-day.start { border-radius: 6px 0 0 6px; }
+.oa-cal-day.end   { border-radius: 0 6px 6px 0; }
+.oa-cal-day.start.end { border-radius: 6px; }
+.oa-cal-divider { width: 1px; background: #ffffff0A; flex-shrink: 0; }
+.oa-cal-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; padding-top: 12px; border-top: 1px solid #ffffff0A; }
+.oa-cal-label { font-size: 12px; color: #6B5A4A; }
+.oa-cal-label strong { color: #A89880; }
+.oa-cal-actions { display: flex; gap: 8px; }
+.oa-cal-btn-clear { font-family: inherit; font-size: 12px; font-weight: 600; background: none; border: 1px solid #ffffff12; border-radius: 6px; color: #A89880; padding: 6px 12px; cursor: pointer; transition: color 0.12s, border-color 0.12s; }
+.oa-cal-btn-clear:hover { color: #FDF4E7; border-color: #ffffff25; }
+.oa-cal-btn-apply { font-family: inherit; font-size: 12px; font-weight: 700; background: #E8500A; border: none; border-radius: 6px; color: #fff; padding: 6px 16px; cursor: pointer; transition: background 0.12s; }
+.oa-cal-btn-apply:hover { background: #FF6B2B; }
+@media (max-width: 680px) { .oa-cal-popup { min-width: calc(100vw - 48px); right: 0; left: auto; } .oa-cal-inner { flex-direction: column; } .oa-cal-divider { height: 1px; width: 100%; } }
 
 /* Org settings expansion */
 .org-settings-input { width:100%; height:42px; padding:0 14px; background:#ffffff08; border:1px solid #ffffff10; border-radius:10px; font-family:var(--fb); font-size:14px; color:var(--text-hi); outline:none; transition:border-color 0.14s; }
@@ -1353,6 +1396,57 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
         </div>
         <!-- Top-level summary -->
         <div class="analytics-summary" id="analytics-top-summary" style="display:none;"></div>
+        <!-- Date range filter -->
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap;" id="oa-date-bar">
+          <button class="oa-range-btn active" data-range="all" onclick="setOaRange('all',this)">All time</button>
+          <button class="oa-range-btn" data-range="7d" onclick="setOaRange('7d',this)">Last 7 days</button>
+          <button class="oa-range-btn" data-range="30d" onclick="setOaRange('30d',this)">Last 30 days</button>
+          <button class="oa-range-btn" data-range="90d" onclick="setOaRange('90d',this)">Last 90 days</button>
+          <button class="oa-range-btn" data-range="month" onclick="setOaRange('month',this)">This month</button>
+          <span style="color:#4A3C30;margin:0 4px;">|</span>
+          <div style="display:flex;align-items:center;gap:6px;position:relative;" id="oa-cal-wrap">
+            <input class="oa-date-text" id="oa-from-text" type="text" placeholder="Start date"
+                   oninput="oaDateInput('from', event)" onblur="oaNormDate('from')" />
+            <span style="color:#6B5A4A;font-size:12px;">&#8594;</span>
+            <input class="oa-date-text" id="oa-to-text" type="text" placeholder="End date"
+                   oninput="oaDateInput('to', event)" onblur="oaNormDate('to')" />
+            <button class="oa-cal-toggle" id="oa-cal-btn" onclick="oaToggleCal(event)" title="Open calendar">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                <rect x="1.5" y="2.5" width="11" height="10" rx="2" stroke="currentColor" stroke-width="1.4"/>
+                <path d="M1.5 5.5h11M4.5 1v3M9.5 1v3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/>
+              </svg>
+            </button>
+            <div class="oa-cal-popup" id="oa-cal-popup">
+              <div class="oa-cal-inner">
+                <div class="oa-cal-month">
+                  <div class="oa-cal-month-header">
+                    <button class="oa-cal-nav" onclick="oaCalPrev()">&#8249;</button>
+                    <span class="oa-cal-month-name" id="oa-cal-month-a"></span>
+                    <span></span>
+                  </div>
+                  <div class="oa-cal-grid" id="oa-cal-grid-a"></div>
+                </div>
+                <div class="oa-cal-divider"></div>
+                <div class="oa-cal-month">
+                  <div class="oa-cal-month-header">
+                    <span></span>
+                    <span class="oa-cal-month-name" id="oa-cal-month-b"></span>
+                    <button class="oa-cal-nav" onclick="oaCalNext()">&#8250;</button>
+                  </div>
+                  <div class="oa-cal-grid" id="oa-cal-grid-b"></div>
+                </div>
+              </div>
+              <div class="oa-cal-footer">
+                <div class="oa-cal-label" id="oa-cal-label">Click a date to start</div>
+                <div class="oa-cal-actions">
+                  <button class="oa-cal-btn-clear" onclick="oaCalClear()">Clear</button>
+                  <button class="oa-cal-btn-apply" onclick="oaCalApply()">Apply</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <span id="oa-range-label" style="font-size:12px;color:#A89880;margin-left:auto;"></span>
+        </div>
         <!-- Tab strip -->
         <div class="analytics-tab-strip" id="analytics-tab-strip">
           <button class="analytics-tab active" onclick="_anaTab('revenue',this)">Revenue</button>
@@ -3516,7 +3610,7 @@ function _anaEmpty(icon, title, sub) {
 
 function _anaFmtMoney(n) { return '$' + Number(n || 0).toLocaleString('en-AU'); }
 function _anaFmtHours(h) { if (!h || h <= 0) return '—'; if (h < 24) return Math.round(h) + 'h'; const d = Math.floor(h / 24); const rem = Math.round(h % 24); return d + 'd' + (rem > 0 ? ' ' + rem + 'h' : ''); }
-function _anaStars(n) { return '<span class="analytics-stars">' + '★'.repeat(Math.round(n || 0)) + '☆'.repeat(5 - Math.round(n || 0)) + '</span>'; }
+function _anaStars(n) { const f = Math.round(n || 0); return '<span class="analytics-stars"><span class="star-filled">' + '★'.repeat(f) + '</span>' + '☆'.repeat(5 - f) + '</span>'; }
 function _anaMonthLabel(ym) { const [y, m] = ym.split('-'); const names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; return (names[parseInt(m)-1] || m) + ' ' + y.slice(2); }
 
 function _renderRevenue(d) {
@@ -3883,7 +3977,7 @@ async function submitVendorRating() {
 }
 
 // ── My reviews (received from vendors) ───────────────────────────────────────
-function _orgStarsHtml(r) { return '★'.repeat(Math.round(r||0)) + '☆'.repeat(5 - Math.round(r||0)); }
+function _orgStarsHtml(r) { const n = Math.round(r||0); return '<span class="star-filled">' + '★'.repeat(n) + '</span>' + '☆'.repeat(5 - n); }
 
 async function loadOrgReviews() {
   try {
@@ -3895,7 +3989,7 @@ async function loadOrgReviews() {
     if (totalReviews) {
       hero.style.display = '';
       document.getElementById('org-rating-avg').textContent = avgRating.toFixed(1);
-      document.getElementById('org-rating-stars-lg').textContent = _orgStarsHtml(avgRating);
+      document.getElementById('org-rating-stars-lg').innerHTML = _orgStarsHtml(avgRating);
       document.getElementById('org-rating-count').textContent = `${totalReviews} review${totalReviews===1?'':'s'}`;
     } else {
       hero.style.display = 'none';
@@ -3914,7 +4008,7 @@ async function loadOrgReviews() {
       <div class="org-review-card">
         <div class="org-review-header">
           <div class="org-review-meta">
-            <span style="color:#C9840A;font-size:14px;">${_orgStarsHtml(rv.rating)}</span>
+            <span style="color:var(--text-lo);font-size:14px;">${_orgStarsHtml(rv.rating)}</span>
             <span style="font-size:13px;font-weight:600;color:var(--text-hi);">${rv.trading_name}</span>
             ${rv.event_name ? `<span style="font-size:12px;color:var(--text-lo);">· ${rv.event_name}</span>` : ''}
           </div>
