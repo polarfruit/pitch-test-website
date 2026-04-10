@@ -2915,7 +2915,7 @@ app.get('/api/organiser/vendor-ratings', requireAuth, async (req, res) => {
 app.get('/api/organiser/pending-ratings', requireAuth, async (req, res) => {
   if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
   try {
-    const rows = stmts.getPendingRatingsForOrganiser.all(req.session.userId);
+    const rows = await stmts.getPendingRatingsForOrganiser.all(req.session.userId);
     // Group by event
     const eventsMap = {};
     for (const r of rows) {
@@ -3022,7 +3022,7 @@ app.post('/api/organiser/settings/pause', requireAuth, async (req, res) => {
 app.get('/api/vendor/pending-reviews', requireAuth, async (req, res) => {
   if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Vendors only' });
   try {
-    const rows = stmts.getPendingReviewsForVendor.all(req.session.userId);
+    const rows = await stmts.getPendingReviewsForVendor.all(req.session.userId);
     res.json({ pending: rows.map(r => ({
       event_id: r.event_id,
       event_name: r.event_name,
@@ -3748,7 +3748,19 @@ function page(file, opts) {
   };
 }
 
-app.get('/',                    page('pages/index.html'));
+app.get('/', async (req, res) => {
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  let html = readHtml('pages/index.html');
+  html = injectBanner(html);
+  // Pre-load featured events into the page so cards render instantly (no client fetch delay)
+  try {
+    const today = new Date().toISOString().slice(0, 10);
+    const events = await stmts.featuredEvents.all(today);
+    html = html.replace('</head>', `<script>window.__FEATURED_EVENTS=${JSON.stringify(events)};</script>\n</head>`);
+  } catch(e) { /* fallback to client fetch */ }
+  res.send(html);
+});
 app.get('/how-it-works',        page('pages/how-it-works.html'));
 let _eventsPageCache = null;
 let _eventsPageCacheTs = 0;

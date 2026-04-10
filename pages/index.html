@@ -2411,10 +2411,15 @@ pitchLocAC('hero-search-input', {
     setInterval(rotate, 3500);
   }
 
-  fetch('/api/featured-events')
-    .then(r => r.ok ? r.json() : [])
-    .then(data => buildStack(Array.isArray(data) ? data : []))
-    .catch(() => buildStack([]));
+  const preloaded = window.__FEATURED_EVENTS;
+  if (preloaded) {
+    buildStack(Array.isArray(preloaded) ? preloaded : []);
+  } else {
+    fetch('/api/featured-events')
+      .then(r => r.ok ? r.json() : [])
+      .then(data => buildStack(Array.isArray(data) ? data : []))
+      .catch(() => buildStack([]));
+  }
 })();
 </script>
 
