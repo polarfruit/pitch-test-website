@@ -382,7 +382,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .msg-thread:hover { background:#ffffff06; }
 .msg-thread.active { background:var(--ember-bg); }
 .msg-thread.unread .msg-thread-name { color:var(--text-hi); font-weight:700; }
-.msg-thread-avatar { width:36px; height:36px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+.msg-thread-avatar { width:36px; height:36px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:var(--text-hi); background:linear-gradient(135deg,#2A1E14,#5C3A1A); flex-shrink:0; }
 .msg-thread-body, .msg-thread-info { flex:1; min-width:0; }
 .msg-thread-name { font-size:13px; font-weight:600; color:var(--text-mid); margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .msg-thread-preview { font-size:11px; color:var(--text-lo); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -3664,8 +3664,10 @@ function _oaUpdateLabel() {
 function _oaSyncTextInputs() {
   var fi = document.getElementById('oa-from-text');
   var ti = document.getElementById('oa-to-text');
-  fi.value = oaDisplayDate(_oaFrom); fi.classList.toggle('has-value', !!_oaFrom);
-  ti.value = oaDisplayDate(_oaTo);   ti.classList.toggle('has-value', !!_oaTo);
+  var fromVal = _oaCalStart || _oaFrom;
+  var toVal   = _oaCalEnd   || _oaTo;
+  fi.value = oaDisplayDate(fromVal); fi.classList.toggle('has-value', !!fromVal);
+  ti.value = oaDisplayDate(toVal);   ti.classList.toggle('has-value', !!toVal);
 }
 function _oaRefresh() { loadOrgAnalytics(); }
 
