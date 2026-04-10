@@ -3779,9 +3779,31 @@ function openSubModal() {
   const profile = window.__PITCH_USER__?.vendor;
   _currentSubPlan = (profile && profile.plan) || 'free';
 
+  // Block if admin override is active
+  if (profile && profile.plan_override) {
+    const modal = document.getElementById('subscription-modal');
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    const labels = { free: 'Starter (Free)', pro: 'Pro', growth: 'Growth' };
+    document.getElementById('sub-modal-plan-name').textContent = labels[_currentSubPlan] || 'Starter';
+    const msg = document.getElementById('sub-modal-msg');
+    msg.style.display = 'block';
+    msg.style.color = '#C9840A';
+    msg.textContent = 'Your plan is managed by an administrator. Contact support to make changes.';
+    // Disable all plan radios and confirm button
+    document.querySelectorAll('input[name="sub-plan"]').forEach(r => { r.disabled = true; });
+    const btn = document.getElementById('btn-confirm-sub');
+    btn.style.opacity = '0.4';
+    btn.style.pointerEvents = 'none';
+    return;
+  }
+
   // Set current plan label
   const labels = { free: 'Starter (Free)', pro: 'Pro', growth: 'Growth' };
   document.getElementById('sub-modal-plan-name').textContent = labels[_currentSubPlan] || 'Starter';
+
+  // Re-enable radios (in case previously disabled by override)
+  document.querySelectorAll('input[name="sub-plan"]').forEach(r => { r.disabled = false; });
 
   // Pre-select current plan radio
   const radio = document.querySelector(`input[name="sub-plan"][value="${_currentSubPlan}"]`);
