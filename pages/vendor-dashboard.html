@@ -1043,7 +1043,7 @@ body::before {
   display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px;
 }
 .earnings-stat {
-  background: var(--char); border: 1px solid #ffffff08; border-radius: 14px;
+  background: var(--char); border: 1px solid #ffffff10; border-radius: 14px;
   padding: 20px; display: flex; flex-direction: column; gap: 4px;
 }
 .earnings-stat-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-lo); }
@@ -2520,11 +2520,11 @@ body::before {
 
         <!-- Date range filter -->
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:28px;flex-wrap:wrap;" id="van-date-bar">
-          <button class="van-range-btn active" data-range="30d" onclick="setVanRange('30d',this)">Last 30 days</button>
+          <button class="van-range-btn active" data-range="all" onclick="setVanRange('all',this)">All time</button>
           <button class="van-range-btn" data-range="7d" onclick="setVanRange('7d',this)">Last 7 days</button>
+          <button class="van-range-btn" data-range="30d" onclick="setVanRange('30d',this)">Last 30 days</button>
           <button class="van-range-btn" data-range="90d" onclick="setVanRange('90d',this)">Last 90 days</button>
           <button class="van-range-btn" data-range="month" onclick="setVanRange('month',this)">This month</button>
-          <button class="van-range-btn" data-range="all" onclick="setVanRange('all',this)">All time</button>
           <span style="color:#4A3C30;margin:0 4px;">|</span>
           <div style="display:flex;align-items:center;gap:6px;position:relative;" id="van-cal-wrap">
             <input class="van-date-text" id="van-from-text" type="text" placeholder="Start date"
@@ -5838,7 +5838,7 @@ async function downloadEarningsPDF() {
 
     doc.autoTable({
       startY: sy + 32,
-      head: [['Event', 'Date', 'Organiser', 'Booth Fee', 'Platform Fee', 'Net', 'Status']],
+      head: [['Event', 'Date', 'Organiser', 'Stall Fee', 'Platform Fee', 'Net', 'Status']],
       body: rows,
       margin: { left: 14, right: 14 },
       styles: { font: 'helvetica', fontSize: 8, textColor: COAL, cellPadding: 3 },
@@ -6847,14 +6847,11 @@ function _renderRoleBreakdown(containerId, roles) {
 
 // ── Vendor analytics date range filter ────────────────────────────────────
 let _vanFrom = null, _vanTo = null;
+// Default: All time (null/null means no date filter)
 
-// Default to last 30 days
-(function() {
-  const today = new Date();
-  const from = new Date(today); from.setDate(from.getDate() - 29);
-  const fmt = d => d.toISOString().slice(0,10);
-  _vanFrom = fmt(from); _vanTo = fmt(today);
-})();
+// Cache analytics responses by date range key
+const _vanCache = {};
+function _vanCacheKey() { return (_vanFrom || 'all') + '_' + (_vanTo || 'all'); }
 
 function vanParseDate(str) {
   str = (str||'').trim();
@@ -6902,11 +6899,7 @@ function vanDateInput(field, e) {
     if (field === 'to')   { _vanCalEnd = null; _vanTo = null; }
     if (!_vanFrom && !_vanTo) {
       document.querySelectorAll('.van-range-btn').forEach(b => b.classList.remove('active'));
-      document.querySelector('.van-range-btn[data-range="30d"]').classList.add('active');
-      const today = new Date();
-      const from = new Date(today); from.setDate(from.getDate() - 29);
-      const fmt = d => d.toISOString().slice(0,10);
-      _vanFrom = fmt(from); _vanTo = fmt(today);
+      document.querySelector('.van-range-btn[data-range="all"]').classList.add('active');
       document.getElementById('van-range-label').textContent = '';
       _vanRefresh();
     }
@@ -6934,6 +6927,13 @@ function _vanSyncTextInputs() {
 }
 function _vanRefresh() {
   _analyticsLoaded = false;
+  const key = _vanCacheKey();
+  // If we have a cached response for this range, use it instantly
+  if (_vanCache[key]) {
+    _applyAnalyticsData(_vanCache[key]);
+    _analyticsLoaded = true;
+    return;
+  }
   const content = document.getElementById('analytics-content');
   if (content) { content.style.opacity = '0.4'; content.style.pointerEvents = 'none'; }
   loadAnalyticsData().finally(() => {
@@ -7017,10 +7017,7 @@ function vanCalPrev() { if (_vanCalVM === 0) { _vanCalVM = 11; _vanCalVY--; } el
 function vanCalNext() { if (_vanCalVM === 11) { _vanCalVM = 0; _vanCalVY++; } else _vanCalVM++; vanCalRender(); }
 function vanCalClear() {
   _vanCalStart = null; _vanCalEnd = null; _vanCalHover = null;
-  const today = new Date();
-  const from = new Date(today); from.setDate(from.getDate() - 29);
-  const fmt = d => d.toISOString().slice(0,10);
-  _vanFrom = fmt(from); _vanTo = fmt(today);
+  _vanFrom = null; _vanTo = null;
   // Blank the text inputs immediately
   var fi = document.getElementById('van-from-text');
   var ti = document.getElementById('van-to-text');
@@ -7029,7 +7026,7 @@ function vanCalClear() {
   document.getElementById('van-range-label').textContent = '';
   document.getElementById('van-cal-btn').classList.remove('active');
   document.querySelectorAll('.van-range-btn').forEach(b => b.classList.remove('active'));
-  document.querySelector('.van-range-btn[data-range="30d"]').classList.add('active');
+  document.querySelector('.van-range-btn[data-range="all"]').classList.add('active');
   vanCalRender();
   vanCloseCal();
   _vanRefresh();
@@ -7169,7 +7166,7 @@ async function loadAnalyticsData() {
       else if (_rk === '90d') _lbl.textContent = 'views in the last 90 days';
       else if (_rk === 'month') _lbl.textContent = 'views this month';
       else if (_vanFrom && _vanTo && !_ab) _lbl.textContent = 'views (custom range)';
-      else _lbl.textContent = 'views in the last 30 days';
+      else _lbl.textContent = 'views all time';
     }
 
     // Bar chart
