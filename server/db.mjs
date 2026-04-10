@@ -961,6 +961,16 @@ await _safeExec(`
   )
 `);
 
+// ── Vendor extended settings migrations ──────────────────────────────────────
+await _safeExec(`ALTER TABLE vendors ADD COLUMN default_apply_message TEXT`);
+await _safeExec(`ALTER TABLE vendors ADD COLUMN timezone TEXT DEFAULT 'Australia/Adelaide'`);
+await _safeExec(`ALTER TABLE vendors ADD COLUMN invoice_business_name TEXT`);
+await _safeExec(`ALTER TABLE vendors ADD COLUMN invoice_address TEXT`);
+await _safeExec(`ALTER TABLE vendors ADD COLUMN hide_phone INTEGER NOT NULL DEFAULT 0`);
+await _safeExec(`ALTER TABLE vendors ADD COLUMN hide_abn INTEGER NOT NULL DEFAULT 0`);
+await _safeExec(`ALTER TABLE vendors ADD COLUMN hide_reviews INTEGER NOT NULL DEFAULT 0`);
+await _safeExec(`ALTER TABLE users ADD COLUMN two_factor_enabled INTEGER NOT NULL DEFAULT 0`);
+
 // ── Prepared statements ──────────────────────────────────────────────────────
 export const stmts = {
   // users
@@ -1389,6 +1399,9 @@ export const stmts = {
   // vendor settings
   updateVendorSettings: prepare(`UPDATE vendors SET notif_apps=@notif_apps,notif_docs=@notif_docs,notif_reviews=@notif_reviews,notif_payments=@notif_payments WHERE user_id=@user_id`),
   pauseVendor:          prepare(`UPDATE vendors SET paused=? WHERE user_id=?`),
+  updateVendorExtSettings: prepare(`UPDATE vendors SET default_apply_message=@default_apply_message,timezone=@timezone,invoice_business_name=@invoice_business_name,invoice_address=@invoice_address,hide_phone=@hide_phone,hide_abn=@hide_abn,hide_reviews=@hide_reviews WHERE user_id=@user_id`),
+  updateVendorMobile:   prepare(`UPDATE vendors SET mobile=? WHERE user_id=?`),
+  setTwoFactor:         prepare(`UPDATE users SET two_factor_enabled=? WHERE id=?`),
 
   // subscription / application quota
   getVendorSubscription:     prepare(`SELECT plan,apps_this_month,apps_reset_month,trial_ends_at,subscription_status,plan_override,plan_override_by,plan_override_at,plan_override_reason,plan_override_expires FROM vendors WHERE user_id=?`),
