@@ -2189,6 +2189,16 @@ app.post('/api/events/:id/apply', requireAuth, async (req, res) => {
       }
     }
 
+    // Auto-response: if organiser has a template, send it via messaging
+    try {
+      const org = await stmts.getOrganiserByUserId.get(ev.organiser_user_id);
+      if (org && org.auto_response_template) {
+        const threadKey = `v${req.session.userId}_o${ev.organiser_user_id}`;
+        await stmts.createOrGetThread.run(threadKey, req.session.userId, ev.organiser_user_id);
+        await stmts.sendMessage.run(threadKey, ev.organiser_user_id, org.auto_response_template);
+      }
+    } catch (autoErr) { console.error('[auto-response]', autoErr); }
+
     res.json({ ok: true });
   } catch (err) {
     if (err.message && err.message.includes('UNIQUE')) {
@@ -2941,7 +2951,7 @@ app.post('/api/organiser/events', requireAuth, async (req, res) => {
     }
   }
 
-  const { name, category, date_sort, date_end, date_text, suburb, state, venue_name, description, stalls_available, stall_fee_min, stall_fee_max, deadline, cover_image } = req.body;
+  const { name, category, date_sort, date_end, date_text, suburb, state, venue_name, description, stalls_available, stall_fee_min, stall_fee_max, deadline, cover_image, booth_size, setup_time, packdown_time, power_available, power_amps, water_available, cuisines_wanted, exclusivity, looking_for, custom_requirements, cancel_policy, payment_terms } = req.body;
   if (!name || !date_sort || !suburb) {
     return res.status(400).json({ error: 'Name, date, and suburb are required' });
   }
@@ -2977,6 +2987,18 @@ app.post('/api/organiser/events', requireAuth, async (req, res) => {
       organiser_user_id: req.session.userId,
       venue_name: venue_name || null,
       cover_image: cover_image || null,
+      booth_size: booth_size || null,
+      setup_time: setup_time || null,
+      packdown_time: packdown_time || null,
+      power_available: power_available ? 1 : 0,
+      power_amps: power_amps || null,
+      water_available: water_available ? 1 : 0,
+      cuisines_wanted: cuisines_wanted || '[]',
+      exclusivity: exclusivity ? 1 : 0,
+      looking_for: looking_for || null,
+      custom_requirements: custom_requirements || null,
+      cancel_policy: cancel_policy || null,
+      payment_terms: payment_terms || null,
     });
     res.json({ ok: true, eventId: result.lastInsertRowid, slug });
   } catch (err) {
@@ -3280,12 +3302,13 @@ app.put('/api/organiser/settings/account', requireAuth, async (req, res) => {
 // PUT /api/organiser/settings/notifications
 app.put('/api/organiser/settings/notifications', requireAuth, async (req, res) => {
   if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
-  const { notif_new_apps, notif_deadlines, notif_messages, notif_payments } = req.body;
+  const { notif_new_apps, notif_deadlines, notif_messages, notif_payments, notif_post_event } = req.body;
   await stmts.updateOrganiserSettings.run({
-    notif_new_apps:  notif_new_apps  ? 1 : 0,
-    notif_deadlines: notif_deadlines ? 1 : 0,
-    notif_messages:  notif_messages  ? 1 : 0,
-    notif_payments:  notif_payments  ? 1 : 0,
+    notif_new_apps:   notif_new_apps  ? 1 : 0,
+    notif_deadlines:  notif_deadlines ? 1 : 0,
+    notif_messages:   notif_messages  ? 1 : 0,
+    notif_payments:   notif_payments  ? 1 : 0,
+    notif_post_event: notif_post_event !== undefined ? (notif_post_event ? 1 : 0) : 1,
     user_id: req.session.userId,
   });
   res.json({ ok: true });
@@ -3297,6 +3320,100 @@ app.post('/api/organiser/settings/pause', requireAuth, async (req, res) => {
   const { paused } = req.body;
   await stmts.pauseOrganiser.run(paused ? 1 : 0, req.session.userId);
   res.json({ ok: true, paused: !!paused });
+});
+
+// PUT /api/organiser/settings/defaults
+app.put('/api/organiser/settings/defaults', requireAuth, async (req, res) => {
+  if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
+  const { default_stall_fee_min, default_stall_fee_max, default_spots, default_booth_size, default_power, default_water } = req.body;
+  await stmts.updateOrganiserDefaults.run({
+    default_stall_fee_min: default_stall_fee_min ? parseInt(default_stall_fee_min) : null,
+    default_stall_fee_max: default_stall_fee_max ? parseInt(default_stall_fee_max) : null,
+    default_spots: default_spots ? parseInt(default_spots) : null,
+    default_booth_size: default_booth_size || null,
+    default_power: default_power ? 1 : 0,
+    default_water: default_water ? 1 : 0,
+    user_id: req.session.userId,
+  });
+  res.json({ ok: true });
+});
+
+// PUT /api/organiser/settings/timezone
+app.put('/api/organiser/settings/timezone', requireAuth, async (req, res) => {
+  if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
+  const valid = ['Australia/Adelaide','Australia/Sydney','Australia/Melbourne','Australia/Brisbane','Australia/Perth','Australia/Hobart','Australia/Darwin'];
+  const { timezone } = req.body;
+  if (!timezone || !valid.includes(timezone)) return res.status(400).json({ error: 'Invalid timezone' });
+  await stmts.updateOrganiserTimezone.run({ timezone, user_id: req.session.userId });
+  res.json({ ok: true });
+});
+
+// PUT /api/organiser/settings/auto-response
+app.put('/api/organiser/settings/auto-response', requireAuth, async (req, res) => {
+  if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
+  const { template } = req.body;
+  if (template && template.length > 500) return res.status(400).json({ error: 'Max 500 characters' });
+  await stmts.updateOrganiserAutoResponse.run({ template: template || null, user_id: req.session.userId });
+  res.json({ ok: true });
+});
+
+// PUT /api/organiser/settings/banner
+app.put('/api/organiser/settings/banner', requireAuth, async (req, res) => {
+  if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
+  const { banner_url } = req.body;
+  await stmts.updateOrganiserBanner.run(banner_url || null, req.session.userId);
+  res.json({ ok: true });
+});
+
+// GET /api/organiser/export/events — CSV download
+app.get('/api/organiser/export/events', requireAuth, async (req, res) => {
+  if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
+  const events = await stmts.getOrganiserEvents.all(req.session.userId);
+  const headers = ['Name','Category','Suburb','State','Date','Status','Stalls Available','Stall Fee Min','Stall Fee Max','Venue'];
+  const rows = events.map(e => [e.name, e.category, e.suburb, e.state, e.date_sort, e.status, e.stalls_available, e.stall_fee_min, e.stall_fee_max, e.venue_name].map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(','));
+  res.setHeader('Content-Type', 'text/csv');
+  res.setHeader('Content-Disposition', 'attachment; filename="pitch-events.csv"');
+  res.send([headers.join(','), ...rows].join('\n'));
+});
+
+// GET /api/organiser/export/applications — CSV download
+app.get('/api/organiser/export/applications', requireAuth, async (req, res) => {
+  if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
+  const apps = await stmts.getAllAppsByOrganiser.all(req.session.userId);
+  const headers = ['Event','Vendor','Email','Status','Cuisine','Suburb','State','Applied At'];
+  const rows = apps.map(a => [a.event_name, a.trading_name, a.email, a.status, a.cuisine_tags, a.v_suburb, a.v_state, a.created_at].map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(','));
+  res.setHeader('Content-Type', 'text/csv');
+  res.setHeader('Content-Disposition', 'attachment; filename="pitch-applications.csv"');
+  res.send([headers.join(','), ...rows].join('\n'));
+});
+
+// GET /api/organiser/team — list team members
+app.get('/api/organiser/team', requireAuth, async (req, res) => {
+  if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
+  const members = await stmts.getTeamMembers.all(req.session.userId);
+  res.json({ members });
+});
+
+// POST /api/organiser/team/invite
+app.post('/api/organiser/team/invite', requireAuth, async (req, res) => {
+  if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
+  const { email, role } = req.body;
+  if (!email) return res.status(400).json({ error: 'Email required' });
+  if (role && !['editor','viewer'].includes(role)) return res.status(400).json({ error: 'Invalid role' });
+  try {
+    await stmts.inviteTeamMember.run(req.session.userId, email.trim().toLowerCase(), role || 'editor');
+    res.json({ ok: true });
+  } catch (e) {
+    if (e.message?.includes('UNIQUE')) return res.status(409).json({ error: 'Already invited' });
+    console.error('[team-invite]', e); res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// DELETE /api/organiser/team/:id
+app.delete('/api/organiser/team/:id', requireAuth, async (req, res) => {
+  if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
+  await stmts.removeTeamMember.run(parseInt(req.params.id), req.session.userId);
+  res.json({ ok: true });
 });
 
 // GET /api/vendor/pending-reviews — completed events where vendor hasn't reviewed organiser
@@ -4142,6 +4259,33 @@ app.get('/events/*splat', async (req, res) => {
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.send(readHtml('pages/event-detail.html'));
 });
+// GET /organisers/:id — public organiser profile
+app.get('/organisers/:id', async (req, res) => {
+  const id = req.params.id;
+  if (/^\d+$/.test(id)) {
+    try {
+      const row = await stmts.publicOrganiserById.get(Number(id));
+      if (row && row.status !== 'suspended') {
+        const organiser = { ...row };
+        delete organiser.password_hash;
+        // Get upcoming public events
+        const events = await stmts.getOrgPublicEvents.all(Number(id));
+        organiser.events = events || [];
+        // Get review stats
+        const reviewDist = await stmts.getOrgReviewDistribution.all(Number(id));
+        const totalReviews = reviewDist.reduce((s, r) => s + r.count, 0);
+        const avgRating = totalReviews > 0 ? reviewDist.reduce((s, r) => s + r.rating * r.count, 0) / totalReviews : 0;
+        organiser.avg_rating = Math.round(avgRating * 10) / 10;
+        organiser.total_reviews = totalReviews;
+        let html = readHtml('pages/organiser-detail.html');
+        html = html.replace('</head>', `<script>window.__PITCH_ORGANISER__=${JSON.stringify(organiser)};</script></head>`);
+        return res.send(html);
+      }
+    } catch (e) { console.error('[organiser page]', e); }
+  }
+  res.status(404).send(readHtml('pages/404.html'));
+});
+
 app.get('/vendors/:id', async (req, res) => {
   const id = req.params.id;
   // Only inject data for numeric IDs (real accounts); slug-based demo vendors use client-side data.js
