@@ -2625,6 +2625,24 @@ function _orgFmtTime(iso) {
     return new Date(s).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit', hour12: use12 });
   } catch { return ''; }
 }
+function _orgFmtThreadTime(iso) {
+  if (!iso) return '';
+  try {
+    const s = iso.includes('T') || iso.endsWith('Z') ? iso : iso.replace(' ', 'T') + 'Z';
+    const d = new Date(s);
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterday = new Date(today); yesterday.setDate(yesterday.getDate() - 1);
+    const msgDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const use12 = (localStorage.getItem('pitch_time_fmt') || '12') === '12';
+    const time = d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit', hour12: use12 });
+    if (msgDay.getTime() === today.getTime()) return time;
+    if (msgDay.getTime() === yesterday.getTime()) return 'Yesterday';
+    const diffDays = Math.floor((today - msgDay) / 86400000);
+    if (diffDays < 7) return d.toLocaleDateString(undefined, { weekday: 'short' });
+    return d.toLocaleDateString('en-AU', { day: 'numeric', month: 'short' });
+  } catch { return ''; }
+}
 
 async function startChat(vendorUserId, vendorName) {
   const myId = window.__PITCH_USER__ && window.__PITCH_USER__.id;
@@ -2770,6 +2788,7 @@ function renderThreadSidebar() {
     const t = MSG_THREADS[key];
     const last = t.messages[t.messages.length - 1];
     const preview = t.lastBody || (last ? last.body : '') || 'No messages yet — click to start';
+    const lastTime = t.lastAt || (last ? last.created_at : null);
     const isActive = currentChatId === key;
     const hasUnread = !isActive && t.unreadCount > 0;
     const avatar = t.isAnnouncement
@@ -2780,7 +2799,7 @@ function renderThreadSidebar() {
       <div class="msg-thread-info">
         <div style="display:flex;justify-content:space-between;align-items:baseline;">
           <span class="msg-thread-name">${t.name||'—'}</span>
-          ${last ? `<span class="msg-thread-time">${_orgFmtTime(last.created_at)}</span>` : ''}
+          ${lastTime ? `<span class="msg-thread-time">${_orgFmtThreadTime(lastTime)}</span>` : ''}
         </div>
         <div class="msg-thread-preview">${preview}</div>
       </div>
@@ -2805,6 +2824,7 @@ async function loadOrgAllThreads() {
       MSG_THREADS[key].name = t.vendor_name;
       MSG_THREADS[key].unreadCount = t.unread_count || 0;
       MSG_THREADS[key].lastBody = t.last_body || '';
+      MSG_THREADS[key].lastAt = t.last_at || null;
       totalUnread += t.unread_count || 0;
     });
 
