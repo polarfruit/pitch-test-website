@@ -2903,6 +2903,149 @@ body::before {
           </div>
         </div>
 
+        <!-- Phone number -->
+        <div class="settings-section">
+          <div class="settings-section-title">Phone number</div>
+          <div class="card">
+            <div class="settings-form-field">
+              <label class="settings-label">Mobile number</label>
+              <div style="display:flex;gap:10px;align-items:center;">
+                <input class="settings-input" type="tel" id="settings-phone" placeholder="0400 000 000" style="flex:1;" />
+                <button class="settings-save-btn" onclick="savePhone()" style="margin:0;white-space:nowrap;">Save</button>
+              </div>
+              <span class="settings-save-msg" id="phone-save-msg">Phone updated!</span>
+            </div>
+            <div style="font-size:11px;color:var(--text-lo);margin-top:6px;">Used for organiser contact and SMS reminders. Not shown publicly unless you choose.</div>
+          </div>
+        </div>
+
+        <!-- Two-factor authentication -->
+        <div class="settings-section">
+          <div class="settings-section-title">Two-factor authentication</div>
+          <div class="card">
+            <div class="settings-row">
+              <div class="settings-row-left">
+                <div class="settings-row-label">Email verification on login</div>
+                <div class="settings-row-desc">Require a verification code sent to your email each time you log in.</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="settings-2fa" onchange="save2FA()" />
+                <div class="toggle-track"></div><div class="toggle-thumb"></div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Profile visibility -->
+        <div class="settings-section">
+          <div class="settings-section-title">Profile visibility</div>
+          <div class="card">
+            <div style="font-size:12px;color:var(--text-lo);margin-bottom:14px;">Control what organisers and the public can see on your profile.</div>
+            <div class="settings-row">
+              <div class="settings-row-left">
+                <div class="settings-row-label">Hide phone number</div>
+                <div class="settings-row-desc">Your mobile won't be visible on your public vendor profile.</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="vis-hide-phone" onchange="saveVisibility()" />
+                <div class="toggle-track"></div><div class="toggle-thumb"></div>
+              </label>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-left">
+                <div class="settings-row-label">Hide ABN</div>
+                <div class="settings-row-desc">Your ABN won't be shown on your public profile.</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="vis-hide-abn" onchange="saveVisibility()" />
+                <div class="toggle-track"></div><div class="toggle-thumb"></div>
+              </label>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-left">
+                <div class="settings-row-label">Hide reviews</div>
+                <div class="settings-row-desc">Consumer reviews won't appear on your public profile.</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="vis-hide-reviews" onchange="saveVisibility()" />
+                <div class="toggle-track"></div><div class="toggle-thumb"></div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Connected accounts -->
+        <div class="settings-section">
+          <div class="settings-section-title">Connected accounts</div>
+          <div class="card" id="connected-accounts-card">
+            <div class="settings-row">
+              <div class="settings-row-left">
+                <div class="settings-row-label">Google</div>
+                <div class="settings-row-desc" id="google-link-status">Checking…</div>
+              </div>
+              <span id="google-link-badge" style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:100px;"></span>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-left">
+                <div class="settings-row-label">Email &amp; password</div>
+                <div class="settings-row-desc" id="email-login-status">—</div>
+              </div>
+              <span id="email-login-badge" style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:100px;"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Default application message -->
+        <div class="settings-section">
+          <div class="settings-section-title">Default application message</div>
+          <div class="card">
+            <div style="font-size:12px;color:var(--text-lo);margin-bottom:10px;">This message will auto-fill when you apply to events. You can still edit it before submitting.</div>
+            <textarea class="settings-input" id="settings-default-msg" rows="4" placeholder="Introduce your stall, mention relevant experience, or ask a question…" style="resize:vertical;min-height:80px;font-family:var(--fb);font-size:13px;line-height:1.6;"></textarea>
+            <div style="display:flex;align-items:center;gap:10px;margin-top:10px;">
+              <button class="settings-save-btn" onclick="saveExtSettings()" style="margin:0;">Save</button>
+              <span class="settings-save-msg" id="ext-save-msg">Saved!</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Timezone -->
+        <div class="settings-section">
+          <div class="settings-section-title">Timezone</div>
+          <div class="card">
+            <div style="font-size:12px;color:var(--text-lo);margin-bottom:10px;">Used for calendar sync and event reminders.</div>
+            <select class="settings-input" id="settings-timezone" onchange="saveExtSettings()" style="font-family:var(--fb);font-size:13px;padding:10px 14px;cursor:pointer;">
+              <option value="Australia/Adelaide">Adelaide (ACST/ACDT)</option>
+              <option value="Australia/Sydney">Sydney (AEST/AEDT)</option>
+              <option value="Australia/Melbourne">Melbourne (AEST/AEDT)</option>
+              <option value="Australia/Brisbane">Brisbane (AEST)</option>
+              <option value="Australia/Perth">Perth (AWST)</option>
+              <option value="Australia/Darwin">Darwin (ACST)</option>
+              <option value="Australia/Hobart">Hobart (AEST/AEDT)</option>
+              <option value="Pacific/Auckland">Auckland (NZST/NZDT)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Invoice details -->
+        <div class="settings-section">
+          <div class="settings-section-title">Invoice details</div>
+          <div class="card">
+            <div style="font-size:12px;color:var(--text-lo);margin-bottom:14px;">Used on payment PDFs and bookkeeping exports. Falls back to your trading name if left blank.</div>
+            <div class="settings-form-field">
+              <label class="settings-label">Business name</label>
+              <input class="settings-input" type="text" id="settings-invoice-name" placeholder="e.g. Polar Fruit Pty Ltd" />
+            </div>
+            <div class="settings-form-field">
+              <label class="settings-label">Business address</label>
+              <textarea class="settings-input" id="settings-invoice-address" rows="2" placeholder="e.g. 123 Rundle St, Adelaide SA 5000" style="resize:vertical;min-height:50px;font-family:var(--fb);font-size:13px;line-height:1.6;"></textarea>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;margin-top:10px;">
+              <button class="settings-save-btn" onclick="saveExtSettings()" style="margin:0;">Save</button>
+              <span class="settings-save-msg" id="invoice-save-msg">Saved!</span>
+            </div>
+          </div>
+        </div>
+
         <!-- Danger zone -->
         <div class="settings-section">
           <div class="settings-section-title" style="color:var(--terra);">Danger zone</div>
@@ -3458,6 +3601,7 @@ async function loadAllThreads() {
       _threadCache[key].orgName     = t.organiser_name || _threadCache[key].orgName;
       _threadCache[key].unreadCount = t.unread_count || 0;
       _threadCache[key].lastBody    = t.last_body || '';
+      _threadCache[key].lastAt      = t.last_at || '';
       totalUnread += t.unread_count || 0;
     });
 
@@ -6183,6 +6327,32 @@ function initSettingsPanel(user, vendor) {
       pauseBtn.textContent = vendor.paused ? 'Unpause my profile' : 'Pause my profile';
       pauseBtn.classList.toggle('active', !!vendor.paused);
     }
+    // Phone
+    const phoneEl = document.getElementById('settings-phone');
+    if (phoneEl && vendor.mobile) phoneEl.value = vendor.mobile;
+    // 2FA
+    const twoFaEl = document.getElementById('settings-2fa');
+    if (twoFaEl) twoFaEl.checked = !!user.two_factor_enabled;
+    // Profile visibility
+    const hp = document.getElementById('vis-hide-phone');
+    const ha = document.getElementById('vis-hide-abn');
+    const hr = document.getElementById('vis-hide-reviews');
+    if (hp) hp.checked = !!vendor.hide_phone;
+    if (ha) ha.checked = !!vendor.hide_abn;
+    if (hr) hr.checked = !!vendor.hide_reviews;
+    // Default application message
+    const msgEl = document.getElementById('settings-default-msg');
+    if (msgEl && vendor.default_apply_message) msgEl.value = vendor.default_apply_message;
+    // Timezone
+    const tzEl = document.getElementById('settings-timezone');
+    if (tzEl && vendor.timezone) tzEl.value = vendor.timezone;
+    // Invoice details
+    const invName = document.getElementById('settings-invoice-name');
+    const invAddr = document.getElementById('settings-invoice-address');
+    if (invName && vendor.invoice_business_name) invName.value = vendor.invoice_business_name;
+    if (invAddr && vendor.invoice_address) invAddr.value = vendor.invoice_address;
+    // Connected accounts
+    _loadConnectedAccounts();
   }
   _applyTimeFormatBtns();
 }
