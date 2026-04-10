@@ -3169,11 +3169,13 @@ function _fmtThreadTime(iso) {
     const d = new Date(s);
     const now = new Date();
     const use12 = (localStorage.getItem('pitch_time_fmt') || '12') === '12';
-    const time = d.toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: use12 });
     const isToday = d.toDateString() === now.toDateString();
+    if (isToday) return d.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit', hour12: use12 });
     const isYesterday = new Date(now - 86400000).toDateString() === d.toDateString();
-    const date = isToday ? 'Today' : isYesterday ? 'Yesterday' : d.toLocaleDateString('en-AU', { day: 'numeric', month: 'short' });
-    return `${date}<br><span style="opacity:0.7;">${time}</span>`;
+    if (isYesterday) return 'Yesterday';
+    const diffDays = Math.floor((now - d) / 86400000);
+    if (diffDays < 7) return d.toLocaleDateString('en-AU', { weekday: 'short' });
+    return d.toLocaleDateString('en-AU', { day: 'numeric', month: 'short' });
   } catch { return ''; }
 }
 
@@ -7147,7 +7149,18 @@ async function loadAnalyticsData() {
     if (!res.ok) return;
     const data = await res.json();
     if (data.locked) return;
+    // Cache the response
+    _vanCache[_vanCacheKey()] = data;
+    _applyAnalyticsData(data);
+  } catch (e) {
+    console.error('[analytics]', e);
+    _analyticsReveal();
+  }
+}
+
+function _applyAnalyticsData(data) {
     _analyticsLoaded = true;
+    const plan = (window.__PITCH_PROFILE__ || {}).plan || 'free';
 
     // ── Views ──
     const viewsEl = document.getElementById('analytics-views-count');
@@ -7346,10 +7359,6 @@ async function loadAnalyticsData() {
       }
     }
     _analyticsReveal();
-  } catch (e) {
-    console.error('[analytics]', e);
-    _analyticsReveal();
-  }
 }
 
 function applySubscriptionGating(plan) {
