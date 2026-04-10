@@ -167,6 +167,15 @@ function togglePw() {
         btn.disabled = false;
         return;
       }
+      // Show instant full-screen loading state before navigation
+      document.body.innerHTML = `<div style="position:fixed;inset:0;background:#1A1612;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;">
+        <div style="display:flex;align-items:center;gap:9px;margin-bottom:24px;">
+          <div style="width:28px;height:28px;border-radius:50%;background:#E8500A;"></div>
+          <span style="font-family:'Fraunces',serif;font-size:20px;color:#FDF4E7;">Pitch.</span>
+        </div>
+        <div style="width:32px;height:32px;border:3px solid #2A2018;border-top-color:#E8500A;border-radius:50%;animation:spin .6s linear infinite;"></div>
+        <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+      </div>`;
       window.location.href = data.redirect;
     } catch (e) {
       errEl.textContent = 'Network error — please check your connection.';
@@ -237,7 +246,17 @@ function togglePw() {
         showErr('No account found with that email. Please sign up first.');
         return;
       }
-      if (d.redirect) window.location.href = d.redirect;
+      if (d.redirect) {
+        document.body.innerHTML = `<div style="position:fixed;inset:0;background:#1A1612;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;">
+          <div style="display:flex;align-items:center;gap:9px;margin-bottom:24px;">
+            <div style="width:28px;height:28px;border-radius:50%;background:#E8500A;"></div>
+            <span style="font-family:'Fraunces',serif;font-size:20px;color:#FDF4E7;">Pitch.</span>
+          </div>
+          <div style="width:32px;height:32px;border:3px solid #2A2018;border-top-color:#E8500A;border-radius:50%;animation:spin .6s linear infinite;"></div>
+          <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+        </div>`;
+        window.location.href = d.redirect;
+      }
     } catch { showErr('Network error — please try again.'); }
   }
 

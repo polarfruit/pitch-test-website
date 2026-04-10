@@ -1036,12 +1036,12 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
             <label class="form-label">Power available</label>
             <div style="display:flex;flex-direction:column;gap:10px;">
               <div class="toggle-row"><span class="toggle-label">Power available at this event</span><label class="toggle-switch"><input type="checkbox" checked id="power-toggle" onchange="document.getElementById('power-amps').style.display=this.checked?'block':'none'" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
-              <div id="power-amps" style="padding-left:16px;"><div class="form-group" style="margin-bottom:0;"><label class="form-label">Amps available</label><select class="form-select" style="width:100%;max-width:300px;"><option>15A single phase</option><option>20A single phase</option><option>32A single phase</option><option>3-phase available</option></select></div></div>
+              <div id="power-amps" style="padding-left:16px;"><div class="form-group" style="margin-bottom:0;"><label class="form-label">Amps available</label><select class="form-select" id="ne-power-amps" style="width:100%;max-width:300px;"><option>15A single phase</option><option>20A single phase</option><option>32A single phase</option><option>3-phase available</option></select></div></div>
             </div>
           </div>
           <div class="form-group" style="margin-top:20px;">
             <label class="form-label">Water available</label>
-            <div class="toggle-row"><span class="toggle-label">Water connection available at this event</span><label class="toggle-switch"><input type="checkbox" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+            <div class="toggle-row"><span class="toggle-label">Water connection available at this event</span><label class="toggle-switch"><input type="checkbox" id="water-toggle" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
           </div>
           <div style="height:1px;background:#ffffff08;margin:12px 0 20px;"></div>
           <div class="form-group">
@@ -1068,7 +1068,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
           <div class="form-group">
             <label class="form-label">Cuisine categories wanted</label>
             <div style="font-size:11px;color:var(--text-lo);margin:-4px 0 10px;">Select all that apply</div>
-            <div class="tag-selector">
+            <div class="tag-selector" id="ne-cuisine-tags">
               <button class="tag-opt" onclick="this.classList.toggle('sel')">BBQ</button>
               <button class="tag-opt" onclick="this.classList.toggle('sel')">Mexican</button>
               <button class="tag-opt" onclick="this.classList.toggle('sel')">Asian Fusion</button>
@@ -1250,6 +1250,17 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
               <div id="avatar-upload-status" style="font-size:12px;margin-top:8px;color:var(--text-lo);"></div>
             </div>
           </div>
+          <div style="margin-top:16px;padding-top:16px;border-top:1px solid #ffffff08;">
+            <div style="font-size:13px;font-weight:700;color:var(--text-hi);margin-bottom:6px;">Banner image</div>
+            <div style="font-size:12px;color:var(--text-lo);margin-bottom:10px;">Displayed at the top of your public organiser profile.</div>
+            <div id="banner-preview" style="width:100%;height:80px;border-radius:10px;background:linear-gradient(135deg,#231E19,#1A1612);margin-bottom:10px;overflow:hidden;"></div>
+            <label style="display:inline-flex;align-items:center;gap:8px;background:#ffffff08;color:var(--text-mid);font-size:12px;font-weight:700;padding:8px 14px;border-radius:8px;cursor:pointer;border:1px solid #ffffff10;font-family:var(--fb);">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Upload banner
+              <input type="file" accept="image/jpeg,image/png,image/webp" style="display:none;" onchange="uploadOrgBanner(this)">
+            </label>
+            <div id="banner-upload-status" style="font-size:12px;margin-top:6px;color:var(--text-lo);"></div>
+          </div>
         </div>
         <div class="settings-card">
           <div class="settings-section-title">Account</div>
@@ -1277,6 +1288,10 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
           </div>
           <div class="settings-row">
             <div><div class="settings-row-label">Email address</div><div class="settings-row-desc" id="settings-email">—</div></div>
+          </div>
+          <div class="settings-row">
+            <div><div class="settings-row-label">Public profile</div><div class="settings-row-desc">View how vendors see your organiser page.</div></div>
+            <a id="org-public-profile-link" href="#" target="_blank" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--ember);text-decoration:none;">View profile →</a>
           </div>
           <div style="display:flex;justify-content:flex-end;margin-top:12px;">
             <button id="btn-save-settings" onclick="saveOrgSettings()" style="font-family:var(--fb);font-size:13px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:10px 22px;border-radius:10px;cursor:pointer;">Save profile</button>
@@ -1311,11 +1326,95 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
           <div class="settings-row"><div class="settings-row-left"><div class="settings-row-label">Deadline reminders</div><div class="settings-row-desc">Notify me 7 days before my application deadlines close.</div></div><label class="toggle-switch"><input type="checkbox" id="org-notif-deadlines" checked onchange="saveOrgNotifSettings()"/><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
           <div class="settings-row"><div class="settings-row-left"><div class="settings-row-label">Vendor messages</div><div class="settings-row-desc">Notify me when a vendor sends a message.</div></div><label class="toggle-switch"><input type="checkbox" id="org-notif-messages" onchange="saveOrgNotifSettings()"/><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
           <div class="settings-row"><div class="settings-row-left"><div class="settings-row-label">Stall fee payments</div><div class="settings-row-desc">Notify me when a vendor pays their stall fee.</div></div><label class="toggle-switch"><input type="checkbox" id="org-notif-payments" checked onchange="saveOrgNotifSettings()"/><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+          <div class="settings-row"><div class="settings-row-left"><div class="settings-row-label">Post-event summaries</div><div class="settings-row-desc">Notify me when an event ends so I can rate vendors.</div></div><label class="toggle-switch"><input type="checkbox" id="org-notif-post-event" checked onchange="saveOrgNotifSettings()"/><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+        </div>
+
+        <!-- Default Event Settings -->
+        <div class="settings-card">
+          <div class="settings-section-title">Default event settings</div>
+          <div style="font-size:13px;color:var(--text-lo);margin-bottom:16px;line-height:1.5;">Pre-populate these values when creating new events.</div>
+          <div class="settings-row">
+            <div><div class="settings-row-label">Default spots</div><div class="settings-row-desc">Number of vendor stalls.</div></div>
+            <input class="form-input" type="number" id="org-def-spots" min="1" style="width:100px;" />
+          </div>
+          <div class="settings-row">
+            <div><div class="settings-row-label">Default booth size</div><div class="settings-row-desc">e.g. 3m x 3m tent</div></div>
+            <input class="form-input" id="org-def-booth-size" style="width:200px;" placeholder="e.g. 3m × 3m" />
+          </div>
+          <div class="settings-row">
+            <div><div class="settings-row-label">Default fee range</div><div class="settings-row-desc">GST inclusive stall fee range.</div></div>
+            <div style="display:flex;gap:6px;align-items:center;">
+              <div style="position:relative;"><span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-lo);font-size:13px;">$</span><input class="form-input" type="number" id="org-def-fee-min" style="width:90px;padding-left:22px;" placeholder="Min" /></div>
+              <span style="color:var(--text-lo);">—</span>
+              <div style="position:relative;"><span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-lo);font-size:13px;">$</span><input class="form-input" type="number" id="org-def-fee-max" style="width:90px;padding-left:22px;" placeholder="Max" /></div>
+            </div>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-left"><div class="settings-row-label">Power available</div><div class="settings-row-desc">Default power setting for new events.</div></div>
+            <label class="toggle-switch"><input type="checkbox" id="org-def-power" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+          </div>
+          <div class="settings-row">
+            <div class="settings-row-left"><div class="settings-row-label">Water available</div><div class="settings-row-desc">Default water setting for new events.</div></div>
+            <label class="toggle-switch"><input type="checkbox" id="org-def-water" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
+          </div>
+          <div style="display:flex;justify-content:flex-end;margin-top:12px;">
+            <button onclick="saveOrgDefaults()" style="font-family:var(--fb);font-size:13px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:10px 22px;border-radius:10px;cursor:pointer;">Save defaults</button>
+            <span class="org-save-msg" id="org-defaults-save-msg">Saved!</span>
+          </div>
+        </div>
+
+        <!-- Auto-response -->
+        <div class="settings-card">
+          <div class="settings-section-title">Auto-response</div>
+          <div style="font-size:13px;color:var(--text-lo);margin-bottom:14px;line-height:1.5;">Automatically reply to vendors when they apply to your events.</div>
+          <textarea class="form-input" id="org-auto-response" maxlength="500" style="width:100%;min-height:100px;resize:vertical;" placeholder="e.g. Thanks for applying! We'll review your application within 48 hours..."></textarea>
+          <div style="display:flex;justify-content:space-between;margin-top:6px;">
+            <span style="font-size:11px;color:var(--text-lo);">Leave blank to disable auto-responses.</span>
+            <span id="org-auto-response-count" style="font-size:11px;color:var(--text-lo);">0/500</span>
+          </div>
+          <div style="display:flex;justify-content:flex-end;margin-top:12px;">
+            <button onclick="saveOrgAutoResponse()" style="font-family:var(--fb);font-size:13px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:10px 22px;border-radius:10px;cursor:pointer;">Save</button>
+            <span class="org-save-msg" id="org-auto-response-save-msg">Saved!</span>
+          </div>
+        </div>
+
+        <!-- Team Members -->
+        <div class="settings-card">
+          <div class="settings-section-title">Team members</div>
+          <div style="font-size:13px;color:var(--text-lo);margin-bottom:14px;line-height:1.5;">Invite co-organisers to help manage your events and applications.</div>
+          <div id="org-team-list" style="margin-bottom:16px;"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">
+            <div style="flex:1;min-width:180px;">
+              <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-lo);margin-bottom:4px;display:block;">Email</label>
+              <input class="form-input" type="email" id="org-team-email" placeholder="colleague@example.com" style="width:100%;" />
+            </div>
+            <div style="width:120px;">
+              <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-lo);margin-bottom:4px;display:block;">Role</label>
+              <select class="form-select" id="org-team-role" style="width:100%;"><option value="editor">Editor</option><option value="viewer">Viewer</option></select>
+            </div>
+            <button onclick="inviteTeamMember()" style="font-family:var(--fb);font-size:13px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:10px 18px;border-radius:10px;cursor:pointer;white-space:nowrap;">Invite</button>
+          </div>
+          <span class="org-save-err" id="org-team-err-msg" style="display:none;margin-top:8px;"></span>
         </div>
 
         <!-- Display preferences -->
         <div class="settings-card">
           <div class="settings-section-title">Display preferences</div>
+          <div class="settings-row">
+            <div class="settings-row-left">
+              <div class="settings-row-label">Timezone</div>
+              <div class="settings-row-desc">Used for event dates and notifications.</div>
+            </div>
+            <select class="form-select" id="org-timezone" onchange="saveOrgTimezone(this.value)" style="width:220px;">
+              <option value="Australia/Adelaide">Adelaide (ACST)</option>
+              <option value="Australia/Sydney">Sydney (AEST)</option>
+              <option value="Australia/Melbourne">Melbourne (AEST)</option>
+              <option value="Australia/Brisbane">Brisbane (AEST)</option>
+              <option value="Australia/Perth">Perth (AWST)</option>
+              <option value="Australia/Hobart">Hobart (AEST)</option>
+              <option value="Australia/Darwin">Darwin (ACST)</option>
+            </select>
+          </div>
           <div class="settings-row">
             <div class="settings-row-left">
               <div class="settings-row-label">Time format</div>
@@ -1325,6 +1424,34 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
               <button id="org-btn-time-12" onclick="setOrgTimeFormat('12')" style="font-family:var(--fb);font-size:12px;font-weight:700;padding:7px 16px;border-radius:8px;cursor:pointer;transition:background 0.15s,color 0.15s;">12h</button>
               <button id="org-btn-time-24" onclick="setOrgTimeFormat('24')" style="font-family:var(--fb);font-size:12px;font-weight:700;padding:7px 16px;border-radius:8px;cursor:pointer;transition:background 0.15s,color 0.15s;">24h</button>
             </div>
+          </div>
+        </div>
+
+        <!-- Data Export -->
+        <div class="settings-card">
+          <div class="settings-section-title">Data export</div>
+          <div style="font-size:13px;color:var(--text-lo);margin-bottom:16px;line-height:1.5;">Download your data as CSV files for reporting or backup.</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button onclick="window.location='/api/organiser/export/events'" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--text-hi);background:#ffffff08;border:1.5px solid #ffffff12;padding:10px 20px;border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:8px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Export events
+            </button>
+            <button onclick="window.location='/api/organiser/export/applications'" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--text-hi);background:#ffffff08;border:1.5px solid #ffffff12;padding:10px 20px;border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:8px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Export applications
+            </button>
+          </div>
+        </div>
+
+        <!-- Account Status -->
+        <div class="settings-card">
+          <div class="settings-section-title">Account status</div>
+          <div class="settings-row">
+            <div class="settings-row-left">
+              <div class="settings-row-label">Pause account</div>
+              <div class="settings-row-desc">Your events are hidden from listings and vendors cannot apply.</div>
+            </div>
+            <label class="toggle-switch"><input type="checkbox" id="org-pause-toggle" onchange="toggleOrgPause(this.checked)" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
           </div>
         </div>
 
@@ -1600,6 +1727,19 @@ function showPanel(name, clickedEl, pushHistory = true) {
   if (name === 'analytics') loadOrgAnalytics();
   if (name === 'ratings')  loadOrgRatings();
   if (name === 'reviews')  loadOrgReviews();
+
+  if (name === 'new-event') {
+    // Pre-fill from saved defaults
+    const p = window.__PITCH_PROFILE__;
+    if (p) {
+      const defs = { 'ne-spots': p.default_spots, 'ne-booth-size': p.default_booth_size, 'ne-fee-min': p.default_stall_fee_min, 'ne-fee-max': p.default_stall_fee_max };
+      for (const [id, val] of Object.entries(defs)) { const el = document.getElementById(id); if (el && val && !el.value) el.value = val; }
+      const pt = document.getElementById('power-toggle');
+      if (pt && p.default_power) pt.checked = true;
+      const wt = document.getElementById('water-toggle');
+      if (wt && p.default_water) wt.checked = true;
+    }
+  }
 
   if (name === 'messages') {
     loadOrgAllThreads();
@@ -2101,6 +2241,11 @@ async function publishEvent() {
 
   const dateStart = document.getElementById('ne-date').value;
   const dateEnd   = document.getElementById('ne-enddate').value;
+
+  // Collect cuisine tags from tag-selector buttons
+  const cuisineBtns = document.querySelectorAll('#ne-cuisine-tags .tag-opt.sel');
+  const cuisinesArr = Array.from(cuisineBtns).map(b => b.textContent);
+
   const payload = {
     name:             document.getElementById('ne-name').value.trim(),
     category:         document.getElementById('ne-category').value,
@@ -2111,6 +2256,24 @@ async function publishEvent() {
     venue_name:       document.getElementById('ne-venue').value.trim(),
     description:      document.getElementById('ne-description').value.trim(),
     stalls_available: document.getElementById('ne-spots')?.value || null,
+    // Step 2 — Booth specs
+    stall_fee_min:    document.getElementById('ne-fee-min')?.value || null,
+    stall_fee_max:    document.getElementById('ne-fee-max')?.value || null,
+    booth_size:       document.getElementById('ne-booth-size')?.value?.trim() || null,
+    setup_time:       document.getElementById('ne-setup-time')?.value?.trim() || null,
+    packdown_time:    document.getElementById('ne-packdown-time')?.value?.trim() || null,
+    power_available:  document.getElementById('power-toggle')?.checked ? 1 : 0,
+    power_amps:       document.getElementById('power-toggle')?.checked ? (document.getElementById('ne-power-amps')?.value || null) : null,
+    water_available:  document.getElementById('water-toggle')?.checked ? 1 : 0,
+    // Step 3 — Requirements
+    deadline:         document.getElementById('ne-deadline')?.value || null,
+    cuisines_wanted:  JSON.stringify(cuisinesArr),
+    exclusivity:      document.getElementById('ne-exclusivity')?.checked ? 1 : 0,
+    looking_for:      document.getElementById('ne-looking-for')?.value?.trim() || null,
+    custom_requirements: document.getElementById('ne-custom-req')?.value?.trim() || null,
+    // Step 4 — Terms
+    cancel_policy:    document.getElementById('ne-cancel-policy')?.value?.trim() || null,
+    payment_terms:    document.getElementById('ne-payment-terms')?.value || null,
   };
 
   // Enforce platform stall limit before submit
@@ -2605,6 +2768,26 @@ function previewAndUploadAvatar(input) {
     try {
       const res = await pitchFetch('/api/profile/avatar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ avatar_url: dataUrl }) });
       if (res.ok) { status.textContent = 'Profile picture saved.'; status.style.color = 'var(--herb)'; }
+      else { const d = await res.json().catch(()=>({})); status.textContent = 'Upload failed: ' + (d.error||res.status); status.style.color = 'var(--terra)'; }
+    } catch (err) { status.textContent = 'Upload error: ' + err.message; status.style.color = 'var(--terra)'; }
+  };
+  reader.readAsDataURL(file);
+}
+
+function uploadOrgBanner(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const status = document.getElementById('banner-upload-status');
+  if (file.size > 3 * 1024 * 1024) { status.textContent = 'File too large (max 3MB).'; status.style.color = 'var(--terra)'; return; }
+  const reader = new FileReader();
+  reader.onload = async e => {
+    const dataUrl = e.target.result;
+    const preview = document.getElementById('banner-preview');
+    preview.innerHTML = `<img src="${dataUrl}" style="width:100%;height:100%;object-fit:cover;" />`;
+    status.textContent = 'Uploading…'; status.style.color = 'var(--text-lo)';
+    try {
+      const res = await pitchFetch('/api/organiser/settings/banner', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ banner_url: dataUrl }) });
+      if (res.ok) { status.textContent = 'Banner saved.'; status.style.color = 'var(--herb)'; }
       else { const d = await res.json().catch(()=>({})); status.textContent = 'Upload failed: ' + (d.error||res.status); status.style.color = 'var(--terra)'; }
     } catch (err) { status.textContent = 'Upload error: ' + err.message; status.style.color = 'var(--terra)'; }
   };
@@ -3303,12 +3486,46 @@ function initOrgSettingsPanel(user, profile) {
   }
 
   if (profile) {
-    const notifMap = { 'org-notif-apps': profile.notif_new_apps, 'org-notif-deadlines': profile.notif_deadlines, 'org-notif-messages': profile.notif_messages, 'org-notif-payments': profile.notif_payments };
+    const notifMap = { 'org-notif-apps': profile.notif_new_apps, 'org-notif-deadlines': profile.notif_deadlines, 'org-notif-messages': profile.notif_messages, 'org-notif-payments': profile.notif_payments, 'org-notif-post-event': profile.notif_post_event };
     for (const [id, val] of Object.entries(notifMap)) {
       const el = document.getElementById(id);
       if (el) el.checked = val !== undefined ? !!val : true;
     }
   }
+  // Pause toggle
+  const pauseEl = document.getElementById('org-pause-toggle');
+  if (pauseEl && profile) pauseEl.checked = !!profile.paused;
+
+  // Default event settings
+  if (profile) {
+    const defMap = { 'org-def-spots': profile.default_spots, 'org-def-booth-size': profile.default_booth_size, 'org-def-fee-min': profile.default_stall_fee_min, 'org-def-fee-max': profile.default_stall_fee_max };
+    for (const [id, val] of Object.entries(defMap)) { const el = document.getElementById(id); if (el && val) el.value = val; }
+    const defPower = document.getElementById('org-def-power');
+    if (defPower) defPower.checked = !!profile.default_power;
+    const defWater = document.getElementById('org-def-water');
+    if (defWater) defWater.checked = !!profile.default_water;
+  }
+
+  // Timezone
+  if (profile && profile.timezone) {
+    const tzEl = document.getElementById('org-timezone');
+    if (tzEl) tzEl.value = profile.timezone;
+  }
+
+  // Auto-response
+  if (profile) {
+    const arEl = document.getElementById('org-auto-response');
+    if (arEl && profile.auto_response_template) {
+      arEl.value = profile.auto_response_template;
+      const cnt = document.getElementById('org-auto-response-count');
+      if (cnt) cnt.textContent = arEl.value.length + '/500';
+    }
+    if (arEl) arEl.oninput = function() { const cnt = document.getElementById('org-auto-response-count'); if (cnt) cnt.textContent = this.value.length + '/500'; };
+  }
+
+  // Team members
+  loadTeamMembers();
+
   _applyOrgTimeFormatBtns();
 }
 
@@ -3341,12 +3558,119 @@ async function saveOrgNotifSettings() {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      notif_new_apps:  document.getElementById('org-notif-apps')?.checked     ?? true,
-      notif_deadlines: document.getElementById('org-notif-deadlines')?.checked ?? true,
-      notif_messages:  document.getElementById('org-notif-messages')?.checked  ?? false,
-      notif_payments:  document.getElementById('org-notif-payments')?.checked  ?? true,
+      notif_new_apps:   document.getElementById('org-notif-apps')?.checked      ?? true,
+      notif_deadlines:  document.getElementById('org-notif-deadlines')?.checked  ?? true,
+      notif_messages:   document.getElementById('org-notif-messages')?.checked   ?? false,
+      notif_payments:   document.getElementById('org-notif-payments')?.checked   ?? true,
+      notif_post_event: document.getElementById('org-notif-post-event')?.checked ?? true,
     }),
   });
+}
+
+async function toggleOrgPause(paused) {
+  await pitchFetch('/api/organiser/settings/pause', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ paused }),
+  });
+}
+
+async function saveOrgDefaults() {
+  const msg = document.getElementById('org-defaults-save-msg');
+  await pitchFetch('/api/organiser/settings/defaults', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      default_stall_fee_min: document.getElementById('org-def-fee-min')?.value || null,
+      default_stall_fee_max: document.getElementById('org-def-fee-max')?.value || null,
+      default_spots:      document.getElementById('org-def-spots')?.value || null,
+      default_booth_size: document.getElementById('org-def-booth-size')?.value?.trim() || null,
+      default_power:      document.getElementById('org-def-power')?.checked ? 1 : 0,
+      default_water:      document.getElementById('org-def-water')?.checked ? 1 : 0,
+    }),
+  });
+  // Update local profile cache
+  const p = window.__PITCH_PROFILE__;
+  if (p) {
+    p.default_stall_fee_min = document.getElementById('org-def-fee-min')?.value || null;
+    p.default_stall_fee_max = document.getElementById('org-def-fee-max')?.value || null;
+    p.default_spots = document.getElementById('org-def-spots')?.value || null;
+    p.default_booth_size = document.getElementById('org-def-booth-size')?.value?.trim() || null;
+    p.default_power = document.getElementById('org-def-power')?.checked ? 1 : 0;
+    p.default_water = document.getElementById('org-def-water')?.checked ? 1 : 0;
+  }
+  msg.style.display = 'inline'; setTimeout(() => msg.style.display = 'none', 3000);
+}
+
+async function saveOrgTimezone(tz) {
+  await pitchFetch('/api/organiser/settings/timezone', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ timezone: tz }),
+  });
+}
+
+async function saveOrgAutoResponse() {
+  const msg = document.getElementById('org-auto-response-save-msg');
+  const template = document.getElementById('org-auto-response')?.value?.trim() || '';
+  await pitchFetch('/api/organiser/settings/auto-response', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ template }),
+  });
+  msg.style.display = 'inline'; setTimeout(() => msg.style.display = 'none', 3000);
+}
+
+// ── Team members ───────────────────────────────────────────────���────────────
+async function loadTeamMembers() {
+  const list = document.getElementById('org-team-list');
+  if (!list) return;
+  try {
+    const r = await pitchFetch('/api/organiser/team');
+    const { members } = await r.json();
+    if (!members || members.length === 0) {
+      list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-lo);font-size:13px;">No team members yet.</div>';
+      return;
+    }
+    list.innerHTML = members.map(m => {
+      const name = m.first_name ? m.first_name + ' ' + m.last_name : m.email;
+      const statusColor = m.status === 'accepted' ? 'var(--herb)' : m.status === 'pending' ? 'var(--gold)' : 'var(--terra)';
+      return `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #ffffff08;">
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:600;color:var(--text-hi);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${name}</div>
+          <div style="font-size:12px;color:var(--text-lo);">${m.email}</div>
+        </div>
+        <span style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-lo);background:#ffffff08;padding:3px 8px;border-radius:6px;margin:0 8px;">${m.role}</span>
+        <span style="font-size:11px;font-weight:700;color:${statusColor};margin-right:10px;">${m.status}</span>
+        <button onclick="removeTeamMember(${m.id})" style="font-size:12px;color:var(--terra);background:none;border:none;cursor:pointer;padding:4px 8px;" title="Remove">✕</button>
+      </div>`;
+    }).join('');
+  } catch (e) { list.innerHTML = ''; }
+}
+
+async function inviteTeamMember() {
+  const email = document.getElementById('org-team-email')?.value?.trim();
+  const role = document.getElementById('org-team-role')?.value || 'editor';
+  const err = document.getElementById('org-team-err-msg');
+  err.style.display = 'none';
+  if (!email) { err.textContent = 'Please enter an email.'; err.style.display = 'inline'; return; }
+  const r = await pitchFetch('/api/organiser/team/invite', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, role }),
+  });
+  if (r.ok) {
+    document.getElementById('org-team-email').value = '';
+    loadTeamMembers();
+  } else {
+    const d = await r.json().catch(() => ({}));
+    err.textContent = d.error || 'Failed to invite.'; err.style.display = 'inline';
+  }
+}
+
+async function removeTeamMember(id) {
+  await pitchFetch('/api/organiser/team/' + id, { method: 'DELETE' });
+  loadTeamMembers();
 }
 
 // ── Application inbox ───────────────────────────────────────────────────────
