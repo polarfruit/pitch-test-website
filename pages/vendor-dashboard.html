@@ -7237,11 +7237,12 @@ function applySubscriptionGating(plan) {
     if (pdfTooltip) pdfTooltip.textContent = 'Payment history PDF is available on Pro and Growth plans.';
   }
 
-  // ── Growth: exports section + bookkeeping ──
+  // ── Pro/Growth: bookkeeping button on Payments panel ──
+  const bkWrap = document.getElementById('bookkeeping-wrap');
+  if (bkWrap) bkWrap.style.display = (isPro || isGrowth) ? 'inline-flex' : 'none';
+  // ── Growth: exports section in Settings ──
   const exportsSection = document.getElementById('exports-section');
   if (exportsSection) exportsSection.style.display = isGrowth ? 'block' : 'none';
-  const bkWrap = document.getElementById('bookkeeping-wrap');
-  if (bkWrap) bkWrap.style.display = isGrowth ? 'inline-flex' : 'none';
 
   // ── Growth: team invite ──
   const teamSection = document.getElementById('team-invite-section');
