@@ -2439,7 +2439,6 @@ body::before {
         <!-- Outstanding fees -->
         <div class="section-head" style="margin-bottom:16px;">
           <div class="section-title">Outstanding Stall Fees</div>
-          <div class="section-sub">Fees due for upcoming approved markets.</div>
         </div>
         <div id="outstanding-fees"><div style="text-align:center;padding:30px;color:var(--text-lo);font-size:13px;">Loading…</div></div>
 
@@ -2447,18 +2446,17 @@ body::before {
         <div class="section-head" style="margin:28px 0 8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
           <div>
             <div class="section-title">Payment History</div>
-            <div class="section-sub">All stall fees paid through Pitch.</div>
           </div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;" id="payment-export-btns">
+          <div style="display:none;gap:8px;flex-wrap:wrap;" id="payment-export-btns">
             <div class="gate-tooltip-wrap">
               <button id="btn-pdf-download" onclick="downloadPaymentPDF()" style="font-family:var(--fb);font-size:12px;font-weight:600;color:var(--text-mid);background:#ffffff08;border:1px solid #ffffff12;padding:7px 14px;border-radius:8px;cursor:pointer;transition:all .14s;">
-                📄 Download PDF
+                Download PDF
               </button>
               <span class="gate-tooltip" id="pdf-tooltip"></span>
             </div>
             <div class="gate-tooltip-wrap" id="bookkeeping-wrap" style="display:none;">
               <button id="btn-bookkeeping" onclick="downloadBookkeeping()" style="font-family:var(--fb);font-size:12px;font-weight:600;color:var(--gold);background:#C9840A10;border:1px solid #C9840A22;padding:7px 14px;border-radius:8px;cursor:pointer;transition:all .14s;">
-                📊 Bookkeeping summary
+                Bookkeeping summary
               </button>
             </div>
           </div>
@@ -5566,7 +5564,14 @@ async function loadStallFees() {
 
     const outEl = document.getElementById('outstanding-fees');
     if (!outstanding.length) {
-      outEl.innerHTML = `<div class="card" style="text-align:center;padding:24px;color:var(--text-lo);font-size:13px;">No outstanding fees. You're all paid up! 🎉</div>`;
+      outEl.innerHTML = `<div class="card" style="text-align:center;padding:40px 24px;">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" style="margin:0 auto 12px;display:block;opacity:.35;">
+          <circle cx="12" cy="12" r="10" stroke="#6B5A4A" stroke-width="1.5"/>
+          <path d="M8 12l3 3 5-6" stroke="#2D8B55" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <div style="color:var(--text-mid);font-size:13px;font-weight:600;margin-bottom:4px;">No outstanding fees</div>
+        <div style="color:var(--text-lo);font-size:12px;">Fees will appear here once you're approved for an upcoming market.</div>
+      </div>`;
     } else {
       outEl.innerHTML = outstanding.map(f => {
         const overdue = f.due_date && new Date(f.due_date) < new Date();
@@ -5581,10 +5586,22 @@ async function loadStallFees() {
       }).join('');
     }
 
+    // Show/hide export buttons based on whether there's payment data
+    const exportBtns = document.getElementById('payment-export-btns');
+
     const histEl = document.getElementById('payment-history-wrap');
     if (!history.length) {
-      histEl.innerHTML = `<div style="text-align:center;padding:24px;color:var(--text-lo);font-size:13px;">No payment history yet.</div>`;
+      if (exportBtns) exportBtns.style.display = 'none';
+      histEl.innerHTML = `<div style="text-align:center;padding:40px 24px;">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" style="margin:0 auto 12px;display:block;opacity:.35;">
+          <rect x="4" y="3" width="16" height="18" rx="2" stroke="#6B5A4A" stroke-width="1.5"/>
+          <path d="M9 8h6M9 12h6M9 16h3" stroke="#6B5A4A" stroke-width="1.4" stroke-linecap="round"/>
+        </svg>
+        <div style="color:var(--text-mid);font-size:13px;font-weight:600;margin-bottom:4px;">No payment history</div>
+        <div style="color:var(--text-lo);font-size:12px;">Completed payments and receipts will show here.</div>
+      </div>`;
     } else {
+      if (exportBtns) exportBtns.style.display = 'flex';
       histEl.innerHTML = `<table class="payment-history-table">
         <thead><tr><th>Market</th><th>Amount</th><th>Date</th><th>Status</th></tr></thead>
         <tbody>${history.map(f => `
