@@ -1150,6 +1150,35 @@ async function markCompletedEventsLazy() {
   } catch (e) { console.error('[post-event] lazy mark error:', e.message); return 0; }
 }
 
+// Process expired subscription overrides — auto-downgrade to free
+async function processExpiredOverrides() {
+  try {
+    const expired = await stmts.getExpiredOverrides.all();
+    for (const v of expired) {
+      await stmts.updateVendorPlanOverride.run({
+        plan: 'free', plan_override: 0,
+        plan_override_by: null, plan_override_at: null,
+        plan_override_reason: null, plan_override_expires: null,
+        user_id: v.user_id,
+      });
+      await stmts.insertSubscriptionChange.run({
+        user_id: v.user_id, old_plan: v.plan, new_plan: 'free',
+        changed_by: 'system', admin_user_id: null,
+        reason: 'Temporary upgrade expired', payment_status: null,
+        is_override: 0, override_expires: null,
+      });
+    }
+    if (expired.length) {
+      console.log(`[subscription] Expired ${expired.length} temporary override(s)`);
+      _apiCache.delete('vendors'); _apiCache.delete('stats');
+    }
+    return expired.length;
+  } catch (e) { console.error('[subscription] processExpiredOverrides error:', e.message); return 0; }
+}
+// Run on boot + every hour
+setTimeout(() => processExpiredOverrides(), 5000);
+setInterval(() => processExpiredOverrides(), 3600000);
+
 app.get('/api/vendors', async (req, res) => {
   // Use the cached data layer
   const hit = _apiCache.get('vendors');

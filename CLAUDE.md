@@ -46,9 +46,17 @@
 - **Spacing:** Use intentional, consistent spacing tokens — not random Tailwind steps.
 - **Depth:** Surfaces should have a layering system (base → elevated → floating), not all sit at the same z-plane.
 
+## Backend-First Mindset
+- **Every UI element must be functional.** If you add a button, form, modal, or link — wire it up to real backend logic. No dead buttons, no placeholder onclick handlers, no "coming soon" stubs.
+- **Think about the "why" before building.** When adding a feature, ask: what does this do, what API does it need, what data does it read/write? Build the backend endpoint and frontend together in the same pass.
+- **Don't split frontend and backend into separate tasks.** A feature is not done until the UI works end-to-end with real data. If a dashboard card shows a stat, it must fetch from a real API. If a button says "Approve", it must call a real endpoint.
+- **Navigation must go somewhere.** Every link, every clickable name, every "View" or "Manage" button must route to a real page or open a real panel. If the destination doesn't exist yet, build it — don't leave a dead link.
+- **Forms must submit.** If there's a form, it must validate, POST to the backend, handle errors, and show success/failure feedback.
+
 ## Hard Rules
 - Do not add sections, features, or content not in the reference
 - Do not "improve" a reference design — match it
 - Do not stop after one screenshot pass
 - Do not use `transition-all`
 - Do not use default Tailwind blue/indigo as primary color
+- Do not create UI elements without backend logic — no cosmetic-only features

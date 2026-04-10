@@ -2504,7 +2504,7 @@
           }).join(' ');
           return `<div style="display:flex;gap:3px;flex-wrap:nowrap;">${boxes}</div>`;
         })()}</td>
-        <td>${planBadge(v.plan)}</td>
+        <td>${planBadge(v.plan)}${v.plan_override ? ' <span style="font-size:9px;background:rgba(201,132,10,0.12);color:#C9840A;border:1px solid rgba(201,132,10,0.25);border-radius:3px;padding:1px 4px;vertical-align:middle;">Admin</span>' : ''}</td>
         <td><span style="font-size:12px;">${fmtDate(v.joined)}</span></td>
         <td>${statusBadge(v.status)}</td>
         <td>${actions}</td>
@@ -3088,6 +3088,121 @@
     if (_usersCache.length) loadAllUsers().catch(() => {});
   }
 
+  // ── Subscription management functions ─────────────────────────────────────
+  const _planPrices = { free: 0, pro: 29, growth: 79 };
+  const _planLabels = { free: 'Starter (Free)', pro: 'Pro ($29/mo)', growth: 'Growth ($79/mo)' };
+
+  function showPlanConfirm(userId, newPlan) {
+    const area = document.getElementById('plan-confirm-area');
+    if (!area) return;
+    const currentPlan = (document.querySelector('[data-current-plan]') || {}).getAttribute('data-current-plan') || 'free';
+    const priceDiff = _planPrices[newPlan] - _planPrices[currentPlan];
+    const direction = priceDiff > 0 ? 'Upgrade' : priceDiff < 0 ? 'Downgrade' : 'Change';
+    const impactText = newPlan === 'free' ? '' : priceDiff !== 0
+      ? `<div style="font-size:12px;color:${priceDiff > 0 ? '#C9840A' : '#2D8B55'};margin:6px 0;">Revenue impact: ${priceDiff > 0 ? '+' : ''}$${priceDiff}/mo ${_planPrices[currentPlan] === 0 ? '(comped)' : ''}</div>`
+      : '';
+
+    area.style.display = 'block';
+    area.innerHTML = `
+      <div style="font-size:14px;color:#FDF4E7;font-weight:600;margin-bottom:8px;">${direction} to ${_planLabels[newPlan]}?</div>
+      ${impactText}
+      <div style="margin:8px 0;">
+        <label style="font-size:12px;color:#A89880;">Reason (optional)</label>
+        <input id="plan-reason" type="text" placeholder="e.g. Comped for beta testing" style="width:100%;background:#1A1612;border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:8px 10px;color:#FDF4E7;font-size:13px;margin-top:4px;">
+      </div>
+      <div style="margin:8px 0;">
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:#A89880;cursor:pointer;">
+          <input id="plan-temp" type="checkbox" style="accent-color:#E8500A;">
+          Temporary override — expires after
+        </label>
+        <input id="plan-expiry" type="date" style="display:none;width:100%;background:#1A1612;border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:6px 10px;color:#FDF4E7;font-size:12px;margin-top:6px;" value="${(() => { const d = new Date(); d.setDate(d.getDate()+30); return d.toISOString().slice(0,10); })()}">
+      </div>
+      <div style="display:flex;gap:8px;margin-top:12px;">
+        <button onclick="confirmPlanChange(${userId},'${newPlan}')" style="background:#E8500A;color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;">Apply override</button>
+        <button onclick="document.getElementById('plan-confirm-area').style.display='none'" style="background:none;border:none;color:#6B5A4A;cursor:pointer;font-size:13px;">Cancel</button>
+      </div>
+    `;
+    const tempCb = document.getElementById('plan-temp');
+    const expiryInput = document.getElementById('plan-expiry');
+    tempCb.addEventListener('change', () => { expiryInput.style.display = tempCb.checked ? 'block' : 'none'; });
+  }
+
+  async function confirmPlanChange(userId, newPlan) {
+    const reason = (document.getElementById('plan-reason') || {}).value || '';
+    const isTemp = (document.getElementById('plan-temp') || {}).checked;
+    const expiry = isTemp ? (document.getElementById('plan-expiry') || {}).value : null;
+    try {
+      const r = await fetch(`/api/admin/vendors/${userId}/subscription`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan: newPlan, reason: reason || undefined, override_expires: expiry || undefined }),
+      });
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) { toast(data.error || 'Plan change failed', 'error'); return; }
+      // Show warnings
+      if (data.warnings && data.warnings.length) {
+        data.warnings.forEach(w => toast(w.message, 'warning'));
+      }
+      toast(`Plan updated to ${_planLabels[newPlan]} ✓`, 'success');
+      openVendorDetail(userId);
+      loadVendors().catch(() => {});
+    } catch (e) { toast('Network error', 'error'); }
+  }
+
+  async function adminClearOverride(userId) {
+    try {
+      const r = await fetch(`/api/admin/vendors/${userId}/subscription-override`, { method: 'DELETE' });
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) { toast(data.error || 'Failed to clear override', 'error'); return; }
+      toast('Override removed — vendor can now manage their own plan', 'success');
+      openVendorDetail(userId);
+      loadVendors().catch(() => {});
+    } catch (e) { toast('Network error', 'error'); }
+  }
+
+  async function adminManageTrial(userId, action, days) {
+    try {
+      const r = await fetch(`/api/admin/vendors/${userId}/trial`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, extend_days: days }),
+      });
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) { toast(data.error || 'Trial action failed', 'error'); return; }
+      toast(action === 'extend' ? `Trial extended by ${days} days ✓` : 'Trial ended ✓', action === 'extend' ? 'success' : 'info');
+      openVendorDetail(userId);
+    } catch (e) { toast('Network error', 'error'); }
+  }
+
+  async function toggleSubHistory(userId) {
+    const area = document.getElementById('sub-history-area');
+    if (!area) return;
+    if (area.style.display !== 'none') { area.style.display = 'none'; return; }
+    area.style.display = 'block';
+    area.innerHTML = '<div style="color:#6B5A4A;font-size:12px;">Loading…</div>';
+    try {
+      const r = await fetch(`/api/admin/vendors/${userId}/subscription-history?_t=${Date.now()}`);
+      const data = await r.json();
+      if (!data.changes || !data.changes.length) {
+        area.innerHTML = '<div style="color:#6B5A4A;font-size:12px;">No subscription changes recorded.</div>';
+        return;
+      }
+      area.innerHTML = data.changes.map(c => {
+        const dt = new Date(c.created_at).toLocaleDateString('en-AU', { day:'numeric', month:'short', year:'numeric' });
+        const dot = c.changed_by === 'admin' ? '#C9840A' : c.changed_by === 'system' ? '#2B5BA8' : '#6B5A4A';
+        const by = c.changed_by === 'admin' ? 'admin' : c.changed_by === 'system' ? 'system' : 'vendor';
+        const reason = c.reason ? ` — ${c.reason}` : '';
+        return `<div style="display:flex;align-items:flex-start;gap:8px;padding:4px 0;font-size:12px;color:#A89880;border-bottom:1px solid rgba(255,255,255,0.04);">
+          <span style="width:8px;height:8px;border-radius:50%;background:${dot};flex-shrink:0;margin-top:4px;"></span>
+          <span style="color:#6B5A4A;">${dt}</span>
+          <span>${c.old_plan} → ${c.new_plan}</span>
+          <span style="color:${dot};">by ${by}</span>
+          <span style="color:#6B5A4A;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${reason}</span>
+        </div>`;
+      }).join('');
+    } catch (e) { area.innerHTML = '<div style="color:#C0392B;font-size:12px;">Failed to load history.</div>'; }
+  }
+
   async function forceFullVerify(userId, name, btn) {
     if (btn) { btn.disabled = true; btn.textContent = 'Verifying…'; }
     try {
@@ -3196,7 +3311,6 @@
           ${dfInput('df-instagram', 'Instagram', vendor.instagram)}
           ${dfInput('df-suburb', 'Suburb', vendor.suburb)}
           ${dfSelect('df-state', 'State', vendor.state, AU_STATES)}
-          ${dfSelect('df-plan', 'Plan', vendor.plan || 'free', [{v:'free',l:'Starter (Free)'},{v:'pro',l:'Pro — $29/mo'},{v:'growth',l:'Growth — $79/mo'}])}
           ${dfSelect('df-setup', 'Setup type', vendor.setup_type, [
             {v:'',l:'— Type —'},{v:'Food truck',l:'Food truck'},{v:'Market stall',l:'Market stall'},
             {v:'Pop-up tent',l:'Pop-up tent'},{v:'Cart',l:'Cart'},{v:'Trailer',l:'Trailer'}
@@ -3238,21 +3352,79 @@
             </div>
           </div>`;
         })()) +
-        detailSection('Subscription', (() => {
+        detailSection('Subscription management', (() => {
           const plan = vendor.plan || 'free';
-          const quota = plan === 'growth' ? null : plan === 'pro' ? 10 : 3;
+          const isOverride = !!vendor.plan_override;
+          const overrideReason = vendor.plan_override_reason || '';
+          const overrideExpires = vendor.plan_override_expires ? new Date(vendor.plan_override_expires) : null;
+          const quota = plan === 'growth' ? null : plan === 'pro' ? null : 3;
           const used = Number(vendor.apps_this_month) || 0;
           const subStatus = vendor.subscription_status || 'active';
           const trialEnd = vendor.trial_ends_at ? new Date(vendor.trial_ends_at) : null;
           const onTrial = trialEnd && trialEnd > new Date();
+
+          // Override badge
+          const overrideBadge = isOverride
+            ? ` <span style="font-size:10px;background:rgba(201,132,10,0.12);color:#C9840A;border:1px solid rgba(201,132,10,0.25);border-radius:4px;padding:2px 8px;margin-left:6px;vertical-align:middle;cursor:default;" title="${overrideReason || 'Admin override'}">Admin override</span>`
+            : '';
+
+          // Override info rows
+          const overrideRows = isOverride ? `
+            ${overrideReason ? `<div class="detail-row"><span class="detail-label">Override reason</span><span style="color:#C9840A;font-size:13px;">${overrideReason}</span></div>` : ''}
+            ${overrideExpires ? `<div class="detail-row"><span class="detail-label">Override expires</span><span style="color:#C9840A;font-size:13px;">${overrideExpires.toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'})}</span></div>` : ''}
+            <div class="detail-row"><button onclick="adminClearOverride(${userId})" style="background:none;border:1px solid rgba(192,57,43,0.4);color:#C0392B;padding:4px 12px;border-radius:6px;cursor:pointer;font-size:12px;">Remove override</button></div>
+          ` : '';
+
+          // Payment alert
+          const lastPay = (payments || [])[0];
+          let paymentAlert = '';
+          if (plan !== 'free') {
+            if (!lastPay) {
+              paymentAlert = `<div style="background:rgba(192,57,43,0.08);border:1px solid rgba(192,57,43,0.25);border-radius:8px;padding:10px 14px;margin:8px 0 12px;font-size:12px;color:#C0392B;">No payment records for this vendor. This is a comped/override subscription.</div>`;
+            } else if (lastPay.status === 'failed') {
+              paymentAlert = `<div style="background:rgba(201,132,10,0.08);border:1px solid rgba(201,132,10,0.25);border-radius:8px;padding:10px 14px;margin:8px 0 12px;font-size:12px;color:#C9840A;">Last payment failed on ${new Date(lastPay.created_at).toLocaleDateString('en-AU')}.</div>`;
+            } else if (lastPay.status === 'refunded') {
+              paymentAlert = `<div style="background:rgba(201,132,10,0.08);border:1px solid rgba(201,132,10,0.25);border-radius:8px;padding:10px 14px;margin:8px 0 12px;font-size:12px;color:#C9840A;">Last payment was refunded on ${new Date(lastPay.created_at).toLocaleDateString('en-AU')}.</div>`;
+            } else if (lastPay.status === 'paid') {
+              paymentAlert = `<div style="font-size:12px;color:#2D8B55;margin:4px 0 8px;">Last payment: $${Number(lastPay.amount).toFixed(2)} on ${new Date(lastPay.created_at).toLocaleDateString('en-AU')}</div>`;
+            }
+          }
+
+          // Plan selector buttons
+          const plans = [
+            { key: 'free', label: 'Starter', price: 'Free' },
+            { key: 'pro', label: 'Pro', price: '$29/mo' },
+            { key: 'growth', label: 'Growth', price: '$79/mo' },
+          ];
+          const planButtons = plans.map(p => {
+            const active = p.key === plan;
+            return `<button onclick="${active ? '' : `showPlanConfirm(${userId},'${p.key}')`}" style="flex:1;padding:10px 8px;border-radius:8px;border:1px solid ${active ? '#E8500A' : 'rgba(255,255,255,0.08)'};background:${active ? 'rgba(232,80,10,0.15)' : 'transparent'};color:${active ? '#E8500A' : '#A89880'};cursor:${active ? 'default' : 'pointer'};font-size:13px;font-weight:${active ? '700' : '500'};transition:all 0.15s;${!active ? 'opacity:0.8;' : ''}" ${!active ? `onmouseenter="this.style.borderColor='#E8500A';this.style.opacity='1'" onmouseleave="this.style.borderColor='rgba(255,255,255,0.08)';this.style.opacity='0.8'"` : ''}>${p.label}<br><span style="font-size:11px;font-weight:400;color:${active ? '#E8500A' : '#6B5A4A'};">${p.price}</span></button>`;
+          }).join('');
+
+          // Sub status badge
           const subStatusBadge = subStatus === 'active'
             ? `<span class="badge badge-green" style="background:rgba(45,139,85,0.15);color:#2D8B55;border:1px solid rgba(45,139,85,0.3);">Active</span>`
             : subStatus === 'cancelled'
             ? `<span class="badge badge-grey">Cancelled</span>`
             : `<span class="badge badge-grey">${subStatus}</span>`;
+
+          // Trial row
           const trialRow = onTrial
-            ? `<div class="detail-row"><span class="detail-label">Trial ends</span><span style="color:#C9840A;font-size:13px;">${trialEnd.toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'})}</span></div>`
-            : '';
+            ? `<div class="detail-row" style="flex-wrap:wrap;gap:8px;">
+                <span class="detail-label">Trial ends</span>
+                <span style="color:#C9840A;font-size:13px;">${trialEnd.toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'})}</span>
+                <div style="display:flex;gap:6px;width:100%;margin-top:4px;">
+                  <button onclick="adminManageTrial(${userId},'extend',14)" style="background:none;border:1px solid rgba(201,132,10,0.3);color:#C9840A;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;">Extend 14 days</button>
+                  <button onclick="adminManageTrial(${userId},'end')" style="background:none;border:1px solid rgba(192,57,43,0.3);color:#C0392B;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;">End trial now</button>
+                </div>
+              </div>`
+            : (plan !== 'free' ? `<div class="detail-row" style="flex-wrap:wrap;gap:8px;">
+                <span class="detail-label">Trial</span>
+                <span style="color:#6B5A4A;font-size:13px;">No active trial</span>
+                <button onclick="adminManageTrial(${userId},'extend',14)" style="background:none;border:1px solid rgba(201,132,10,0.3);color:#C9840A;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;margin-left:auto;">Start 14-day trial</button>
+              </div>` : '');
+
+          // Usage bar
           const usageBar = quota !== null
             ? (() => {
                 const pct = Math.min(100, Math.round((used / quota) * 100));
@@ -3268,11 +3440,23 @@
                 </div>`;
               })()
             : `<div class="detail-row"><span class="detail-label">Applications this month</span><span style="color:#FDF4E7;font-size:13px;">${used} <span style="color:#6B5A4A;">(unlimited)</span></span></div>`;
-          return `<div class="detail-grid">
-            <div class="detail-row"><span class="detail-label">Plan</span>${planBadge(plan)}</div>
+
+          return `<div class="detail-grid" data-current-plan="${plan}">
+            <div class="detail-row"><span class="detail-label">Plan</span>${planBadge(plan)}${overrideBadge}</div>
+            ${overrideRows}
+            ${paymentAlert}
+            <div style="margin:8px 0 12px;">
+              <div style="font-size:12px;color:#6B5A4A;margin-bottom:8px;">Change plan</div>
+              <div style="display:flex;gap:8px;">${planButtons}</div>
+            </div>
+            <div id="plan-confirm-area" style="display:none;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:14px;margin:0 0 12px;"></div>
             <div class="detail-row"><span class="detail-label">Status</span>${subStatusBadge}</div>
             ${trialRow}
             ${usageBar}
+            <div style="margin-top:8px;">
+              <button onclick="toggleSubHistory(${userId})" style="background:none;border:none;color:#A89880;cursor:pointer;font-size:12px;padding:0;">&#9654; Change history</button>
+              <div id="sub-history-area" style="display:none;margin-top:8px;"></div>
+            </div>
           </div>`;
         })()) +
         detailSection('Compliance documents', (() => {
@@ -3367,7 +3551,6 @@
         instagram: document.getElementById('df-instagram').value,
         suburb: document.getElementById('df-suburb').value,
         state: document.getElementById('df-state').value,
-        plan: document.getElementById('df-plan').value,
         setup_type: document.getElementById('df-setup').value,
         stall_w: document.getElementById('df-stallw').value,
         stall_d: document.getElementById('df-stalld').value,
