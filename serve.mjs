@@ -2802,6 +2802,49 @@ app.post('/api/vendor/settings/pause', requireAuth, async (req, res) => {
   res.json({ ok: true, paused: !!paused });
 });
 
+// ── API: Vendor extended settings (phone, 2FA, visibility, defaults, invoice) ─
+app.put('/api/vendor/settings/extended', requireAuth, async (req, res) => {
+  if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Vendors only' });
+  const { default_apply_message, timezone, invoice_business_name, invoice_address, hide_phone, hide_abn, hide_reviews } = req.body;
+  try {
+    await stmts.updateVendorExtSettings.run({
+      default_apply_message: default_apply_message || null,
+      timezone: timezone || 'Australia/Adelaide',
+      invoice_business_name: invoice_business_name || null,
+      invoice_address: invoice_address || null,
+      hide_phone: hide_phone ? 1 : 0,
+      hide_abn: hide_abn ? 1 : 0,
+      hide_reviews: hide_reviews ? 1 : 0,
+      user_id: req.session.userId,
+    });
+    res.json({ ok: true });
+  } catch (e) { console.error('[vendor ext settings]', e); res.status(500).json({ error: 'Server error' }); }
+});
+
+app.put('/api/vendor/settings/phone', requireAuth, async (req, res) => {
+  if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Vendors only' });
+  const { mobile } = req.body;
+  if (!mobile || mobile.length < 8) return res.status(400).json({ error: 'Valid phone number required' });
+  await stmts.updateVendorMobile.run(mobile.trim(), req.session.userId);
+  res.json({ ok: true });
+});
+
+app.put('/api/vendor/settings/2fa', requireAuth, async (req, res) => {
+  if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Vendors only' });
+  const { enabled } = req.body;
+  await stmts.setTwoFactor.run(enabled ? 1 : 0, req.session.userId);
+  res.json({ ok: true, two_factor_enabled: !!enabled });
+});
+
+app.get('/api/vendor/settings/connected', requireAuth, async (req, res) => {
+  if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Vendors only' });
+  const user = await stmts.getUserById.get(req.session.userId);
+  res.json({
+    google: user.oauth_provider === 'google' ? { linked: true, sub: user.oauth_sub } : { linked: false },
+    email_login: user.password_hash !== '__oauth__',
+  });
+});
+
 app.delete('/api/vendor/account', requireAuth, async (req, res) => {
   if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Vendors only' });
   const userId = req.session.userId;
