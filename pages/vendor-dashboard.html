@@ -3028,7 +3028,7 @@ body::before {
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.4/jspdf.plugin.autotable.min.js"></script>
 <script>
 /* ── Navigate to messages panel and open a specific organiser thread ─────── */
@@ -6269,12 +6269,21 @@ function _renderBarChart(canvasId, dailyData, opts = {}) {
   canvas.style.height = H + 'px';
   ctx.scale(dpr, dpr);
 
-  // Fill 30 days
+  // Build day range — use date filter range or default 30 days
   const today = new Date();
+  let rangeStart, rangeEnd;
+  if (typeof _vanFrom !== 'undefined' && _vanFrom && typeof _vanTo !== 'undefined' && _vanTo) {
+    rangeStart = new Date(_vanFrom + 'T00:00:00');
+    rangeEnd = new Date(_vanTo + 'T00:00:00');
+  } else {
+    rangeEnd = today;
+    rangeStart = new Date(today); rangeStart.setDate(rangeStart.getDate() - 29);
+  }
+  const dayCount = Math.max(1, Math.round((rangeEnd - rangeStart) / 86400000) + 1);
   const days = [];
-  for (let i = 29; i >= 0; i--) {
-    const d = new Date(today);
-    d.setDate(d.getDate() - i);
+  for (let i = 0; i < dayCount; i++) {
+    const d = new Date(rangeStart);
+    d.setDate(d.getDate() + i);
     const key = d.toISOString().slice(0, 10);
     const found = dailyData.find(r => r.day === key);
     days.push({ date: d, key, value: found ? Number(found.views || found.appearances || found.total || 0) : 0 });
@@ -6283,19 +6292,30 @@ function _renderBarChart(canvasId, dailyData, opts = {}) {
   const padL = 36, padR = 12, padT = 16, padB = 28;
   const chartW = W - padL - padR;
   const chartH = H - padT - padB;
-  const barW = (chartW / 30) - 2;
+  const barW = Math.max(2, (chartW / dayCount) - 2);
   const maxVal = Math.max(1, ...days.map(d => d.value));
+
+  // Compute clean gridline steps (avoid repeating labels)
+  const gridLines = 4;
+  const rawStep = maxVal / gridLines;
+  const step = maxVal <= gridLines ? 1 : Math.ceil(rawStep);
+  const topVal = step * gridLines;
 
   // Gridlines
   ctx.strokeStyle = '#ffffff0a';
   ctx.lineWidth = 1;
-  for (let i = 0; i <= 4; i++) {
-    const y = padT + (chartH / 4) * i;
+  const usedLabels = new Set();
+  for (let i = 0; i <= gridLines; i++) {
+    const y = padT + (chartH / gridLines) * i;
     ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
-    ctx.fillStyle = '#6B5A4A';
-    ctx.font = '10px "Instrument Sans", sans-serif';
-    ctx.textAlign = 'right';
-    ctx.fillText(Math.round(maxVal - (maxVal / 4) * i), padL - 6, y + 3);
+    const labelVal = Math.round(topVal - step * i);
+    if (!usedLabels.has(labelVal)) {
+      usedLabels.add(labelVal);
+      ctx.fillStyle = '#6B5A4A';
+      ctx.font = '10px "Instrument Sans", sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText(labelVal, padL - 6, y + 3);
+    }
   }
 
   // Bars with animation
@@ -6313,15 +6333,16 @@ function _renderBarChart(canvasId, dailyData, opts = {}) {
 
     // Redraw gridlines
     ctx.strokeStyle = '#ffffff0a';
-    for (let i = 0; i <= 4; i++) {
-      const y = padT + (chartH / 4) * i;
+    for (let i = 0; i <= gridLines; i++) {
+      const y = padT + (chartH / gridLines) * i;
       ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke();
     }
 
+    const labelEvery = dayCount <= 14 ? 1 : dayCount <= 35 ? 5 : Math.ceil(dayCount / 7);
     _barPositions.length = 0;
-    for (let i = 0; i < 30; i++) {
-      const x = padL + (chartW / 30) * i + 1;
-      const h = (days[i].value / maxVal) * chartH * ease;
+    for (let i = 0; i < dayCount; i++) {
+      const x = padL + (chartW / dayCount) * i + 1;
+      const h = (days[i].value / topVal) * chartH * ease;
       const y = padT + chartH - h;
       ctx.fillStyle = grad;
       ctx.beginPath();
@@ -6329,12 +6350,15 @@ function _renderBarChart(canvasId, dailyData, opts = {}) {
       ctx.fill();
       _barPositions.push({ x, y, w: barW, h, idx: i });
 
-      // X-axis labels every 5th bar
-      if (i % 5 === 0 || i === 29) {
+      // X-axis labels
+      if (i % labelEvery === 0 || i === dayCount - 1) {
         ctx.fillStyle = '#6B5A4A';
         ctx.font = '10px "Instrument Sans", sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(days[i].date.getDate(), x + barW / 2, H - 8);
+        const dLabel = dayCount > 60
+          ? days[i].date.toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })
+          : String(days[i].date.getDate());
+        ctx.fillText(dLabel, x + barW / 2, H - 8);
       }
     }
     if (animProgress < 1) requestAnimationFrame(drawFrame);
@@ -6401,6 +6425,24 @@ function _renderSparkline(canvasId, data, color, valueKey) {
   const vals = data.map(d => Number(d[valueKey] || 0));
   const maxV = Math.max(1, ...vals);
   const pad = 4;
+
+  // Single data point: centered dot + label instead of broken line
+  if (vals.length === 1) {
+    const cx = W / 2;
+    const cy = H / 2 - 4;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.font = '11px "Instrument Sans", sans-serif';
+    ctx.fillStyle = '#A89880';
+    ctx.textAlign = 'center';
+    ctx.fillText(vals[0] % 1 === 0 ? String(vals[0]) : vals[0].toFixed(1), cx, cy + 18);
+    const label = data[0].month ? data[0].month.slice(5) : (data[0].day || '').slice(5);
+    if (label) { ctx.fillStyle = '#6B5A4A'; ctx.font = '9px "Instrument Sans", sans-serif'; ctx.fillText(label, cx, H - 1); }
+    return;
+  }
+
   const stepX = (W - pad * 2) / Math.max(1, vals.length - 1);
 
   // Area fill
@@ -6413,7 +6455,7 @@ function _renderSparkline(canvasId, data, color, valueKey) {
   vals.forEach((v, i) => {
     const x = pad + i * stepX;
     const y = H - pad - (v / maxV) * (H - pad * 2);
-    if (i === 0) ctx.lineTo(x, y); else ctx.lineTo(x, y);
+    ctx.lineTo(x, y);
   });
   ctx.lineTo(pad + (vals.length - 1) * stepX, H - pad);
   ctx.closePath();
@@ -6822,7 +6864,10 @@ async function loadAnalyticsData() {
     // ── Views ──
     const viewsEl = document.getElementById('analytics-views-count');
     const uniqueEl = document.getElementById('analytics-views-unique');
-    if (viewsEl) viewsEl.textContent = data.views.total;
+    if (viewsEl) {
+      viewsEl.textContent = data.views.total;
+      viewsEl.style.color = data.views.total > 0 ? '#5B8BE8' : 'var(--text-lo)';
+    }
     if (uniqueEl) uniqueEl.textContent = data.views.unique + ' unique visitor' + (data.views.unique !== 1 ? 's' : '');
     var _lbl = document.getElementById('analytics-views-label');
     if (_lbl) {
@@ -7154,7 +7199,7 @@ function applySubscriptionGating(plan) {
   const exportsSection = document.getElementById('exports-section');
   if (exportsSection) exportsSection.style.display = isGrowth ? 'block' : 'none';
   const bkWrap = document.getElementById('bookkeeping-wrap');
-  if (bkWrap) bkWrap.style.display = isGrowth ? 'block' : 'none';
+  if (bkWrap) bkWrap.style.display = isGrowth ? 'inline-flex' : 'none';
 
   // ── Growth: team invite ──
   const teamSection = document.getElementById('team-invite-section');
@@ -7362,7 +7407,7 @@ async function downloadPaymentPDF() {
 
   try {
     const fees = await _getStallFees();
-    if (!fees.length) { alert('No payment data to export.'); return; }
+    if (!fees.length) { alert('No payment data to export.'); if (btn) { btn.disabled = false; btn.textContent = origText; } return; }
 
     const { jsPDF } = jspdf;
     const doc = new jsPDF('p', 'mm', 'a4');
