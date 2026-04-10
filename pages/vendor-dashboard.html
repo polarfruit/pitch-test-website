@@ -2257,31 +2257,28 @@ body::before {
 
     <!-- ── PANEL: EARNINGS ──────────────────────────────────────────────── -->
     <div class="panel" id="panel-earnings">
-      <div class="preview-banner">
-        🔒 Preview mode — Payment processing coming soon. Figures below are illustrative.
-      </div>
 
       <!-- Summary row -->
       <div class="earnings-summary">
         <div class="earnings-stat">
           <div class="earnings-stat-label">All-time earned</div>
-          <div class="earnings-stat-value">$0</div>
-          <div class="earnings-stat-sub">0 events completed</div>
+          <div class="earnings-stat-value" id="earn-alltime-val">$0.00</div>
+          <div class="earnings-stat-sub" id="earn-alltime-sub">0 events completed</div>
         </div>
         <div class="earnings-stat">
           <div class="earnings-stat-label">This month</div>
-          <div class="earnings-stat-value">$0</div>
-          <div class="earnings-stat-sub">No events this month</div>
+          <div class="earnings-stat-value" id="earn-month-val">$0.00</div>
+          <div class="earnings-stat-sub" id="earn-month-sub">No events this month</div>
         </div>
         <div class="earnings-stat">
           <div class="earnings-stat-label">Last month</div>
-          <div class="earnings-stat-value">$0</div>
-          <div class="earnings-stat-sub">No events last month</div>
+          <div class="earnings-stat-value" id="earn-lastmonth-val">$0.00</div>
+          <div class="earnings-stat-sub" id="earn-lastmonth-sub">No events last month</div>
         </div>
         <div class="earnings-stat">
           <div class="earnings-stat-label">Pending payout</div>
-          <div class="earnings-stat-value">$0</div>
-          <div class="earnings-stat-sub">No pending payouts</div>
+          <div class="earnings-stat-value" id="earn-pending-val">$0.00</div>
+          <div class="earnings-stat-sub" id="earn-pending-sub">No pending payouts</div>
         </div>
       </div>
 
@@ -2294,7 +2291,7 @@ body::before {
               <th>Event</th><th>Date</th><th>Organiser</th>
               <th>Booth fee</th><th>Platform fee (5%)</th><th>Net</th><th>Status</th>
             </tr></thead>
-            <tbody>
+            <tbody id="earnings-tbody">
               <tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-lo);font-size:13px;">No earnings yet — completed events will appear here.</td></tr>
             </tbody>
           </table>
@@ -2322,14 +2319,12 @@ body::before {
         <div style="font-size:14px; font-weight:700; color:var(--text-hi); margin-bottom:16px;">Tax summary</div>
         <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
           <div>
-            <div style="font-size:12px; color:var(--text-lo); margin-bottom:4px;">Total earnings FY 2025–26</div>
-            <div style="font-family:var(--fd); font-size:28px; font-weight:900; color:var(--text-hi);">$0</div>
+            <div style="font-size:12px; color:var(--text-lo); margin-bottom:4px;" id="earn-fy-label">Total earnings FY 2025–26</div>
+            <div style="font-family:var(--fd); font-size:28px; font-weight:900; color:var(--text-hi);" id="earn-fy-total">$0.00</div>
           </div>
-          <div style="position:relative; display:inline-block;">
-            <button class="btn-coming-soon" disabled title="Coming soon">Download earnings summary PDF
-              <span class="coming-soon-tag">SOON</span>
-            </button>
-          </div>
+          <button id="btn-earnings-pdf" onclick="downloadEarningsPDF()" style="font-family:var(--fb);font-size:12px;font-weight:600;color:var(--text-mid);background:#ffffff08;border:1px solid #ffffff12;padding:7px 14px;border-radius:8px;cursor:pointer;transition:background .14s;" onmouseover="this.style.background='#ffffff12'" onmouseout="this.style.background='#ffffff08'">
+            Download earnings summary PDF
+          </button>
         </div>
         <div style="margin-top:16px; font-size:12px; color:var(--text-lo); line-height:1.7; border-top:1px solid #ffffff07; padding-top:14px;">
           Pitch. provides an earnings summary for your own records. This is not a tax invoice. Please consult your accountant or BAS agent for tax advice.
@@ -3134,6 +3129,7 @@ function showPanel(name, clickedEl, pushHistory = true) {
   if (name === 'calendar') loadCalendar();
   if (name === 'history')  loadMarketHistory();
   if (name === 'analytics') loadAnalyticsData();
+  if (name === 'earnings') loadEarnings();
 
   if (name === 'messages') {
     loadAllThreads();
@@ -5675,6 +5671,175 @@ async function payFee(id, btn) {
       alert('Payment failed. Please try again.');
     }
   } catch(e) { btn.disabled = false; btn.textContent = 'Pay now'; }
+}
+
+// ── EARNINGS ───────────────────────────────────────────────────────────────
+const PLATFORM_FEE_RATE = 0.05;
+function _applyFee(amt) { const pf = Math.round(amt * PLATFORM_FEE_RATE * 100) / 100; return { platform_fee: pf, net: Math.round((amt - pf) * 100) / 100 }; }
+function _fmtCurrency(n) { return '$' + Number(n || 0).toFixed(2); }
+
+async function loadEarnings() {
+  try {
+    const init = window.__PITCH_INIT_DATA__;
+    let data;
+    if (init && init.earningsSummary !== undefined) {
+      // Build response shape from pre-loaded raw data
+      const s = init.earningsSummary || { total_earned:0, events_completed:0, this_month:0, this_month_events:0, last_month:0, last_month_events:0, pending:0 };
+      const history = (init.earningsHistory || []).map(h => ({ ...h, ..._applyFee(h.amount) }));
+      // Compute AU FY client-side
+      const now = new Date();
+      const fyStartYear = now.getMonth() < 6 ? now.getFullYear() - 1 : now.getFullYear();
+      const fyStart = `${fyStartYear}-07-01`;
+      const fyEnd = `${fyStartYear + 1}-07-01`;
+      const fyLabel = `${fyStartYear}\u2013${String(fyStartYear + 1).slice(2)}`;
+      const fyRows = history.filter(h => h.status === 'paid' && h.paid_at && h.paid_at >= fyStart && h.paid_at < fyEnd);
+      const fyTotal = fyRows.reduce((t, h) => t + Number(h.amount || 0), 0);
+      data = {
+        summary: { ...s, total_net: _applyFee(s.total_earned).net, this_month_net: _applyFee(s.this_month).net, last_month_net: _applyFee(s.last_month).net, pending_net: _applyFee(s.pending).net },
+        history,
+        tax: { fy_label: fyLabel, fy_total: fyTotal, fy_net: _applyFee(fyTotal).net, fy_platform_fees: _applyFee(fyTotal).platform_fee, fy_events: fyRows.length },
+      };
+      delete init.earningsSummary; // use API on subsequent loads
+      delete init.earningsHistory;
+    } else {
+      const r = await pitchFetch('/api/vendor/earnings');
+      if (!r.ok) return;
+      data = await r.json();
+    }
+    window.__PITCH_EARNINGS__ = data;
+    _renderEarningsSummary(data.summary);
+    _renderEarningsHistory(data.history);
+    _renderEarningsTax(data.tax);
+  } catch(e) { console.error('[loadEarnings]', e); }
+}
+
+function _renderEarningsSummary(s) {
+  const el = (id) => document.getElementById(id);
+  el('earn-alltime-val').textContent = _fmtCurrency(s.total_net);
+  el('earn-alltime-sub').textContent = s.events_completed ? `${s.events_completed} event${s.events_completed !== 1 ? 's' : ''} completed` : '0 events completed';
+  el('earn-month-val').textContent = _fmtCurrency(s.this_month_net);
+  el('earn-month-sub').textContent = s.this_month_events ? `${s.this_month_events} event${s.this_month_events !== 1 ? 's' : ''} this month` : 'No events this month';
+  el('earn-lastmonth-val').textContent = _fmtCurrency(s.last_month_net);
+  el('earn-lastmonth-sub').textContent = s.last_month_events ? `${s.last_month_events} event${s.last_month_events !== 1 ? 's' : ''} last month` : 'No events last month';
+  el('earn-pending-val').textContent = _fmtCurrency(s.pending_net);
+  el('earn-pending-sub').textContent = s.pending > 0 ? `${_fmtCurrency(s.pending)} gross` : 'No pending payouts';
+}
+
+function _renderEarningsHistory(history) {
+  const tbody = document.getElementById('earnings-tbody');
+  if (!history || !history.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-lo);font-size:13px;">No earnings yet — completed events will appear here.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = history.map(h => {
+    const date = h.event_date ? _fmtDate(h.event_date) : (h.paid_at ? _fmtDate(h.paid_at) : '—');
+    return `<tr>
+      <td>${h.event_name || '—'}</td>
+      <td style="color:var(--text-lo);">${date}</td>
+      <td style="color:var(--text-lo);">${h.organiser_name || '—'}</td>
+      <td><strong>${_fmtCurrency(h.amount)}</strong></td>
+      <td style="color:var(--text-lo);">${_fmtCurrency(h.platform_fee)}</td>
+      <td style="color:var(--herb);font-weight:700;">${_fmtCurrency(h.net)}</td>
+      <td>${_feeStatusBadge(h.status)}</td>
+    </tr>`;
+  }).join('');
+}
+
+function _renderEarningsTax(tax) {
+  const label = document.getElementById('earn-fy-label');
+  const total = document.getElementById('earn-fy-total');
+  if (label) label.textContent = `Total earnings FY ${tax.fy_label}`;
+  if (total) total.textContent = _fmtCurrency(tax.fy_net);
+}
+
+async function downloadEarningsPDF() {
+  if (typeof jspdf === 'undefined') { alert('PDF library failed to load. Please refresh and try again.'); return; }
+  const btn = document.getElementById('btn-earnings-pdf');
+  const origText = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.textContent = 'Generating…'; }
+  try {
+    let data = window.__PITCH_EARNINGS__;
+    if (!data) {
+      const r = await pitchFetch('/api/vendor/earnings');
+      if (!r.ok) { alert('Could not load earnings data.'); return; }
+      data = await r.json();
+    }
+    if (!data.history || !data.history.length) { alert('No earnings data to export.'); if (btn) { btn.disabled = false; btn.textContent = origText; } return; }
+
+    const { jsPDF } = jspdf;
+    const doc = new jsPDF('p', 'mm', 'a4');
+    const pw = doc.internal.pageSize.getWidth();
+    const EMBER = [232, 80, 10], COAL = [26, 22, 18], PARCHMENT = [253, 244, 231], WHITE = [255, 255, 255];
+    const vendorName = (window.__PITCH_PROFILE__ && window.__PITCH_PROFILE__.trading_name)
+      || (window.__PITCH_USER__ ? (window.__PITCH_USER__.first_name + ' ' + window.__PITCH_USER__.last_name) : 'Vendor');
+    const today = new Date().toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' });
+
+    // Header
+    doc.setFillColor(...EMBER);
+    doc.rect(0, 0, pw, 38, 'F');
+    doc.setFont('helvetica', 'bold'); doc.setFontSize(22); doc.setTextColor(...WHITE);
+    doc.text('Pitch.', 14, 18);
+    doc.setFontSize(13); doc.text('Earnings Summary', 14, 28);
+    doc.setFontSize(11); doc.setFont('helvetica', 'normal');
+    doc.text(vendorName, pw - 14, 18, { align: 'right' });
+    doc.setFontSize(9); doc.text('Generated ' + today, pw - 14, 26, { align: 'right' });
+
+    // Summary box
+    const s = data.summary, t = data.tax;
+    const sy = 46;
+    doc.setFillColor(...PARCHMENT);
+    doc.roundedRect(14, sy, pw - 28, 24, 3, 3, 'F');
+    const labels = ['All-time Net', 'This Month', 'Platform Fees', 'FY ' + (t.fy_label || '')];
+    const values = [s.total_net, s.this_month_net, t.fy_platform_fees, t.fy_net];
+    const colors = [[45,139,85], [45,139,85], [201,132,10], [43,91,168]];
+    const colW = (pw - 28) / 4;
+    labels.forEach((lbl, i) => {
+      const cx = 14 + colW * i + colW / 2;
+      doc.setFontSize(8); doc.setTextColor(100,100,100); doc.text(lbl, cx, sy + 9, { align: 'center' });
+      doc.setFontSize(13); doc.setFont('helvetica', 'bold'); doc.setTextColor(...colors[i]);
+      doc.text('$' + Number(values[i] || 0).toFixed(2), cx, sy + 18, { align: 'center' });
+      doc.setFont('helvetica', 'normal');
+    });
+
+    // Table
+    const rows = data.history.map(h => [
+      h.event_name || '', h.event_date ? h.event_date : (h.paid_at || '').slice(0,10),
+      h.organiser_name || '', '$' + Number(h.amount||0).toFixed(2),
+      '$' + Number(h.platform_fee||0).toFixed(2), '$' + Number(h.net||0).toFixed(2),
+      (h.status||'').charAt(0).toUpperCase() + (h.status||'').slice(1)
+    ]);
+
+    doc.autoTable({
+      startY: sy + 32,
+      head: [['Event', 'Date', 'Organiser', 'Booth Fee', 'Platform Fee', 'Net', 'Status']],
+      body: rows,
+      margin: { left: 14, right: 14 },
+      styles: { font: 'helvetica', fontSize: 8, textColor: COAL, cellPadding: 3 },
+      headStyles: { fillColor: EMBER, textColor: WHITE, fontStyle: 'bold', fontSize: 8 },
+      alternateRowStyles: { fillColor: [250, 245, 238] },
+      columnStyles: { 3: { halign: 'right' }, 4: { halign: 'right' }, 5: { halign: 'right', fontStyle: 'bold' } },
+      didParseCell: function(d) {
+        if (d.section === 'body' && d.column.index === 6) {
+          const v = (d.cell.raw||'').toLowerCase();
+          if (v === 'paid') d.cell.styles.textColor = [45,139,85];
+          else if (v === 'unpaid') d.cell.styles.textColor = [201,132,10];
+          else if (v === 'refunded') d.cell.styles.textColor = [43,91,168];
+        }
+      },
+      didDrawPage: function() {
+        doc.setFontSize(7); doc.setTextColor(150,150,150);
+        doc.text('Generated by Pitch. — onpitch.com.au  |  This is not a tax invoice.', 14, doc.internal.pageSize.getHeight() - 10);
+        doc.text('Page ' + doc.internal.getNumberOfPages(), pw - 14, doc.internal.pageSize.getHeight() - 10, { align: 'right' });
+      }
+    });
+
+    doc.save('pitch-earnings-summary.pdf');
+  } catch(e) {
+    console.error('[downloadEarningsPDF]', e);
+    alert('Failed to generate PDF. Please try again.');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = origText; }
+  }
 }
 
 // ── CALENDAR ────────────────────────────────────────────────────────────────

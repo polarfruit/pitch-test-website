@@ -228,7 +228,7 @@ async function orgInitData(user) {
 
 async function vendorInitData(user) {
   // Run all queries in parallel — avoids sequential round-trips to Turso
-  const [events, applications, unreadRow, viewsRow, reviews, reviewAvg, stallFees] = await Promise.all([
+  const [events, applications, unreadRow, viewsRow, reviews, reviewAvg, stallFees, earningsSummary, earningsHistory] = await Promise.all([
     stmts.publishedEventsForVendor.all(user.id).catch(e => { console.error('[vendorInitData] events', e); return []; }),
     stmts.getApplicationsByVendor.all(user.id).catch(e => { console.error('[vendorInitData] applications', e); return []; }),
     stmts.getUnreadMsgCount.get(user.id, user.id, user.id).catch(e => { console.error('[vendorInitData] unread', e); return null; }),
@@ -236,9 +236,11 @@ async function vendorInitData(user) {
     stmts.getReviewsByVendor.all(user.id).catch(() => []),
     stmts.getReviewAvg.get(user.id).catch(() => null),
     stmts.getStallFeesByVendor.all(user.id).catch(() => []),
+    stmts.getVendorEarningsSummary.get(user.id).catch(() => null),
+    stmts.getVendorEarningsHistory.all(user.id).catch(() => []),
   ]);
   return {
-    events, applications, stallFees,
+    events, applications, stallFees, earningsSummary, earningsHistory,
     unreadMessages: unreadRow ? Number(unreadRow.count) : 0,
     viewCount30d: Number(viewsRow?.total ?? 0),
     reviews, avgRating: reviewAvg ? Number((reviewAvg.avg || 0).toFixed(1)) : 0, totalReviews: reviewAvg ? reviewAvg.total : 0,
@@ -921,7 +923,16 @@ app.post('/api/profile/plan', requireAuth, async (req, res) => {
     }
     const vendor = await stmts.getVendorByUserId.get(req.session.userId);
     if (!vendor) return res.status(403).json({ error: 'Not a vendor account' });
+    if (vendor.plan_override) {
+      return res.status(403).json({ error: 'Your plan is managed by an administrator. Contact support to change your plan.' });
+    }
+    const oldPlan = vendor.plan || 'free';
     await stmts.updateVendorPlan.run(plan, req.session.userId);
+    await stmts.insertSubscriptionChange.run({
+      user_id: req.session.userId, old_plan: oldPlan, new_plan: plan,
+      changed_by: 'vendor', admin_user_id: null,
+      reason: null, payment_status: null, is_override: 0, override_expires: null,
+    });
     _apiCache.delete('vendors'); _apiCache.delete('stats');
     res.json({ ok: true, plan });
   } catch (e) {
@@ -1688,10 +1699,113 @@ app.put('/api/admin/users/:userId/profile', requireAdmin, async (req, res) => {
 });
 
 app.put('/api/admin/vendors/:userId', requireAdmin, async (req, res) => {
-  const { trading_name, mobile, suburb, state, bio, plan, instagram, setup_type, stall_w, stall_d, power, water, price_range, abn } = req.body;
-  await stmts.updateVendorProfile.run({ trading_name, mobile: mobile||null, suburb: suburb||null, state: state||null, bio: bio||null, plan: plan||'free', instagram: instagram||null, setup_type: setup_type||null, stall_w: stall_w||null, stall_d: stall_d||null, power: power?1:0, water: water?1:0, price_range: price_range||null, abn: abn||null, user_id: req.params.userId });
+  const { trading_name, mobile, suburb, state, bio, instagram, setup_type, stall_w, stall_d, power, water, price_range, abn } = req.body;
+  await stmts.updateVendorProfile.run({ trading_name, mobile: mobile||null, suburb: suburb||null, state: state||null, bio: bio||null, instagram: instagram||null, setup_type: setup_type||null, stall_w: stall_w||null, stall_d: stall_d||null, power: power?1:0, water: water?1:0, price_range: price_range||null, abn: abn||null, user_id: req.params.userId });
   _apiCache.delete('featured-vendors');
   res.json({ ok: true });
+});
+
+// POST /api/admin/vendors/:id/subscription — Admin subscription override
+app.post('/api/admin/vendors/:id/subscription', requireAdmin, async (req, res) => {
+  try {
+    const { plan, reason, override_expires } = req.body;
+    if (!['free', 'pro', 'growth'].includes(plan)) return res.status(400).json({ error: 'Invalid plan' });
+    const vendor = await stmts.getVendorByUserId.get(Number(req.params.id));
+    if (!vendor) return res.status(404).json({ error: 'Vendor not found' });
+    const oldPlan = vendor.plan || 'free';
+    // Build payment warnings
+    const warnings = [];
+    const lastPayment = await stmts.getLastPayment.get(Number(req.params.id));
+    if (plan !== 'free') {
+      if (!lastPayment) {
+        warnings.push({ type: 'no_payments', message: 'No payment records exist for this vendor.' });
+      } else if (lastPayment.status === 'failed') {
+        warnings.push({ type: 'last_payment_failed', message: `Last payment failed on ${new Date(lastPayment.created_at).toLocaleDateString('en-AU')}.` });
+      } else if (lastPayment.status === 'refunded') {
+        warnings.push({ type: 'last_payment_refunded', message: `Last payment was refunded on ${new Date(lastPayment.created_at).toLocaleDateString('en-AU')}.` });
+      }
+      if (lastPayment && lastPayment.status === 'paid' && lastPayment.plan !== plan) {
+        warnings.push({ type: 'no_paid_for_tier', message: `Vendor has never paid for the ${plan === 'pro' ? 'Pro' : 'Growth'} tier.` });
+      }
+    }
+    const isOverride = plan !== 'free' ? 1 : 0;
+    const now = new Date().toISOString();
+    await stmts.updateVendorPlanOverride.run({
+      plan, plan_override: isOverride,
+      plan_override_by: isOverride ? (req.session.userId || null) : null,
+      plan_override_at: isOverride ? now : null,
+      plan_override_reason: reason || null,
+      plan_override_expires: override_expires || null,
+      user_id: Number(req.params.id),
+    });
+    await stmts.insertSubscriptionChange.run({
+      user_id: Number(req.params.id), old_plan: oldPlan, new_plan: plan,
+      changed_by: 'admin', admin_user_id: req.session.userId || null,
+      reason: reason || null, payment_status: lastPayment ? lastPayment.status : 'none',
+      is_override: isOverride, override_expires: override_expires || null,
+    });
+    await stmts.insertAuditLog.run({
+      admin_user_id: req.session.userId || null, action: 'plan_override',
+      target_user_id: Number(req.params.id), target_role: 'vendor',
+      reason: reason || `Plan changed from ${oldPlan} to ${plan}`,
+      metadata: JSON.stringify({ old_plan: oldPlan, new_plan: plan, warnings }),
+    });
+    _apiCache.delete('vendors'); _apiCache.delete('stats'); _apiCache.delete('featured-vendors');
+    res.json({ ok: true, warnings, change: { old_plan: oldPlan, new_plan: plan, is_override: isOverride } });
+  } catch (e) { console.error('[admin-subscription]', e); res.status(500).json({ error: 'Server error' }); }
+});
+
+// DELETE /api/admin/vendors/:id/subscription-override — Remove admin override (keep plan)
+app.delete('/api/admin/vendors/:id/subscription-override', requireAdmin, async (req, res) => {
+  try {
+    const vendor = await stmts.getVendorByUserId.get(Number(req.params.id));
+    if (!vendor) return res.status(404).json({ error: 'Vendor not found' });
+    await stmts.clearVendorOverride.run(Number(req.params.id));
+    await stmts.insertSubscriptionChange.run({
+      user_id: Number(req.params.id), old_plan: vendor.plan || 'free', new_plan: vendor.plan || 'free',
+      changed_by: 'admin', admin_user_id: req.session.userId || null,
+      reason: 'Override removed', payment_status: null, is_override: 0, override_expires: null,
+    });
+    _apiCache.delete('vendors'); _apiCache.delete('stats');
+    res.json({ ok: true });
+  } catch (e) { console.error('[admin-clear-override]', e); res.status(500).json({ error: 'Server error' }); }
+});
+
+// PATCH /api/admin/vendors/:id/trial — Extend or end trial
+app.patch('/api/admin/vendors/:id/trial', requireAdmin, async (req, res) => {
+  try {
+    const { action, extend_days } = req.body;
+    const vendor = await stmts.getVendorByUserId.get(Number(req.params.id));
+    if (!vendor) return res.status(404).json({ error: 'Vendor not found' });
+    let newTrialEnd;
+    if (action === 'extend') {
+      const days = extend_days || 14;
+      const base = vendor.trial_ends_at && new Date(vendor.trial_ends_at) > new Date()
+        ? new Date(vendor.trial_ends_at) : new Date();
+      base.setDate(base.getDate() + days);
+      newTrialEnd = base.toISOString();
+    } else if (action === 'end') {
+      newTrialEnd = new Date().toISOString();
+    } else {
+      return res.status(400).json({ error: 'Invalid action. Use "extend" or "end".' });
+    }
+    await stmts.updateVendorTrialEnd.run(newTrialEnd, Number(req.params.id));
+    await stmts.insertSubscriptionChange.run({
+      user_id: Number(req.params.id), old_plan: vendor.plan || 'free', new_plan: vendor.plan || 'free',
+      changed_by: 'admin', admin_user_id: req.session.userId || null,
+      reason: action === 'extend' ? `Trial extended by ${extend_days || 14} days` : 'Trial ended by admin',
+      payment_status: null, is_override: 0, override_expires: null,
+    });
+    res.json({ ok: true, trial_ends_at: newTrialEnd });
+  } catch (e) { console.error('[admin-trial]', e); res.status(500).json({ error: 'Server error' }); }
+});
+
+// GET /api/admin/vendors/:id/subscription-history — Subscription audit log
+app.get('/api/admin/vendors/:id/subscription-history', requireAdmin, async (req, res) => {
+  try {
+    const changes = await stmts.getSubscriptionChanges.all(Number(req.params.id));
+    res.json({ changes });
+  } catch (e) { console.error('[sub-history]', e); res.status(500).json({ error: 'Server error' }); }
 });
 
 app.put('/api/admin/organisers/:userId', requireAdmin, async (req, res) => {
@@ -2440,6 +2554,47 @@ app.post('/api/vendor/stall-fees/:id/pay', requireAuth, async (req, res) => {
   if (fee.status !== 'unpaid') return res.status(400).json({ error: 'Fee is not unpaid' });
   await stmts.payStallFee.run(req.params.id, req.session.userId);
   res.json({ ok: true });
+});
+
+// ── API: Vendor earnings ──────────────────────────────────────────────────
+app.get('/api/vendor/earnings', requireAuth, async (req, res) => {
+  if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Vendors only' });
+  const uid = req.session.userId;
+  const RATE = 0.05;
+  // Australian FY: 1 July – 30 June
+  const now = new Date();
+  const fyStartYear = now.getMonth() < 6 ? now.getFullYear() - 1 : now.getFullYear();
+  const fyStart = `${fyStartYear}-07-01`;
+  const fyEnd = `${fyStartYear + 1}-07-01`;
+  const fyLabel = `${fyStartYear}–${String(fyStartYear + 1).slice(2)}`;
+
+  const [summary, history, fy] = await Promise.all([
+    stmts.getVendorEarningsSummary.get(uid).catch(() => null),
+    stmts.getVendorEarningsHistory.all(uid).catch(() => []),
+    stmts.getVendorEarningsFY.get(uid, fyStart, fyEnd).catch(() => ({ fy_total: 0, fy_events: 0 })),
+  ]);
+
+  const s = summary || { total_earned: 0, events_completed: 0, this_month: 0, this_month_events: 0, last_month: 0, last_month_events: 0, pending: 0 };
+  const applyFee = (amt) => { const pf = Math.round(amt * RATE * 100) / 100; return { platform_fee: pf, net: Math.round((amt - pf) * 100) / 100 }; };
+
+  res.json({
+    summary: {
+      ...s,
+      total_net: applyFee(s.total_earned).net,
+      this_month_net: applyFee(s.this_month).net,
+      last_month_net: applyFee(s.last_month).net,
+      pending_net: applyFee(s.pending).net,
+    },
+    history: history.map(h => ({ ...h, ...applyFee(h.amount) })),
+    tax: {
+      fy_label: fyLabel,
+      fy_total: fy.fy_total,
+      fy_net: applyFee(fy.fy_total).net,
+      fy_platform_fees: applyFee(fy.fy_total).platform_fee,
+      fy_events: fy.fy_events,
+    },
+    platform_fee_rate: RATE,
+  });
 });
 
 // ── API: Vendor calendar ───────────────────────────────────────────────────
