@@ -380,7 +380,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .msg-event-label { padding:10px 16px 6px; font-size:10px; font-weight:700; letter-spacing:0.15em; text-transform:uppercase; color:var(--text-lo); }
 .msg-thread { display:flex; align-items:flex-start; gap:10px; padding:12px 16px; cursor:pointer; transition:background 0.12s; border-bottom:1px solid #ffffff05; }
 .msg-thread:hover { background:#ffffff06; }
-.msg-thread.active { background:var(--ember-bg); }
+.msg-thread.active { background:#E8500A18; border-left:3px solid var(--ember); padding-left:13px; }
 .msg-thread.unread .msg-thread-name { color:var(--text-hi); font-weight:700; }
 .msg-thread-avatar { width:36px; height:36px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:14px; font-weight:700; color:var(--text-hi); background:linear-gradient(135deg,#2A1E14,#5C3A1A); flex-shrink:0; }
 .msg-thread-body, .msg-thread-info { flex:1; min-width:0; }
@@ -2622,7 +2622,7 @@ function _orgFmtTime(iso) {
   try {
     const s = iso.includes('T') || iso.endsWith('Z') ? iso : iso.replace(' ', 'T') + 'Z';
     const use12 = (localStorage.getItem('pitch_time_fmt') || '12') === '12';
-    return new Date(s).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: use12 });
+    return new Date(s).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit', hour12: use12 });
   } catch { return ''; }
 }
 
@@ -2749,8 +2749,8 @@ function renderOrgMessages(messages, vendorName) {
   body.innerHTML = messages.map(m => {
     const mine = m.sender_user_id == myId;
     const time = _orgFmtTime(m.created_at);
-    return `<div class="msg-bubble-wrap ${mine ? 'us' : ''}">
-      <div class="msg-bubble ${mine ? 'us' : ''}">${m.body}</div>
+    return `<div class="msg-bubble-wrap ${mine ? 'us' : 'them'}">
+      <div class="msg-bubble ${mine ? 'us' : 'them'}">${m.body}</div>
       <div class="msg-timestamp">${mine ? 'You' : vendorName} · ${time}</div>
     </div>`;
   }).join('');
