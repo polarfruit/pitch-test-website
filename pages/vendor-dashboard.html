@@ -2511,7 +2511,7 @@ body::before {
       <div style="max-width:820px;">
 
         <!-- Date range filter -->
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap;" id="van-date-bar">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:28px;flex-wrap:wrap;" id="van-date-bar">
           <button class="van-range-btn active" data-range="30d" onclick="setVanRange('30d',this)">Last 30 days</button>
           <button class="van-range-btn" data-range="7d" onclick="setVanRange('7d',this)">Last 7 days</button>
           <button class="van-range-btn" data-range="90d" onclick="setVanRange('90d',this)">Last 90 days</button>
@@ -6289,6 +6289,24 @@ function _renderBarChart(canvasId, dailyData, opts = {}) {
     days.push({ date: d, key, value: found ? Number(found.views || found.appearances || found.total || 0) : 0 });
   }
 
+  // If all values are zero, show empty state instead of a flat chart
+  const totalVal = days.reduce((s, d) => s + d.value, 0);
+  if (totalVal === 0) {
+    canvas.style.display = 'none';
+    let emptyEl = canvas.parentElement.querySelector('.chart-empty');
+    if (!emptyEl) {
+      emptyEl = document.createElement('div');
+      emptyEl.className = 'chart-empty';
+      emptyEl.style.cssText = 'text-align:center;padding:40px 20px;color:var(--text-lo);font-size:12px;line-height:1.6;';
+      emptyEl.textContent = 'No data for this period yet.';
+      canvas.parentElement.insertBefore(emptyEl, canvas.nextSibling);
+    }
+    return;
+  }
+  canvas.style.display = '';
+  const prevEmpty = canvas.parentElement.querySelector('.chart-empty');
+  if (prevEmpty) prevEmpty.remove();
+
   const padL = 36, padR = 12, padT = 16, padB = 28;
   const chartW = W - padL - padR;
   const chartH = H - padT - padB;
@@ -6929,25 +6947,43 @@ async function loadAnalyticsData() {
     }
 
     // Apps trend sparkline
+    const _atc = document.getElementById('analytics-apps-trend-canvas');
     if (data.applications.monthly?.length) {
-      // Aggregate by month
       const byMonth = {};
       data.applications.monthly.forEach(r => {
         byMonth[r.month] = (byMonth[r.month] || 0) + r.count;
       });
       const monthlyArr = Object.entries(byMonth).map(([month, total]) => ({ month, total }));
-      _renderSparkline('analytics-apps-trend-canvas', monthlyArr, '#2D8B55', 'total');
+      if (monthlyArr.length >= 2) {
+        if (_atc) { _atc.style.display = ''; _atc.parentElement.querySelectorAll('.empty-chart-msg').forEach(e => e.remove()); }
+        _renderSparkline('analytics-apps-trend-canvas', monthlyArr, '#2D8B55', 'total');
+      } else if (_atc) {
+        _atc.style.display = 'none';
+        if (!_atc.parentElement.querySelector('.empty-chart-msg')) _atc.insertAdjacentHTML('afterend', '<div class="empty-chart-msg" style="font-size:12px;color:var(--text-lo);text-align:center;padding:16px 0;">Not enough data for a trend yet</div>');
+      }
+    } else if (_atc) {
+      _atc.style.display = 'none';
+      if (!_atc.parentElement.querySelector('.empty-chart-msg')) _atc.insertAdjacentHTML('afterend', '<div class="empty-chart-msg" style="font-size:12px;color:var(--text-lo);text-align:center;padding:16px 0;">No trend data yet</div>');
     }
 
     // ── Revenue ──
     const revSection = document.getElementById('analytics-revenue-section');
     if (revSection) {
       revSection.style.display = 'block';
-      document.getElementById('analytics-rev-earned').textContent = '$' + (data.revenue.total_paid || 0).toLocaleString('en-AU', { minimumFractionDigits: 0 });
-      document.getElementById('analytics-rev-outstanding').textContent = '$' + (data.revenue.total_outstanding || 0).toLocaleString('en-AU', { minimumFractionDigits: 0 });
-      document.getElementById('analytics-rev-events').textContent = data.revenue.events_count || 0;
+      const _rp = data.revenue.total_paid || 0, _ro = data.revenue.total_outstanding || 0, _re = data.revenue.events_count || 0;
+      const _reEl = document.getElementById('analytics-rev-earned');
+      const _roEl = document.getElementById('analytics-rev-outstanding');
+      const _rvEl = document.getElementById('analytics-rev-events');
+      if (_reEl) { _reEl.textContent = '$' + _rp.toLocaleString('en-AU', { minimumFractionDigits: 0 }); _reEl.style.color = _rp > 0 ? 'var(--herb)' : 'var(--text-lo)'; }
+      if (_roEl) { _roEl.textContent = '$' + _ro.toLocaleString('en-AU', { minimumFractionDigits: 0 }); _roEl.style.color = _ro > 0 ? 'var(--gold)' : 'var(--text-lo)'; }
+      if (_rvEl) { _rvEl.textContent = _re; _rvEl.style.color = _re > 0 ? 'var(--text-hi)' : 'var(--text-lo)'; }
+      const _rcv = document.getElementById('analytics-rev-canvas');
       if (data.revenue.monthly?.length) {
+        if (_rcv) { _rcv.style.display = ''; _rcv.parentElement.querySelectorAll('.empty-chart-msg').forEach(e => e.remove()); }
         _renderSparkline('analytics-rev-canvas', data.revenue.monthly, '#E8500A', 'total');
+      } else if (_rcv) {
+        _rcv.style.display = 'none';
+        if (!_rcv.parentElement.querySelector('.empty-chart-msg')) _rcv.insertAdjacentHTML('afterend', '<div class="empty-chart-msg" style="font-size:12px;color:var(--text-lo);text-align:center;padding:16px 0;">No revenue data yet</div>');
       }
     }
 
@@ -6958,14 +6994,20 @@ async function loadAnalyticsData() {
       const avgEl = document.getElementById('analytics-review-avg');
       const starsEl = document.getElementById('analytics-review-stars');
       const cntEl = document.getElementById('analytics-review-count');
-      if (avgEl) avgEl.textContent = data.reviews.avg_rating != null ? data.reviews.avg_rating.toFixed(1) : '—';
-      if (starsEl && data.reviews.avg_rating != null) {
-        const full = Math.floor(data.reviews.avg_rating);
-        starsEl.textContent = '★'.repeat(full) + '☆'.repeat(5 - full);
+      const hasRating = data.reviews.avg_rating != null && data.reviews.total_reviews > 0;
+      if (avgEl) { avgEl.textContent = hasRating ? data.reviews.avg_rating.toFixed(1) : '\u2014'; avgEl.style.color = hasRating ? 'var(--gold)' : 'var(--text-lo)'; }
+      if (starsEl) {
+        if (hasRating) { const full = Math.floor(data.reviews.avg_rating); starsEl.textContent = '\u2605'.repeat(full) + '\u2606'.repeat(5 - full); }
+        else starsEl.textContent = '\u2606\u2606\u2606\u2606\u2606';
       }
       if (cntEl) cntEl.textContent = data.reviews.total_reviews + ' review' + (data.reviews.total_reviews !== 1 ? 's' : '');
+      const _rvc = document.getElementById('analytics-review-canvas');
       if (data.reviews.trend?.length) {
+        if (_rvc) { _rvc.style.display = ''; _rvc.parentElement.querySelectorAll('.empty-chart-msg').forEach(e => e.remove()); }
         _renderSparkline('analytics-review-canvas', data.reviews.trend, '#C9840A', 'avg_rating');
+      } else if (_rvc) {
+        _rvc.style.display = 'none';
+        if (!_rvc.parentElement.querySelector('.empty-chart-msg')) _rvc.insertAdjacentHTML('afterend', '<div class="empty-chart-msg" style="font-size:12px;color:var(--text-lo);text-align:center;padding:16px 0;">No rating data yet</div>');
       }
     }
 
