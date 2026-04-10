@@ -142,7 +142,7 @@ if (process.env.TURSO_DATABASE_URL) {
 
 // ── Schema version — bump this whenever migrations are added ─────────────────
 // On a versioned DB the entire migration block is skipped (1 read vs 50+ calls).
-const SCHEMA_VERSION = 19;
+const SCHEMA_VERSION = 20;
 let _schemaVersion = 0;
 try {
   const _ver = await prepare(`SELECT v FROM _schema_meta LIMIT 1`).get();
@@ -970,6 +970,47 @@ await _safeExec(`ALTER TABLE vendors ADD COLUMN hide_phone INTEGER NOT NULL DEFA
 await _safeExec(`ALTER TABLE vendors ADD COLUMN hide_abn INTEGER NOT NULL DEFAULT 0`);
 await _safeExec(`ALTER TABLE vendors ADD COLUMN hide_reviews INTEGER NOT NULL DEFAULT 0`);
 await _safeExec(`ALTER TABLE users ADD COLUMN two_factor_enabled INTEGER NOT NULL DEFAULT 0`);
+await _safeExec(`ALTER TABLE event_applications ADD COLUMN updated_at DATETIME`);
+
+// ── Event creation — extra fields from Steps 2-4 ────────────────────────────
+await _safeExec(`ALTER TABLE events ADD COLUMN booth_size TEXT`);
+await _safeExec(`ALTER TABLE events ADD COLUMN setup_time TEXT`);
+await _safeExec(`ALTER TABLE events ADD COLUMN packdown_time TEXT`);
+await _safeExec(`ALTER TABLE events ADD COLUMN power_available INTEGER NOT NULL DEFAULT 0`);
+await _safeExec(`ALTER TABLE events ADD COLUMN power_amps TEXT`);
+await _safeExec(`ALTER TABLE events ADD COLUMN water_available INTEGER NOT NULL DEFAULT 0`);
+await _safeExec(`ALTER TABLE events ADD COLUMN cuisines_wanted TEXT DEFAULT '[]'`);
+await _safeExec(`ALTER TABLE events ADD COLUMN exclusivity INTEGER NOT NULL DEFAULT 0`);
+await _safeExec(`ALTER TABLE events ADD COLUMN looking_for TEXT`);
+await _safeExec(`ALTER TABLE events ADD COLUMN custom_requirements TEXT`);
+await _safeExec(`ALTER TABLE events ADD COLUMN cancel_policy TEXT`);
+await _safeExec(`ALTER TABLE events ADD COLUMN payment_terms TEXT`);
+
+// ── Organiser extended settings ─────────────────────────────────────────────
+await _safeExec(`ALTER TABLE organisers ADD COLUMN default_stall_fee_min INTEGER`);
+await _safeExec(`ALTER TABLE organisers ADD COLUMN default_stall_fee_max INTEGER`);
+await _safeExec(`ALTER TABLE organisers ADD COLUMN default_spots INTEGER`);
+await _safeExec(`ALTER TABLE organisers ADD COLUMN default_booth_size TEXT`);
+await _safeExec(`ALTER TABLE organisers ADD COLUMN default_power INTEGER NOT NULL DEFAULT 0`);
+await _safeExec(`ALTER TABLE organisers ADD COLUMN default_water INTEGER NOT NULL DEFAULT 0`);
+await _safeExec(`ALTER TABLE organisers ADD COLUMN timezone TEXT DEFAULT 'Australia/Adelaide'`);
+await _safeExec(`ALTER TABLE organisers ADD COLUMN auto_response_template TEXT`);
+await _safeExec(`ALTER TABLE organisers ADD COLUMN banner_url TEXT`);
+
+// ── Team members table ──────────────────────────────────────────────────────
+await _safeExec(`
+  CREATE TABLE IF NOT EXISTS organiser_team_members (
+    id                INTEGER PRIMARY KEY AUTOINCREMENT,
+    organiser_user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    member_user_id    INTEGER REFERENCES users(id) ON DELETE SET NULL,
+    email             TEXT NOT NULL,
+    role              TEXT NOT NULL DEFAULT 'editor' CHECK(role IN ('editor','viewer')),
+    status            TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','accepted','declined')),
+    invited_at        DATETIME DEFAULT (datetime('now')),
+    accepted_at       DATETIME,
+    UNIQUE(organiser_user_id, email)
+  )
+`);
 
 // ── Prepared statements ──────────────────────────────────────────────────────
 export const stmts = {
@@ -1013,7 +1054,7 @@ export const stmts = {
   setSuspendedReason:              prepare(`UPDATE users SET suspended_reason=? WHERE id=?`),
 
   // suspension side-effects
-  withdrawVendorPendingApps: prepare(`UPDATE event_applications SET status='withdrawn' WHERE vendor_user_id=? AND status='pending'`),
+  withdrawVendorPendingApps: prepare(`UPDATE event_applications SET status='withdrawn', updated_at=datetime('now') WHERE vendor_user_id=? AND status='pending'`),
   getVendorApprovedApps: prepare(`
     SELECT ea.id, ea.event_id, e.name as event_name, e.organiser_user_id,
            COALESCE(o.org_name, e.organiser_name) as organiser_name,
@@ -1264,13 +1305,13 @@ export const stmts = {
   getApplicationByIds:     prepare(`SELECT * FROM event_applications WHERE event_id=? AND vendor_user_id=?`),
   getApplicationsByVendor: prepare(`SELECT ea.*,e.name as event_name,e.slug as event_slug,e.category,e.suburb,e.state,e.date_sort,e.date_text,e.organiser_name,e.organiser_user_id FROM event_applications ea JOIN events e ON ea.event_id=e.id WHERE ea.vendor_user_id=? ORDER BY ea.created_at DESC`),
   getApplicationsByEvent:  prepare(`SELECT ea.*,u.first_name,u.last_name,u.email,v.trading_name,v.mobile,v.suburb as v_suburb,v.state as v_state,v.bio,v.cuisine_tags,v.plan,v.instagram,v.setup_type,v.stall_w,v.stall_d,v.power,v.water,v.price_range FROM event_applications ea JOIN users u ON ea.vendor_user_id=u.id JOIN vendors v ON v.user_id=u.id WHERE ea.event_id=?`),
-  updateApplicationStatus: prepare(`UPDATE event_applications SET status=? WHERE id=?`),
+  updateApplicationStatus: prepare(`UPDATE event_applications SET status=?, updated_at=datetime('now') WHERE id=?`),
   setApplicationSpot:      prepare(`UPDATE event_applications SET spot_number=?,approved_at=datetime('now') WHERE id=?`),
   countApprovedByEvent:    prepare(`SELECT COUNT(*) as n FROM event_applications WHERE event_id=? AND status='approved'`),
-  withdrawApplication:     prepare(`UPDATE event_applications SET status='withdrawn' WHERE event_id=? AND vendor_user_id=?`),
+  withdrawApplication:     prepare(`UPDATE event_applications SET status='withdrawn', updated_at=datetime('now') WHERE event_id=? AND vendor_user_id=?`),
 
   // organiser events
-  createEvent:        prepare(`INSERT INTO events (slug,name,category,suburb,state,date_sort,date_end,date_text,description,stalls_available,stall_fee_min,stall_fee_max,deadline,organiser_name,organiser_user_id,venue_name,cover_image) VALUES (@slug,@name,@category,@suburb,@state,@date_sort,@date_end,@date_text,@description,@stalls_available,@stall_fee_min,@stall_fee_max,@deadline,@organiser_name,@organiser_user_id,@venue_name,@cover_image)`),
+  createEvent:        prepare(`INSERT INTO events (slug,name,category,suburb,state,date_sort,date_end,date_text,description,stalls_available,stall_fee_min,stall_fee_max,deadline,organiser_name,organiser_user_id,venue_name,cover_image,booth_size,setup_time,packdown_time,power_available,power_amps,water_available,cuisines_wanted,exclusivity,looking_for,custom_requirements,cancel_policy,payment_terms) VALUES (@slug,@name,@category,@suburb,@state,@date_sort,@date_end,@date_text,@description,@stalls_available,@stall_fee_min,@stall_fee_max,@deadline,@organiser_name,@organiser_user_id,@venue_name,@cover_image,@booth_size,@setup_time,@packdown_time,@power_available,@power_amps,@water_available,@cuisines_wanted,@exclusivity,@looking_for,@custom_requirements,@cancel_policy,@payment_terms)`),
   getOrganiserEvents: prepare(`SELECT * FROM events WHERE organiser_user_id=? ORDER BY date_sort ASC`),
   countOrganiserEvents: prepare(`SELECT COUNT(*) as n FROM events WHERE organiser_user_id=? AND status IN ('draft','published')`),
   // single query — all apps across all of an organiser's events (replaces N+1 loop)
@@ -1358,8 +1399,22 @@ export const stmts = {
   getOrgReviewDistribution: prepare(`SELECT rating, COUNT(*) as count FROM organiser_reviews WHERE organiser_user_id=? GROUP BY rating ORDER BY rating DESC`),
 
   // organiser settings
-  updateOrganiserSettings: prepare(`UPDATE organisers SET notif_new_apps=@notif_new_apps,notif_deadlines=@notif_deadlines,notif_messages=@notif_messages,notif_payments=@notif_payments WHERE user_id=@user_id`),
+  updateOrganiserSettings: prepare(`UPDATE organisers SET notif_new_apps=@notif_new_apps,notif_deadlines=@notif_deadlines,notif_messages=@notif_messages,notif_payments=@notif_payments,notif_post_event=@notif_post_event WHERE user_id=@user_id`),
   pauseOrganiser:          prepare(`UPDATE organisers SET paused=? WHERE user_id=?`),
+  updateOrganiserDefaults: prepare(`UPDATE organisers SET default_stall_fee_min=@default_stall_fee_min,default_stall_fee_max=@default_stall_fee_max,default_spots=@default_spots,default_booth_size=@default_booth_size,default_power=@default_power,default_water=@default_water WHERE user_id=@user_id`),
+  updateOrganiserTimezone: prepare(`UPDATE organisers SET timezone=@timezone WHERE user_id=@user_id`),
+  updateOrganiserAutoResponse: prepare(`UPDATE organisers SET auto_response_template=@template WHERE user_id=@user_id`),
+  updateOrganiserBanner:   prepare(`UPDATE organisers SET banner_url=? WHERE user_id=?`),
+
+  // public organiser profile
+  publicOrganiserById:     prepare(`SELECT o.*, u.avatar_url, u.first_name, u.last_name, u.status FROM organisers o JOIN users u ON u.id=o.user_id WHERE o.user_id=?`),
+  getOrgPublicEvents:      prepare(`SELECT id, slug, name, category, suburb, state, date_sort, date_end, date_text, description, cover_image, stalls_available, stall_fee_min, stall_fee_max FROM events WHERE organiser_user_id=? AND status='published' ORDER BY date_sort ASC`),
+
+  // team members
+  inviteTeamMember:        prepare(`INSERT OR IGNORE INTO organiser_team_members (organiser_user_id,email,role) VALUES (?,?,?)`),
+  getTeamMembers:          prepare(`SELECT otm.*, u.first_name, u.last_name, u.avatar_url FROM organiser_team_members otm LEFT JOIN users u ON u.id=otm.member_user_id WHERE otm.organiser_user_id=? ORDER BY otm.invited_at DESC`),
+  removeTeamMember:        prepare(`DELETE FROM organiser_team_members WHERE id=? AND organiser_user_id=?`),
+  acceptTeamInvite:        prepare(`UPDATE organiser_team_members SET status='accepted',member_user_id=?,accepted_at=datetime('now') WHERE id=? AND email=?`),
 
   // cancel event
   cancelEvent: prepare(`UPDATE events SET status='archived',cancelled_at=datetime('now'),cancel_reason=? WHERE id=?`),
@@ -1528,10 +1583,9 @@ export const stmts = {
     GROUP BY month, status ORDER BY month ASC
   `),
   getAvgResponseTime: prepare(`
-    SELECT AVG(julianday(e.date_sort) - julianday(ea.created_at)) as avg_days
+    SELECT AVG(julianday(COALESCE(ea.updated_at, ea.created_at)) - julianday(ea.created_at)) as avg_days
     FROM event_applications ea
-    JOIN events e ON e.id = ea.event_id
-    WHERE ea.vendor_user_id=? AND ea.status IN ('approved','rejected')
+    WHERE ea.vendor_user_id=? AND ea.status IN ('approved','rejected') AND ea.updated_at IS NOT NULL
   `),
 
   // ── Analytics: revenue ──────────────────────────────────────────────────
