@@ -3059,9 +3059,9 @@
           headers: { 'Content-Type': 'application/json' },
         });
         const data = await r.json().catch(() => ({}));
-        if (!r.ok) { toast(data.error || 'Force verify failed', 'error'); return; }
-        toast('Account force-verified ✓', 'success');
-      } catch (e) { toast('Network error', 'error'); return; }
+        if (!r.ok) { showToast(data.error || 'Force verify failed'); return; }
+        showToast('Account force-verified ✓');
+      } catch (e) { showToast('Network error'); return; }
     } else {
       const endpoint = role === 'organiser'
         ? `/api/admin/organisers/${userId}/abn-verify`
@@ -3073,9 +3073,9 @@
           body: JSON.stringify({ verified: false, entity_name: entityName || '', abn_match: 'unknown' }),
         });
         const data = await r.json().catch(() => ({}));
-        if (!r.ok) { toast(data.error || 'Remove verification failed', 'error'); return; }
-        toast('ABN verification removed', 'info');
-      } catch (e) { toast('Network error', 'error'); return; }
+        if (!r.ok) { showToast(data.error || 'Remove verification failed'); return; }
+        showToast('ABN verification removed');
+      } catch (e) { showToast('Network error'); return; }
     }
     // Instantly re-open the detail panel (single fetch) — list refresh happens in background
     if (role === 'organiser') {
@@ -3138,26 +3138,26 @@
         body: JSON.stringify({ plan: newPlan, reason: reason || undefined, override_expires: expiry || undefined }),
       });
       const data = await r.json().catch(() => ({}));
-      if (!r.ok) { toast(data.error || 'Plan change failed', 'error'); return; }
+      if (!r.ok) { showToast(data.error || 'Plan change failed'); return; }
       // Show warnings
       if (data.warnings && data.warnings.length) {
-        data.warnings.forEach(w => toast(w.message, 'warning'));
+        data.warnings.forEach(w => showToast(w.message));
       }
-      toast(`Plan updated to ${_planLabels[newPlan]} ✓`, 'success');
+      showToast(`Plan updated to ${_planLabels[newPlan]} ✓`);
       openVendorDetail(userId);
       loadVendors().catch(() => {});
-    } catch (e) { toast('Network error', 'error'); }
+    } catch (e) { showToast('Network error'); }
   }
 
   async function adminClearOverride(userId) {
     try {
       const r = await fetch(`/api/admin/vendors/${userId}/subscription-override`, { method: 'DELETE' });
       const data = await r.json().catch(() => ({}));
-      if (!r.ok) { toast(data.error || 'Failed to clear override', 'error'); return; }
-      toast('Override removed — vendor can now manage their own plan', 'success');
+      if (!r.ok) { showToast(data.error || 'Failed to clear override'); return; }
+      showToast('Override removed — vendor can now manage their own plan');
       openVendorDetail(userId);
       loadVendors().catch(() => {});
-    } catch (e) { toast('Network error', 'error'); }
+    } catch (e) { showToast('Network error'); }
   }
 
   async function adminManageTrial(userId, action, days) {
@@ -3168,10 +3168,10 @@
         body: JSON.stringify({ action, extend_days: days }),
       });
       const data = await r.json().catch(() => ({}));
-      if (!r.ok) { toast(data.error || 'Trial action failed', 'error'); return; }
-      toast(action === 'extend' ? `Trial extended by ${days} days ✓` : 'Trial ended ✓', action === 'extend' ? 'success' : 'info');
+      if (!r.ok) { showToast(data.error || 'Trial action failed'); return; }
+      showToast(action === 'extend' ? `Trial extended by ${days} days ✓` : 'Trial ended ✓');
       openVendorDetail(userId);
-    } catch (e) { toast('Network error', 'error'); }
+    } catch (e) { showToast('Network error'); }
   }
 
   async function toggleSubHistory(userId) {
@@ -3212,18 +3212,18 @@
       });
       const data = await r.json().catch(() => ({}));
       if (!r.ok) {
-        toast(data.error || 'Force verify failed', 'error');
+        showToast(data.error || 'Force verify failed');
         console.error('[force verify] Server error:', data);
         return;
       }
-      toast(`${name} fully verified ✓`, 'success');
+      showToast(`${name} fully verified ✓`);
       // Refresh vendor + organiser caches first (Users table reads from these)
       await Promise.all([loadVendors(), loadOrganisers()]);
       // Then re-render the users table with fresh data
       await loadAllUsers();
     } catch (e) {
       console.error('[force full verify] Network error:', e);
-      toast('Network error: ' + e.message, 'error');
+      showToast('Network error: ' + e.message);
     } finally {
       if (btn) { btn.disabled = false; btn.textContent = 'Force Verify'; }
     }
