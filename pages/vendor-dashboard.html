@@ -3327,7 +3327,7 @@ function _fmtTime(iso) {
   try {
     const s = iso.includes('T') || iso.endsWith('Z') ? iso : iso.replace(' ', 'T') + 'Z';
     const use12 = (localStorage.getItem('pitch_time_fmt') || '12') === '12';
-    return new Date(s).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit', hour12: use12 });
+    return new Date(s).toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit', hour12: use12 });
   } catch { return ''; }
 }
 
@@ -4644,6 +4644,10 @@ function renderEventDetail(ev) {
       </div>
       ${applyBar}
     </div>`;
+  // Auto-fill default application message if set
+  const defMsg = window.__PITCH_PROFILE__ && window.__PITCH_PROFILE__.default_apply_message;
+  const applyMsgEl = document.getElementById('detail-apply-message');
+  if (defMsg && applyMsgEl && !applyMsgEl.value) applyMsgEl.value = defMsg;
 }
 
 async function applyFromDetail(eventId) {
@@ -6431,6 +6435,87 @@ async function saveNotifSettings() {
       notif_payments: document.getElementById('notif-payments')?.checked ?? true,
     }),
   });
+}
+
+// ── Extended settings save functions ─────────────────────────────────────────
+async function savePhone() {
+  const phone = (document.getElementById('settings-phone').value || '').trim();
+  if (!phone || phone.length < 8) { alert('Enter a valid phone number.'); return; }
+  const r = await pitchFetch('/api/vendor/settings/phone', {
+    method: 'PUT', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ mobile: phone }),
+  });
+  const msg = document.getElementById('phone-save-msg');
+  if (r.ok) { msg.style.display = 'inline'; setTimeout(() => msg.style.display = 'none', 3000); }
+  else { const d = await r.json().catch(() => ({})); alert(d.error || 'Failed to update phone.'); }
+}
+
+async function save2FA() {
+  const enabled = document.getElementById('settings-2fa').checked;
+  const r = await pitchFetch('/api/vendor/settings/2fa', {
+    method: 'PUT', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ enabled }),
+  });
+  if (!r.ok) {
+    document.getElementById('settings-2fa').checked = !enabled;
+    alert('Failed to update 2FA setting.');
+  }
+}
+
+async function saveVisibility() {
+  await _saveExtendedSettings();
+}
+
+async function saveExtSettings() {
+  await _saveExtendedSettings();
+  const msg1 = document.getElementById('ext-save-msg');
+  const msg2 = document.getElementById('invoice-save-msg');
+  [msg1, msg2].forEach(m => { if (m) { m.style.display = 'inline'; setTimeout(() => m.style.display = 'none', 3000); } });
+}
+
+async function _saveExtendedSettings() {
+  await pitchFetch('/api/vendor/settings/extended', {
+    method: 'PUT', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      default_apply_message: document.getElementById('settings-default-msg')?.value || '',
+      timezone: document.getElementById('settings-timezone')?.value || 'Australia/Adelaide',
+      invoice_business_name: document.getElementById('settings-invoice-name')?.value || '',
+      invoice_address: document.getElementById('settings-invoice-address')?.value || '',
+      hide_phone: document.getElementById('vis-hide-phone')?.checked ? 1 : 0,
+      hide_abn: document.getElementById('vis-hide-abn')?.checked ? 1 : 0,
+      hide_reviews: document.getElementById('vis-hide-reviews')?.checked ? 1 : 0,
+    }),
+  });
+}
+
+async function _loadConnectedAccounts() {
+  try {
+    const r = await pitchFetch('/api/vendor/settings/connected');
+    if (!r.ok) return;
+    const data = await r.json();
+    const statusEl = document.getElementById('google-link-status');
+    const badgeEl = document.getElementById('google-link-badge');
+    if (data.google.linked) {
+      statusEl.textContent = 'Linked to your Google account';
+      badgeEl.textContent = 'Connected';
+      badgeEl.style.background = '#2D8B5518'; badgeEl.style.color = '#2D8B55';
+    } else {
+      statusEl.textContent = 'Not connected';
+      badgeEl.textContent = 'Not linked';
+      badgeEl.style.background = '#ffffff08'; badgeEl.style.color = 'var(--text-lo)';
+    }
+    const emailStatusEl = document.getElementById('email-login-status');
+    const emailBadgeEl = document.getElementById('email-login-badge');
+    if (data.email_login) {
+      emailStatusEl.textContent = 'Password login enabled';
+      emailBadgeEl.textContent = 'Active';
+      emailBadgeEl.style.background = '#2D8B5518'; emailBadgeEl.style.color = '#2D8B55';
+    } else {
+      emailStatusEl.textContent = 'Sign in with Google only — no password set';
+      emailBadgeEl.textContent = 'OAuth only';
+      emailBadgeEl.style.background = '#C9840A18'; emailBadgeEl.style.color = '#C9840A';
+    }
+  } catch(e) { console.error('[connected accounts]', e); }
 }
 
 // ── MENU ─────────────────────────────────────────────────────────────────────
