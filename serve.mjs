@@ -2858,49 +2858,103 @@ app.post('/api/organiser/calendar-token', requireAuth, async (req, res) => {
   }
 });
 
-// GET /api/organiser/analytics (extended)
+// GET /api/organiser/analytics (extended, with optional date range)
 app.get('/api/organiser/analytics', requireAuth, async (req, res) => {
   if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
   const uid = req.session.userId;
+  const fromQ = req.query.from, toQ = req.query.to;
+  const hasRange = fromQ && toQ && /^\d{4}-\d{2}-\d{2}$/.test(fromQ) && /^\d{4}-\d{2}-\d{2}$/.test(toQ);
   try {
-    const [stats, revCollected, revOutstanding, revByEvent, avgFee, appStats, avgResp, appsByMonth, topVendors, cuisineRaw, repeatVendors, vendorQuality, eventComp, catPerf, reviewDist, reviewAvg, recentReviews] = await Promise.all([
-      stmts.getOrgEventStats.all(uid),
-      stmts.getOrgRevenueCollected.get(uid),
-      stmts.getOrgRevenueOutstanding.get(uid),
-      stmts.getOrgRevenueByEvent.all(uid),
-      stmts.getOrgAvgStallFee.get(uid),
-      stmts.getOrgAppStats.get(uid),
-      stmts.getOrgAvgResponseTime.get(uid),
-      stmts.getOrgAppsByMonth.all(uid),
-      stmts.getOrgTopVendors.all(uid),
-      stmts.getOrgCuisineMix.all(uid),
-      stmts.getOrgRepeatVendors.get(uid),
-      stmts.getOrgVendorQuality.get(uid),
-      stmts.getOrgEventComparison.all(uid),
-      stmts.getOrgCategoryPerformance.all(uid, uid),
-      stmts.getOrgReviewDistribution.all(uid),
-      stmts.getOrgReviewAvg.get(uid),
-      stmts.getOrgReviews.all(uid),
-    ]);
+    let stats, revCollected, revOutstanding, revByEvent, avgFee, appStats, avgResp, appsByMonth, topVendors, cuisineRaw, repeatVendors, vendorQuality, eventComp, catPerf, reviewDist, reviewAvg, recentReviews;
+
+    if (!hasRange) {
+      // ── All-time path: use prepared statements (fast) ──
+      [stats, revCollected, revOutstanding, revByEvent, avgFee, appStats, avgResp, appsByMonth, topVendors, cuisineRaw, repeatVendors, vendorQuality, eventComp, catPerf, reviewDist, reviewAvg, recentReviews] = await Promise.all([
+        stmts.getOrgEventStats.all(uid),
+        stmts.getOrgRevenueCollected.get(uid),
+        stmts.getOrgRevenueOutstanding.get(uid),
+        stmts.getOrgRevenueByEvent.all(uid),
+        stmts.getOrgAvgStallFee.get(uid),
+        stmts.getOrgAppStats.get(uid),
+        stmts.getOrgAvgResponseTime.get(uid),
+        stmts.getOrgAppsByMonth.all(uid),
+        stmts.getOrgTopVendors.all(uid),
+        stmts.getOrgCuisineMix.all(uid),
+        stmts.getOrgRepeatVendors.get(uid),
+        stmts.getOrgVendorQuality.get(uid),
+        stmts.getOrgEventComparison.all(uid),
+        stmts.getOrgCategoryPerformance.all(uid, uid),
+        stmts.getOrgReviewDistribution.all(uid),
+        stmts.getOrgReviewAvg.get(uid),
+        stmts.getOrgReviews.all(uid),
+      ]);
+    } else {
+      // ── Date-filtered path: dynamic SQL with date conditions ──
+      const q = (sql) => prepare(sql);
+      const eD  = `AND e.date_sort >= '${fromQ}' AND e.date_sort <= '${toQ}'`;
+      const eaD = `AND ea.created_at >= '${fromQ}' AND ea.created_at < date('${toQ}','+1 day')`;
+      const rD  = `AND or2.created_at >= '${fromQ}' AND or2.created_at < date('${toQ}','+1 day')`;
+      const ovrD = `AND created_at >= '${fromQ}' AND created_at < date('${toQ}','+1 day')`;
+
+      [stats, revCollected, revOutstanding, revByEvent, avgFee, appStats, avgResp, appsByMonth, topVendors, cuisineRaw, repeatVendors, vendorQuality, eventComp, catPerf, reviewDist, reviewAvg, recentReviews] = await Promise.all([
+        // stats (event-date filtered)
+        q(`SELECT e.id,e.name,e.date_sort,e.category, COUNT(ea.id) as total_apps, SUM(CASE WHEN ea.status='approved' THEN 1 ELSE 0 END) as approved, SUM(CASE WHEN ea.status='pending' THEN 1 ELSE 0 END) as pending, SUM(CASE WHEN ea.status='rejected' THEN 1 ELSE 0 END) as rejected FROM events e LEFT JOIN event_applications ea ON ea.event_id=e.id WHERE e.organiser_user_id=? ${eD} GROUP BY e.id ORDER BY e.date_sort DESC`).all(uid).catch(() => []),
+        // revenue collected (event-date filtered)
+        q(`SELECT COALESCE(SUM(sf.amount),0) as total FROM stall_fees sf JOIN events e ON sf.event_id=e.id WHERE e.organiser_user_id=? AND sf.status='paid' ${eD}`).get(uid).catch(() => ({ total: 0 })),
+        // revenue outstanding
+        q(`SELECT COALESCE(SUM(sf.amount),0) as total FROM stall_fees sf JOIN events e ON sf.event_id=e.id WHERE e.organiser_user_id=? AND sf.status='unpaid' ${eD}`).get(uid).catch(() => ({ total: 0 })),
+        // revenue by event
+        q(`SELECT e.id,e.name,e.date_sort, COALESCE(SUM(CASE WHEN sf.status='paid' THEN sf.amount ELSE 0 END),0) as collected, COALESCE(SUM(CASE WHEN sf.status='unpaid' THEN sf.amount ELSE 0 END),0) as outstanding, COUNT(sf.id) as total_invoices FROM events e LEFT JOIN stall_fees sf ON sf.event_id=e.id WHERE e.organiser_user_id=? ${eD} GROUP BY e.id HAVING total_invoices>0 ORDER BY e.date_sort DESC`).all(uid).catch(() => []),
+        // avg stall fee
+        q(`SELECT ROUND(AVG(sf.amount),0) as avg_fee FROM stall_fees sf JOIN events e ON sf.event_id=e.id WHERE e.organiser_user_id=? AND sf.status IN ('paid','unpaid') ${eD}`).get(uid).catch(() => ({ avg_fee: 0 })),
+        // app stats (application-date filtered)
+        q(`SELECT COUNT(*) as total, SUM(CASE WHEN ea.status='approved' THEN 1 ELSE 0 END) as approved, SUM(CASE WHEN ea.status='rejected' THEN 1 ELSE 0 END) as rejected, SUM(CASE WHEN ea.status='pending' THEN 1 ELSE 0 END) as pending, SUM(CASE WHEN ea.status='withdrawn' THEN 1 ELSE 0 END) as withdrawn FROM event_applications ea JOIN events e ON ea.event_id=e.id WHERE e.organiser_user_id=? ${eaD}`).get(uid).catch(() => ({ total: 0, approved: 0, rejected: 0, pending: 0, withdrawn: 0 })),
+        // avg response time
+        q(`SELECT ROUND(AVG((julianday(ea.approved_at)-julianday(ea.created_at))*24),1) as avg_hours FROM event_applications ea JOIN events e ON ea.event_id=e.id WHERE e.organiser_user_id=? AND ea.approved_at IS NOT NULL AND ea.status IN ('approved','rejected') ${eaD}`).get(uid).catch(() => ({ avg_hours: null })),
+        // apps by month (application-date filtered, no hardcoded 5-month limit)
+        q(`SELECT strftime('%Y-%m',ea.created_at) as month, COUNT(*) as apps FROM event_applications ea JOIN events e ON ea.event_id=e.id WHERE e.organiser_user_id=? ${eaD} GROUP BY strftime('%Y-%m',ea.created_at) ORDER BY month ASC`).all(uid).catch(() => []),
+        // top vendors
+        q(`SELECT v.trading_name,v.cuisine_tags,v.suburb,v.state, COUNT(ea.id) as times_booked, MAX(e.date_sort) as last_event_date FROM event_applications ea JOIN events e ON ea.event_id=e.id JOIN vendors v ON v.user_id=ea.vendor_user_id WHERE e.organiser_user_id=? AND ea.status='approved' ${eaD} GROUP BY ea.vendor_user_id ORDER BY times_booked DESC LIMIT 10`).all(uid).catch(() => []),
+        // cuisine mix
+        q(`SELECT v.cuisine_tags FROM event_applications ea JOIN events e ON ea.event_id=e.id JOIN vendors v ON v.user_id=ea.vendor_user_id WHERE e.organiser_user_id=? AND ea.status='approved' ${eaD}`).all(uid).catch(() => []),
+        // repeat vendors
+        q(`SELECT COUNT(*) as total_unique, SUM(CASE WHEN cnt>=2 THEN 1 ELSE 0 END) as repeat_vendors FROM (SELECT ea.vendor_user_id, COUNT(DISTINCT ea.event_id) as cnt FROM event_applications ea JOIN events e ON ea.event_id=e.id WHERE e.organiser_user_id=? AND ea.status='approved' ${eaD} GROUP BY ea.vendor_user_id)`).get(uid).catch(() => ({ total_unique: 0, repeat_vendors: 0 })),
+        // vendor quality
+        q(`SELECT ROUND(AVG(punctual),1) as avg_punctual, ROUND(AVG(presentation),1) as avg_presentation, ROUND(SUM(would_rebook)*100.0/COUNT(*),0) as rebook_rate, COUNT(*) as total_rated FROM organiser_vendor_ratings WHERE organiser_user_id=? ${ovrD}`).get(uid).catch(() => ({ avg_punctual: null, avg_presentation: null, rebook_rate: null, total_rated: 0 })),
+        // event comparison (event-date filtered)
+        q(`SELECT e.id,e.name,e.date_sort,e.category,e.suburb, COALESCE(e.stalls_available,0) as stalls_available, COUNT(ea.id) as total_apps, SUM(CASE WHEN ea.status='approved' THEN 1 ELSE 0 END) as approved, CASE WHEN COALESCE(e.stalls_available,0)>0 THEN ROUND(SUM(CASE WHEN ea.status='approved' THEN 1 ELSE 0 END)*100.0/e.stalls_available,0) ELSE 0 END as fill_rate, CASE WHEN COALESCE(e.stalls_available,0)>0 THEN ROUND(COUNT(ea.id)*1.0/e.stalls_available,1) ELSE 0 END as demand_ratio FROM events e LEFT JOIN event_applications ea ON ea.event_id=e.id WHERE e.organiser_user_id=? AND e.status!='deleted' ${eD} GROUP BY e.id ORDER BY fill_rate DESC,total_apps DESC`).all(uid).catch(() => []),
+        // category performance
+        q(`SELECT COALESCE(e.category,'Uncategorised') as category, COUNT(DISTINCT e.id) as event_count, ROUND(AVG(sub.total_apps),1) as avg_apps, ROUND(AVG(sub.fill_rate),0) as avg_fill_rate FROM events e LEFT JOIN (SELECT ea.event_id, COUNT(ea.id) as total_apps, CASE WHEN COALESCE(e2.stalls_available,0)>0 THEN SUM(CASE WHEN ea.status='approved' THEN 1 ELSE 0 END)*100.0/e2.stalls_available ELSE 0 END as fill_rate FROM event_applications ea JOIN events e2 ON ea.event_id=e2.id WHERE e2.organiser_user_id=? GROUP BY ea.event_id) sub ON sub.event_id=e.id WHERE e.organiser_user_id=? AND e.status!='deleted' ${eD} GROUP BY e.category ORDER BY avg_apps DESC`).all(uid, uid).catch(() => []),
+        // review distribution
+        q(`SELECT rating, COUNT(*) as count FROM organiser_reviews WHERE organiser_user_id=? ${ovrD.replace(/created_at/g, 'created_at')}`).all(uid).catch(() => []),
+        // review avg
+        q(`SELECT AVG(rating) as avg, COUNT(*) as total FROM organiser_reviews WHERE organiser_user_id=? ${ovrD.replace(/created_at/g, 'created_at')}`).get(uid).catch(() => ({ avg: null, total: 0 })),
+        // recent reviews
+        q(`SELECT or2.*,v.trading_name FROM organiser_reviews or2 JOIN vendors v ON v.user_id=or2.vendor_user_id WHERE or2.organiser_user_id=? ${rD} ORDER BY or2.created_at DESC`).all(uid).catch(() => []),
+      ]);
+    }
+
     // Aggregate cuisine tags
     const cuisineCounts = {};
-    for (const row of cuisineRaw) {
+    for (const row of (cuisineRaw || [])) {
       try { const tags = JSON.parse(row.cuisine_tags || '[]'); for (const t of tags) { const tag = t.trim(); if (tag) cuisineCounts[tag] = (cuisineCounts[tag] || 0) + 1; } } catch (_) {}
     }
     const cuisineMix = Object.entries(cuisineCounts).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([tag, count]) => ({ tag, count }));
     // Review distribution 1-5
     const distMap = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
-    for (const r of reviewDist) distMap[r.rating] = r.count;
+    for (const r of (reviewDist || [])) distMap[r.rating] = r.count;
     const collected = revCollected?.total || 0;
     const outstanding = revOutstanding?.total || 0;
-    res.json({
+    const result = {
       stats,
       revenue: { collected, outstanding, avg_fee: avgFee?.avg_fee || 0, collection_rate: (collected + outstanding) > 0 ? Math.round(collected / (collected + outstanding) * 100) : 0, by_event: revByEvent },
       applications: { total: appStats?.total || 0, approved: appStats?.approved || 0, rejected: appStats?.rejected || 0, pending: appStats?.pending || 0, withdrawn: appStats?.withdrawn || 0, approval_rate: (appStats?.approved + appStats?.rejected) > 0 ? Math.round(appStats.approved / (appStats.approved + appStats.rejected) * 100) : 0, avg_response_hours: avgResp?.avg_hours || null, by_month: appsByMonth },
       vendors: { total_unique: repeatVendors?.total_unique || 0, repeat_vendors: repeatVendors?.repeat_vendors || 0, repeat_rate: (repeatVendors?.total_unique || 0) > 0 ? Math.round((repeatVendors.repeat_vendors || 0) / repeatVendors.total_unique * 100) : 0, top_vendors: topVendors, cuisine_mix: cuisineMix, quality: vendorQuality || { avg_punctual: null, avg_presentation: null, rebook_rate: null, total_rated: 0 } },
       events_comparison: { events: eventComp, by_category: catPerf },
       reputation: { avg_rating: reviewAvg?.avg ? Math.round(reviewAvg.avg * 10) / 10 : null, total_reviews: reviewAvg?.total || 0, distribution: distMap, recent_reviews: (recentReviews || []).slice(0, 5) },
-    });
+    };
+    if (hasRange) result.dateRange = { from: fromQ, to: toQ };
+    res.json(result);
   } catch (e) { console.error('[analytics]', e); res.status(500).json({ error: 'Failed to load analytics' }); }
 });
 
