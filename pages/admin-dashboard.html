@@ -3887,7 +3887,6 @@
         <td><div class="act-group">
           ${u.role === 'vendor' ? `<button class="act-btn act-view" onclick="openVendorDetail(${u.id})">View</button>` : u.role === 'organiser' ? `<button class="act-btn act-view" onclick="openOrganiserDetail(${u.id})">View</button>` : ''}
           ${u.role === 'vendor' ? `<button class="act-btn act-view" onclick="window.open('/vendors/${u.id}','_blank')">Profile</button>` : ''}
-          ${u.role !== 'admin' ? `<button class="act-btn act-approve" onclick="forceFullVerify(${u.id},'${(u.first_name+' '+u.last_name).replace(/'/g,"\\'")}',this)">Force Verify</button>` : ''}
           ${u.status === 'active' ? `<button class="act-btn act-suspend" onclick="setUserStatus(${u.id},'suspended',this)">Suspend</button>` : `<button class="act-btn act-approve" onclick="setUserStatus(${u.id},'active',this)">Reinstate</button>`}
           <button class="act-btn act-view" onclick="triggerPasswordReset(${u.id},'${(u.first_name+' '+u.last_name).replace(/'/g,"\\'")}')">Reset PW</button>
           <button class="act-btn act-reject" onclick="deleteAccount(${u.id},'${(u.first_name+' '+u.last_name).replace(/'/g,"\\'")}')">Delete</button>
