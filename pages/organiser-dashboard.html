@@ -1385,10 +1385,10 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
     <!-- ── PANEL: MY REVIEWS ──────────────────────────────────────────────── -->
     <div class="panel" id="panel-reviews">
       <div style="max-width:700px;">
-        <div class="org-rating-hero" id="org-rating-hero">
+        <div class="org-rating-hero" id="org-rating-hero" style="display:none;">
           <div>
             <div class="org-rating-big" id="org-rating-avg">—</div>
-            <div class="org-rating-stars" id="org-rating-stars-lg">☆☆☆☆☆</div>
+            <div class="org-rating-stars" id="org-rating-stars-lg">★★★★★</div>
             <div class="org-rating-count" id="org-rating-count">No reviews yet</div>
           </div>
           <div style="flex:1;color:var(--text-lo);font-size:13px;line-height:1.7;">
@@ -3891,13 +3891,23 @@ async function loadOrgReviews() {
     if (!r.ok) return;
     const { reviews, avgRating, totalReviews } = await r.json();
 
-    document.getElementById('org-rating-avg').textContent = totalReviews ? avgRating.toFixed(1) : '—';
-    document.getElementById('org-rating-stars-lg').textContent = totalReviews ? _orgStarsHtml(avgRating) : '☆☆☆☆☆';
-    document.getElementById('org-rating-count').textContent = totalReviews ? `${totalReviews} review${totalReviews===1?'':'s'}` : 'No reviews yet';
+    const hero = document.getElementById('org-rating-hero');
+    if (totalReviews) {
+      hero.style.display = '';
+      document.getElementById('org-rating-avg').textContent = avgRating.toFixed(1);
+      document.getElementById('org-rating-stars-lg').textContent = _orgStarsHtml(avgRating);
+      document.getElementById('org-rating-count').textContent = `${totalReviews} review${totalReviews===1?'':'s'}`;
+    } else {
+      hero.style.display = 'none';
+    }
 
     const list = document.getElementById('org-reviews-list');
     if (!reviews.length) {
-      list.innerHTML = `<div style="text-align:center;padding:48px;color:var(--text-lo);font-size:13px;">No reviews yet. Reviews appear after vendors attend your markets.</div>`;
+      list.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:56px 24px;text-align:center;">
+        <div style="font-size:56px;margin-bottom:14px;opacity:0.45;">💬</div>
+        <div style="font-size:15px;font-weight:700;color:var(--text-hi);margin-bottom:6px;">No reviews yet</div>
+        <div style="font-size:12.5px;color:var(--text-lo);line-height:1.6;max-width:260px;">Vendors who attend your markets can leave a public review. Your rating will appear here once you receive your first review.</div>
+      </div>`;
       return;
     }
     list.innerHTML = reviews.map(rv => `
