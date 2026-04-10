@@ -3753,8 +3753,15 @@ function oaCalClear() {
   _oaRefresh();
 }
 function oaCalApply() {
-  if (_oaCalStart && !_oaCalEnd) { _oaCalEnd = _oaCalStart; }
+  if (_oaCalStart && !_oaCalEnd) {
+    // Single date selected → range from that date to today
+    var today = new Date().toISOString().slice(0,10);
+    _oaCalEnd = _oaCalStart <= today ? today : _oaCalStart;
+    if (_oaCalStart > today) { _oaCalStart = today; }
+  }
   if (_oaCalStart) {
+    // Ensure start <= end
+    if (_oaCalStart > _oaCalEnd) { var tmp = _oaCalStart; _oaCalStart = _oaCalEnd; _oaCalEnd = tmp; }
     _oaFrom = _oaCalStart; _oaTo = _oaCalEnd;
     document.querySelectorAll('.oa-range-btn').forEach(b => b.classList.remove('active'));
     _oaSyncTextInputs();
