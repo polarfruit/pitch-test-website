@@ -6917,8 +6917,8 @@ async function loadAnalyticsData() {
     const approved = (stats.find(s => s.status === 'approved') || {}).count || 0;
     const totalApps = stats.filter(s => s.status !== 'withdrawn').reduce((s, r) => s + r.count, 0);
     const rate = totalApps > 0 ? Math.round((approved / totalApps) * 100) : null;
-    if (rateEl) rateEl.textContent = rate !== null ? rate + '%' : '—';
-    if (countEl) countEl.textContent = totalApps;
+    if (rateEl) { rateEl.textContent = rate !== null ? rate + '%' : '\u2014'; rateEl.style.color = rate !== null ? 'var(--herb)' : 'var(--text-lo)'; }
+    if (countEl) { countEl.textContent = totalApps; countEl.style.color = totalApps > 0 ? 'var(--text-hi)' : 'var(--text-lo)'; }
 
     // Breakdown bar
     const breakdownEl = document.getElementById('analytics-app-breakdown');
