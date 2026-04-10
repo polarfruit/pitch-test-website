@@ -117,6 +117,7 @@ body::before {
   0%, 100% { box-shadow: 0 0 0 0 rgba(232, 80, 10, 0.4); }
   50%      { box-shadow: 0 0 0 5px rgba(232, 80, 10, 0); }
 }
+@keyframes spin { to { transform: rotate(360deg); } }
 @keyframes badge-pulse-gold {
   0%, 100% { box-shadow: 0 0 0 0 rgba(201, 132, 10, 0.4); }
   50%      { box-shadow: 0 0 0 5px rgba(201, 132, 10, 0); }
@@ -2512,6 +2513,15 @@ body::before {
     <div class="panel" id="panel-analytics">
       <div style="max-width:820px;">
 
+        <!-- Loading spinner (shown until data arrives) -->
+        <div id="analytics-loading" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;gap:16px;">
+          <div style="width:32px;height:32px;border:3px solid #ffffff0a;border-top-color:#E8500A;border-radius:50%;animation:spin .7s linear infinite;"></div>
+          <div style="font-size:13px;color:var(--text-lo);">Loading analytics…</div>
+        </div>
+
+        <!-- Actual analytics content (hidden until loaded) -->
+        <div id="analytics-content" style="display:none;transition:opacity .2s ease;">
+
         <!-- Date range filter -->
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:28px;flex-wrap:wrap;" id="van-date-bar">
           <button class="van-range-btn active" data-range="30d" onclick="setVanRange('30d',this)">Last 30 days</button>
@@ -2692,6 +2702,8 @@ body::before {
             <div id="analytics-competitor-content" style="padding:4px 0;"></div>
           </div>
         </div>
+
+        </div><!-- /analytics-content -->
 
       </div>
     </div>
@@ -3153,6 +3165,24 @@ window.addEventListener('popstate', e => {
 
 /* ── Messages ────────────────────────────────────────────────────────────── */
 
+function _fmtThreadTime(iso) {
+  if (!iso) return '';
+  try {
+    const s = iso.includes('T') || iso.endsWith('Z') ? iso : iso.replace(' ', 'T') + 'Z';
+    const d = new Date(s);
+    const now = new Date();
+    const diffMs = now - d;
+    const diffMins = Math.floor(diffMs / 60000);
+    if (diffMins < 1) return 'Now';
+    if (diffMins < 60) return diffMins + 'm';
+    const diffHrs = Math.floor(diffMins / 60);
+    if (diffHrs < 24) return diffHrs + 'h';
+    const isYesterday = new Date(now - 86400000).toDateString() === d.toDateString();
+    if (isYesterday) return 'Yesterday';
+    return d.toLocaleDateString('en-AU', { day: 'numeric', month: 'short' });
+  } catch { return ''; }
+}
+
 function _fmtTime(iso) {
   if (!iso) return '';
   try {
@@ -3341,15 +3371,17 @@ function _renderMessages(msgs) {
     </div>`;
     return;
   }
-  c.innerHTML = msgs.map(m => {
+  c.innerHTML = msgs.map((m, i) => {
     const mine = Number(m.sender_user_id) === Number(myId);
-    return `<div>
+    const next = msgs[i + 1];
+    const nextSame = next && (Number(next.sender_user_id) === Number(myId)) === mine;
+    const showAvatar = !mine && !nextSame;
+    return `<div style="${nextSame ? 'margin-bottom:-4px;' : ''}">
       <div class="msg-bubble-wrap ${mine ? 'mine' : ''}">
-        ${!mine ? `<div class="msg-avatar" style="background:linear-gradient(135deg,#2A1E14,#5C3A1A);">${otherInit}</div>` : ''}
+        ${!mine ? (showAvatar ? `<div class="msg-avatar" style="background:linear-gradient(135deg,#2A1E14,#5C3A1A);">${otherInit}</div>` : '<div style="width:28px;flex-shrink:0;"></div>') : ''}
         <div class="msg-bubble ${mine ? 'mine' : 'theirs'}">${m.body}</div>
-        ${mine ? `<div class="msg-avatar" style="background:linear-gradient(135deg,#3D1A06,#6B2E08);">Me</div>` : ''}
       </div>
-      <div class="msg-time ${mine ? 'mine' : ''}">${_fmtTime(m.created_at)}</div>
+      ${!nextSame ? `<div class="msg-time ${mine ? 'mine' : ''}">${_fmtTime(m.created_at)}</div>` : ''}
     </div>`;
   }).join('');
   c.scrollTop = c.scrollHeight;
@@ -3377,14 +3409,16 @@ function _refreshThreadList() {
     const avatar = t.isAnnouncement
       ? `<div class="thread-avatar" style="background:linear-gradient(135deg,#3D1A06,#C9840A);font-size:16px;">📢</div>`
       : `<div class="thread-avatar" style="background:linear-gradient(135deg,#2A1E14,#5C3A1A);">${(t.orgName || '?').charAt(0).toUpperCase()}</div>`;
+    const lastTime = t.lastAt || (last && last.created_at) || '';
+    const timeLabel = lastTime ? _fmtThreadTime(lastTime) : '';
     return `<div class="thread-item${isActive ? ' active' : ''}" data-key="${key}" onclick="openThread('${key}')">
       ${avatar}
       <div class="thread-body">
-        <div class="thread-name">${t.orgName || '—'}</div>
+        <div class="thread-name">${t.orgName || '—'}${hasUnread ? '<span class="thread-unread-dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--ember);margin-left:6px;vertical-align:middle;"></span>' : ''}</div>
         <div class="thread-preview">${preview}</div>
         ${t.eventName ? `<div style="font-size:10px;color:var(--text-lo);margin-top:2px;">Re: ${t.eventName}</div>` : ''}
       </div>
-      ${hasUnread ? `<div class="thread-unread-dot"></div>` : ''}
+      ${timeLabel ? `<div class="thread-time">${timeLabel}</div>` : ''}
     </div>`;
   }).join('');
 }
@@ -6708,7 +6742,11 @@ function _vanSyncTextInputs() {
 }
 function _vanRefresh() {
   _analyticsLoaded = false;
-  loadAnalyticsData();
+  const content = document.getElementById('analytics-content');
+  if (content) { content.style.opacity = '0.4'; content.style.pointerEvents = 'none'; }
+  loadAnalyticsData().finally(() => {
+    if (content) { content.style.opacity = ''; content.style.pointerEvents = ''; }
+  });
 }
 
 function setVanRange(range, btn) {
@@ -6893,10 +6931,16 @@ document.addEventListener('click', function(e) {
 
 // ── Analytics: data loader ────────────────────────────────────────────────
 let _analyticsLoaded = false;
+function _analyticsReveal() {
+  const loader = document.getElementById('analytics-loading');
+  const content = document.getElementById('analytics-content');
+  if (loader) loader.style.display = 'none';
+  if (content) content.style.display = '';
+}
 async function loadAnalyticsData() {
   if (_analyticsLoaded) return;
   const plan = (window.__PITCH_PROFILE__ || {}).plan || 'free';
-  if (plan === 'free') return;
+  if (plan === 'free') { _analyticsReveal(); return; }
 
   try {
     let url = '/api/vendor/analytics';
@@ -7105,8 +7149,10 @@ async function loadAnalyticsData() {
         }
       }
     }
+    _analyticsReveal();
   } catch (e) {
     console.error('[analytics]', e);
+    _analyticsReveal();
   }
 }
 
