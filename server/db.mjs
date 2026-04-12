@@ -599,12 +599,20 @@ await _safeExec(`
     UNIQUE(user_id, event_slug)
   )
 `);
+// Migrate followed_vendors: vendor_user_id needs to be TEXT (no FK) to support slug-based IDs
+if (_localDb) {
+  const info = _localDb.pragma('table_info(followed_vendors)');
+  const col = info.find(c => c.name === 'vendor_user_id');
+  if (col && col.type === 'INTEGER') {
+    _localDb.exec('DROP TABLE IF EXISTS followed_vendors');
+  }
+}
 await _safeExec(`
   CREATE TABLE IF NOT EXISTS followed_vendors (
-    id         INTEGER PRIMARY KEY AUTOINCREMENT,
-    user_id    INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    vendor_user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    created_at DATETIME DEFAULT (datetime('now')),
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id         INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    vendor_user_id  TEXT NOT NULL,
+    created_at      DATETIME DEFAULT (datetime('now')),
     UNIQUE(user_id, vendor_user_id)
   )
 `);

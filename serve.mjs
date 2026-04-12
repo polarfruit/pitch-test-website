@@ -26,20 +26,13 @@ const _gaSnippet = GA_ID ? `<!-- Google Analytics -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=${GA_ID}"></script>
 <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${GA_ID}');</script>` : '';
 
-// ── HTML file reader ────────────────────────────────────────────────────────
-// Cache locally for performance; skip cache on Vercel and in dev so edits take effect immediately.
+// ── HTML file reader (cached in memory — cleared on restart / deploy) ────
 const _htmlCache = new Map();
-const _isDev = !process.env.VERCEL;
 function readHtml(file) {
-  let html;
-  if (_isDev || process.env.VERCEL) {
-    html = fs.readFileSync(path.join(__dirname, file), 'utf8');
-  } else {
-    if (!_htmlCache.has(file)) {
-      _htmlCache.set(file, fs.readFileSync(path.join(__dirname, file), 'utf8'));
-    }
-    html = _htmlCache.get(file);
+  if (!_htmlCache.has(file)) {
+    _htmlCache.set(file, fs.readFileSync(path.join(__dirname, file), 'utf8'));
   }
+  let html = _htmlCache.get(file);
   // Inject GA4 snippet into public pages (skip dashboards to avoid noise)
   if (_gaSnippet && !file.includes('dashboard')) {
     html = html.replace('</head>', _gaSnippet + '\n</head>');
@@ -329,13 +322,22 @@ async function getPlatformFlag(key) {
   } catch { return null; }
 }
 
-// ── Maintenance mode middleware ───────────────────────────────────────────
-// Blocks public pages + API when maintenance is on (admin routes exempt)
+// ── Maintenance mode middleware (cached — checks DB at most every 30s) ────
+let _maintenanceOn = false;
+let _maintenanceTs = 0;
+const MAINT_TTL = 30000;
 async function maintenanceGuard(req, res, next) {
   if (req.path.startsWith('/admin') || req.path.startsWith('/api/admin')) return next();
+  // Skip DB check for static assets entirely
+  if (/\.(js|css|png|jpg|jpeg|gif|svg|webp|ico|woff2?|ttf|otf|eot|map)$/i.test(req.path)) return next();
   try {
-    const row = await stmts.getSetting.get('flag_maintenance');
-    if (row && row.value === '1') {
+    const now = Date.now();
+    if (now - _maintenanceTs > MAINT_TTL) {
+      const row = await stmts.getSetting.get('flag_maintenance');
+      _maintenanceOn = !!(row && row.value === '1');
+      _maintenanceTs = now;
+    }
+    if (_maintenanceOn) {
       if (req.path.startsWith('/api/')) return res.status(503).json({ error: 'Site is under maintenance. Please try again later.' });
       return res.status(503).send(`<!DOCTYPE html><html><head><title>Maintenance</title><style>body{font-family:'Instrument Sans',sans-serif;background:#1A1612;color:#FDF4E7;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;text-align:center;}.wrap{max-width:400px;padding:40px;}.dot{width:48px;height:48px;border-radius:50%;background:#E8500A;margin:0 auto 20px;}h1{font-family:'Fraunces',serif;font-size:28px;margin:0 0 12px;}p{color:#A89880;font-size:15px;line-height:1.6;}</style></head><body><div class="wrap"><div class="dot"></div><h1>We'll be right back</h1><p>Pitch. is undergoing scheduled maintenance. We'll be back shortly.</p></div></body></html>`);
     }
@@ -4189,10 +4191,31 @@ app.get('/api/vendors/:id/menu', async (req, res) => {
 });
 
 // ── Static page routes ─────────────────────────────────────────────────────
+// ── Banner injection (cached — avoids per-request DB + client fetch) ──────
+let _bannerCache = { show: false, message: '' };
+let _bannerTs = 0;
+const BANNER_TTL = 30000;
+async function _refreshBanner() {
+  try {
+    const now = Date.now();
+    if (now - _bannerTs < BANNER_TTL) return;
+    const showRow = await stmts.getSetting.get('banner_show');
+    if (showRow && showRow.value === '1') {
+      const msgRow = await stmts.getSetting.get('banner_message');
+      _bannerCache = { show: true, message: (msgRow && msgRow.value) || '' };
+    } else {
+      _bannerCache = { show: false, message: '' };
+    }
+    _bannerTs = now;
+  } catch {}
+}
+
 function injectBanner(html) {
-  const bannerDiv = `<div id="site-banner" style="display:none;background:#E8500A;color:#fff;text-align:center;padding:10px 48px 10px 20px;font-size:13px;font-weight:600;position:relative;z-index:999;letter-spacing:0.01em;font-family:'Instrument Sans',sans-serif;"><span id="site-banner-msg"></span><button onclick="this.parentElement.style.display='none'" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:#fff;font-size:16px;cursor:pointer;opacity:0.7;line-height:1;">✕</button></div>`;
-  const bannerScript = `<script>fetch('/api/banner').then(r=>r.json()).then(d=>{if(d.show&&d.message){document.getElementById('site-banner-msg').textContent=d.message;document.getElementById('site-banner').style.display='block';}}).catch(()=>{});<\/script>`;
-  // Dashboard pages: inject inside .main (above topbar) so it sits in the content area, not the sidebar
+  // Show banner immediately in HTML if cached state says it's on — no client fetch needed
+  const isVisible = _bannerCache.show && _bannerCache.message;
+  const displayStyle = isVisible ? 'block' : 'none';
+  const msgText = isVisible ? _bannerCache.message.replace(/</g, '&lt;').replace(/>/g, '&gt;') : '';
+  const bannerDiv = `<div id="site-banner" style="display:${displayStyle};background:#E8500A;color:#fff;text-align:center;padding:10px 48px 10px 20px;font-size:13px;font-weight:600;position:relative;z-index:999;letter-spacing:0.01em;font-family:'Instrument Sans',sans-serif;"><span id="site-banner-msg">${msgText}</span><button onclick="this.parentElement.style.display='none'" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:#fff;font-size:16px;cursor:pointer;opacity:0.7;line-height:1;">✕</button></div>`;
   if (html.includes('<div class="main">')) {
     html = html.replace('<div class="main">', '<div class="main">' + bannerDiv);
   } else if (html.includes('<body>')) {
@@ -4200,7 +4223,6 @@ function injectBanner(html) {
   } else if (html.includes('<body ')) {
     html = html.replace(/<body[^>]*>/, '$&' + bannerDiv);
   }
-  if (html.includes('</body>')) html = html.replace('</body>', bannerScript + '</body>');
   return html;
 }
 
@@ -4288,28 +4310,43 @@ function serveAdminDashboard() {
   };
 }
 
+function injectSession(html, req) {
+  const s = req.session;
+  if (s && s.userId && s.role) {
+    const u = JSON.stringify({ role: s.role, name: s.name || '' });
+    html = html.replace('</head>', `<script>window.__PITCH_USER__=${u};</script>\n</head>`);
+  }
+  return html;
+}
+
 function page(file, opts) {
   const skipBanner = opts && opts.skipBanner;
   return (req, res) => {
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     let html = readHtml(file);
     if (!skipBanner) html = injectBanner(html);
+    html = injectSession(html, req);
     res.send(html);
   };
 }
 
+let _homeCache = null;
+let _homeCacheTs = 0;
+const HOME_TTL = 60000;
 app.get('/', async (req, res) => {
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Cache-Control', 'public, max-age=60');
+  const now = Date.now();
+  if (_homeCache && now - _homeCacheTs < HOME_TTL) return res.send(_homeCache);
   let html = readHtml('pages/index.html');
   html = injectBanner(html);
-  // Pre-load featured events into the page so cards render instantly (no client fetch delay)
   try {
     const today = new Date().toISOString().slice(0, 10);
     const events = await stmts.featuredEvents.all(today);
     html = html.replace('</head>', `<script>window.__FEATURED_EVENTS=${JSON.stringify(events)};</script>\n</head>`);
   } catch(e) { /* fallback to client fetch */ }
+  _homeCache = html;
+  _homeCacheTs = now;
   res.send(html);
 });
 app.get('/how-it-works',        page('pages/how-it-works.html'));
@@ -4341,11 +4378,9 @@ app.get('/events', async (req, res) => {
         state: e.state || 'SA',
         venue_name: e.venue_name || '',
       }));
-    const token = process.env.MAPBOX_TOKEN || '';
     let html = readHtml('pages/events.html');
     html = html.replace('</head>', `<script>
 window.__PITCH_MAP_EVENTS__ = ${JSON.stringify(mapData)};
-window.__MAPBOX_TOKEN__ = ${JSON.stringify(token)};
 </script></head>`);
     html = injectBanner(html);
     _eventsPageCache = html;
@@ -4628,6 +4663,9 @@ app.use((req, res) => {
 });
 
 // ── Start ──────────────────────────────────────────────────────────────────
+// Warm caches at startup so first requests are fast
+_refreshBanner().catch(() => {});
+
 export default app;
 if (!process.env.VERCEL) {
   app.listen(PORT, () => {
