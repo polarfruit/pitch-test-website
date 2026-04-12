@@ -3517,7 +3517,13 @@ function _renderMessages(msgs) {
   c.innerHTML = msgs.map((m, i) => {
     const mine = Number(m.sender_user_id) === Number(myId);
     const next = msgs[i + 1];
-    const nextSame = next && (Number(next.sender_user_id) === Number(myId)) === mine;
+    // Break grouping at day boundaries
+    let nextDiffDay = false;
+    if (next && next.created_at && m.created_at) {
+      const parse = t => { const s = t.includes('T') || t.endsWith('Z') ? t : t.replace(' ', 'T') + 'Z'; return new Date(s).toDateString(); };
+      nextDiffDay = parse(m.created_at) !== parse(next.created_at);
+    }
+    const nextSame = next && !nextDiffDay && (Number(next.sender_user_id) === Number(myId)) === mine;
     const showAvatar = !mine && !nextSame;
     // Date separator between messages on different days
     let dateSep = '';
