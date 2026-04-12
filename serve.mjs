@@ -3322,6 +3322,26 @@ app.post('/api/organiser/settings/pause', requireAuth, async (req, res) => {
   res.json({ ok: true, paused: !!paused });
 });
 
+// DELETE /api/organiser/account — permanently delete organiser account
+app.delete('/api/organiser/account', requireAuth, async (req, res) => {
+  if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
+  const userId = req.session.userId;
+  try {
+    // Delete organiser profile, events, and user record
+    const events = await stmts.getOrganiserEvents.all(userId);
+    for (const ev of events) {
+      await stmts.deleteEvent.run(ev.id);
+    }
+    await stmts.deleteOrganiserByUserId.run(userId);
+    await stmts.deleteUser.run(userId);
+    req.session.destroy(() => {});
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('[delete-org-account]', e);
+    res.status(500).json({ error: 'Failed to delete account' });
+  }
+});
+
 // PUT /api/organiser/settings/defaults
 app.put('/api/organiser/settings/defaults', requireAuth, async (req, res) => {
   if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
@@ -4135,6 +4155,90 @@ function injectBanner(html) {
   return html;
 }
 
+// ── Admin dashboard with server-side data injection (eliminates 7 client-side fetches) ──
+function serveAdminDashboard() {
+  return async (req, res) => {
+    if (!req.session.isAdmin) return res.redirect('/admin/login');
+    try {
+      // Pre-fetch all initial data in parallel — same queries the client would make
+      const [
+        statsData, vendorsRows, organisersRows, activityRows, reportsRows,
+        pendingRow, recentVendors, recentOrgs, pliRows,
+      ] = await Promise.all([
+        // Stats (same as GET /api/admin/stats)
+        Promise.all([
+          stmts.countVendors.get(), stmts.countOrganisers.get(), stmts.countPending.get(),
+          stmts.newVendors7d.get(), stmts.newOrgs7d.get(), stmts.newApps7d.get(), stmts.newAppsPrior7d.get(),
+          stmts.countSuspendedVendors.get(), stmts.countSuspendedOrgs.get(),
+          stmts.countHiddenByOrgSuspension.get(), stmts.countVendorsAffectedBySuspension.get(),
+        ]),
+        // Vendors
+        stmts.allVendors.all().catch(() => []),
+        // Organisers
+        stmts.allOrganisers.all().catch(() => []),
+        // Activity feed
+        stmts.recentActivity.all().catch(() => []),
+        // Reports
+        stmts.getAllReports.all().catch(() => []),
+        // Notifications pieces
+        stmts.countPending.get().catch(() => ({ n: 0 })),
+        stmts.recentPendingVendors.all().catch(() => []),
+        stmts.recentPendingOrgs.all().catch(() => []),
+        // PLI enrichment for vendors
+        (prepare(`SELECT user_id, pli_status FROM vendors WHERE pli_status IS NOT NULL AND pli_status != 'none'`)).all().catch(() => []),
+      ]);
+
+      // Build stats object
+      const [vendors, organisers, pending, nv7, no7, na7, nap7, suspV, suspO, hiddenEv, affV] = statsData;
+      const stats = {
+        vendors: vendors.n, organisers: organisers.n, pending: pending.n,
+        newVendors7d: nv7.n, newOrgs7d: no7.n, apps7d: na7.n, appsPrior7d: nap7.n,
+        suspendedVendors: suspV.n, suspendedOrgs: suspO.n,
+        hiddenByOrgSuspension: hiddenEv.n, vendorsAffectedBySuspension: affV.n,
+      };
+
+      // Enrich vendors with PLI status
+      const pliMap = Object.fromEntries(pliRows.map(r => [r.user_id, r.pli_status]));
+      for (const v of vendorsRows) { v.pli_status = pliMap[v.user_id] || null; }
+
+      // Build notifications
+      const notifs = [];
+      const pc = pendingRow.c ?? pendingRow.n ?? 0;
+      if (pc > 0) {
+        notifs.push({ id:'pending', icon:'⏳', iconCls:'gold', title:`${pc} account${pc>1?'s':''} awaiting approval`, desc:'Pending vendors and organisers need review.', time:'now', unread:true });
+      }
+      for (const v of recentVendors) {
+        notifs.push({ id:`v-${v.id}`, icon:'🍽', iconCls:'ember', title:`New vendor: ${v.trading_name}`, desc:'Vendor account pending approval.', time: v.created_at ? new Date(v.created_at).toLocaleDateString('en-AU') : '', unread:true });
+      }
+      for (const o of recentOrgs) {
+        notifs.push({ id:`o-${o.id}`, icon:'🎪', iconCls:'slate', title:`New organiser: ${o.org_name}`, desc:'Organiser account pending approval.', time: o.created_at ? new Date(o.created_at).toLocaleDateString('en-AU') : '', unread:false });
+      }
+
+      const initData = {
+        stats,
+        vendors: vendorsRows,
+        organisers: organisersRows,
+        activity: activityRows,
+        reports: reportsRows,
+        notifications: { notifications: notifs, unreadCount: notifs.filter(n => n.unread).length },
+      };
+
+      let html = readHtml('pages/admin-dashboard.html');
+      html = html.replace('</head>', `<script>window.__ADMIN_INIT__=${JSON.stringify(initData)};</script>\n</head>`);
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.send(html);
+    } catch (e) {
+      console.error('[serveAdminDashboard]', e);
+      // Fallback to serving without pre-injected data
+      let html = readHtml('pages/admin-dashboard.html');
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.send(html);
+    }
+  };
+}
+
 function page(file, opts) {
   const skipBanner = opts && opts.skipBanner;
   return (req, res) => {
@@ -4319,8 +4423,8 @@ app.get('/dashboard/vendor/*splat',    serveDashboard('pages/vendor-dashboard.ht
 app.get('/dashboard/organiser',        serveDashboard('pages/organiser-dashboard.html',  'organiser', orgInitData));
 app.get('/dashboard/organiser/*splat', serveDashboard('pages/organiser-dashboard.html',  'organiser', orgInitData));
 app.get('/admin/login',         page('pages/admin-login.html', { skipBanner: true }));
-app.get('/admin',               requireAdminPage, page('pages/admin-dashboard.html', { skipBanner: true }));
-app.get('/admin/*splat',        requireAdminPage, page('pages/admin-dashboard.html', { skipBanner: true }));
+app.get('/admin',               serveAdminDashboard());
+app.get('/admin/*splat',        serveAdminDashboard());
 
 // ── Post-event cron endpoint (Vercel cron or manual trigger) ────────────────
 app.get('/api/cron/post-event', async (req, res) => {
