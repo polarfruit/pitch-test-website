@@ -30,24 +30,31 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .sidebar-logo { padding:24px 24px 20px; border-bottom:1px solid #ffffff07; }
 .logo-mark { font-family:var(--fd); font-size:22px; font-weight:900; letter-spacing:-0.04em; color:var(--text-hi); text-decoration:none; display:block; margin-bottom:16px; }
 .logo-mark .dot { color:var(--ember); }
-.org-card { display:flex; align-items:center; gap:10px; background:#ffffff07; border:1px solid #ffffff0a; border-radius:12px; padding:10px 12px; }
+.org-card { display:flex; align-items:center; gap:10px; background:#ffffff09; border:1px solid #ffffff0e; border-radius:12px; padding:10px 12px; box-shadow:0 2px 6px rgba(0,0,0,0.15); }
 .org-avatar { width:36px; height:36px; border-radius:10px; background:linear-gradient(135deg,#0A1A2D,#0A3060); display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; overflow:hidden; }
 .org-info { flex:1; min-width:0; }
 .org-name { font-size:13px; font-weight:700; color:var(--text-hi); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .org-role { font-size:10px; color:var(--text-lo); margin-top:1px; }
-.sidebar-nav { flex:1; padding:16px 12px; display:flex; flex-direction:column; gap:2px; }
-.nav-section-label { font-size:9px; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:var(--text-lo); padding:12px 12px 6px; }
+.sidebar-nav { flex:1; padding:16px 14px; display:flex; flex-direction:column; gap:2px; }
+.nav-section-label { font-size:10px; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:var(--text-mid); padding:16px 12px 7px; }
+.nav-section-label:first-child { padding-top:4px; }
 .nav-link { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; cursor:pointer;
-  font-size:13px; font-weight:600; color:var(--text-mid); transition:all 0.14s; user-select:none;
-  border:none; background:transparent; width:100%; text-align:left; text-decoration:none; font-family:var(--fb); }
+  font-size:13.5px; font-weight:600; color:var(--text-mid); transition:background 0.14s, color 0.14s; user-select:none;
+  border:1px solid transparent; background:transparent; width:100%; text-align:left; text-decoration:none; font-family:var(--fb); }
 .nav-link:hover { background:#ffffff08; color:var(--text-hi); }
-.nav-link.active { background:var(--ember-bg); color:var(--ember); border:1px solid #E8500A18; }
-.nav-icon { font-size:15px; flex-shrink:0; width:20px; text-align:center; }
-.nav-badge { margin-left:auto; background:var(--ember); color:#fff; font-size:9px; font-weight:700; padding:1px 5px; border-radius:100px; min-width:16px; text-align:center; }
-.sidebar-footer { padding:16px 12px; border-top:1px solid #ffffff0a; display:flex; flex-direction:column; gap:4px; }
+.nav-link:focus-visible { outline:2px solid var(--ember); outline-offset:-2px; border-radius:10px; }
+.nav-link.active { background:var(--ember-bg); color:var(--ember); border-color:#E8500A18; }
+.nav-icon { font-size:15px; flex-shrink:0; width:20px; text-align:center; opacity:0.8; }
+.nav-link:hover .nav-icon, .nav-link.active .nav-icon { opacity:1; }
+.nav-badge { margin-left:auto; background:var(--ember); color:#fff; font-size:10px; font-weight:700; padding:2px 7px; border-radius:100px; min-width:18px; text-align:center;
+  animation:badge-pulse 2s ease-in-out infinite; }
+@keyframes badge-pulse { 0%,100%{ box-shadow:0 0 0 0 rgba(232,80,10,0.35); } 50%{ box-shadow:0 0 0 4px rgba(232,80,10,0); } }
+.sidebar-footer { padding:12px 14px 16px; border-top:1px solid #ffffff0e; margin-top:8px; display:flex; flex-direction:column; gap:2px; }
 .sidebar-footer-link { display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:8px; cursor:pointer;
-  font-size:12px; font-weight:600; color:var(--text-mid); transition:all 0.14s; text-decoration:none; border:none; background:transparent; width:100%; font-family:var(--fb); }
-.sidebar-footer-link:hover { color:var(--text-hi); background:#ffffff08; }
+  font-size:12.5px; font-weight:600; color:var(--text-lo); transition:background 0.14s, color 0.14s; text-decoration:none; border:none; background:transparent; width:100%; font-family:var(--fb); }
+.sidebar-footer-link:hover { color:var(--text-mid); background:#ffffff08; }
+.sidebar-footer-link.logout { color:#8B4A3A; }
+.sidebar-footer-link.logout:hover { color:var(--terra); background:#C0392B0a; }
 
 /* ── MAIN ── */
 .main { margin-left:var(--sidebar-w); flex:1; min-height:100vh; position:relative; z-index:1; }
@@ -731,6 +738,16 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 </style>
 </head>
 <body>
+<!-- Loading overlay — renders instantly, hidden when dashboard JS initializes -->
+<div id="dashboard-loading-overlay" style="position:fixed;inset:0;background:#1A1612;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10000;transition:opacity 0.3s;">
+  <div style="display:flex;align-items:center;gap:9px;margin-bottom:32px;">
+    <div style="width:28px;height:28px;border-radius:50%;background:#E8500A;"></div>
+    <span style="font-family:'Fraunces',serif;font-size:22px;font-weight:900;color:#FDF4E7;">Pitch.</span>
+  </div>
+  <div style="width:36px;height:36px;border:3px solid #2A2018;border-top-color:#E8500A;border-radius:50%;animation:_dspin .6s linear infinite;"></div>
+  <div style="color:#6B5A4A;font-size:13px;margin-top:20px;font-family:'Instrument Sans',system-ui,sans-serif;">Loading your dashboard…</div>
+  <style>@keyframes _dspin{to{transform:rotate(360deg)}}</style>
+</div>
 
 <!-- Announcement banner -->
 <div id="ann-banner" style="display:none;position:fixed;top:0;left:0;right:0;z-index:8000;background:linear-gradient(90deg,#3D1A06,#C9840A 60%,#E8500A);padding:11px 20px;align-items:center;gap:12px;box-shadow:0 2px 16px rgba(0,0,0,0.5);">
@@ -757,7 +774,6 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
   <nav class="sidebar-nav">
     <div class="nav-section-label">Home</div>
     <button class="nav-link active" onclick="showPanel('overview',this)"><span class="nav-icon">⬡</span>Overview</button>
-    <button class="nav-link" onclick="showPanel('messages',this)"><span class="nav-icon">✉️</span>Messages<span class="nav-badge" id="org-msg-badge" style="display:none;">0</span></button>
 
     <div class="nav-section-label">Events</div>
     <button class="nav-link" onclick="showPanel('events',this)"><span class="nav-icon">📅</span>My Events</button>
@@ -770,11 +786,13 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
     <button class="nav-link" onclick="showPanel('ratings',this)"><span class="nav-icon">⭐</span>Vendor Ratings</button>
     <button class="nav-link" onclick="showPanel('reviews',this)"><span class="nav-icon">💬</span>My Reviews</button>
 
-    <button class="nav-link" onclick="showPanel('settings',this)" style="margin-top:auto;"><span class="nav-icon">⚙️</span>Settings</button>
+    <div class="nav-section-label">Account</div>
+    <button class="nav-link" onclick="showPanel('messages',this)"><span class="nav-icon">✉️</span>Messages<span class="nav-badge" id="org-msg-badge" style="display:none;">0</span></button>
+    <button class="nav-link" onclick="showPanel('settings',this)"><span class="nav-icon">⚙️</span>Settings</button>
+    <a href="/events" class="nav-link" style="margin-top:auto;"><span class="nav-icon">↗</span>View public events</a>
   </nav>
   <div class="sidebar-footer">
-    <a href="/events" class="sidebar-footer-link">↗ View public events</a>
-    <button class="sidebar-footer-link" id="logout-btn" onclick="pitchLogout()">🚪 Log out</button>
+    <button class="sidebar-footer-link logout" id="logout-btn" onclick="pitchLogout()">🚪 Log out</button>
   </div>
 </aside>
 
@@ -1240,7 +1258,35 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
     <div class="panel" id="panel-settings">
       <div style="max-width:600px;">
 
-        <!-- 1. Account (most-edited: name, bio, ABN) -->
+        <!-- 1. Profile Picture + Banner (visual identity first) -->
+        <div class="settings-card">
+          <div class="settings-section-title">Profile Picture</div>
+          <div style="display:flex;align-items:center;gap:20px;padding:4px 0;">
+            <div id="avatar-preview-large" style="width:80px;height:80px;border-radius:16px;background:linear-gradient(135deg,#0A1A2D,#0A3060);display:flex;align-items:center;justify-content:center;font-size:36px;overflow:hidden;flex-shrink:0;">🏛️</div>
+            <div style="flex:1;">
+              <div style="font-size:13px;color:var(--text-mid);margin-bottom:10px;line-height:1.5;">Upload a photo to show on your profile, event listings, and messages.</div>
+              <label style="display:inline-flex;align-items:center;gap:8px;background:var(--ember);color:#fff;font-size:13px;font-weight:700;padding:9px 16px;border-radius:10px;cursor:pointer;font-family:var(--fb);">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Choose photo
+                <input type="file" accept="image/jpeg,image/png,image/webp" style="display:none;" onchange="previewAndUploadAvatar(this)">
+              </label>
+              <div id="avatar-upload-status" style="font-size:12px;margin-top:8px;color:var(--text-lo);"></div>
+            </div>
+          </div>
+          <div style="margin-top:16px;padding-top:16px;border-top:1px solid #ffffff12;">
+            <div style="font-size:13px;font-weight:700;color:var(--text-hi);margin-bottom:6px;">Banner image</div>
+            <div style="font-size:12px;color:var(--text-lo);margin-bottom:10px;">Displayed at the top of your public organiser profile.</div>
+            <div id="banner-preview" style="width:100%;height:80px;border-radius:10px;background:linear-gradient(135deg,#231E19,#1A1612);border:1.5px dashed #ffffff15;margin-bottom:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;"><span id="banner-placeholder" style="font-size:11px;color:var(--text-lo);opacity:0.6;">No banner uploaded</span></div>
+            <label style="display:inline-flex;align-items:center;gap:8px;background:#ffffff08;color:var(--text-mid);font-size:12px;font-weight:700;padding:8px 14px;border-radius:8px;cursor:pointer;border:1px solid #ffffff10;font-family:var(--fb);">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Upload banner
+              <input type="file" accept="image/jpeg,image/png,image/webp" style="display:none;" onchange="uploadOrgBanner(this)">
+            </label>
+            <div id="banner-upload-status" style="font-size:12px;margin-top:6px;color:var(--text-lo);"></div>
+          </div>
+        </div>
+
+        <!-- 2. Account (core business details) -->
         <div class="settings-card">
           <div class="settings-section-title">Account</div>
           <div class="settings-row">
@@ -1267,43 +1313,15 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
           </div>
           <div class="settings-row">
             <div><div class="settings-row-label">Email address</div><div class="settings-row-desc">Managed in Email & Password below.</div></div>
-            <input id="settings-email" class="form-input" disabled value="—" style="width:240px;opacity:0.5;cursor:default;" />
+            <input id="settings-email" class="form-input" disabled value="—" style="width:240px;opacity:0.65;cursor:default;" />
           </div>
           <div class="settings-row">
             <div><div class="settings-row-label">Public profile</div><div class="settings-row-desc">View how vendors see your organiser page.</div></div>
             <a id="org-public-profile-link" href="#" target="_blank" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--ember);text-decoration:none;">View profile →</a>
           </div>
           <div style="display:flex;justify-content:flex-end;margin-top:12px;">
-            <button id="btn-save-settings" onclick="saveOrgSettings()" style="font-family:var(--fb);font-size:13px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:10px 22px;border-radius:10px;cursor:pointer;">Save</button>
+            <button id="btn-save-settings" onclick="saveOrgSettings()" style="font-family:var(--fb);font-size:13px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:10px 22px;border-radius:10px;cursor:pointer;">Save profile</button>
             <span class="org-save-msg" id="profile-save-msg">Saved!</span>
-          </div>
-        </div>
-
-        <!-- 2. Profile Picture (visual identity, set once) -->
-        <div class="settings-card">
-          <div class="settings-section-title">Profile Picture</div>
-          <div style="display:flex;align-items:center;gap:20px;padding:4px 0;">
-            <div id="avatar-preview-large" style="width:80px;height:80px;border-radius:16px;background:linear-gradient(135deg,#0A1A2D,#0A3060);display:flex;align-items:center;justify-content:center;font-size:36px;overflow:hidden;flex-shrink:0;">🏛️</div>
-            <div style="flex:1;">
-              <div style="font-size:13px;color:var(--text-mid);margin-bottom:10px;line-height:1.5;">Upload a photo to show on your profile, event listings, and messages.</div>
-              <label style="display:inline-flex;align-items:center;gap:8px;background:var(--ember);color:#fff;font-size:13px;font-weight:700;padding:9px 16px;border-radius:10px;cursor:pointer;font-family:var(--fb);">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                Choose photo
-                <input type="file" accept="image/jpeg,image/png,image/webp" style="display:none;" onchange="previewAndUploadAvatar(this)">
-              </label>
-              <div id="avatar-upload-status" style="font-size:12px;margin-top:8px;color:var(--text-lo);"></div>
-            </div>
-          </div>
-          <div style="margin-top:16px;padding-top:16px;border-top:1px solid #ffffff12;">
-            <div style="font-size:13px;font-weight:700;color:var(--text-hi);margin-bottom:6px;">Banner image</div>
-            <div style="font-size:12px;color:var(--text-lo);margin-bottom:10px;">Displayed at the top of your public organiser profile.</div>
-            <div id="banner-preview" style="width:100%;height:80px;border-radius:10px;background:linear-gradient(135deg,#231E19,#1A1612);margin-bottom:10px;overflow:hidden;"></div>
-            <label style="display:inline-flex;align-items:center;gap:8px;background:#ffffff08;color:var(--text-mid);font-size:12px;font-weight:700;padding:8px 14px;border-radius:8px;cursor:pointer;border:1px solid #ffffff10;font-family:var(--fb);">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-              Upload banner
-              <input type="file" accept="image/jpeg,image/png,image/webp" style="display:none;" onchange="uploadOrgBanner(this)">
-            </label>
-            <div id="banner-upload-status" style="font-size:12px;margin-top:6px;color:var(--text-lo);"></div>
           </div>
         </div>
 
@@ -1323,7 +1341,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
             <input class="form-input" type="password" id="org-new-pw" style="width:240px;" placeholder="Leave blank to keep current" />
           </div>
           <div style="display:flex;justify-content:flex-end;margin-top:12px;">
-            <button class="org-settings-save" onclick="saveOrgAccount()">Save</button>
+            <button class="org-settings-save" onclick="saveOrgAccount()">Save password</button>
             <span class="org-save-msg" id="org-account-save-msg">Saved!</span>
           </div>
           <span class="org-save-err" id="org-account-err-msg"></span>
@@ -1363,9 +1381,9 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
           <div class="settings-row">
             <div><div class="settings-row-label">Default fee range</div><div class="settings-row-desc">GST inclusive stall fee range.</div></div>
             <div style="display:flex;gap:6px;align-items:center;">
-              <div style="position:relative;"><span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-lo);font-size:13px;">$</span><input class="form-input" type="number" id="org-def-fee-min" style="width:90px;padding-left:22px;" placeholder="Min" /></div>
+              <div style="position:relative;"><span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-lo);font-size:13px;">$</span><input class="form-input" type="number" id="org-def-fee-min" style="width:90px;padding-left:26px;" placeholder="Min" /></div>
               <span style="color:var(--text-lo);">—</span>
-              <div style="position:relative;"><span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-lo);font-size:13px;">$</span><input class="form-input" type="number" id="org-def-fee-max" style="width:90px;padding-left:22px;" placeholder="Max" /></div>
+              <div style="position:relative;"><span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--text-lo);font-size:13px;">$</span><input class="form-input" type="number" id="org-def-fee-max" style="width:90px;padding-left:26px;" placeholder="Max" /></div>
             </div>
           </div>
           <div class="settings-row">
@@ -1392,7 +1410,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
             <span id="org-auto-response-count" style="font-size:11px;color:var(--text-lo);">0/500</span>
           </div>
           <div style="display:flex;justify-content:flex-end;margin-top:12px;">
-            <button onclick="saveOrgAutoResponse()" style="font-family:var(--fb);font-size:13px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:10px 22px;border-radius:10px;cursor:pointer;">Save</button>
+            <button onclick="saveOrgAutoResponse()" style="font-family:var(--fb);font-size:13px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:10px 22px;border-radius:10px;cursor:pointer;">Save template</button>
             <span class="org-save-msg" id="org-auto-response-save-msg">Saved!</span>
           </div>
         </div>
@@ -1402,7 +1420,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
           <div class="settings-section-title">Notifications</div>
           <div class="settings-row"><div class="settings-row-left"><div class="settings-row-label">New applications</div><div class="settings-row-desc">Notify me when a vendor applies to one of my events.</div></div><label class="toggle-switch"><input type="checkbox" id="org-notif-apps" checked onchange="saveOrgNotifSettings()"/><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
           <div class="settings-row"><div class="settings-row-left"><div class="settings-row-label">Deadline reminders</div><div class="settings-row-desc">Notify me 7 days before my application deadlines close.</div></div><label class="toggle-switch"><input type="checkbox" id="org-notif-deadlines" checked onchange="saveOrgNotifSettings()"/><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
-          <div class="settings-row"><div class="settings-row-left"><div class="settings-row-label">Vendor messages</div><div class="settings-row-desc">Notify me when a vendor sends a message.</div></div><label class="toggle-switch"><input type="checkbox" id="org-notif-messages" onchange="saveOrgNotifSettings()"/><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+          <div class="settings-row"><div class="settings-row-left"><div class="settings-row-label">Vendor messages</div><div class="settings-row-desc">Notify me when a vendor sends a message. <span style="opacity:0.7;">(Off by default — can be high volume)</span></div></div><label class="toggle-switch"><input type="checkbox" id="org-notif-messages" onchange="saveOrgNotifSettings()"/><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
           <div class="settings-row"><div class="settings-row-left"><div class="settings-row-label">Stall fee payments</div><div class="settings-row-desc">Notify me when a vendor pays their stall fee.</div></div><label class="toggle-switch"><input type="checkbox" id="org-notif-payments" checked onchange="saveOrgNotifSettings()"/><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
           <div class="settings-row"><div class="settings-row-left"><div class="settings-row-label">Post-event summaries</div><div class="settings-row-desc">Notify me when an event ends so I can rate vendors.</div></div><label class="toggle-switch"><input type="checkbox" id="org-notif-post-event" checked onchange="saveOrgNotifSettings()"/><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
           <div style="display:flex;justify-content:flex-end;margin-top:8px;"><span class="org-save-msg" id="org-notif-save-msg">Saved!</span></div>
@@ -2676,7 +2694,14 @@ function renderOrgEventsData(events) {
   }).join('');
 }
 
-initDashboard();
+initDashboard().then(() => {
+  const ol = document.getElementById('dashboard-loading-overlay');
+  if (ol) { ol.style.opacity = '0'; setTimeout(() => ol.remove(), 300); }
+}).catch(e => {
+  console.error('[initDashboard fatal]', e);
+  const ol = document.getElementById('dashboard-loading-overlay');
+  if (ol) { ol.style.opacity = '0'; setTimeout(() => ol.remove(), 300); }
+});
 
 // ── ABN auto-verify for organiser dashboard ──────────────────────────────────
 let _orgAbnTimer = null;
@@ -2768,7 +2793,7 @@ async function saveOrgSettings() {
     btn.textContent = 'Error: ' + e.message; btn.style.background = 'var(--terra)';
   }
   btn.disabled = false;
-  setTimeout(() => { btn.textContent = 'Save'; btn.style.background = 'var(--ember)'; }, 3000);
+  setTimeout(() => { btn.textContent = 'Save profile'; btn.style.background = 'var(--ember)'; }, 3000);
 }
 
 // ── Avatar upload ─────────────────────────────────────────────────────────
@@ -2808,7 +2833,7 @@ function uploadOrgBanner(input) {
   reader.onload = async e => {
     const dataUrl = e.target.result;
     const preview = document.getElementById('banner-preview');
-    preview.innerHTML = `<img src="${dataUrl}" style="width:100%;height:100%;object-fit:cover;" />`;
+    preview.innerHTML = `<img src="${dataUrl}" style="width:100%;height:100%;object-fit:cover;" />`; preview.style.border = 'none';
     status.textContent = 'Uploading…'; status.style.color = 'var(--text-lo)';
     try {
       const res = await pitchFetch('/api/organiser/settings/banner', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ banner_url: dataUrl }) });
@@ -3595,7 +3620,7 @@ function initOrgSettingsPanel(user, profile) {
   // Banner preview
   if (profile && profile.banner_url) {
     const bp = document.getElementById('banner-preview');
-    if (bp) bp.innerHTML = `<img src="${profile.banner_url}" style="width:100%;height:100%;object-fit:cover;" />`;
+    if (bp) { bp.innerHTML = `<img src="${profile.banner_url}" style="width:100%;height:100%;object-fit:cover;" />`; bp.style.border = 'none'; }
   }
 
   // Team members
@@ -3745,7 +3770,7 @@ async function loadTeamMembers() {
     const r = await pitchFetch('/api/organiser/team');
     const { members } = await r.json();
     if (!members || members.length === 0) {
-      list.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-lo);font-size:13px;">No team members yet.</div>';
+      list.innerHTML = '<div style="text-align:center;padding:24px 16px;color:var(--text-lo);font-size:12px;border:1.5px dashed #ffffff10;border-radius:10px;line-height:1.6;">No team members yet.<br>Invite co-organisers below to help manage events.</div>';
       return;
     }
     list.innerHTML = members.map(m => {
