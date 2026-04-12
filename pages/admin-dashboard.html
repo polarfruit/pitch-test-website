@@ -5868,7 +5868,7 @@
   // ── Logout ────────────────────────────────────────────────────────────────
   async function adminLogout() {
     try { await fetch('/api/logout', { method: 'POST' }); } catch (e) {}
-    window.location.href = '/login';
+    window.location.href = '/';
   }
 
   // ── Update sidebar pending badge ──────────────────────────────────────────
