@@ -1566,6 +1566,21 @@ document.addEventListener('click', function(e) {
 (function() {
   fetch('/api/me').then(r => r.json()).then(d => {
     if (!d.user) return;
+    if (d.user.role === 'foodie') {
+      // Swap entire nav to foodie layout
+      const nl = document.querySelector('.nav-links');
+      if (nl) nl.innerHTML = '<li><a href="/discover">My Feed</a></li><li><a href="/events" class="active">All Events</a></li><li><a href="/vendors">Vendors</a></li>';
+      const lo = document.getElementById('nav-loggedout');
+      if (lo) lo.remove();
+      const li = document.getElementById('nav-loggedin');
+      if (li) li.remove();
+      const nav = document.querySelector('.navbar');
+      const ham = nav && nav.querySelector('.nav-hamburger');
+      const rightHtml = `<div style="display:flex;align-items:center;gap:10px;" id="nav-foodie-right"><div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--text-mid);"><div style="width:28px;height:28px;border-radius:50%;background:var(--ember);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;">🍜</div><span>${d.user.first_name || 'Account'}</span></div><button onclick="fetch('/api/logout',{method:'POST'}).then(()=>location.href='/login')" style="font-size:13px;font-weight:600;color:var(--text-lo);background:transparent;border:none;cursor:pointer;padding:8px;font-family:inherit;">Sign out</button></div>`;
+      if (ham) ham.insertAdjacentHTML('beforebegin', rightHtml);
+      else if (nav) nav.insertAdjacentHTML('beforeend', rightHtml);
+      return;
+    }
     const lo = document.getElementById('nav-loggedout');
     const li = document.getElementById('nav-loggedin');
     if (lo) lo.style.display = 'none';
@@ -1575,7 +1590,6 @@ document.addEventListener('click', function(e) {
     const dl = document.getElementById('nav-dashboard-link');
     if (dl) {
       if (d.user.role === 'organiser') dl.href = '/dashboard/organiser';
-      else if (d.user.role === 'foodie') dl.href = '/discover';
       else dl.href = '/dashboard/vendor';
     }
   }).catch(() => {});

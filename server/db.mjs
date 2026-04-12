@@ -997,6 +997,9 @@ await _safeExec(`ALTER TABLE organisers ADD COLUMN timezone TEXT DEFAULT 'Austra
 await _safeExec(`ALTER TABLE organisers ADD COLUMN auto_response_template TEXT`);
 await _safeExec(`ALTER TABLE organisers ADD COLUMN banner_url TEXT`);
 
+// ── User last_active tracking ───────────────────────────────────────────────
+await _safeExec(`ALTER TABLE users ADD COLUMN last_active DATETIME`);
+
 // ── Team members table ──────────────────────────────────────────────────────
 await _safeExec(`
   CREATE TABLE IF NOT EXISTS organiser_team_members (
@@ -1086,6 +1089,7 @@ export const stmts = {
   countHiddenByOrgSuspension:         prepare(`SELECT COUNT(*) as n FROM events WHERE suspended_by_admin=1`),
   countVendorsAffectedBySuspension:   prepare(`SELECT COUNT(DISTINCT ea.vendor_user_id) as n FROM event_applications ea JOIN events e ON ea.event_id=e.id WHERE e.suspended_by_admin=1 AND ea.status='approved'`),
   updateUserPassword:              prepare(`UPDATE users SET password_hash=? WHERE id=?`),
+  touchUserActive:                 prepare(`UPDATE users SET last_active=datetime('now') WHERE id=?`),
   deleteUser:                      prepare(`DELETE FROM users WHERE id=?`),
   deleteVendorByUserId:            prepare(`DELETE FROM vendors WHERE user_id=?`),
   deleteOrganiserByUserId:         prepare(`DELETE FROM organisers WHERE user_id=?`),
@@ -1334,7 +1338,9 @@ export const stmts = {
   getThread:         prepare(`
     SELECT mt.*,
       COALESCE(v.trading_name, uv.first_name||' '||uv.last_name) as vendor_name,
-      COALESCE(o.org_name, CASE WHEN uo.role='admin' THEN 'Pitch. Admin' ELSE uo.first_name||' '||uo.last_name END) as organiser_name
+      COALESCE(o.org_name, CASE WHEN uo.role='admin' THEN 'Pitch. Admin' ELSE uo.first_name||' '||uo.last_name END) as organiser_name,
+      uv.last_active as vendor_last_active,
+      uo.last_active as organiser_last_active
     FROM message_threads mt
     LEFT JOIN vendors v ON v.user_id = mt.vendor_user_id AND v.id=(SELECT MIN(id) FROM vendors WHERE user_id=mt.vendor_user_id)
     LEFT JOIN users uv ON uv.id = mt.vendor_user_id
@@ -1347,6 +1353,8 @@ export const stmts = {
     SELECT mt.thread_key, mt.vendor_user_id, mt.organiser_user_id,
       COALESCE(v.trading_name, uv.first_name||' '||uv.last_name) as vendor_name,
       COALESCE(o.org_name, CASE WHEN uo.role='admin' THEN 'Pitch. Admin' ELSE uo.first_name||' '||uo.last_name END) as organiser_name,
+      uv.last_active as vendor_last_active,
+      uo.last_active as organiser_last_active,
       (SELECT body FROM messages m2 WHERE m2.thread_key = mt.thread_key ORDER BY m2.id DESC LIMIT 1) as last_body,
       (SELECT m2.created_at FROM messages m2 WHERE m2.thread_key = mt.thread_key ORDER BY m2.id DESC LIMIT 1) as last_at,
       (SELECT COUNT(*) FROM messages m2 WHERE m2.thread_key = mt.thread_key AND m2.sender_user_id != ? AND m2.is_read = 0) as unread_count
@@ -1631,12 +1639,13 @@ export const stmts = {
     JOIN vendors v ON v.user_id = ea.vendor_user_id
     WHERE v.cuisine_tags LIKE '%' || ? || '%'
       AND ea.vendor_user_id != ?
+      AND ea.status != 'withdrawn'
   `),
   getVendorAcceptanceRate: prepare(`
     SELECT
       COUNT(*) as total_apps,
       SUM(CASE WHEN status='approved' THEN 1 ELSE 0 END) as approved_apps
-    FROM event_applications WHERE vendor_user_id=?
+    FROM event_applications WHERE vendor_user_id=? AND status != 'withdrawn'
   `),
   getCategoryVendorCount: prepare(`
     SELECT COUNT(*) as count FROM vendors WHERE cuisine_tags LIKE '%' || ? || '%'
@@ -1649,10 +1658,11 @@ export const stmts = {
       JOIN vendors v2 ON v2.user_id = ea2.vendor_user_id
       WHERE v2.cuisine_tags LIKE '%' || ? || '%'
         AND ea2.vendor_user_id != ?
+        AND ea2.status != 'withdrawn'
       GROUP BY ea2.vendor_user_id
       HAVING rate > (
         SELECT CAST(SUM(CASE WHEN status='approved' THEN 1 ELSE 0 END) AS REAL) / MAX(COUNT(*), 1)
-        FROM event_applications WHERE vendor_user_id=?
+        FROM event_applications WHERE vendor_user_id=? AND status != 'withdrawn'
       )
     )
   `),

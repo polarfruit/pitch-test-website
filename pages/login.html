@@ -168,7 +168,7 @@ function togglePw() {
         return;
       }
       // Redirect through instant loading page — no white screen gap
-      const role = data.redirect.includes('organiser') ? 'organiser' : data.redirect.includes('vendor') ? 'vendor' : '';
+      const role = data.redirect.includes('organiser') ? 'organiser' : data.redirect.includes('vendor') ? 'vendor' : data.redirect.includes('discover') ? 'foodie' : '';
       if (role) {
         window.location.href = '/dashboard/loading?to=' + role;
       } else {
@@ -244,7 +244,7 @@ function togglePw() {
         return;
       }
       if (d.redirect) {
-        const role = d.redirect.includes('organiser') ? 'organiser' : d.redirect.includes('vendor') ? 'vendor' : '';
+        const role = d.redirect.includes('organiser') ? 'organiser' : d.redirect.includes('vendor') ? 'vendor' : d.redirect.includes('discover') ? 'foodie' : '';
         window.location.href = role ? '/dashboard/loading?to=' + role : d.redirect;
       }
     } catch { showErr('Network error — please try again.'); }

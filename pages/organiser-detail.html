@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="icon" type="image/png" sizes="64x64" href="/favicon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<title>Organiser — Pitch.</title>
+<link rel="stylesheet" href="/fonts/fonts.css">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --ember:      #E8500A;
+  --ember-glow: #FF6B2B;
+  --ember-bg:   #E8500A12;
+  --coal:       #1A1612;
+  --char:       #231E19;
+  --ash:        #2E2720;
+  --smoke:      #4A3F36;
+  --parchment:  #FDF4E7;
+  --cream:      #F5EDD8;
+  --linen:      #EDE3CC;
+  --herb:       #2D8B55;
+  --gold:       #C9840A;
+  --terra:      #C0392B;
+  --slate:      #2B5BA8;
+  --text-hi:    #FDF4E7;
+  --text-mid:   #A89880;
+  --text-lo:    #6B5A4A;
+  --fd:         'Fraunces', Georgia, serif;
+  --fb:         'Instrument Sans', 'Helvetica Neue', sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+body { background: var(--coal); color: var(--text-hi); font-family: var(--fb); line-height: 1.5; overflow-x: hidden; }
+
+body::before {
+  content: ''; position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 0; opacity: 0.45;
+}
+
+/* ── NAV ─────────────────────────────────────────────────────────────────── */
+.navbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  height: 66px; display: flex; align-items: center; justify-content: space-between;
+  padding: 0 52px;
+  background: rgba(26,22,18,0.92); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid #ffffff07;
+}
+.nav-logo { font-family: var(--fd); font-size: 26px; font-weight: 900; letter-spacing: -0.04em; color: var(--text-hi); text-decoration: none; }
+.nav-logo .dot { color: var(--ember); }
+.nav-links { display: flex; align-items: center; gap: 32px; list-style: none; }
+.nav-links a { font-size: 14px; font-weight: 500; color: var(--text-mid); text-decoration: none; transition: color 0.14s; }
+.nav-links a:hover { color: var(--text-hi); }
+.nav-actions { display: flex; align-items: center; gap: 10px; }
+.btn-login { font-family: var(--fb); font-size: 13px; font-weight: 600; color: var(--text-mid); background: transparent; border: none; padding: 9px 16px; border-radius: 8px; cursor: pointer; transition: color 0.14s; text-decoration: none; }
+.btn-login:hover { color: var(--text-hi); }
+.btn-get-started { font-family: var(--fb); font-size: 13px; font-weight: 700; color: #fff; background: var(--ember); border: none; padding: 10px 22px; border-radius: 9px; cursor: pointer; box-shadow: 0 4px 16px #E8500A2E; transition: background 0.14s; text-decoration: none; }
+.btn-get-started:hover { background: var(--ember-glow); }
+
+/* ── HERO ────────────────────────────────────────────────────────────────── */
+.org-hero {
+  position: relative; width: 100%; height: 200px;
+  background: linear-gradient(135deg, #231E19 0%, #1A1612 100%);
+  overflow: hidden; margin-top: 66px;
+}
+.org-hero-banner { width: 100%; height: 100%; object-fit: cover; }
+.org-hero::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(to bottom, transparent 40%, var(--coal) 100%);
+}
+
+/* ── PROFILE CARD ────────────────────────────────────────────────────────── */
+.page-wrap { max-width: 820px; margin: 0 auto; padding: 0 24px 60px; position: relative; z-index: 1; }
+.profile-header { display: flex; gap: 20px; align-items: flex-end; margin-top: -50px; margin-bottom: 32px; }
+.profile-avatar {
+  width: 96px; height: 96px; border-radius: 20px; flex-shrink: 0;
+  background: linear-gradient(135deg, #0A1A2D, #0A3060);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 44px; overflow: hidden;
+  border: 3px solid var(--coal); box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+.profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.profile-info { padding-bottom: 6px; }
+.profile-name { font-family: var(--fd); font-size: 28px; font-weight: 900; letter-spacing: -0.03em; line-height: 1.2; }
+.profile-badges { display: flex; gap: 8px; margin-top: 6px; }
+.badge { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 4px 10px; border-radius: 6px; }
+.badge-verified { background: #2B5BA815; color: var(--slate); }
+.badge-paused { background: #C9840A15; color: var(--gold); }
+
+/* ── STATS ROW ───────────────────────────────────────────────────────────── */
+.stats-row { display: flex; gap: 12px; margin-bottom: 28px; flex-wrap: wrap; }
+.stat-card {
+  flex: 1; min-width: 120px;
+  background: var(--char); border: 1px solid #ffffff08; border-radius: 12px;
+  padding: 16px 18px; text-align: center;
+}
+.stat-value { font-family: var(--fd); font-size: 22px; font-weight: 900; color: var(--text-hi); }
+.stat-label { font-size: 12px; color: var(--text-lo); margin-top: 2px; }
+
+/* ── STARS ────────────────────────────────────────────────────────────────── */
+.stars { display: inline-flex; gap: 2px; }
+.star { color: var(--text-lo); font-size: 15px; }
+.star.filled { color: var(--ember); }
+
+/* ── SECTIONS ────────────────────────────────────────────────────────────── */
+.section { margin-bottom: 28px; }
+.section-title { font-family: var(--fd); font-size: 18px; font-weight: 900; letter-spacing: -0.02em; margin-bottom: 12px; }
+.bio-text { font-size: 14px; color: var(--text-mid); line-height: 1.7; }
+.website-link { font-size: 13px; color: var(--ember); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; margin-top: 8px; }
+.website-link:hover { color: var(--ember-glow); }
+
+/* ── EVENT CARDS ─────────────────────────────────────────────────────────── */
+.event-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+.event-card {
+  background: var(--parchment); border-radius: 14px; overflow: hidden;
+  transition: transform 0.14s, box-shadow 0.14s; cursor: pointer; text-decoration: none;
+}
+.event-card:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.2); }
+.event-card-img { width: 100%; height: 120px; object-fit: cover; background: linear-gradient(135deg, #E8500A15, #C9840A10); }
+.event-card-body { padding: 14px 16px; }
+.event-card-name { font-family: var(--fd); font-size: 15px; font-weight: 800; color: var(--coal); letter-spacing: -0.01em; }
+.event-card-meta { font-size: 12px; color: var(--smoke); margin-top: 4px; display: flex; gap: 12px; }
+.event-card-fee { font-size: 12px; font-weight: 700; color: var(--ember); margin-top: 6px; }
+
+/* ── EMPTY STATE ─────────────────────────────────────────────────────────── */
+.empty-state { text-align: center; padding: 40px 20px; color: var(--text-lo); font-size: 13px; }
+
+/* ── PAUSED BANNER ───────────────────────────────────────────────────────── */
+.paused-banner {
+  background: #C9840A12; border: 1px solid #C9840A25; border-radius: 12px;
+  padding: 16px 20px; margin-bottom: 24px; text-align: center;
+  font-size: 14px; color: var(--gold); font-weight: 600;
+}
+
+/* ── FOOTER ──────────────────────────────────────────────────────────────── */
+footer {
+  border-top: 1px solid #ffffff08; padding: 40px 24px; text-align: center;
+  font-size: 12px; color: var(--text-lo);
+}
+footer a { color: var(--ember); text-decoration: none; }
+
+@media (max-width: 640px) {
+  .navbar { padding: 0 16px; }
+  .page-wrap { padding: 0 16px 40px; }
+  .profile-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+  .profile-avatar { width: 72px; height: 72px; }
+  .profile-name { font-size: 22px; }
+  .event-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav class="navbar">
+  <a href="/" class="nav-logo">Pitch<span class="dot">.</span></a>
+  <ul class="nav-links">
+    <li><a href="/events">Events</a></li>
+    <li><a href="/vendors">Vendors</a></li>
+    <li><a href="/how-it-works">How It Works</a></li>
+  </ul>
+  <div class="nav-actions" id="nav-loggedout">
+    <a href="/login" class="btn-login">Log in</a>
+    <a href="/get-started" class="btn-get-started">Get Started</a>
+  </div>
+  <div id="nav-loggedin" style="display:none;align-items:center;gap:8px;">
+    <a href="/dashboard/vendor" id="nav-dashboard-link" style="font-family:var(--fb);font-size:13px;font-weight:600;color:var(--text-mid);text-decoration:none;padding:9px 16px;border-radius:8px;transition:color 0.14s;"><span id="nav-user-label">Account</span> ▾</a>
+  </div>
+</nav>
+
+<!-- Hero Banner -->
+<div class="org-hero" id="org-hero">
+  <div style="width:100%;height:100%;background:radial-gradient(ellipse 60% 80% at 30% 50%, #E8500A0E 0%, transparent 70%), radial-gradient(ellipse 40% 60% at 70% 30%, #C9840A08 0%, transparent 60%);"></div>
+</div>
+
+<!-- Page Content -->
+<div class="page-wrap">
+  <div class="profile-header">
+    <div class="profile-avatar" id="org-avatar">🏛️</div>
+    <div class="profile-info">
+      <div class="profile-name" id="org-name">Organiser</div>
+      <div class="profile-badges" id="org-badges"></div>
+    </div>
+  </div>
+
+  <div id="paused-banner" class="paused-banner" style="display:none;">This organiser is currently unavailable.</div>
+
+  <!-- Stats -->
+  <div class="stats-row" id="org-stats"></div>
+
+  <!-- Bio -->
+  <div class="section" id="bio-section" style="display:none;">
+    <div class="section-title">About</div>
+    <div class="bio-text" id="org-bio"></div>
+    <a href="#" class="website-link" id="org-website" style="display:none;" target="_blank" rel="noopener">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+      <span id="org-website-text"></span>
+    </a>
+  </div>
+
+  <!-- Upcoming Events -->
+  <div class="section">
+    <div class="section-title">Upcoming Events</div>
+    <div class="event-grid" id="org-events"></div>
+  </div>
+</div>
+
+<footer>
+  <div style="margin-bottom:8px;"><a href="/" style="font-family:var(--fd);font-size:18px;font-weight:900;letter-spacing:-0.03em;">Pitch<span style="color:var(--ember);">.</span></a></div>
+  <div>Australia's marketplace for food vendors and event organisers.</div>
+</footer>
+
+<script>
+(function() {
+  const org = window.__PITCH_ORGANISER__;
+  if (!org) {
+    document.querySelector('.page-wrap').innerHTML = '<div class="empty-state" style="padding:80px 20px;font-size:15px;">Organiser not found.</div>';
+    return;
+  }
+
+  // Title
+  document.title = (org.org_name || 'Organiser') + ' — Pitch.';
+
+  // Banner
+  if (org.banner_url) {
+    document.getElementById('org-hero').innerHTML = `<img class="org-hero-banner" src="${org.banner_url}" alt="" />`;
+  }
+
+  // Avatar
+  const avatarEl = document.getElementById('org-avatar');
+  if (org.avatar_url) {
+    avatarEl.innerHTML = `<img src="${org.avatar_url}" alt="${org.org_name}" />`;
+  }
+
+  // Name
+  document.getElementById('org-name').textContent = org.org_name || 'Organiser';
+
+  // Badges
+  const badges = document.getElementById('org-badges');
+  if (org.abn_verified) badges.innerHTML += '<span class="badge badge-verified">ABN Verified</span>';
+  if (org.paused) {
+    document.getElementById('paused-banner').style.display = 'block';
+    badges.innerHTML += '<span class="badge badge-paused">Unavailable</span>';
+  }
+
+  // Stats
+  const statsEl = document.getElementById('org-stats');
+  const evCount = (org.events || []).length;
+  function starsHtml(rating) {
+    let s = '';
+    for (let i = 1; i <= 5; i++) s += `<span class="star ${i <= Math.round(rating) ? 'filled' : ''}">\u2605</span>`;
+    return s;
+  }
+  statsEl.innerHTML = `
+    <div class="stat-card"><div class="stat-value">${evCount}</div><div class="stat-label">Upcoming Events</div></div>
+    <div class="stat-card"><div class="stat-value">${org.avg_rating > 0 ? org.avg_rating.toFixed(1) : '—'}</div><div class="stat-label">${org.total_reviews > 0 ? starsHtml(org.avg_rating) + ' (' + org.total_reviews + ')' : 'No reviews yet'}</div></div>
+  `;
+
+  // Bio
+  if (org.bio) {
+    document.getElementById('bio-section').style.display = '';
+    document.getElementById('org-bio').textContent = org.bio;
+  }
+
+  // Website
+  if (org.website) {
+    const wEl = document.getElementById('org-website');
+    wEl.style.display = '';
+    wEl.href = org.website.startsWith('http') ? org.website : 'https://' + org.website;
+    document.getElementById('org-website-text').textContent = org.website.replace(/^https?:\/\//, '');
+  }
+
+  // Events
+  const evGrid = document.getElementById('org-events');
+  if (!org.events || org.events.length === 0) {
+    evGrid.innerHTML = '<div class="empty-state">No upcoming events.</div>';
+  } else {
+    evGrid.innerHTML = org.events.map(e => {
+      const dateStr = e.date_text || e.date_sort || '';
+      const fee = e.stall_fee_min && e.stall_fee_max ? `$${e.stall_fee_min} – $${e.stall_fee_max}` : e.stall_fee_min ? `From $${e.stall_fee_min}` : '';
+      const img = e.cover_image ? `<img class="event-card-img" src="${e.cover_image}" alt="" />` : `<div class="event-card-img"></div>`;
+      return `<a href="/events/${e.slug}" class="event-card">
+        ${img}
+        <div class="event-card-body">
+          <div class="event-card-name">${e.name}</div>
+          <div class="event-card-meta"><span>${e.suburb}, ${e.state}</span><span>${dateStr}</span></div>
+          ${fee ? `<div class="event-card-fee">${fee}</div>` : ''}
+        </div>
+      </a>`;
+    }).join('');
+  }
+})();
+</script>
+<script>
+(function() {
+  fetch('/api/me').then(r => r.json()).then(d => {
+    if (!d.user) return;
+    if (d.user.role === 'foodie') {
+      const nl = document.querySelector('.nav-links');
+      if (nl) nl.innerHTML = '<li><a href="/discover">My Feed</a></li><li><a href="/events">All Events</a></li><li><a href="/vendors">Vendors</a></li>';
+      const lo = document.getElementById('nav-loggedout');
+      if (lo) lo.remove();
+      const li = document.getElementById('nav-loggedin');
+      if (li) li.remove();
+      const nav = document.querySelector('.navbar');
+      const rightHtml = `<div style="display:flex;align-items:center;gap:10px;"><div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--text-mid);"><div style="width:28px;height:28px;border-radius:50%;background:var(--ember);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;">🍜</div><span>${d.user.first_name || 'Account'}</span></div><button onclick="fetch('/api/logout',{method:'POST'}).then(()=>location.href='/login')" style="font-size:13px;font-weight:600;color:var(--text-lo);background:transparent;border:none;cursor:pointer;padding:8px;font-family:inherit;">Sign out</button></div>`;
+      if (nav) nav.insertAdjacentHTML('beforeend', rightHtml);
+      return;
+    }
+    const lo = document.getElementById('nav-loggedout');
+    const li = document.getElementById('nav-loggedin');
+    if (lo) lo.style.display = 'none';
+    if (li) li.style.display = 'flex';
+    const lbl = document.getElementById('nav-user-label');
+    if (lbl) lbl.textContent = (d.user.vendor && d.user.vendor.trading_name) || (d.user.organiser && d.user.organiser.org_name) || d.user.first_name || 'Account';
+    const dl = document.getElementById('nav-dashboard-link');
+    if (dl) dl.href = d.user.role === 'organiser' ? '/dashboard/organiser' : '/dashboard/vendor';
+  }).catch(() => {});
+})();
+</script>
+</body>
+</html>

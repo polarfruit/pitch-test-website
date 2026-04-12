@@ -2618,9 +2618,9 @@ body::before {
           <div class="analytics-section-title">Profile views</div>
           <div class="analytics-locked-wrap gate-wrap" id="analytics-views-wrap">
             <div class="card">
-              <div style="display:flex;align-items:flex-end;gap:16px;margin-bottom:4px;">
+              <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:4px;">
                 <div style="font-family:var(--fd);font-size:48px;font-weight:900;letter-spacing:-0.04em;color:#5B8BE8;line-height:1;" id="analytics-views-count">—</div>
-                <div style="font-size:13px;color:var(--text-mid);padding-bottom:10px;" id="analytics-views-label">views in the last 30 days</div>
+                <div style="font-size:14px;color:var(--text-mid);" id="analytics-views-label">views in the last 30 days</div>
               </div>
               <div style="font-size:12px;color:var(--text-lo);margin-bottom:14px;" id="analytics-views-unique"></div>
               <canvas id="analytics-views-canvas" width="760" height="180" style="width:100%;height:180px;border-radius:8px;"></canvas>
@@ -6942,7 +6942,7 @@ function _renderBarChart(canvasId, dailyData, opts = {}) {
       emptyEl = document.createElement('div');
       emptyEl.className = 'chart-empty';
       emptyEl.style.cssText = 'text-align:center;padding:40px 20px;color:var(--text-lo);font-size:12px;line-height:1.6;';
-      emptyEl.textContent = 'No data for this period yet.';
+      emptyEl.textContent = 'No data yet';
       canvas.parentElement.insertBefore(emptyEl, canvas.nextSibling);
     }
     return;
@@ -7560,7 +7560,7 @@ function _applyAnalyticsData(data) {
       viewsEl.textContent = data.views.total;
       viewsEl.style.color = data.views.total > 0 ? '#5B8BE8' : 'var(--text-lo)';
     }
-    if (uniqueEl) uniqueEl.textContent = data.views.unique + ' unique visitor' + (data.views.unique !== 1 ? 's' : '');
+    if (uniqueEl) { uniqueEl.textContent = data.views.unique + ' unique visitor' + (data.views.unique !== 1 ? 's' : ''); uniqueEl.style.color = data.views.unique > 0 ? 'var(--text-mid)' : 'var(--text-lo)'; }
     var _lbl = document.getElementById('analytics-views-label');
     if (_lbl) {
       var _ab = document.querySelector('.van-range-btn.active');
@@ -7606,7 +7606,7 @@ function _applyAnalyticsData(data) {
       ].filter(s => s.count > 0);
       breakdownEl.style.display = 'block';
       breakdownEl.innerHTML = `
-        <div style="display:flex;border-radius:6px;overflow:hidden;height:10px;margin-bottom:10px;">
+        <div style="display:flex;border-radius:6px;overflow:hidden;height:10px;margin-bottom:10px;background:#ffffff08;">
           ${segments.map(s => `<div style="flex:${s.count};background:${s.color};" title="${s.label}: ${s.count}"></div>`).join('')}
         </div>
         <div style="display:flex;gap:16px;flex-wrap:wrap;">
@@ -7640,11 +7640,11 @@ function _applyAnalyticsData(data) {
         _renderSparkline('analytics-apps-trend-canvas', monthlyArr, '#2D8B55', 'total');
       } else if (_atc) {
         _atc.style.display = 'none';
-        if (!_atc.parentElement.querySelector('.empty-chart-msg')) _atc.insertAdjacentHTML('afterend', '<div class="empty-chart-msg" style="font-size:12px;color:var(--text-lo);text-align:center;padding:16px 0;">Not enough data for a trend yet</div>');
+        if (!_atc.parentElement.querySelector('.empty-chart-msg')) _atc.insertAdjacentHTML('afterend', '<div class="empty-chart-msg" style="font-size:12px;color:var(--text-lo);text-align:center;padding:16px 0;">No data yet</div>');
       }
     } else if (_atc) {
       _atc.style.display = 'none';
-      if (!_atc.parentElement.querySelector('.empty-chart-msg')) _atc.insertAdjacentHTML('afterend', '<div class="empty-chart-msg" style="font-size:12px;color:var(--text-lo);text-align:center;padding:16px 0;">No trend data yet</div>');
+      if (!_atc.parentElement.querySelector('.empty-chart-msg')) _atc.insertAdjacentHTML('afterend', '<div class="empty-chart-msg" style="font-size:12px;color:var(--text-lo);text-align:center;padding:16px 0;">No data yet</div>');
     }
 
     // ── Revenue ──
@@ -7664,7 +7664,7 @@ function _applyAnalyticsData(data) {
         _renderSparkline('analytics-rev-canvas', data.revenue.monthly, '#E8500A', 'total');
       } else if (_rcv) {
         _rcv.style.display = 'none';
-        if (!_rcv.parentElement.querySelector('.empty-chart-msg')) _rcv.insertAdjacentHTML('afterend', '<div class="empty-chart-msg" style="font-size:12px;color:var(--text-lo);text-align:center;padding:16px 0;">No revenue data yet</div>');
+        if (!_rcv.parentElement.querySelector('.empty-chart-msg')) _rcv.insertAdjacentHTML('afterend', '<div class="empty-chart-msg" style="font-size:12px;color:var(--text-lo);text-align:center;padding:16px 0;">No data yet</div>');
       }
     }
 
@@ -7691,7 +7691,7 @@ function _applyAnalyticsData(data) {
         _renderSparkline('analytics-review-canvas', data.reviews.trend, '#C9840A', 'avg_rating');
       } else if (_rvc) {
         _rvc.style.display = 'none';
-        if (!_rvc.parentElement.querySelector('.empty-chart-msg')) _rvc.insertAdjacentHTML('afterend', '<div class="empty-chart-msg" style="font-size:12px;color:var(--text-lo);text-align:center;padding:16px 0;">No rating data yet</div>');
+        if (!_rvc.parentElement.querySelector('.empty-chart-msg')) _rvc.insertAdjacentHTML('afterend', '<div class="empty-chart-msg" style="font-size:12px;color:var(--text-lo);text-align:center;padding:16px 0;">No data yet</div>');
       }
     }
 
@@ -7711,7 +7711,7 @@ function _applyAnalyticsData(data) {
           _renderSparkline('analytics-search-canvas', data.search.daily, '#2B5BA8', 'appearances');
         } else if (_scv) {
           _scv.style.display = 'none';
-          if (!_scv.parentElement.querySelector('.empty-chart-msg')) _scv.insertAdjacentHTML('afterend', '<div class="empty-chart-msg" style="font-size:12px;color:var(--text-lo);text-align:center;padding:16px 0;">No appearance data yet</div>');
+          if (!_scv.parentElement.querySelector('.empty-chart-msg')) _scv.insertAdjacentHTML('afterend', '<div class="empty-chart-msg" style="font-size:12px;color:var(--text-lo);text-align:center;padding:16px 0;">No data yet</div>');
         }
       }
 

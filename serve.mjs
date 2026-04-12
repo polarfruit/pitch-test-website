@@ -4429,7 +4429,7 @@ app.get('/vendors/:id', async (req, res) => {
 // GET /dashboard/loading — instant loading page (no DB queries)
 app.get('/dashboard/loading', (req, res) => {
   const role = req.query.to || 'vendor';
-  const dest = role === 'admin' ? '/admin' : role === 'organiser' ? '/dashboard/organiser' : '/dashboard/vendor';
+  const dest = role === 'admin' ? '/admin' : role === 'foodie' ? '/discover' : role === 'organiser' ? '/dashboard/organiser' : '/dashboard/vendor';
   res.setHeader('Cache-Control', 'no-cache, no-store');
   res.send(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Pitch. — Loading</title>
@@ -4443,7 +4443,7 @@ app.get('/dashboard/loading', (req, res) => {
 </head><body>
 <div class="logo"><div class="logo-dot"></div><span class="logo-text">Pitch.</span></div>
 <div class="spinner"></div>
-<div class="msg">Loading your dashboard…</div>
+<div class="msg">${role === 'foodie' ? 'Loading your feed…' : 'Loading your dashboard…'}</div>
 <script>window.location.replace('${dest}');</script>
 </body></html>`);
 });

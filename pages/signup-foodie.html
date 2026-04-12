@@ -221,7 +221,7 @@ async function doSignup() {
     });
     const data = await res.json();
     if (!res.ok) { showError(data.error || 'Signup failed.'); btn.textContent = 'Create free account →'; btn.disabled = false; return; }
-    window.location.href = data.redirect || '/discover';
+    window.location.href = '/dashboard/loading?to=foodie';
   } catch {
     showError('Network error — please check your connection.');
     btn.textContent = 'Create free account →'; btn.disabled = false;
@@ -274,7 +274,7 @@ async function handleGoogleCredential(response) {
     });
     const d = await r.json();
     if (!r.ok) { showError(d.error); return; }
-    if (d.redirect) window.location.href = d.redirect;
+    if (d.redirect) window.location.href = '/dashboard/loading?to=foodie';
   } catch { showError('Network error — please try again.'); }
 }
 
