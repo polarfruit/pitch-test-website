@@ -69,8 +69,9 @@ body::before {
 
 .vendor-card-mini {
   display: flex; align-items: center; gap: 10px;
-  background: #ffffff07; border: 1px solid #ffffff0a;
+  background: #ffffff09; border: 1px solid #ffffff0e;
   border-radius: 12px; padding: 10px 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
 .vendor-avatar {
   width: 36px; height: 36px; border-radius: 10px;
@@ -92,51 +93,56 @@ body::before {
 }
 
 /* Sidebar nav */
-.sidebar-nav { flex: 1; padding: 16px 12px; display: flex; flex-direction: column; gap: 2px; }
+.sidebar-nav { flex: 1; padding: 16px 14px; display: flex; flex-direction: column; gap: 2px; }
 .nav-section-label {
-  font-size: 9px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
-  color: var(--text-lo); padding: 12px 12px 6px;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--text-mid); padding: 16px 12px 7px;
 }
+.nav-section-label:first-child { padding-top: 4px; }
 .nav-link {
   display: flex; align-items: center; gap: 10px;
   padding: 10px 12px; border-radius: 10px; cursor: pointer;
-  font-size: 13px; font-weight: 600; color: var(--text-mid);
-  transition: all 0.14s; user-select: none; border: none;
-  background: transparent; width: 100%; text-align: left; text-decoration: none;
+  font-size: 13.5px; font-weight: 600; color: var(--text-mid);
+  transition: background 0.14s, color 0.14s; user-select: none;
+  border: 1px solid transparent; background: transparent; width: 100%; text-align: left; text-decoration: none; font-family: var(--fb);
 }
 .nav-link:hover { background: #ffffff08; color: var(--text-hi); }
-.nav-link.active { background: var(--ember-bg); color: var(--ember); border: 1px solid #E8500A18; }
-.nav-icon { font-size: 15px; flex-shrink: 0; width: 20px; text-align: center; }
+.nav-link:focus-visible { outline: 2px solid var(--ember); outline-offset: -2px; border-radius: 10px; }
+.nav-link.active { background: var(--ember-bg); color: var(--ember); border-color: #E8500A18; }
+.nav-icon { font-size: 15px; flex-shrink: 0; width: 20px; text-align: center; opacity: 0.8; }
+.nav-link:hover .nav-icon, .nav-link.active .nav-icon { opacity: 1; }
 .nav-badge {
   margin-left: auto; background: var(--ember); color: #fff;
-  font-size: 11px; font-weight: 800; padding: 2px 8px; border-radius: 100px;
-  min-width: 20px; text-align: center;
+  font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 100px;
+  min-width: 18px; text-align: center;
   animation: badge-pulse 2s ease-in-out infinite;
 }
 @keyframes badge-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(232, 80, 10, 0.4); }
-  50%      { box-shadow: 0 0 0 5px rgba(232, 80, 10, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(232, 80, 10, 0.35); }
+  50%      { box-shadow: 0 0 0 4px rgba(232, 80, 10, 0); }
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes badge-pulse-gold {
   0%, 100% { box-shadow: 0 0 0 0 rgba(201, 132, 10, 0.4); }
-  50%      { box-shadow: 0 0 0 5px rgba(201, 132, 10, 0); }
+  50%      { box-shadow: 0 0 0 4px rgba(201, 132, 10, 0); }
 }
 .nav-badge[style*="gold"] {
   animation: badge-pulse-gold 2s ease-in-out infinite;
 }
 
 .sidebar-footer {
-  padding: 16px 12px; border-top: 1px solid #ffffff07;
-  display: flex; flex-direction: column; gap: 4px;
+  padding: 12px 14px 16px; border-top: 1px solid #ffffff0e; margin-top: 8px;
+  display: flex; flex-direction: column; gap: 2px;
 }
 .sidebar-footer-link {
   display: flex; align-items: center; gap: 10px;
-  padding: 8px 12px; border-radius: 8px; cursor: pointer;
-  font-size: 12px; font-weight: 500; color: var(--text-lo);
-  transition: all 0.14s; text-decoration: none; border: none; background: transparent; width: 100%;
+  padding: 9px 12px; border-radius: 8px; cursor: pointer;
+  font-size: 12.5px; font-weight: 600; color: var(--text-lo);
+  transition: background 0.14s, color 0.14s; text-decoration: none; border: none; background: transparent; width: 100%; font-family: var(--fb);
 }
-.sidebar-footer-link:hover { color: var(--text-mid); background: #ffffff06; }
+.sidebar-footer-link:hover { color: var(--text-mid); background: #ffffff08; }
+.sidebar-footer-link.logout { color: #8B4A3A; }
+.sidebar-footer-link.logout:hover { color: var(--terra); background: #C0392B0a; }
 
 /* ── MAIN CONTENT ───────────────────────────────────────────────────────── */
 .main {
@@ -1642,6 +1648,16 @@ body::before {
 </style>
 </head>
 <body>
+<!-- Loading overlay — renders instantly, hidden when dashboard JS initializes -->
+<div id="dashboard-loading-overlay" style="position:fixed;inset:0;background:#1A1612;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10000;transition:opacity 0.3s;">
+  <div style="display:flex;align-items:center;gap:9px;margin-bottom:32px;">
+    <div style="width:28px;height:28px;border-radius:50%;background:#E8500A;"></div>
+    <span style="font-family:'Fraunces',serif;font-size:22px;font-weight:900;color:#FDF4E7;">Pitch.</span>
+  </div>
+  <div style="width:36px;height:36px;border:3px solid #2A2018;border-top-color:#E8500A;border-radius:50%;animation:_dspin .6s linear infinite;"></div>
+  <div style="color:#6B5A4A;font-size:13px;margin-top:20px;font-family:'Instrument Sans',system-ui,sans-serif;">Loading your dashboard…</div>
+  <style>@keyframes _dspin{to{transform:rotate(360deg)}}</style>
+</div>
 <div id="global-err-toast" style="display:none;position:fixed;bottom:16px;left:50%;transform:translateX(-50%);background:#C0392B;color:#fff;font-size:12px;font-family:monospace;padding:10px 16px;border-radius:8px;z-index:9999;max-width:90vw;word-break:break-all;"></div>
 
 <!-- Announcement banner -->
@@ -1766,10 +1782,6 @@ body::before {
     <button class="nav-link active" onclick="showPanel('overview', this)">
       <span class="nav-icon">⬡</span> Overview
     </button>
-    <button class="nav-link" onclick="showPanel('messages', this)">
-      <span class="nav-icon">💬</span> Messages
-      <span class="nav-badge" id="msg-badge" style="display:none;">0</span>
-    </button>
 
     <div class="nav-section-label">Discover</div>
     <button class="nav-link" onclick="showPanel('browse', this)">
@@ -1815,14 +1827,21 @@ body::before {
       <span class="nav-icon">📊</span> Analytics
     </button>
 
-    <button class="nav-link" onclick="showPanel('settings', this)" style="margin-top:auto;">
+    <div class="nav-section-label">Account</div>
+    <button class="nav-link" onclick="showPanel('messages', this)">
+      <span class="nav-icon">✉️</span> Messages
+      <span class="nav-badge" id="msg-badge" style="display:none;">0</span>
+    </button>
+    <button class="nav-link" onclick="showPanel('settings', this)">
       <span class="nav-icon">⚙️</span> Settings
     </button>
+    <a href="#" id="sidebar-profile-link" class="nav-link" style="margin-top:auto;">
+      <span class="nav-icon">↗</span> View public profile
+    </a>
   </nav>
 
   <div class="sidebar-footer">
-    <a href="#" id="sidebar-profile-link" class="sidebar-footer-link">↗ View public profile</a>
-    <button class="sidebar-footer-link" id="logout-btn" onclick="pitchLogout()">🚪 Log out</button>
+    <button class="sidebar-footer-link logout" id="logout-btn" onclick="pitchLogout()">🚪 Log out</button>
   </div>
 </aside>
 
@@ -3445,6 +3464,7 @@ async function _loadConversation(threadKey) {
   if (!_threadCache[threadKey]) _threadCache[threadKey] = { orgName: '', eventName: '', messages: [] };
   _threadCache[threadKey].messages = messages || [];
   if (thread && thread.organiser_name) _threadCache[threadKey].orgName = thread.organiser_name;
+  if (thread && thread.organiser_user_id) _threadCache[threadKey].orgUserId = thread.organiser_user_id;
   // Determine which last_active belongs to the OTHER party
   const myId = window.__PITCH_USER__ && window.__PITCH_USER__.id;
   if (thread) {
@@ -3700,6 +3720,7 @@ async function loadAllThreads() {
       const key = t.thread_key;
       if (!_threadCache[key]) _threadCache[key] = { orgName: t.organiser_name || '', eventName: '', messages: [] };
       _threadCache[key].orgName     = t.organiser_name || _threadCache[key].orgName;
+      _threadCache[key].orgUserId   = t.organiser_user_id || _threadCache[key].orgUserId;
       _threadCache[key].unreadCount = t.unread_count || 0;
       _threadCache[key].lastBody    = t.last_body || '';
       _threadCache[key].lastAt      = t.last_at || '';
@@ -5338,8 +5359,13 @@ function previewAndUploadAvatar(input) {
   if (u && u.avatar_url) _applyAvatarEverywhere(u.avatar_url);
 })();
 
-initDashboard().catch(e => {
+initDashboard().then(() => {
+  const ol = document.getElementById('dashboard-loading-overlay');
+  if (ol) { ol.style.opacity = '0'; setTimeout(() => ol.remove(), 300); }
+}).catch(e => {
   console.error('[initDashboard fatal]', e);
+  const ol = document.getElementById('dashboard-loading-overlay');
+  if (ol) { ol.style.opacity = '0'; setTimeout(() => ol.remove(), 300); }
   const msgArea = document.getElementById('convo-messages');
   if (msgArea && document.getElementById('panel-messages').classList.contains('active')) {
     msgArea.innerHTML = `<div style="color:var(--terra);font-size:13px;text-align:center;padding:40px 20px;">Startup error: ${e.message}</div>`;

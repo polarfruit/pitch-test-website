@@ -253,13 +253,21 @@ function requireAuth(req, res, next) {
   const tok = req.headers['x-pitch-auth'];
   if (tok) {
     const auth = verifyPageToken(tok);
-    if (auth) { req.session = auth; return next(); }
+    if (auth) { req.session = auth; _touchActive(auth.userId); return next(); }
   }
   // Cookie session (regular user or admin with userId set)
-  if (req.session.userId) return next();
+  if (req.session.userId) { _touchActive(req.session.userId); return next(); }
   // Admin session without userId — backfill it
   if (req.session.isAdmin) { req.session.userId = 1000; return next(); }
   return res.status(401).json({ error: 'Not authenticated' });
+}
+// Throttled last_active update — at most once per 60s per user
+const _activeTimers = {};
+function _touchActive(uid) {
+  if (!uid || _activeTimers[uid]) return;
+  _activeTimers[uid] = true;
+  try { stmts.touchUserActive.run(uid); } catch {}
+  setTimeout(() => { delete _activeTimers[uid]; }, 60000);
 }
 
 function requireAdmin(req, res, next) {
@@ -4418,11 +4426,36 @@ app.get('/vendors/:id', async (req, res) => {
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.send(readHtml('pages/vendor-detail.html'));
 });
+// GET /dashboard/loading — instant loading page (no DB queries)
+app.get('/dashboard/loading', (req, res) => {
+  const role = req.query.to || 'vendor';
+  const dest = role === 'organiser' ? '/dashboard/organiser' : '/dashboard/vendor';
+  res.setHeader('Cache-Control', 'no-cache, no-store');
+  res.send(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pitch. — Loading</title>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{background:#1A1612;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;font-family:'Instrument Sans',system-ui,sans-serif;overflow:hidden}
+.logo{display:flex;align-items:center;gap:9px;margin-bottom:32px}.logo-dot{width:28px;height:28px;border-radius:50%;background:#E8500A}.logo-text{font-family:'Fraunces',serif;font-size:22px;font-weight:900;color:#FDF4E7}
+.spinner{width:36px;height:36px;border:3px solid #2A2018;border-top-color:#E8500A;border-radius:50%;animation:spin .6s linear infinite}
+.msg{color:#6B5A4A;font-size:13px;margin-top:20px;letter-spacing:0.01em}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@900&display=swap" rel="stylesheet">
+</head><body>
+<div class="logo"><div class="logo-dot"></div><span class="logo-text">Pitch.</span></div>
+<div class="spinner"></div>
+<div class="msg">Loading your dashboard…</div>
+<script>window.location.replace('${dest}');</script>
+</body></html>`);
+});
+
 app.get('/dashboard/vendor',           serveDashboard('pages/vendor-dashboard.html',     'vendor',    vendorInitData));
 app.get('/dashboard/vendor/*splat',    serveDashboard('pages/vendor-dashboard.html',     'vendor',    vendorInitData));
 app.get('/dashboard/organiser',        serveDashboard('pages/organiser-dashboard.html',  'organiser', orgInitData));
 app.get('/dashboard/organiser/*splat', serveDashboard('pages/organiser-dashboard.html',  'organiser', orgInitData));
-app.get('/admin/login',         page('pages/admin-login.html', { skipBanner: true }));
+app.get('/admin/login', (req, res, next) => {
+  if (req.session.isAdmin) return res.redirect('/admin');
+  next();
+}, page('pages/admin-login.html', { skipBanner: true }));
 app.get('/admin',               serveAdminDashboard());
 app.get('/admin/*splat',        serveAdminDashboard());
 
