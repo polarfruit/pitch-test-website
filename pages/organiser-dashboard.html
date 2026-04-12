@@ -613,7 +613,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .analytics-bar-label span:last-child { font-weight:600; color:var(--text-mid); }
 .analytics-bar-track { height:6px; background:#ffffff14; border-radius:3px; overflow:hidden; }
 .analytics-bar-fill { height:100%; border-radius:3px; transition:width 0.5s; }
-.analytics-empty { text-align:center; padding:60px 20px; }
+.analytics-empty { text-align:center; padding:20px; min-height:280px; display:flex; flex-direction:column; align-items:center; justify-content:center; }
 .analytics-empty-icon { font-size:40px; margin-bottom:16px; opacity:0.4; }
 .analytics-empty-title { font-size:15px; font-weight:700; color:var(--text-hi); margin-bottom:6px; }
 .analytics-empty-sub { font-size:13px; color:var(--text-lo); margin-bottom:20px; line-height:1.5; }
@@ -623,7 +623,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .analytics-section.active { display:block; }
 .analytics-tab-strip { display:flex; gap:6px; margin-bottom:24px; flex-wrap:wrap; }
 .analytics-tab { font-size:12px; font-weight:700; color:var(--text-lo); background:#ffffff08; border:1px solid #ffffff10; border-radius:8px; padding:8px 16px; cursor:pointer; transition:border-color 0.14s, color 0.14s; font-family:var(--fb); }
-.analytics-tab:hover { color:var(--text-mid); border-color:#ffffff18; }
+.analytics-tab:hover { color:var(--text-hi); background:#ffffff0c; border-color:#ffffff20; }
 .analytics-tab.active { color:var(--ember); background:var(--ember-bg); border-color:#E8500A30; }
 .analytics-section-title { font-size:13px; font-weight:700; color:var(--text-mid); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:14px; margin-top:4px; }
 .analytics-table { width:100%; border-collapse:collapse; font-size:13px; }
@@ -1528,8 +1528,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
     <!-- ── PANEL: ANALYTICS ───────────────────────────────────────────────── -->
     <div class="panel" id="panel-analytics">
       <div style="max-width:920px;">
-        <div style="margin-bottom:24px;">
-          <div style="font-size:20px;font-family:var(--fd);font-weight:900;letter-spacing:-0.02em;color:var(--text-hi);margin-bottom:6px;">Market Analytics</div>
+        <div style="margin-bottom:20px;">
           <div style="font-size:13px;color:var(--text-lo);">Real-time insights across revenue, applications, vendors, and events.</div>
         </div>
         <!-- Top-level summary -->
@@ -4529,13 +4528,18 @@ async function loadOrgAnalytics() {
     const vend = data.vendors || {};
     const rep = data.reputation || {};
     summaryEl.style.display = '';
+    const _revColor = Number(rev.collected) > 0 ? 'var(--herb)' : 'var(--text-lo)';
+    const _respVal = _anaFmtHours(apps.avg_response_hours);
+    const _respColor = _respVal === '—' ? 'var(--text-lo)' : 'var(--text-hi)';
+    const _ratVal = rep.avg_rating || '—';
+    const _ratColor = _ratVal === '—' ? 'var(--text-lo)' : (rep.avg_rating >= 4 ? 'var(--herb)' : rep.avg_rating >= 3 ? 'var(--gold)' : 'var(--text-mid)');
     summaryEl.innerHTML = `
-      <div class="analytics-stat-card"><div class="analytics-stat-value" style="color:var(--herb);">${_anaFmtMoney(rev.collected)}</div><div class="analytics-stat-label">Revenue</div></div>
+      <div class="analytics-stat-card"><div class="analytics-stat-value" style="color:${_revColor};">${_anaFmtMoney(rev.collected)}</div><div class="analytics-stat-label">Revenue</div></div>
       <div class="analytics-stat-card"><div class="analytics-stat-value">${apps.total || 0}</div><div class="analytics-stat-label">Applications</div></div>
       <div class="analytics-stat-card"><div class="analytics-stat-value" style="color:var(--herb);">${apps.approval_rate || 0}%</div><div class="analytics-stat-label">Approval Rate</div></div>
-      <div class="analytics-stat-card"><div class="analytics-stat-value">${_anaFmtHours(apps.avg_response_hours)}</div><div class="analytics-stat-label">Response Time</div></div>
+      <div class="analytics-stat-card"><div class="analytics-stat-value" style="color:${_respColor};">${_respVal}</div><div class="analytics-stat-label">Response Time</div></div>
       <div class="analytics-stat-card"><div class="analytics-stat-value">${vend.total_unique || 0}</div><div class="analytics-stat-label">Vendors</div></div>
-      <div class="analytics-stat-card"><div class="analytics-stat-value" style="color:${(rep.avg_rating||0)>=4?'var(--herb)':(rep.avg_rating||0)>=3?'var(--gold)':'var(--text-mid)'};">${rep.avg_rating || '—'}</div><div class="analytics-stat-label">Rating</div></div>
+      <div class="analytics-stat-card"><div class="analytics-stat-value" style="color:${_ratColor};">${_ratVal}</div><div class="analytics-stat-label">Rating</div></div>
     `;
     // Render each section
     _renderRevenue(data.revenue);
