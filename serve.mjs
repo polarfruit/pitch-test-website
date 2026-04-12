@@ -4337,7 +4337,7 @@ app.get('/', async (req, res) => {
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.setHeader('Cache-Control', 'public, max-age=60');
   const now = Date.now();
-  if (_homeCache && now - _homeCacheTs < HOME_TTL) return res.send(_homeCache);
+  if (_homeCache && now - _homeCacheTs < HOME_TTL) return res.send(injectSession(_homeCache, req));
   let html = readHtml('pages/index.html');
   html = injectBanner(html);
   try {
@@ -4347,7 +4347,7 @@ app.get('/', async (req, res) => {
   } catch(e) { /* fallback to client fetch */ }
   _homeCache = html;
   _homeCacheTs = now;
-  res.send(html);
+  res.send(injectSession(html, req));
 });
 app.get('/how-it-works',        page('pages/how-it-works.html'));
 let _eventsPageCache = null;
@@ -4358,7 +4358,7 @@ app.get('/events', async (req, res) => {
     const now = Date.now();
     if (_eventsPageCache && now - _eventsPageCacheTs < EVENTS_PAGE_TTL) {
       res.setHeader('Cache-Control', 'public, max-age=60');
-      return res.send(_eventsPageCache);
+      return res.send(injectSession(_eventsPageCache, req));
     }
     const events = await stmts.publishedEvents.all();
     const today = new Date().toISOString().slice(0, 10);
@@ -4386,10 +4386,10 @@ window.__PITCH_MAP_EVENTS__ = ${JSON.stringify(mapData)};
     _eventsPageCache = html;
     _eventsPageCacheTs = now;
     res.setHeader('Cache-Control', 'public, max-age=60');
-    res.send(html);
+    res.send(injectSession(html, req));
   } catch (e) {
     console.error('[events page]', e);
-    res.send(injectBanner(readHtml('pages/events.html')));
+    res.send(injectSession(injectBanner(readHtml('pages/events.html')), req));
   }
 });
 app.get('/vendors',             page('pages/vendors.html'));

@@ -2630,11 +2630,11 @@ body::before {
               <div id="analytics-views-extra" style="display:none;margin-top:16px;">
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
                   <div>
-                    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-lo);margin-bottom:8px;">Traffic source</div>
+                    <div class="an-stat-label" style="margin-bottom:8px;">Traffic source</div>
                     <div id="analytics-views-sources"></div>
                   </div>
                   <div>
-                    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-lo);margin-bottom:8px;">Viewer type</div>
+                    <div class="an-stat-label" style="margin-bottom:8px;">Viewer type</div>
                     <div id="analytics-views-roles"></div>
                   </div>
                 </div>
@@ -7242,6 +7242,8 @@ function _renderFunnel(containerId, funnel) {
     if (i > 0 && steps[i - 1].value > 0) {
       const convPct = Math.round((s.value / steps[i - 1].value) * 100);
       convLabel = `<div style="width:40px;font-size:10px;color:var(--text-lo);text-align:right;">${convPct}%</div>`;
+    } else if (i > 0) {
+      convLabel = '<div style="width:40px;font-size:10px;color:var(--text-lo);text-align:right;">—</div>';
     } else {
       convLabel = '<div style="width:40px;"></div>';
     }
