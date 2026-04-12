@@ -3,21 +3,28 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<link rel="icon" type="image/x-icon" href="/favicon.ico">
-<link rel="icon" type="image/png" sizes="64x64" href="/favicon.png">
-<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="64x64" href="/favicon.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
   <title>Admin — Pitch.</title>
-  <link rel="stylesheet" href="/fonts/fonts.css">
   <link rel="stylesheet" href="/fonts/fonts.css">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: #1A1612; color: #FDF4E7; font-family: 'Instrument Sans', sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
 
+    body {
+      background: #1A1612; color: #FDF4E7; font-family: 'Instrument Sans', sans-serif;
+      min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px;
+    }
+
+    /* ── Initial hidden state — reveal after session check ── */
     .card {
       width: 100%; max-width: 400px;
       background: #231E19; border: 1px solid #2A2018; border-radius: 18px; padding: 40px;
       box-shadow: 0 24px 64px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03);
+      opacity: 0; transform: translateY(8px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
     }
+    .card.visible { opacity: 1; transform: translateY(0); }
 
     .logo { display: flex; align-items: center; gap: 9px; margin-bottom: 32px; }
     .logo-dot { width: 28px; height: 28px; border-radius: 50%; background: #E8500A; }
@@ -39,44 +46,78 @@
     .field-input {
       width: 100%; background: #1A1612; border: 1.5px solid #2A2018; border-radius: 10px;
       color: #FDF4E7; font-family: 'Instrument Sans', sans-serif; font-size: 15px;
-      padding: 12px 16px; outline: none; transition: border-color 0.2s;
+      padding: 12px 16px; outline: none; transition: border-color 0.18s ease;
     }
     .field-input:focus { border-color: #E8500A; }
     .field-input::placeholder { color: #4A3C30; }
+    .field-input.input-error { border-color: #C0392B; }
 
     .pw-wrap { position: relative; }
     .pw-toggle {
       position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
       background: none; border: none; cursor: pointer; color: #6B5A4A; font-size: 13px;
-      font-family: inherit; font-weight: 600;
+      font-family: inherit; font-weight: 600; transition: color 0.15s;
     }
     .pw-toggle:hover { color: #A89880; }
+    .pw-toggle:focus-visible { outline: 2px solid #E8500A; outline-offset: 2px; border-radius: 4px; }
 
     .btn-submit {
       width: 100%; background: #E8500A; color: #fff; border: none; border-radius: 10px;
       font-family: 'Instrument Sans', sans-serif; font-size: 15px; font-weight: 600;
       padding: 14px; cursor: pointer; margin-top: 20px;
-      transition: background 0.18s, transform 0.12s;
+      transition: background 0.15s ease, transform 0.1s ease, opacity 0.15s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
     }
     .btn-submit:hover { background: #FF6B2B; }
     .btn-submit:active { transform: scale(0.98); }
-    .btn-submit:disabled { background: #4A3C30; cursor: not-allowed; }
+    .btn-submit:focus-visible { outline: 2px solid #FF6B2B; outline-offset: 2px; }
+    .btn-submit:disabled { background: #3A2E22; color: #6B5A4A; cursor: not-allowed; transform: none; }
+
+    .btn-spinner {
+      width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.25);
+      border-top-color: #fff; border-radius: 50%;
+      animation: spin 0.5s linear infinite; display: none;
+    }
+    .btn-submit.loading .btn-spinner { display: block; }
+    .btn-submit.loading .btn-label { display: none; }
 
     .error-box {
-      display: none; background: rgba(192,57,43,0.1); border: 1px solid rgba(192,57,43,0.3);
+      background: rgba(192,57,43,0.1); border: 1px solid rgba(192,57,43,0.3);
       border-radius: 10px; padding: 12px 14px; font-size: 13px; color: #C0392B;
       margin-top: 14px; line-height: 1.5;
+      max-height: 0; overflow: hidden; opacity: 0;
+      transition: max-height 0.25s ease, opacity 0.2s ease, padding 0.25s ease, margin 0.25s ease;
+      padding: 0 14px; margin-top: 0;
     }
-    .error-box.show { display: block; }
+    .error-box.show {
+      max-height: 80px; opacity: 1; padding: 12px 14px; margin-top: 14px;
+    }
 
     .footer-links { text-align: center; font-size: 13px; color: #6B5A4A; margin-top: 24px; }
-    .footer-links a { color: #6B5A4A; text-decoration: none; }
+    .footer-links a {
+      color: #6B5A4A; text-decoration: none; transition: color 0.15s;
+    }
     .footer-links a:hover { color: #A89880; }
+    .footer-links a:focus-visible { outline: 2px solid #E8500A; outline-offset: 2px; border-radius: 4px; }
+
+    /* ── Shake animation on bad credentials ── */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      15% { transform: translateX(-6px); }
+      30% { transform: translateX(5px); }
+      45% { transform: translateX(-4px); }
+      60% { transform: translateX(3px); }
+      75% { transform: translateX(-2px); }
+    }
+    .shake { animation: shake 0.4s ease; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
   </style>
 </head>
 <body>
 
-<div class="card">
+<div class="card" id="loginCard">
   <div class="logo">
     <div class="logo-dot"></div>
     <span class="logo-text">Pitch.</span>
@@ -90,22 +131,27 @@
   <h1>Admin sign in</h1>
   <p class="sub">Restricted area. Authorised personnel only.</p>
 
-  <div class="field-group">
-    <label class="field-label">Username</label>
-    <input class="field-input" type="text" id="admin-username" placeholder="Username" autocomplete="username" />
-  </div>
-
-  <div class="field-group">
-    <label class="field-label">Password</label>
-    <div class="pw-wrap">
-      <input class="field-input" type="password" id="admin-password" placeholder="Password" autocomplete="current-password" style="padding-right:52px;" />
-      <button class="pw-toggle" type="button" onclick="togglePw()">Show</button>
+  <form id="loginForm" autocomplete="on" novalidate>
+    <div class="field-group">
+      <label class="field-label" for="admin-username">Username</label>
+      <input class="field-input" type="text" id="admin-username" name="username" placeholder="Username" autocomplete="username" autofocus />
     </div>
-  </div>
 
-  <div class="error-box" id="admin-error"></div>
+    <div class="field-group">
+      <label class="field-label" for="admin-password">Password</label>
+      <div class="pw-wrap">
+        <input class="field-input" type="password" id="admin-password" name="password" placeholder="Password" autocomplete="current-password" style="padding-right:52px;" />
+        <button class="pw-toggle" type="button" tabindex="0" id="pwToggle">Show</button>
+      </div>
+    </div>
 
-  <button class="btn-submit" id="admin-btn" onclick="doAdminLogin()">Sign in</button>
+    <div class="error-box" id="admin-error"></div>
+
+    <button class="btn-submit" type="submit" id="admin-btn">
+      <span class="btn-label">Sign in</span>
+      <div class="btn-spinner"></div>
+    </button>
+  </form>
 
   <div class="footer-links" style="margin-top:20px;">
     <a href="/">← Back to Pitch.</a>
@@ -113,56 +159,106 @@
 </div>
 
 <script>
-  function togglePw() {
-    const inp = document.getElementById('admin-password');
-    const btn = document.querySelector('.pw-toggle');
-    inp.type = inp.type === 'password' ? 'text' : 'password';
-    btn.textContent = inp.type === 'password' ? 'Show' : 'Hide';
+(function() {
+  const form     = document.getElementById('loginForm');
+  const btn      = document.getElementById('admin-btn');
+  const errEl    = document.getElementById('admin-error');
+  const userInp  = document.getElementById('admin-username');
+  const passInp  = document.getElementById('admin-password');
+  const card     = document.getElementById('loginCard');
+  const pwToggle = document.getElementById('pwToggle');
+
+  // ── Check existing session first — redirect instantly if already admin ──
+  fetch('/api/me', { credentials: 'same-origin' })
+    .then(r => r.json())
+    .then(d => {
+      if (d.user && d.user.id === 1000) {
+        // Already authenticated — go straight to admin
+        window.location.href = '/dashboard/loading?to=admin';
+      } else {
+        // Not authenticated — reveal the login card
+        card.classList.add('visible');
+        userInp.focus();
+      }
+    })
+    .catch(() => {
+      card.classList.add('visible');
+      userInp.focus();
+    });
+
+  // ── Password toggle ──
+  pwToggle.addEventListener('click', () => {
+    const isHidden = passInp.type === 'password';
+    passInp.type = isHidden ? 'text' : 'password';
+    pwToggle.textContent = isHidden ? 'Hide' : 'Show';
+  });
+
+  // ── Clear error on typing ──
+  userInp.addEventListener('input', clearError);
+  passInp.addEventListener('input', clearError);
+
+  function clearError() {
+    errEl.classList.remove('show');
+    userInp.classList.remove('input-error');
+    passInp.classList.remove('input-error');
   }
 
-  async function doAdminLogin() {
-    const btn = document.getElementById('admin-btn');
-    const errEl = document.getElementById('admin-error');
-    errEl.classList.remove('show');
+  function showError(msg) {
+    errEl.textContent = msg;
+    errEl.classList.add('show');
+    // Shake the card
+    card.classList.remove('shake');
+    void card.offsetWidth; // force reflow to restart animation
+    card.classList.add('shake');
+  }
 
-    const username = document.getElementById('admin-username').value.trim();
-    const password = document.getElementById('admin-password').value;
+  // ── Form submit ──
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    clearError();
+
+    const username = userInp.value.trim();
+    const password = passInp.value;
 
     if (!username || !password) {
-      errEl.textContent = 'Please enter your username and password.';
-      errEl.classList.add('show');
+      if (!username) userInp.classList.add('input-error');
+      if (!password) passInp.classList.add('input-error');
+      showError('Please enter your username and password.');
+      (username ? passInp : userInp).focus();
       return;
     }
 
-    btn.textContent = 'Signing in…';
+    // Loading state
+    btn.classList.add('loading');
     btn.disabled = true;
 
     try {
       const res = await fetch('/api/admin/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
         body: JSON.stringify({ username, password }),
       });
       const data = await res.json();
+
       if (!res.ok) {
-        errEl.textContent = data.error || 'Invalid credentials.';
-        errEl.classList.add('show');
-        btn.textContent = 'Sign in';
+        showError(data.error || 'Invalid credentials.');
+        btn.classList.remove('loading');
         btn.disabled = false;
+        passInp.value = '';
+        passInp.focus();
         return;
       }
-      window.location.href = '/admin';
-    } catch (e) {
-      errEl.textContent = 'Network error — please check your connection.';
-      errEl.classList.add('show');
-      btn.textContent = 'Sign in';
+
+      // Success — redirect through instant loading page
+      window.location.href = '/dashboard/loading?to=admin';
+    } catch (err) {
+      showError('Network error — please check your connection.');
+      btn.classList.remove('loading');
       btn.disabled = false;
     }
-  }
-
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Enter') doAdminLogin();
   });
+})();
 </script>
 </body>
 </html>

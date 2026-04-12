@@ -4429,7 +4429,7 @@ app.get('/vendors/:id', async (req, res) => {
 // GET /dashboard/loading — instant loading page (no DB queries)
 app.get('/dashboard/loading', (req, res) => {
   const role = req.query.to || 'vendor';
-  const dest = role === 'organiser' ? '/dashboard/organiser' : '/dashboard/vendor';
+  const dest = role === 'admin' ? '/admin' : role === 'organiser' ? '/dashboard/organiser' : '/dashboard/vendor';
   res.setHeader('Cache-Control', 'no-cache, no-store');
   res.send(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Pitch. — Loading</title>
