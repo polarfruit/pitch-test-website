@@ -80,6 +80,7 @@
       <a href="/dashboard/vendor" id="nav-dashboard-link" style="color:var(--text-hi,#FDF4E7);text-decoration:none;font-size:14px;font-weight:600;display:flex;align-items:center;gap:4px;"><span id="nav-user-label">Account</span> ▾</a>
     </div>
   </nav>
+  <script>(function(){var l=document.getElementById('nav-loggedout'),n=document.querySelector('.nav-links');if(l)l.style.display='none';if(n)n.style.visibility='hidden';})();</script>
 
   <main>
   <div class="wrap" style="max-width:1100px;">
@@ -171,10 +172,10 @@
 
 <script>
 fetch('/api/me',{credentials:'include'}).then(r=>r.ok?r.json():null).then(d=>{
-  if(!d||!d.user)return;
+  if(!d||!d.user){var lo=document.getElementById('nav-loggedout'),nl=document.querySelector('.nav-links');if(lo)lo.style.display='';if(nl)nl.style.visibility='';return;}
   if(d.user.role==='foodie'){
     const nl=document.querySelector('.nav-links');
-    if(nl)nl.innerHTML='<li><a href="/discover">My Feed</a></li><li><a href="/events">All Events</a></li><li><a href="/vendors">Vendors</a></li>';
+    if(nl){nl.innerHTML='<li><a href="/discover">My Feed</a></li><li><a href="/events">All Events</a></li><li><a href="/vendors">Vendors</a></li>';nl.style.visibility='';}
     const lo=document.getElementById('nav-loggedout');if(lo)lo.remove();
     const li=document.getElementById('nav-loggedin');if(li)li.remove();
     const nav=document.querySelector('.navbar'),ham=nav&&nav.querySelector('.nav-hamburger');
@@ -184,6 +185,7 @@ fetch('/api/me',{credentials:'include'}).then(r=>r.ok?r.json():null).then(d=>{
     else if(nav)nav.insertAdjacentHTML('beforeend',rightHtml);
     return;
   }
+  document.querySelector('.nav-links').style.visibility='';
   const lo=document.getElementById('nav-loggedout');if(lo)lo.style.display='none';
   const li=document.getElementById('nav-loggedin');if(li)li.style.display='flex';
   const lbl=document.getElementById('nav-user-label');
@@ -191,7 +193,7 @@ fetch('/api/me',{credentials:'include'}).then(r=>r.ok?r.json():null).then(d=>{
   if(d.user.role==='vendor'){if(link)link.href='/dashboard/vendor';if(lbl)lbl.textContent=d.user.business_name||'Dashboard';}
   else if(d.user.role==='organiser'){if(link)link.href='/dashboard/organiser';if(lbl)lbl.textContent=d.user.business_name||'Dashboard';}
   else if(d.user.role==='admin'){if(link)link.href='/dashboard/admin';if(lbl)lbl.textContent='Admin';}
-}).catch(()=>{});
+}).catch(()=>{var lo=document.getElementById('nav-loggedout'),nl=document.querySelector('.nav-links');if(lo)lo.style.display='';if(nl)nl.style.visibility='';});
 </script>
 </body>
 </html>

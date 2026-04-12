@@ -171,6 +171,7 @@ footer a { color: var(--ember); text-decoration: none; }
     <a href="/dashboard/vendor" id="nav-dashboard-link" style="font-family:var(--fb);font-size:13px;font-weight:600;color:var(--text-mid);text-decoration:none;padding:9px 16px;border-radius:8px;transition:color 0.14s;"><span id="nav-user-label">Account</span> ▾</a>
   </div>
 </nav>
+<script>(function(){var l=document.getElementById('nav-loggedout'),n=document.querySelector('.nav-links');if(l)l.style.display='none';if(n)n.style.visibility='hidden';})();</script>
 
 <!-- Hero Banner -->
 <div class="org-hero" id="org-hero">
@@ -297,20 +298,20 @@ footer a { color: var(--ember); text-decoration: none; }
 </script>
 <script>
 (function() {
+  function showPublicNav(){var l=document.getElementById('nav-loggedout'),n=document.querySelector('.nav-links');if(l)l.style.display='';if(n)n.style.visibility='';}
   fetch('/api/me').then(r => r.json()).then(d => {
-    if (!d.user) return;
+    if (!d.user) { showPublicNav(); return; }
     if (d.user.role === 'foodie') {
       const nl = document.querySelector('.nav-links');
-      if (nl) nl.innerHTML = '<li><a href="/discover">My Feed</a></li><li><a href="/events">All Events</a></li><li><a href="/vendors">Vendors</a></li>';
-      const lo = document.getElementById('nav-loggedout');
-      if (lo) lo.remove();
-      const li = document.getElementById('nav-loggedin');
-      if (li) li.remove();
+      if (nl) { nl.innerHTML = '<li><a href="/discover">My Feed</a></li><li><a href="/events">All Events</a></li><li><a href="/vendors">Vendors</a></li>'; nl.style.visibility=''; }
+      const lo = document.getElementById('nav-loggedout'); if (lo) lo.remove();
+      const li = document.getElementById('nav-loggedin'); if (li) li.remove();
       const nav = document.querySelector('.navbar');
       const rightHtml = `<div style="display:flex;align-items:center;gap:10px;"><div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--text-mid);"><div style="width:28px;height:28px;border-radius:50%;background:var(--ember);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;">🍜</div><span>${d.user.first_name || 'Account'}</span></div><button onclick="fetch('/api/logout',{method:'POST'}).then(()=>location.href='/login')" style="font-size:13px;font-weight:600;color:var(--text-lo);background:transparent;border:none;cursor:pointer;padding:8px;font-family:inherit;">Sign out</button></div>`;
       if (nav) nav.insertAdjacentHTML('beforeend', rightHtml);
       return;
     }
+    document.querySelector('.nav-links').style.visibility='';
     const lo = document.getElementById('nav-loggedout');
     const li = document.getElementById('nav-loggedin');
     if (lo) lo.style.display = 'none';
@@ -319,7 +320,7 @@ footer a { color: var(--ember); text-decoration: none; }
     if (lbl) lbl.textContent = (d.user.vendor && d.user.vendor.trading_name) || (d.user.organiser && d.user.organiser.org_name) || d.user.first_name || 'Account';
     const dl = document.getElementById('nav-dashboard-link');
     if (dl) dl.href = d.user.role === 'organiser' ? '/dashboard/organiser' : '/dashboard/vendor';
-  }).catch(() => {});
+  }).catch(() => { showPublicNav(); });
 })();
 </script>
 </body>
