@@ -1260,7 +1260,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 
         <!-- 1. Profile Picture + Banner (visual identity first) -->
         <div class="settings-card">
-          <div class="settings-section-title">Profile Picture</div>
+          <div class="settings-section-title">Profile picture</div>
           <div style="display:flex;align-items:center;gap:20px;padding:4px 0;">
             <div id="avatar-preview-large" style="width:80px;height:80px;border-radius:16px;background:linear-gradient(135deg,#0A1A2D,#0A3060);display:flex;align-items:center;justify-content:center;font-size:36px;overflow:hidden;flex-shrink:0;">🏛️</div>
             <div style="flex:1;">
@@ -1295,7 +1295,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
           </div>
           <div class="settings-row">
             <div><div class="settings-row-label">Bio / description</div><div class="settings-row-desc">Shown on your public organiser profile.</div></div>
-            <textarea class="form-input" id="settings-bio" maxlength="300" rows="4" style="width:240px;min-height:120px;resize:vertical;"></textarea>
+            <textarea class="form-input" id="settings-bio" maxlength="300" rows="5" style="width:240px;min-height:100px;resize:vertical;"></textarea>
           </div>
           <div class="settings-row">
             <div><div class="settings-row-label">Website</div><div class="settings-row-desc">Optional link shown on your profile.</div></div>
@@ -1327,7 +1327,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 
         <!-- 3. Email & Password (security) -->
         <div class="settings-card">
-          <div class="settings-section-title">Email & Password</div>
+          <div class="settings-section-title">Email & password</div>
           <div class="settings-row">
             <div><div class="settings-row-label">New email address</div><div class="settings-row-desc">Leave blank to keep current.</div></div>
             <input class="form-input" type="email" id="org-new-email" style="width:240px;" placeholder="Leave blank to keep current" />
@@ -1459,8 +1459,8 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
         <!-- 9. Data Export (occasional utility) -->
         <div class="settings-card">
           <div class="settings-section-title">Data export</div>
-          <div style="font-size:13px;color:var(--text-lo);margin-bottom:16px;line-height:1.5;">Download your data as CSV files for reporting or backup.</div>
-          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <div style="font-size:13px;color:var(--text-lo);margin-bottom:20px;line-height:1.5;">Download your data as CSV files for reporting or backup.</div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;">
             <button onclick="window.location='/api/organiser/export/events'" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--text-hi);background:#ffffff08;border:1.5px solid #ffffff12;padding:10px 20px;border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:8px;">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               Export events
@@ -2462,33 +2462,46 @@ async function initDashboard() {
   // Init expanded settings panel
   initOrgSettingsPanel(user, profile);
 
-  // Eager non-blocking loads so stats + events populate even if init data was empty
-  loadOrgOverview().catch(() => {});
-  loadOrgEvents().catch(() => {});
-  loadPendingRatings().catch(() => {});
+  // Only fetch if server didn't inject data (fallback for edge cases)
+  if (!init || !init.overview) loadOrgOverview().catch(() => {});
+  if (!init || !init.events) loadOrgEvents().catch(() => {});
+  if (!init || !init.pendingRatings) loadPendingRatings().catch(() => {});
+
+  // Render injected pending ratings immediately
+  if (init && init.pendingRatings && init.pendingRatings.length) {
+    renderPendingRatingsData(init.pendingRatings);
+  }
 }
 
 // ── Platform limits ──────────────────────────────────────────────────────
 let _maxStallsPerEvent = 0; // 0 = unlimited
 let _maxEventsPerOrg = 0;
 let _limitsLoaded = false;
-(async function fetchPlatformLimits() {
-  try {
-    const r = await fetch('/api/platform-limits');
-    if (r.ok) {
-      const d = await r.json();
+(function loadPlatformLimits() {
+  const init = window.__PITCH_INIT_DATA__;
+  if (init && init.platformLimits) {
+    _maxStallsPerEvent = init.platformLimits.limit_stalls_per_event || 0;
+    _maxEventsPerOrg = init.platformLimits.limit_events_per_org || 0;
+    if (_maxStallsPerEvent > 0) {
+      ['ne-spots','ed-spots'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.max = _maxStallsPerEvent;
+      });
+    }
+    _limitsLoaded = true;
+  } else {
+    // Fallback: fetch from API
+    fetch('/api/platform-limits').then(r => r.ok ? r.json() : {}).then(d => {
       _maxStallsPerEvent = d.limit_stalls_per_event || 0;
       _maxEventsPerOrg = d.limit_events_per_org || 0;
-      // Set max attribute on spots inputs so browser enforces too
       if (_maxStallsPerEvent > 0) {
         ['ne-spots','ed-spots'].forEach(id => {
           const el = document.getElementById(id);
           if (el) el.max = _maxStallsPerEvent;
         });
       }
-    }
-  } catch {}
-  _limitsLoaded = true;
+    }).catch(() => {}).finally(() => { _limitsLoaded = true; });
+  }
 })();
 
 function validateSpotsInput(input) {
@@ -4619,49 +4632,49 @@ async function loadOrgRatings() {
 }
 
 // ── Pending ratings (post-event prompts) ──────────────────────────────────
+function renderPendingRatingsData(pending) {
+  if (!pending || !pending.length) return;
+  const banner = document.getElementById('pending-ratings-banner');
+  if (banner) {
+    banner.style.display = 'block';
+    banner.innerHTML = pending.map(ev => `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:linear-gradient(135deg,#E8500A12,#E8500A06);border:1px solid #E8500A20;border-radius:14px;margin-bottom:10px;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span style="font-size:22px;">🎉</span>
+          <div>
+            <div style="font-size:13.5px;font-weight:700;color:var(--text-hi);">${ev.event_name} has ended</div>
+            <div style="font-size:12px;color:var(--text-lo);margin-top:2px;">Rate ${ev.vendors.length} vendor${ev.vendors.length === 1 ? '' : 's'} who attended</div>
+          </div>
+        </div>
+        <button onclick="showPanel('ratings',null)" style="padding:8px 18px;border-radius:9px;border:none;background:var(--ember);color:#fff;font-family:var(--fb);font-size:12.5px;font-weight:700;cursor:pointer;">Rate now</button>
+      </div>`).join('');
+  }
+  const section = document.getElementById('pending-ratings-section');
+  if (section) {
+    section.style.display = 'block';
+    let html = '<div style="font-size:13px;font-weight:800;color:var(--text-hi);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px;">Pending</div>';
+    for (const ev of pending) {
+      html += `<div style="font-size:12px;font-weight:700;color:var(--text-lo);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;margin-top:${pending.indexOf(ev) > 0 ? '16px' : '0'}">${ev.event_name}</div>`;
+      for (const v of ev.vendors) {
+        html += `
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#ffffff06;border:1px solid #ffffff08;border-radius:10px;margin-bottom:6px;">
+            <div>
+              <div style="font-size:13.5px;font-weight:700;color:var(--text-hi);">${v.trading_name}</div>
+            </div>
+            <button onclick="openRateModal(${v.vendor_user_id},'${v.trading_name.replace(/'/g,"\\'")}',${ev.event_id})" style="padding:7px 16px;border-radius:8px;border:none;background:var(--ember);color:#fff;font-family:var(--fb);font-size:12px;font-weight:700;cursor:pointer;">Rate</button>
+          </div>`;
+      }
+    }
+    section.innerHTML = html;
+  }
+}
+
 async function loadPendingRatings() {
   try {
     const r = await pitchFetch('/api/organiser/pending-ratings');
     if (!r.ok) return;
     const { pending } = await r.json();
-    if (!pending || !pending.length) return;
-
-    // Overview banner
-    const banner = document.getElementById('pending-ratings-banner');
-    if (banner) {
-      banner.style.display = 'block';
-      banner.innerHTML = pending.map(ev => `
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;background:linear-gradient(135deg,#E8500A12,#E8500A06);border:1px solid #E8500A20;border-radius:14px;margin-bottom:10px;">
-          <div style="display:flex;align-items:center;gap:12px;">
-            <span style="font-size:22px;">🎉</span>
-            <div>
-              <div style="font-size:13.5px;font-weight:700;color:var(--text-hi);">${ev.event_name} has ended</div>
-              <div style="font-size:12px;color:var(--text-lo);margin-top:2px;">Rate ${ev.vendors.length} vendor${ev.vendors.length === 1 ? '' : 's'} who attended</div>
-            </div>
-          </div>
-          <button onclick="showPanel('ratings',null)" style="padding:8px 18px;border-radius:9px;border:none;background:var(--ember);color:#fff;font-family:var(--fb);font-size:12.5px;font-weight:700;cursor:pointer;">Rate now</button>
-        </div>`).join('');
-    }
-
-    // Pending section in ratings tab
-    const section = document.getElementById('pending-ratings-section');
-    if (section) {
-      section.style.display = 'block';
-      let html = '<div style="font-size:13px;font-weight:800;color:var(--text-hi);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:12px;">Pending</div>';
-      for (const ev of pending) {
-        html += `<div style="font-size:12px;font-weight:700;color:var(--text-lo);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;margin-top:${pending.indexOf(ev) > 0 ? '16px' : '0'}">${ev.event_name}</div>`;
-        for (const v of ev.vendors) {
-          html += `
-            <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#ffffff06;border:1px solid #ffffff08;border-radius:10px;margin-bottom:6px;">
-              <div>
-                <div style="font-size:13.5px;font-weight:700;color:var(--text-hi);">${v.trading_name}</div>
-              </div>
-              <button onclick="openRateModal(${v.vendor_user_id},'${v.trading_name.replace(/'/g,"\\'")}',${ev.event_id})" style="padding:7px 16px;border-radius:8px;border:none;background:var(--ember);color:#fff;font-family:var(--fb);font-size:12px;font-weight:700;cursor:pointer;">Rate</button>
-            </div>`;
-        }
-      }
-      section.innerHTML = html;
-    }
+    renderPendingRatingsData(pending);
   } catch (e) { console.error('[pending-ratings]', e); }
 }
 

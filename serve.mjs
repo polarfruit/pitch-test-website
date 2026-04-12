@@ -189,10 +189,13 @@ window.__PITCH_INIT_DATA__ = ${JSON.stringify(initData)};
 
 async function orgInitData(user) {
   // Run all queries in parallel — avoids N+1 round-trips to Turso
-  const [events, allApps, unreadRow] = await Promise.all([
+  const [events, allApps, unreadRow, pendingRatings, stallsLimit, eventsLimit] = await Promise.all([
     stmts.getOrganiserEvents.all(user.id).catch(e => { console.error('[orgInitData] events', e); return []; }),
     stmts.getAllAppsByOrganiser.all(user.id).catch(e => { console.error('[orgInitData] apps', e); return []; }),
     stmts.getUnreadMsgCount.get(user.id, user.id, user.id).catch(e => { console.error('[orgInitData] unread', e); return null; }),
+    stmts.getPendingRatingsForOrganiser.all(user.id).catch(() => []),
+    stmts.getSetting.get('limit_stalls_per_event').catch(() => null),
+    stmts.getSetting.get('limit_events_per_org').catch(() => null),
   ]);
 
   // Group apps by event_id for per-event counts
@@ -223,12 +226,17 @@ async function orgInitData(user) {
     overview: { total_apps: totalApps, vendors_approved: totalApproved, fill_rate: fillRate, upcoming, recent_apps: recentApps.slice(0, 5) },
     events: eventsWithCounts,
     unreadMessages,
+    pendingRatings,
+    platformLimits: {
+      limit_stalls_per_event: stallsLimit ? parseInt(stallsLimit.value, 10) || 0 : 0,
+      limit_events_per_org: eventsLimit ? parseInt(eventsLimit.value, 10) || 0 : 0,
+    },
   };
 }
 
-async function vendorInitData(user) {
+async function vendorInitData(user, profile) {
   // Run all queries in parallel — avoids sequential round-trips to Turso
-  const [events, applications, unreadRow, viewsRow, reviews, reviewAvg, stallFees, earningsSummary, earningsHistory] = await Promise.all([
+  const [events, applications, unreadRow, viewsRow, reviews, reviewAvg, stallFees, earningsSummary, earningsHistory, pendingReviews, subRow] = await Promise.all([
     stmts.publishedEventsForVendor.all(user.id).catch(e => { console.error('[vendorInitData] events', e); return []; }),
     stmts.getApplicationsByVendor.all(user.id).catch(e => { console.error('[vendorInitData] applications', e); return []; }),
     stmts.getUnreadMsgCount.get(user.id, user.id, user.id).catch(e => { console.error('[vendorInitData] unread', e); return null; }),
@@ -238,12 +246,45 @@ async function vendorInitData(user) {
     stmts.getStallFeesByVendor.all(user.id).catch(() => []),
     stmts.getVendorEarningsSummary.get(user.id).catch(() => null),
     stmts.getVendorEarningsHistory.all(user.id).catch(() => []),
+    stmts.getPendingReviewsForVendor.all(user.id).catch(() => []),
+    stmts.getVendorSubscription.get(user.id).catch(() => null),
   ]);
+
+  // Build subscription info inline (same logic as /api/vendor/subscription-info)
+  let subscriptionInfo = null;
+  if (subRow) {
+    const now = new Date();
+    const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const onTrial = subRow.trial_ends_at && new Date(subRow.trial_ends_at) > now;
+    const effectivePlan = onTrial ? subRow.plan : (subRow.plan || 'free');
+    const APP_LIMIT = 10;
+    const appsUsed = subRow.apps_reset_month === currentMonth ? Number(subRow.apps_this_month) : 0;
+    subscriptionInfo = {
+      plan: subRow.plan || 'free', effective_plan: effectivePlan,
+      on_trial: !!onTrial, trial_ends_at: subRow.trial_ends_at || null,
+      subscription_status: subRow.subscription_status || 'active',
+      apps_used: appsUsed, apps_limit: effectivePlan === 'free' ? APP_LIMIT : null,
+      apps_remaining: effectivePlan === 'free' ? Math.max(0, APP_LIMIT - appsUsed) : null,
+    };
+  }
+
+  // PLI status from the already-fetched profile
+  const pliStatus = profile ? {
+    status: profile.pli_status || 'none',
+    insured_name: profile.pli_insured_name || null,
+    policy_number: profile.pli_policy_number || null,
+    coverage_amount: profile.pli_coverage_amount || null,
+    expiry_date: profile.pli_expiry_date || null,
+    flags: (() => { try { return JSON.parse(profile.pli_flags || '[]'); } catch { return []; } })(),
+  } : null;
+
   return {
     events, applications, stallFees, earningsSummary, earningsHistory,
     unreadMessages: unreadRow ? Number(unreadRow.count) : 0,
     viewCount30d: Number(viewsRow?.total ?? 0),
     reviews, avgRating: reviewAvg ? Number((reviewAvg.avg || 0).toFixed(1)) : 0, totalReviews: reviewAvg ? reviewAvg.total : 0,
+    pendingReviews: pendingReviews.map(r => ({ event_id: r.event_id, event_name: r.event_name, completed_at: r.completed_at, organiser_user_id: r.organiser_user_id, organiser_name: r.org_name })),
+    subscriptionInfo, pliStatus,
   };
 }
 
@@ -993,21 +1034,21 @@ app.get('/api/foodie/saved', requireAuth, async (req, res) => {
 // POST /api/foodie/follow/:vendorId
 app.post('/api/foodie/follow/:vendorId', requireAuth, async (req, res) => {
   if (req.session.role !== 'foodie') return res.status(403).json({ error: 'Foodies only' });
-  await stmts.followVendor.run(req.session.userId, Number(req.params.vendorId));
+  await stmts.followVendor.run(req.session.userId, req.params.vendorId);
   res.json({ ok: true, following: true });
 });
 
 // DELETE /api/foodie/follow/:vendorId
 app.delete('/api/foodie/follow/:vendorId', requireAuth, async (req, res) => {
   if (req.session.role !== 'foodie') return res.status(403).json({ error: 'Foodies only' });
-  await stmts.unfollowVendor.run(req.session.userId, Number(req.params.vendorId));
+  await stmts.unfollowVendor.run(req.session.userId, req.params.vendorId);
   res.json({ ok: true, following: false });
 });
 
 // GET /api/foodie/following
 app.get('/api/foodie/following', requireAuth, async (req, res) => {
   if (req.session.role !== 'foodie') return res.status(403).json({ error: 'Foodies only' });
-  const following = await stmts.getFollowedVendors.all(req.session.userId);
+  const following = await stmts.getFollowedVendorIds.all(req.session.userId);
   res.json({ following });
 });
 
@@ -4336,7 +4377,45 @@ app.get('/signup',              page('pages/signup.html', { skipBanner: true }))
 app.get('/signup/vendor',       page('pages/signup-vendor.html', { skipBanner: true }));
 app.get('/signup/organiser',    page('pages/signup-organiser.html', { skipBanner: true }));
 app.get('/signup/foodie',       page('pages/signup-foodie.html', { skipBanner: true }));
-app.get('/discover',            page('pages/foodie-feed.html'));
+app.get('/discover', async (req, res) => {
+  let html = readHtml('pages/foodie-feed.html');
+  html = injectBanner(html);
+
+  // Pre-inject data server-side so the client doesn't need API round-trips
+  const initData = {};
+  const today = new Date().toISOString().slice(0, 10);
+
+  try {
+    const feedPromise = stmts.publishedEvents.all().then(evs => evs.filter(e => (e.date_sort || '') >= today));
+
+    if (req.session && req.session.userId && req.session.role === 'foodie') {
+      const user = await stmts.getUserById.get(req.session.userId);
+      if (user) {
+        const { password_hash, ...userSafe } = user;
+        initData.user = userSafe;
+        const [events, saved, following] = await Promise.all([
+          feedPromise,
+          stmts.getSavedEvents.all(user.id).catch(() => []),
+          stmts.getFollowedVendorIds.all(user.id).catch(() => []),
+        ]);
+        initData.events = events;
+        initData.saved = saved;
+        initData.following = following;
+      } else {
+        initData.events = await feedPromise;
+      }
+    } else {
+      initData.events = await feedPromise;
+    }
+  } catch (e) {
+    console.error('[discover init]', e);
+  }
+
+  html = html.replace('</head>', `<script>window.__FOODIE_INIT__=${JSON.stringify(initData)};</script></head>`);
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.send(html);
+});
 app.get('/verify/email',        page('pages/verify-email.html', { skipBanner: true }));
 app.get('/verify/phone',        page('pages/verify-phone.html', { skipBanner: true }));
 app.get('/events/*splat', async (req, res) => {
