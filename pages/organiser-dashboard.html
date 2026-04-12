@@ -2934,6 +2934,20 @@ async function openChatWindow(threadKey) {
   const sendRow = document.getElementById('msg-send-row');
   if (sendRow) sendRow.style.display = '';
 
+  currentChatId = threadKey;
+  document.querySelectorAll('.msg-thread').forEach(t => t.classList.remove('active'));
+  const threadEl = document.getElementById('msg-thread-' + threadKey);
+  if (threadEl) threadEl.classList.add('active');
+
+  // Instantly render cached messages so the UI isn't blank while fetching
+  const cached = MSG_THREADS[threadKey];
+  if (cached) {
+    const threadName = cached.name || '?';
+    document.getElementById('msg-vendor-name').textContent = threadName;
+    document.getElementById('msg-event-name-thread').textContent = '';
+    if (cached.messages && cached.messages.length) renderOrgMessages(cached.messages, threadName);
+  }
+
   try {
     const r = await pitchFetch(`/api/messages/${threadKey}`);
     if (!r.ok) return;
@@ -2942,11 +2956,6 @@ async function openChatWindow(threadKey) {
     MSG_THREADS[threadKey].messages = messages;
     MSG_THREADS[threadKey].unreadCount = 0;
     if (thread) MSG_THREADS[threadKey].name = thread.vendor_name;
-    currentChatId = threadKey;
-
-    document.querySelectorAll('.msg-thread').forEach(t => t.classList.remove('active'));
-    const threadEl = document.getElementById('msg-thread-' + threadKey);
-    if (threadEl) threadEl.classList.add('active');
 
     const threadName = MSG_THREADS[threadKey].name;
     document.getElementById('msg-vendor-name').textContent = threadName;

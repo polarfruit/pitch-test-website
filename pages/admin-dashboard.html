@@ -2338,25 +2338,10 @@
     try {
       const [sr, ar] = await Promise.all([fetch('/api/admin/stats'), fetch('/api/admin/analytics')]);
       if (sr.status === 401 || sr.status === 403) { window.location.replace('/admin/login'); return; }
-      const stats  = await sr.json();
-      const { vendors, organisers, pending,
-              newVendors7d = 0, newOrgs7d = 0,
-              apps7d = 0, appsPrior7d = 0,
-              suspendedVendors = 0, suspendedOrgs = 0,
-              hiddenByOrgSuspension = 0, vendorsAffectedBySuspension = 0 } = stats;
-      _lastStats = { suspendedVendors, suspendedOrgs, hiddenByOrgSuspension, vendorsAffectedBySuspension };
+      const stats = await sr.json();
       const anData = ar.ok ? await ar.json() : {};
-
-      document.getElementById('kpi-vendors').textContent    = vendors.toLocaleString();
-      document.getElementById('kpi-organisers').textContent = organisers.toLocaleString();
-      if (document.getElementById('kpi-events')) document.getElementById('kpi-events').textContent = (anData.totalEvents || 0).toLocaleString();
-
-      // Applications (7d) — show actual rolling-7d count, not all-time
-      if (document.getElementById('kpi-apps')) document.getElementById('kpi-apps').textContent = apps7d.toLocaleString();
-
-      // Mini stat pills in signups card
-      const me = document.getElementById('mini-events-7d');
-      if (me) me.textContent = (anData.totalEvents || 0);
+      // Render mini signup pills before _loadStatsFromData (needs newVendors7d from stats)
+      const { newVendors7d = 0, newOrgs7d = 0 } = stats;
       const miniPillsRow = document.getElementById('mini-signups-pills');
       if (miniPillsRow) {
         if (newVendors7d === 0 && newOrgs7d === 0) {
@@ -2368,54 +2353,7 @@
             <div class="stat-mini"><div class="val" id="mini-events-7d">${anData.totalEvents || 0}</div><div class="lbl">Events</div></div>`;
         }
       }
-
-      // Render both charts from the same day-by-day data
-      _renderSignupsChart(
-        anData.signups7dByDay || [],
-        'an-signups-bars', 'an-signups-labels', 'an-signups-yaxis',
-        'mini-bar-chart', 'mini-bar-labels'
-      );
-
-      // Delta labels
-      const vd = _deltaText(newVendors7d, `new this week`);
-      const od = _deltaText(newOrgs7d,    `new this week`);
-
-      const evDelta = document.getElementById('kpi-events-delta');
-      if (evDelta) { evDelta.className = 'kpi-delta neutral'; evDelta.textContent = 'Published & active'; }
-
-      const vDelta = document.getElementById('kpi-vendors-delta');
-      if (vDelta) { vDelta.style.display = vd.hide ? 'none' : ''; vDelta.className = `kpi-delta ${vd.cls}`; vDelta.textContent = vd.text; }
-
-      const oDelta = document.getElementById('kpi-orgs-delta');
-      if (oDelta) { oDelta.style.display = od.hide ? 'none' : ''; oDelta.className = `kpi-delta ${od.cls}`; oDelta.textContent = od.text; }
-
-      // Apps delta: % change vs prior 7d
-      const aDelta = document.getElementById('kpi-apps-delta');
-      if (aDelta) {
-        if (apps7d === 0) {
-          aDelta.style.display = 'none';
-        } else if (appsPrior7d === 0) {
-          aDelta.style.display = ''; aDelta.className = 'kpi-delta up'; aDelta.textContent = `▲ New this week`;
-        } else {
-          aDelta.style.display = '';
-          const pct = Math.round(((apps7d - appsPrior7d) / appsPrior7d) * 100);
-          if (pct > 0)      { aDelta.className = 'kpi-delta up';   aDelta.textContent = `▲ ${pct}% vs prior 7d`; }
-          else if (pct < 0) { aDelta.className = 'kpi-delta down'; aDelta.textContent = `▼ ${Math.abs(pct)}% vs prior 7d`; }
-          else              { aDelta.className = 'kpi-delta neutral'; aDelta.textContent = `→ Same as prior 7d`; }
-        }
-      }
-
-      const pendingEl = document.getElementById('pending-count');
-      const alertEl = document.getElementById('pending-alert');
-      if (pending > 0) {
-        pendingEl.innerHTML = `<strong>${pending} account${pending===1?'':'s'} pending approval</strong>`;
-        alertEl.style.display = '';
-      } else {
-        alertEl.style.display = 'none';
-      }
-      updateSidebarBadge(pending);
-      // Re-render platform health card now that _lastStats is populated
-      renderPendingQueue();
+      _loadStatsFromData(stats, anData);
     } catch(e) { console.warn('Stats load failed', e); }
   }
 
@@ -5346,8 +5284,11 @@
     const roleHint = organiserName === 'Pitch. Admin' ? 'vendor' : (organiserName ? 'organiser' : 'user');
     document.getElementById('msg-convo-role').textContent = roleHint;
 
-    // Re-render thread list to highlight active
-    await _loadThreadList();
+    // Show loading state immediately
+    document.getElementById('msg-convo-messages').innerHTML = '<div style="text-align:center;padding:32px;color:var(--text-lo);font-size:13px;">Loading messages…</div>';
+
+    // Re-render thread list to highlight active (don't await — load messages in parallel)
+    _loadThreadList();
 
     // Load messages
     await _fetchAndRenderMessages(threadKey);
@@ -6377,18 +6318,175 @@
     t._timer = setTimeout(() => { t.style.transform = 'translateY(20px)'; t.style.opacity = '0'; }, 3000);
   }
 
-  // ── Boot: fire all data loads in parallel, redirect if auth fails ────────────
-  // loadStats() itself hits /api/admin/stats — no separate auth-check round trip needed
+  // ── Pre-injected data renderers (used when __ADMIN_INIT__ is available) ──
+  function _loadStatsFromData(stats, anData) {
+    const { vendors, organisers, pending,
+            newVendors7d = 0, newOrgs7d = 0,
+            apps7d = 0, appsPrior7d = 0,
+            suspendedVendors = 0, suspendedOrgs = 0,
+            hiddenByOrgSuspension = 0, vendorsAffectedBySuspension = 0 } = stats;
+    _lastStats = { suspendedVendors, suspendedOrgs, hiddenByOrgSuspension, vendorsAffectedBySuspension };
+
+    document.getElementById('kpi-vendors').textContent    = vendors.toLocaleString();
+    document.getElementById('kpi-organisers').textContent = organisers.toLocaleString();
+    if (document.getElementById('kpi-apps')) document.getElementById('kpi-apps').textContent = apps7d.toLocaleString();
+
+    const vd = _deltaText(newVendors7d, 'new this week');
+    const od = _deltaText(newOrgs7d,    'new this week');
+    const vDelta = document.getElementById('kpi-vendors-delta');
+    if (vDelta) { vDelta.style.display = vd.hide ? 'none' : ''; vDelta.className = `kpi-delta ${vd.cls}`; vDelta.textContent = vd.text; }
+    const oDelta = document.getElementById('kpi-orgs-delta');
+    if (oDelta) { oDelta.style.display = od.hide ? 'none' : ''; oDelta.className = `kpi-delta ${od.cls}`; oDelta.textContent = od.text; }
+    const aDelta = document.getElementById('kpi-apps-delta');
+    if (aDelta) {
+      if (apps7d === 0) { aDelta.style.display = 'none'; }
+      else if (appsPrior7d === 0) { aDelta.style.display = ''; aDelta.className = 'kpi-delta up'; aDelta.textContent = '▲ New this week'; }
+      else {
+        aDelta.style.display = '';
+        const pct = Math.round(((apps7d - appsPrior7d) / appsPrior7d) * 100);
+        if (pct > 0)      { aDelta.className = 'kpi-delta up';   aDelta.textContent = `▲ ${pct}% vs prior 7d`; }
+        else if (pct < 0) { aDelta.className = 'kpi-delta down'; aDelta.textContent = `▼ ${Math.abs(pct)}% vs prior 7d`; }
+        else              { aDelta.className = 'kpi-delta neutral'; aDelta.textContent = '→ Same as prior 7d'; }
+      }
+    }
+    // Mini signup pills (for pre-injected path — no analytics yet, so events = 0)
+    const miniPillsRow = document.getElementById('mini-signups-pills');
+    if (miniPillsRow) {
+      if (newVendors7d === 0 && newOrgs7d === 0) {
+        miniPillsRow.innerHTML = `<span style="font-size:12px;color:#4A3C30;font-style:italic;">No new signups this week</span>`;
+      } else {
+        miniPillsRow.innerHTML = `
+          <div class="stat-mini"><div class="val">${newVendors7d}</div><div class="lbl">Vendors</div></div>
+          <div class="stat-mini"><div class="val">${newOrgs7d}</div><div class="lbl">Organisers</div></div>
+          <div class="stat-mini"><div class="val" id="mini-events-7d">0</div><div class="lbl">Events</div></div>`;
+      }
+    }
+
+    const pendingEl = document.getElementById('pending-count');
+    const alertEl = document.getElementById('pending-alert');
+    if (pending > 0) {
+      pendingEl.innerHTML = `<strong>${pending} account${pending===1?'':'s'} pending approval</strong>`;
+      alertEl.style.display = '';
+    } else { alertEl.style.display = 'none'; }
+    updateSidebarBadge(pending);
+
+    // Analytics data applied separately (may arrive later)
+    if (anData) _applyAnalytics(anData);
+    renderPendingQueue();
+  }
+
+  function _applyAnalytics(anData) {
+    if (document.getElementById('kpi-events')) document.getElementById('kpi-events').textContent = (anData.totalEvents || 0).toLocaleString();
+    const evDelta = document.getElementById('kpi-events-delta');
+    if (evDelta) { evDelta.className = 'kpi-delta neutral'; evDelta.textContent = 'Published & active'; }
+    const me = document.getElementById('mini-events-7d');
+    if (me) me.textContent = (anData.totalEvents || 0);
+    _renderSignupsChart(
+      anData.signups7dByDay || [],
+      'an-signups-bars', 'an-signups-labels', 'an-signups-yaxis',
+      'mini-bar-chart', 'mini-bar-labels'
+    );
+    // Update mini signup pills if they exist
+    const miniPillsRow = document.getElementById('mini-signups-pills');
+    if (miniPillsRow) {
+      const kpiV = document.getElementById('kpi-vendors');
+      const nv = parseInt(kpiV?.textContent?.replace(/,/g,'')) || 0;
+      // pills already rendered by stats — just update events count
+      const evEl = document.getElementById('mini-events-7d');
+      if (evEl) evEl.textContent = (anData.totalEvents || 0);
+    }
+  }
+
+  function _loadVendorsFromData(vendors) {
+    _vendorsCache = vendors;
+    const filtered = _vendorStatusFilter ? _vendorsCache.filter(v => v.status === _vendorStatusFilter) : _vendorsCache;
+    renderVendorsTable(filtered);
+    renderPendingQueue();
+  }
+
+  function _loadOrganisersFromData(organisers) {
+    _orgsCache = organisers;
+    const filtered = _orgStatusFilter ? _orgsCache.filter(o => o.status === _orgStatusFilter) : _orgsCache;
+    renderOrgsTable(filtered);
+    renderPendingQueue();
+  }
+
+  function _loadActivityFromData(activity) {
+    const el = document.getElementById('activity-feed-body');
+    if (!el) return;
+    if (!activity || !activity.length) {
+      el.innerHTML = '<div class="feed-item"><div class="feed-text" style="color:#4A3C30;font-size:13px;">No activity yet.</div></div>';
+      return;
+    }
+    const dotColor = (row) => {
+      if (row.type === 'application') return row.status === 'approved' ? 'green' : row.status === 'declined' ? 'red' : 'amber';
+      if (row.type === 'event') return 'ember';
+      if (row.status === 'active') return 'green';
+      if (row.status === 'pending') return 'blue';
+      if (row.status === 'suspended' || row.status === 'banned') return 'red';
+      return 'amber';
+    };
+    const feedText = (row) => {
+      if (row.type === 'signup') {
+        const role = row.subject_name === 'vendor' ? 'vendor' : row.subject_name === 'organiser' ? 'organiser' : 'user';
+        const label = row.status === 'active' ? 'joined as ' + role
+          : row.status === 'pending' ? role + ' signup under review'
+          : row.status === 'suspended' ? role + ' account suspended'
+          : role + ' account ' + row.status;
+        return `<strong>${row.actor_name}</strong> ${label}`;
+      }
+      if (row.type === 'application') return `<strong>${row.actor_name}</strong> applied to <strong>${row.subject_name}</strong>`;
+      if (row.type === 'event') return `<strong>${row.actor_name}</strong> published <strong>${row.subject_name}</strong>`;
+      return `<strong>${row.actor_name}</strong> — ${row.subject_name}`;
+    };
+    el.innerHTML = activity.map(row => `
+      <div class="feed-item">
+        <div class="feed-dot ${dotColor(row)}"></div>
+        <div class="feed-text">${feedText(row)}</div>
+        <div class="feed-time">${_timeAgo(row.ts)}</div>
+      </div>`).join('');
+  }
+
+  function _loadNotifsFromData(data) {
+    _adminNotifs = data.notifications || [];
+    const btn = document.getElementById('admin-notif-btn');
+    if (btn) {
+      if (data.unreadCount > 0) btn.classList.add('has-dot');
+      else btn.classList.remove('has-dot');
+    }
+  }
+
+  function _loadReportsFromData(reports) {
+    _reportsCache = reports || [];
+    _reportsCacheMs = Date.now();
+    renderReports();
+  }
+
+  // ── Boot: use server-injected data if available, else fetch ────────────
+  const _init = window.__ADMIN_INIT__;
   (async () => {
-    // Fire everything at once; loadStats handles the 401→redirect case
-    await Promise.all([
-      loadStats(),        // auth gate — redirects if 401/403
-      loadVendors(),
-      loadOrganisers(),
-      loadActivityFeed(),
-      loadAdminNotifs(),
-      loadReports(),      // populates sidebar badge immediately
-    ]);
+    if (_init) {
+      // Server pre-injected all initial data — render instantly, no network round-trips
+      _loadStatsFromData(_init.stats, null);
+      _loadVendorsFromData(_init.vendors);
+      _loadOrganisersFromData(_init.organisers);
+      _loadActivityFromData(_init.activity);
+      _loadNotifsFromData(_init.notifications);
+      _loadReportsFromData(_init.reports);
+      // Fetch analytics async (heavy query, not pre-injected) for sparklines/charts
+      fetch('/api/admin/analytics').then(r => r.ok ? r.json() : {}).then(d => _applyAnalytics(d)).catch(() => {});
+      delete window.__ADMIN_INIT__;
+    } else {
+      // Fallback: fetch everything client-side
+      await Promise.all([
+        loadStats(),
+        loadVendors(),
+        loadOrganisers(),
+        loadActivityFeed(),
+        loadAdminNotifs(),
+        loadReports(),
+      ]);
+    }
   })();
 </script>
 </body>
