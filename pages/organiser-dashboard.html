@@ -412,7 +412,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .btn-send:hover { background:var(--ember-glow); }
 
 /* ── SETTINGS ── */
-.settings-card { background:var(--char); border:1px solid #ffffff08; border-radius:16px; padding:24px; margin-bottom:24px; }
+.settings-card { background:var(--char); border:1px solid #ffffff18; border-radius:16px; padding:24px; margin-bottom:24px; }
 .settings-section-title { font-size:14px; font-weight:700; color:var(--text-hi); margin-bottom:16px; padding-bottom:10px; border-bottom:1px solid #ffffff07; }
 .settings-row { display:flex; align-items:center; justify-content:space-between; padding:14px 0; border-bottom:1px solid #ffffff06; }
 .settings-row:last-child { border-bottom:none; }
@@ -1250,7 +1250,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
               <div id="avatar-upload-status" style="font-size:12px;margin-top:8px;color:var(--text-lo);"></div>
             </div>
           </div>
-          <div style="margin-top:16px;padding-top:16px;border-top:1px solid #ffffff08;">
+          <div style="margin-top:16px;padding-top:16px;border-top:1px solid #ffffff12;">
             <div style="font-size:13px;font-weight:700;color:var(--text-hi);margin-bottom:6px;">Banner image</div>
             <div style="font-size:12px;color:var(--text-lo);margin-bottom:10px;">Displayed at the top of your public organiser profile.</div>
             <div id="banner-preview" style="width:100%;height:80px;border-radius:10px;background:linear-gradient(135deg,#231E19,#1A1612);margin-bottom:10px;overflow:hidden;"></div>
@@ -1270,7 +1270,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
           </div>
           <div class="settings-row">
             <div><div class="settings-row-label">Bio / description</div><div class="settings-row-desc">Shown on your public organiser profile.</div></div>
-            <textarea class="form-input" id="settings-bio" maxlength="300" style="width:240px;min-height:80px;resize:vertical;"></textarea>
+            <textarea class="form-input" id="settings-bio" maxlength="300" style="width:240px;min-height:100px;resize:vertical;"></textarea>
           </div>
           <div class="settings-row">
             <div><div class="settings-row-label">Website</div><div class="settings-row-desc">Optional link shown on your profile.</div></div>
@@ -1279,22 +1279,23 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
           <div class="settings-row" style="flex-wrap:wrap;">
             <div><div class="settings-row-label">ABN (Australian Business Number)</div><div class="settings-row-desc">Verified against the Australian Business Register.</div></div>
             <div style="display:flex;flex-direction:column;gap:6px;width:240px;">
-              <div style="display:flex;gap:6px;align-items:center;">
+              <div style="display:flex;gap:10px;align-items:center;">
                 <input class="form-input" id="settings-abn" value="" style="flex:1;font-family:monospace;letter-spacing:0.5px;" placeholder="XX XXX XXX XXX" maxlength="14" oninput="this.value=this.value.replace(/[^\d\s]/g,''); _orgAbnAutoTrigger(this.value);" />
-                <button type="button" id="settings-abn-btn" onclick="orgVerifyAbn()" style="flex-shrink:0;background:var(--ember);color:#fff;border:none;border-radius:8px;padding:8px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--fb);white-space:nowrap;">Verify</button>
+                <button type="button" id="settings-abn-btn" onclick="orgVerifyAbn()" style="flex-shrink:0;background:var(--ember);color:#fff;border:none;border-radius:8px;padding:8px 14px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--fb);white-space:nowrap;">Verify</button>
               </div>
               <div id="settings-abn-result" style="font-size:12px;line-height:1.5;"></div>
             </div>
           </div>
           <div class="settings-row">
-            <div><div class="settings-row-label">Email address</div><div class="settings-row-desc" id="settings-email">—</div></div>
+            <div><div class="settings-row-label">Email address</div><div class="settings-row-desc">Managed in Email & Password below.</div></div>
+            <div id="settings-email" style="width:240px;padding:9px 14px;background:#ffffff06;border:1px solid #ffffff10;border-radius:10px;font-family:var(--fb);font-size:13px;color:var(--text-lo);letter-spacing:0.01em;cursor:default;">—</div>
           </div>
           <div class="settings-row">
             <div><div class="settings-row-label">Public profile</div><div class="settings-row-desc">View how vendors see your organiser page.</div></div>
             <a id="org-public-profile-link" href="#" target="_blank" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--ember);text-decoration:none;">View profile →</a>
           </div>
           <div style="display:flex;justify-content:flex-end;margin-top:12px;">
-            <button id="btn-save-settings" onclick="saveOrgSettings()" style="font-family:var(--fb);font-size:13px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:10px 22px;border-radius:10px;cursor:pointer;">Save profile</button>
+            <button id="btn-save-settings" onclick="saveOrgSettings()" style="font-family:var(--fb);font-size:13px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:10px 22px;border-radius:10px;cursor:pointer;">Save</button>
             <span class="org-save-msg" id="profile-save-msg">Saved!</span>
           </div>
         </div>
@@ -1327,6 +1328,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
           <div class="settings-row"><div class="settings-row-left"><div class="settings-row-label">Vendor messages</div><div class="settings-row-desc">Notify me when a vendor sends a message.</div></div><label class="toggle-switch"><input type="checkbox" id="org-notif-messages" onchange="saveOrgNotifSettings()"/><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
           <div class="settings-row"><div class="settings-row-left"><div class="settings-row-label">Stall fee payments</div><div class="settings-row-desc">Notify me when a vendor pays their stall fee.</div></div><label class="toggle-switch"><input type="checkbox" id="org-notif-payments" checked onchange="saveOrgNotifSettings()"/><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
           <div class="settings-row"><div class="settings-row-left"><div class="settings-row-label">Post-event summaries</div><div class="settings-row-desc">Notify me when an event ends so I can rate vendors.</div></div><label class="toggle-switch"><input type="checkbox" id="org-notif-post-event" checked onchange="saveOrgNotifSettings()"/><div class="toggle-track"></div><div class="toggle-thumb"></div></label></div>
+          <div style="display:flex;justify-content:flex-end;margin-top:8px;"><span class="org-save-msg" id="org-notif-save-msg">Saved!</span></div>
         </div>
 
         <!-- Default Event Settings -->
@@ -1338,7 +1340,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
             <input class="form-input" type="number" id="org-def-spots" min="1" style="width:100px;" />
           </div>
           <div class="settings-row">
-            <div><div class="settings-row-label">Default booth size</div><div class="settings-row-desc">e.g. 3m x 3m tent</div></div>
+            <div><div class="settings-row-label">Default stall size</div><div class="settings-row-desc">e.g. 3m x 3m tent</div></div>
             <input class="form-input" id="org-def-booth-size" style="width:200px;" placeholder="e.g. 3m × 3m" />
           </div>
           <div class="settings-row">
@@ -3523,6 +3525,16 @@ function initOrgSettingsPanel(user, profile) {
     if (arEl) arEl.oninput = function() { const cnt = document.getElementById('org-auto-response-count'); if (cnt) cnt.textContent = this.value.length + '/500'; };
   }
 
+  // Public profile link
+  const ppLink = document.getElementById('org-public-profile-link');
+  if (ppLink && user) ppLink.href = '/organisers/' + user.id;
+
+  // Banner preview
+  if (profile && profile.banner_url) {
+    const bp = document.getElementById('banner-preview');
+    if (bp) bp.innerHTML = `<img src="${profile.banner_url}" style="width:100%;height:100%;object-fit:cover;" />`;
+  }
+
   // Team members
   loadTeamMembers();
 
@@ -3565,6 +3577,8 @@ async function saveOrgNotifSettings() {
       notif_post_event: document.getElementById('org-notif-post-event')?.checked ?? true,
     }),
   });
+  const msg = document.getElementById('org-notif-save-msg');
+  if (msg) { msg.style.display = 'inline'; setTimeout(() => msg.style.display = 'none', 1800); }
 }
 
 async function toggleOrgPause(paused) {
