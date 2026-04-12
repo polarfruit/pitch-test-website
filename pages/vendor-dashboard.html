@@ -3493,6 +3493,13 @@ function openThread(threadKey) {
   if (_cInp) _cInp.style.display = '';
   const sendBar = document.getElementById('convo-send-bar');
   if (sendBar) sendBar.style.display = '';
+
+  // Instantly render cached messages so the UI isn't blank while fetching
+  const cached = _threadCache[threadKey];
+  if (cached) {
+    _openConvoPane(cached.orgName, cached.eventName);
+    if (cached.messages && cached.messages.length) _renderMessages(cached.messages);
+  }
   _loadConversation(threadKey).then(() => _refreshThreadList());
 }
 
