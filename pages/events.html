@@ -517,7 +517,7 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
     <span></span><span></span><span></span>
   </button>
 </nav>
-<script>(function(){var l=document.getElementById('nav-loggedout'),n=document.querySelector('.nav-links');if(l)l.style.display='none';if(n)n.style.visibility='hidden';})();</script>
+<script>(function(){var l=document.getElementById('nav-loggedout');if(l)l.style.display='none';})();</script>
 
 <!-- ── MAIN ───────────────────────────────────────────────────────────────── -->
 <main>
@@ -1565,21 +1565,20 @@ document.addEventListener('click', function(e) {
 </script>
 <script>
 (function() {
-  function showPublicNav(){var l=document.getElementById('nav-loggedout'),n=document.querySelector('.nav-links');if(l)l.style.display='';if(n)n.style.visibility='';}
+  function showPublicNav(){var l=document.getElementById('nav-loggedout');if(l)l.style.display='';}
   fetch('/api/me').then(r => r.json()).then(d => {
     if (!d.user) { showPublicNav(); return; }
     if (d.user.role === 'foodie') {
       const nl = document.querySelector('.nav-links');
-      if (nl) { nl.innerHTML = '<li><a href="/discover">My Feed</a></li><li><a href="/events" class="active">All Events</a></li><li><a href="/vendors">Vendors</a></li>'; nl.style.visibility=''; }
+      if (nl) { nl.innerHTML = '<li><a href="/discover">My Feed</a></li><li><a href="/events" class="active">All Events</a></li><li><a href="/vendors">Vendors</a></li>'; }
       const lo = document.getElementById('nav-loggedout'); if (lo) lo.remove();
       const li = document.getElementById('nav-loggedin'); if (li) li.remove();
       const nav = document.querySelector('.navbar'), ham = nav && nav.querySelector('.nav-hamburger');
-      const rightHtml = `<div style="display:flex;align-items:center;gap:10px;" id="nav-foodie-right"><div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--text-mid);"><div style="width:28px;height:28px;border-radius:50%;background:var(--ember);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;">🍜</div><span>${d.user.first_name || 'Account'}</span></div><button onclick="fetch('/api/logout',{method:'POST'}).then(()=>location.href='/login')" style="font-size:13px;font-weight:600;color:var(--text-lo);background:transparent;border:none;cursor:pointer;padding:8px;font-family:inherit;">Sign out</button></div>`;
+      const rightHtml = `<div style="display:flex;align-items:center;gap:10px;" id="nav-foodie-right"><div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--text-mid);"><div style="width:28px;height:28px;border-radius:50%;background:var(--ember);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;">🍜</div><span>${d.user.first_name || 'Account'}</span></div><button onclick="fetch('/api/logout',{method:'POST'}).then(()=>location.href='/')" style="font-size:13px;font-weight:600;color:var(--text-lo);background:transparent;border:none;cursor:pointer;padding:8px;font-family:inherit;">Sign out</button></div>`;
       if (ham) ham.insertAdjacentHTML('beforebegin', rightHtml);
       else if (nav) nav.insertAdjacentHTML('beforeend', rightHtml);
       return;
     }
-    document.querySelector('.nav-links').style.visibility='';
     const lo = document.getElementById('nav-loggedout');
     const li = document.getElementById('nav-loggedin');
     if (lo) lo.style.display = 'none';

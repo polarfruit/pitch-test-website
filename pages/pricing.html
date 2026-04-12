@@ -376,7 +376,7 @@
       <a href="/dashboard/vendor" class="nav-dashboard" id="nav-dashboard-link">Dashboard</a>
     </div>
   </nav>
-  <script>(function(){var l=document.getElementById('nav-loggedout')||document.getElementById('nav-actions'),n=document.querySelector('.nav-links');if(l)l.style.display='none';if(n)n.style.visibility='hidden';})();</script>
+  <script>(function(){var l=document.getElementById('nav-loggedout')||document.getElementById('nav-actions');if(l)l.style.display='none';})();</script>
 
   <main>
     <!-- ─── Hero ─── -->
@@ -823,7 +823,7 @@
 
     // Auth-aware CTAs
     (async function() {
-      function showPublicNav(){var l=document.getElementById('nav-actions'),n=document.querySelector('.nav-links');if(l)l.style.display='';if(n)n.style.visibility='';}
+      function showPublicNav(){var l=document.getElementById('nav-actions');if(l)l.style.display='';}
       try {
         const res = await fetch('/api/me', { credentials: 'include' });
         if (!res.ok) { showPublicNav(); return; }
@@ -832,16 +832,15 @@
 
         if (user.role === 'foodie') {
           const nl = document.querySelector('.nav-links');
-          if (nl) { nl.innerHTML = '<li><a href="/discover">My Feed</a></li><li><a href="/events">All Events</a></li><li><a href="/vendors">Vendors</a></li>'; nl.style.visibility=''; }
+          if (nl) { nl.innerHTML = '<li><a href="/discover">My Feed</a></li><li><a href="/events">All Events</a></li><li><a href="/vendors">Vendors</a></li>'; }
           const na = document.getElementById('nav-actions'); if (na) na.remove();
           const nu = document.getElementById('nav-user'); if (nu) nu.remove();
           const nav = document.querySelector('.navbar');
-          if (nav) nav.insertAdjacentHTML('beforeend', `<div style="display:flex;align-items:center;gap:10px;"><div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--text-mid);"><div style="width:28px;height:28px;border-radius:50%;background:var(--ember);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;">🍜</div><span>${user.first_name||'Account'}</span></div><button onclick="fetch('/api/logout',{method:'POST'}).then(()=>location.href='/login')" style="font-size:13px;font-weight:600;color:var(--text-lo);background:transparent;border:none;cursor:pointer;padding:8px;font-family:inherit;">Sign out</button></div>`);
+          if (nav) nav.insertAdjacentHTML('beforeend', `<div style="display:flex;align-items:center;gap:10px;"><div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--text-mid);"><div style="width:28px;height:28px;border-radius:50%;background:var(--ember);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;">🍜</div><span>${user.first_name||'Account'}</span></div><button onclick="fetch('/api/logout',{method:'POST'}).then(()=>location.href='/')" style="font-size:13px;font-weight:600;color:var(--text-lo);background:transparent;border:none;cursor:pointer;padding:8px;font-family:inherit;">Sign out</button></div>`);
           return;
         }
 
         // Show user in nav for vendor/organiser
-        document.querySelector('.nav-links').style.visibility='';
         document.getElementById('nav-actions').style.display = 'none';
         const navUser = document.getElementById('nav-user');
         navUser.style.display = 'flex';
