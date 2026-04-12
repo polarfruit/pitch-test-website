@@ -391,7 +391,7 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
 #map-view.active { display: block; }
 
 /* Leaflet canvas fills container */
-#map-canvas { width: 100%; height: 100%; }
+#map-canvas { width: 100%; height: 100%; background: #1A1612; }
 #map-canvas .leaflet-tile-pane { filter: brightness(1); }
 
 /* Leaflet popup styling */
@@ -1138,16 +1138,16 @@ function initMap() {
       center: [-34.9285, 138.6007],
       zoom: 10,
       minZoom: 3,
-      maxBounds: [[-85, -180], [85, 180]],
-      maxBoundsViscosity: 1.0,
+      worldCopyJump: true,
       zoomControl: false,
       attributionControl: false,
     });
 
-    // CartoDB Dark Matter tiles — free, no API key
+    // CartoDB Dark Matter tiles — free, no API key, wraps seamlessly
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
       maxZoom: 19,
       subdomains: 'abcd',
+      noWrap: false,
     }).addTo(_map);
 
     L.control.zoom({ position: 'topright' }).addTo(_map);
