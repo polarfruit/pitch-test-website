@@ -757,6 +757,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
   <nav class="sidebar-nav">
     <div class="nav-section-label">Home</div>
     <button class="nav-link active" onclick="showPanel('overview',this)"><span class="nav-icon">⬡</span>Overview</button>
+    <button class="nav-link" onclick="showPanel('messages',this)"><span class="nav-icon">✉️</span>Messages<span class="nav-badge" id="org-msg-badge" style="display:none;">0</span></button>
 
     <div class="nav-section-label">Events</div>
     <button class="nav-link" onclick="showPanel('events',this)"><span class="nav-icon">📅</span>My Events</button>
@@ -769,9 +770,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
     <button class="nav-link" onclick="showPanel('ratings',this)"><span class="nav-icon">⭐</span>Vendor Ratings</button>
     <button class="nav-link" onclick="showPanel('reviews',this)"><span class="nav-icon">💬</span>My Reviews</button>
 
-    <div class="nav-section-label">Account</div>
-    <button class="nav-link" onclick="showPanel('messages',this)"><span class="nav-icon">✉️</span>Messages<span class="nav-badge" id="org-msg-badge" style="display:none;">0</span></button>
-    <button class="nav-link" onclick="showPanel('settings',this)"><span class="nav-icon">⚙️</span>Settings</button>
+    <button class="nav-link" onclick="showPanel('settings',this)" style="margin-top:auto;"><span class="nav-icon">⚙️</span>Settings</button>
   </nav>
   <div class="sidebar-footer">
     <a href="/events" class="sidebar-footer-link">↗ View public events</a>
@@ -1217,9 +1216,13 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
         </div>
         <div class="msg-main" id="msg-main">
           <div class="msg-main-header">
-            <div>
-              <div class="msg-main-vendor" id="msg-vendor-name">Select a conversation</div>
-              <div class="msg-main-event" id="msg-event-name-thread"></div>
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div id="org-msg-header-avatar" style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#2A1E14,#5C3A1A);display:none;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;flex-shrink:0;"></div>
+              <div>
+                <div class="msg-main-vendor" id="msg-vendor-name">Select a conversation</div>
+                <div id="org-msg-header-status" style="font-size:11px;color:var(--text-lo);margin-top:1px;display:none;"></div>
+                <div class="msg-main-event" id="msg-event-name-thread"></div>
+              </div>
             </div>
           </div>
           <div class="msg-body" id="msg-body">
@@ -1542,7 +1545,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
           <div style="display:flex;align-items:center;gap:6px;position:relative;" id="oa-cal-wrap">
             <input class="oa-date-text" id="oa-from-text" type="text" placeholder="Start date"
                    oninput="oaDateInput('from', event)" onblur="oaNormDate('from')" />
-            <span style="color:#6B5A4A;font-size:12px;">&#8594;</span>
+            <span style="color:#6B5A4A;font-size:12px;">&mdash;</span>
             <input class="oa-date-text" id="oa-to-text" type="text" placeholder="End date"
                    oninput="oaDateInput('to', event)" onblur="oaNormDate('to')" />
             <button class="oa-cal-toggle" id="oa-cal-btn" onclick="oaToggleCal(event)" title="Open calendar">
@@ -2845,9 +2848,26 @@ function _orgFmtThreadTime(iso) {
     if (msgDay.getTime() === today.getTime()) return time;
     if (msgDay.getTime() === yesterday.getTime()) return 'Yesterday';
     const diffDays = Math.floor((today - msgDay) / 86400000);
-    if (diffDays < 7) return d.toLocaleDateString(undefined, { weekday: 'short' });
+    if (diffDays < 7) return d.toLocaleDateString('en-AU', { weekday: 'short', day: 'numeric' });
     return d.toLocaleDateString('en-AU', { day: 'numeric', month: 'short' });
   } catch { return ''; }
+}
+
+function _orgFmtLastSeen(iso) {
+  if (!iso) return 'Food Vendor';
+  try {
+    const s = iso.includes('T') || iso.endsWith('Z') ? iso : iso.replace(' ', 'T') + 'Z';
+    const d = new Date(s);
+    const diffMin = Math.floor((Date.now() - d.getTime()) / 60000);
+    if (diffMin < 5) return 'Online';
+    if (diffMin < 60) return `Active ${diffMin}m ago`;
+    const diffH = Math.floor(diffMin / 60);
+    if (diffH < 24) return `Active ${diffH}h ago`;
+    const diffD = Math.floor(diffH / 24);
+    if (diffD === 1) return 'Active yesterday';
+    if (diffD < 7) return `Active ${diffD}d ago`;
+    return 'Food Vendor';
+  } catch { return 'Food Vendor'; }
 }
 
 async function startChat(vendorUserId, vendorName) {
@@ -2955,11 +2975,21 @@ async function openChatWindow(threadKey) {
     if (!MSG_THREADS[threadKey]) MSG_THREADS[threadKey] = { name: thread ? thread.vendor_name : '?', messages: [] };
     MSG_THREADS[threadKey].messages = messages;
     MSG_THREADS[threadKey].unreadCount = 0;
-    if (thread) MSG_THREADS[threadKey].name = thread.vendor_name;
+    if (thread) {
+      MSG_THREADS[threadKey].name = thread.vendor_name;
+      const myId = window.__PITCH_USER__ && window.__PITCH_USER__.id;
+      MSG_THREADS[threadKey].otherLastActive = Number(thread.organiser_user_id) === Number(myId)
+        ? thread.vendor_last_active : thread.organiser_last_active;
+    }
 
     const threadName = MSG_THREADS[threadKey].name;
     document.getElementById('msg-vendor-name').textContent = threadName;
     document.getElementById('msg-event-name-thread').textContent = '';
+    // Update header avatar + status
+    const avatarEl = document.getElementById('org-msg-header-avatar');
+    if (avatarEl) { avatarEl.textContent = (threadName || '?').charAt(0).toUpperCase(); avatarEl.style.display = 'flex'; }
+    const statusEl = document.getElementById('org-msg-header-status');
+    if (statusEl) { statusEl.textContent = _orgFmtLastSeen(MSG_THREADS[threadKey].otherLastActive); statusEl.style.display = 'block'; }
 
     renderOrgMessages(messages, threadName);
     document.getElementById('msg-input').focus();
@@ -2984,7 +3014,7 @@ function renderOrgMessages(messages, vendorName) {
     const time = _orgFmtTime(m.created_at);
     return `<div class="msg-bubble-wrap ${mine ? 'us' : 'them'}">
       <div class="msg-bubble ${mine ? 'us' : 'them'}">${m.body}</div>
-      <div class="msg-timestamp">${mine ? 'You' : vendorName} · ${time}</div>
+      <div class="msg-timestamp">${mine ? 'You' : vendorName} · ${time}${mine ? ` · <span style="opacity:${m.is_read ? '1' : '0.6'};color:${m.is_read ? 'var(--ember)' : 'inherit'};">${m.is_read ? 'Read' : 'Sent'}</span>` : ''}</div>
     </div>`;
   }).join('');
   body.scrollTop = body.scrollHeight;
@@ -3006,9 +3036,10 @@ function renderThreadSidebar() {
     const lastTime = t.lastAt || (last ? last.created_at : null);
     const isActive = currentChatId === key;
     const hasUnread = !isActive && t.unreadCount > 0;
+    const isOnline = !t.isAnnouncement && t.otherLastActive && (Date.now() - new Date(t.otherLastActive.includes('T') ? t.otherLastActive : t.otherLastActive.replace(' ','T')+'Z').getTime()) < 300000;
     const avatar = t.isAnnouncement
       ? `<div class="msg-thread-avatar" style="background:linear-gradient(135deg,#3D1A06,#C9840A);font-size:16px;">📢</div>`
-      : `<div class="msg-thread-avatar">${(t.name||'?').charAt(0).toUpperCase()}</div>`;
+      : `<div style="position:relative;"><div class="msg-thread-avatar">${(t.name||'?').charAt(0).toUpperCase()}</div>${isOnline ? '<div style="position:absolute;bottom:-1px;right:-1px;width:10px;height:10px;border-radius:50%;background:var(--herb);border:2px solid var(--char);"></div>' : ''}</div>`;
     return `<div class="msg-thread${isActive ? ' active' : ''}" id="msg-thread-${key}" onclick="openChatWindow('${key}')" style="cursor:pointer;">
       ${avatar}
       <div class="msg-thread-info">
@@ -3040,6 +3071,9 @@ async function loadOrgAllThreads() {
       MSG_THREADS[key].unreadCount = t.unread_count || 0;
       MSG_THREADS[key].lastBody = t.last_body || '';
       MSG_THREADS[key].lastAt = t.last_at || null;
+      const myId = window.__PITCH_USER__ && window.__PITCH_USER__.id;
+      MSG_THREADS[key].otherLastActive = Number(t.organiser_user_id) === Number(myId)
+        ? t.vendor_last_active : t.organiser_last_active;
       totalUnread += t.unread_count || 0;
     });
 
