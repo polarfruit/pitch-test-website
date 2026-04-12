@@ -376,7 +376,7 @@
       <a href="/dashboard/vendor" class="nav-dashboard" id="nav-dashboard-link">Dashboard</a>
     </div>
   </nav>
-  <script>(function(){var l=document.getElementById('nav-loggedout')||document.getElementById('nav-actions');if(l)l.style.display='none';})();</script>
+  <script>(function(){var u=window.__PITCH_USER__;if(!u)return;var lo=document.getElementById('nav-loggedout')||document.getElementById('nav-actions');if(lo)lo.style.display='none';if(u.role==='foodie'){var nl=document.querySelector('.nav-links'),p=location.pathname;if(nl)nl.innerHTML='<li><a href="/discover">My Feed</a></li><li><a href="/events"'+(p==='/events'?' class="active"':'')+'>All Events</a></li><li><a href="/vendors"'+(p==='/vendors'?' class="active"':'')+'>Vendors</a></li>';if(lo)lo.remove();var nu=document.getElementById('nav-user');if(nu)nu.remove();var nav=document.querySelector('.navbar'),fn=(u.name||'').split(' ')[0]||'Account';nav.insertAdjacentHTML('beforeend','<div style="display:flex;align-items:center;gap:10px;" id="nav-foodie-right"><div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--text-mid)"><div style="width:28px;height:28px;border-radius:50%;background:var(--ember);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff">🍜</div><span>'+fn+'</span></div><button onclick="fetch(\'/api/logout\',{method:\'POST\'}).then(function(){location.href=\'/\'})" style="font-size:13px;font-weight:600;color:var(--text-lo);background:transparent;border:none;cursor:pointer;padding:8px;font-family:inherit">Sign out</button></div>')}})();</script>
 
   <main>
     <!-- ─── Hero ─── -->
