@@ -2120,7 +2120,7 @@ document.addEventListener('click', (e) => {
           || u.email
           || 'Account';
       }
-      if (dashLink) dashLink.href = d.user.role === 'organiser' ? '/dashboard/organiser' : '/dashboard/vendor';
+      if (dashLink) dashLink.href = d.user.role === 'organiser' ? '/dashboard/organiser' : d.user.role === 'foodie' ? '/discover' : '/dashboard/vendor';
     }
   }).catch(() => {});
 })();

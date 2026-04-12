@@ -1730,7 +1730,7 @@ function filterPublicMenu(cat) {
     const lbl = document.getElementById('nav-user-label');
     if (lbl) lbl.textContent = (d.user.vendor && d.user.vendor.trading_name) || (d.user.organiser && d.user.organiser.org_name) || d.user.first_name || 'Account';
     const dl = document.getElementById('nav-dashboard-link');
-    if (dl) dl.href = d.user.role === 'organiser' ? '/dashboard/organiser' : '/dashboard/vendor';
+    if (dl) dl.href = d.user.role === 'organiser' ? '/dashboard/organiser' : d.user.role === 'foodie' ? '/discover' : '/dashboard/vendor';
   }).catch(() => {});
 })();
 </script>

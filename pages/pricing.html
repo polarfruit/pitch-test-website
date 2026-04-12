@@ -826,13 +826,20 @@
         const res = await fetch('/api/me', { credentials: 'include' });
         if (!res.ok) return;
         const { user } = await res.json();
-        if (!user || user.role !== 'vendor') return;
+        if (!user) return;
 
-        // Show user in nav
+        // Show user in nav for any logged-in role
         document.getElementById('nav-actions').style.display = 'none';
         const navUser = document.getElementById('nav-user');
         navUser.style.display = 'flex';
         document.getElementById('nav-user-name').textContent = user.first_name;
+        const dl = document.getElementById('nav-dashboard-link');
+        if (dl) {
+          dl.href = user.role === 'organiser' ? '/dashboard/organiser' : user.role === 'foodie' ? '/discover' : '/dashboard/vendor';
+          dl.textContent = user.role === 'foodie' ? 'My Feed' : 'Dashboard';
+        }
+
+        if (user.role !== 'vendor') return; // Only customize pricing CTAs for vendors
 
         const sub = user.vendor?.subscription_tier || 'starter';
 
