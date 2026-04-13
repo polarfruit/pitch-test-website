@@ -1074,7 +1074,7 @@ app.post('/api/contact', async (req, res) => {
     await stmts.insertContactMessage.run(name.trim(), email.trim(), role, subject.trim(), message.trim());
     // Send notification email to hello@onpitch.com.au
     const n = name.trim(), em = email.trim(), sub = subject.trim(), msg = message.trim();
-    const roleLabel = role === 'vendor' ? 'Vendor' : role === 'organiser' ? 'Organiser' : 'Other';
+    const roleLabel = role === 'foodie' ? 'Foodie' : role === 'vendor' ? 'Vendor' : role === 'organiser' ? 'Organiser' : 'Other';
     const ts = new Date().toLocaleString('en-AU', { timeZone: 'Australia/Adelaide', dateStyle: 'medium', timeStyle: 'short' });
     try {
       await sendAdminEmail(

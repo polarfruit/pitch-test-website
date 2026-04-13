@@ -99,6 +99,23 @@
     .note-card { background:var(--ember-bg);border:1px solid rgba(232,80,10,0.15);border-radius:14px;padding:20px 24px;margin-top:0; }
     .note-card p { font-size:13px;color:var(--text-mid);line-height:1.65; }
     .note-card strong { color:var(--ember); }
+
+    /* Footer */
+    footer { background:var(--char);border-top:1px solid #ffffff07;position:relative;z-index:1; }
+    .footer-main { max-width:1320px;margin:0 auto;padding:64px 52px 40px;display:grid;grid-template-columns:repeat(4,1fr);gap:48px; }
+    .footer-socials { display:flex;gap:8px; }
+    .fsoc { width:36px;height:36px;border-radius:9px;background:#ffffff08;border:1px solid #ffffff0C;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;text-decoration:none;color:var(--text-lo);transition:background 0.14s,border-color 0.14s,color 0.14s; }
+    .fsoc:hover { background:var(--ember-bg);border-color:#E8500A22;color:var(--ember); }
+    .footer-col-title { font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-lo);font-weight:700;margin-bottom:18px; }
+    .footer-links { list-style:none;display:flex;flex-direction:column;gap:10px; }
+    .footer-links a { font-size:13px;color:var(--text-mid);text-decoration:none;transition:color 0.14s; }
+    .footer-links a:hover { color:var(--text-hi); }
+    .footer-bottom { max-width:1320px;margin:0 auto;padding:20px 52px 28px;border-top:1px solid #ffffff06;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px; }
+    .footer-copy { font-size:12px;color:var(--text-lo); }
+    .footer-bottom-logo { font-family:var(--fd);font-size:20px;font-weight:900;letter-spacing:-0.04em;color:var(--text-mid);text-decoration:none; }
+    .footer-bottom-logo .dot { color:var(--ember); }
+    @media(max-width:768px){ .footer-main { grid-template-columns:1fr 1fr;gap:32px; } }
+    @media(max-width:480px){ .footer-main { grid-template-columns:1fr; } }
   </style>
 </head>
 <body>
@@ -167,6 +184,7 @@
               <label for="role">I'm a</label>
               <select id="role" name="role" required>
                 <option value="" disabled selected>Select your role</option>
+                <option value="foodie">Foodie</option>
                 <option value="vendor">Vendor</option>
                 <option value="organiser">Organiser</option>
                 <option value="other">Other</option>
@@ -221,22 +239,61 @@
         </div>
 
         <div class="note-card">
-          <p><strong>For legal or privacy enquiries</strong> — please email <a href="mailto:legal@onpitch.com.au" style="color:var(--ember);text-decoration:none;">legal@onpitch.com.au</a> or <a href="mailto:legal@onpitch.com.au" style="color:var(--ember);text-decoration:none;">legal@onpitch.com.au</a> directly. These are monitored separately from our general inbox.</p>
+          <p><strong>For legal or privacy enquiries</strong> — please email <a href="mailto:legal@onpitch.com.au" style="color:var(--ember);text-decoration:none;">legal@onpitch.com.au</a> or <a href="mailto:privacy@onpitch.com.au" style="color:var(--ember);text-decoration:none;">privacy@onpitch.com.au</a> directly. These are monitored separately from our general inbox.</p>
         </div>
       </div>
     </div>
   </main>
 
-  <footer style="background:#161210;border-top:1px solid #ffffff06;padding:40px 52px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;position:relative;z-index:1;">
-    <a href="/" style="font-family:'Fraunces',serif;font-size:22px;font-weight:900;color:#FDF4E7;text-decoration:none;letter-spacing:-0.04em;">Pitch<span style="color:#E8500A;">.</span></a>
-    <div style="display:flex;gap:24px;flex-wrap:wrap;">
-      <a href="/about" style="font-size:13px;color:#6B5A4A;text-decoration:none;transition:color 0.14s;">About</a>
-      <a href="/pricing" style="font-size:13px;color:#6B5A4A;text-decoration:none;transition:color 0.14s;">Pricing</a>
-      <a href="/contact" style="font-size:13px;color:#6B5A4A;text-decoration:none;transition:color 0.14s;">Contact</a>
-      <a href="/terms" style="font-size:13px;color:#6B5A4A;text-decoration:none;transition:color 0.14s;">Terms</a>
-      <a href="/privacy" style="font-size:13px;color:#6B5A4A;text-decoration:none;transition:color 0.14s;">Privacy</a>
+  <footer>
+    <div class="footer-main">
+      <div>
+        <div class="footer-col-title">For Vendors</div>
+        <ul class="footer-links">
+          <li><a href="/signup/vendor">Sign up as vendor</a></li>
+          <li><a href="/how-it-works">How it works</a></li>
+          <li><a href="/pricing">Pricing</a></li>
+          <li><a href="/vendors">Browse vendors</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">For Organisers</div>
+        <ul class="footer-links">
+          <li><a href="/events/new">Post an event</a></li>
+          <li><a href="/how-it-works">How it works</a></li>
+          <li><a href="/contact">Talk to sales</a></li>
+          <li><a href="/events">Find vendors</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">Company</div>
+        <ul class="footer-links">
+          <li><a href="/about">About</a></li>
+          <li><a href="/contact">Contact</a></li>
+          <li><a href="/terms">Terms</a></li>
+          <li><a href="/privacy">Privacy</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">Connect</div>
+        <div class="footer-socials" style="margin-bottom:20px;">
+          <a href="https://instagram.com/pitchmkts" class="fsoc" title="Instagram" target="_blank" rel="noopener">◈</a>
+          <a href="https://x.com/pitchmkts" class="fsoc" title="X" target="_blank" rel="noopener">𝕏</a>
+          <a href="https://facebook.com/pitchmkts" class="fsoc" title="Facebook" target="_blank" rel="noopener">f</a>
+          <a href="https://linkedin.com/company/pitchmkts" class="fsoc" title="LinkedIn" target="_blank" rel="noopener">in</a>
+        </div>
+        <ul class="footer-links">
+          <li><a href="mailto:hello@onpitch.com.au">hello@onpitch.com.au</a></li>
+        </ul>
+      </div>
     </div>
-    <span style="font-size:12px;color:#4A3C30;">© 2026 Pitch. Adelaide, Australia.</span>
+    <div class="footer-bottom">
+      <div style="display:flex;align-items:center;gap:16px;">
+        <a href="/" class="footer-bottom-logo">Pitch<span class="dot">.</span></a>
+        <span class="footer-copy">Australia's marketplace for food vendors and events.</span>
+      </div>
+      <span class="footer-copy">© 2026 Pitch. Adelaide, Australia.</span>
+    </div>
   </footer>
 
   <script>
