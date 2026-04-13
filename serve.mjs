@@ -1073,12 +1073,78 @@ app.post('/api/contact', async (req, res) => {
     }
     await stmts.insertContactMessage.run(name.trim(), email.trim(), role, subject.trim(), message.trim());
     // Send notification email to hello@onpitch.com.au
+    const n = name.trim(), em = email.trim(), sub = subject.trim(), msg = message.trim();
+    const roleLabel = role === 'vendor' ? 'Vendor' : role === 'organiser' ? 'Organiser' : 'Other';
+    const ts = new Date().toLocaleString('en-AU', { timeZone: 'Australia/Adelaide', dateStyle: 'medium', timeStyle: 'short' });
     try {
       await sendAdminEmail(
         'hello@onpitch.com.au',
-        `New contact form: ${subject.trim()}`,
-        `<p><strong>From:</strong> ${name.trim()} (${email.trim()})</p><p><strong>Role:</strong> ${role}</p><p><strong>Subject:</strong> ${subject.trim()}</p><hr><p>${message.trim().replace(/\n/g, '<br>')}</p>`,
-        `From: ${name.trim()} (${email.trim()})\nRole: ${role}\nSubject: ${subject.trim()}\n\n${message.trim()}`
+        `New contact form: ${sub}`,
+        `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"></head><body style="margin:0;padding:0;background-color:#1A1612;font-family:-apple-system,'Helvetica Neue',Arial,sans-serif;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#1A1612;padding:40px 20px;">
+  <tr><td align="center">
+    <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;">
+      <!-- Logo -->
+      <tr><td style="padding:0 0 32px;text-align:center;">
+        <span style="font-family:Georgia,'Times New Roman',serif;font-size:28px;font-weight:900;color:#FDF4E7;letter-spacing:-0.04em;">Pitch<span style="color:#E8500A;">.</span></span>
+      </td></tr>
+      <!-- Card -->
+      <tr><td style="background-color:#231E19;border-radius:16px;border:1px solid rgba(255,255,255,0.035);overflow:hidden;">
+        <!-- Header -->
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+          <tr><td style="background:linear-gradient(135deg,#2A1C12,#231E19);padding:28px 36px 24px;border-bottom:1px solid rgba(255,255,255,0.04);">
+            <p style="margin:0 0 4px;font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#E8500A;">New Contact Message</p>
+            <p style="margin:0;font-family:Georgia,'Times New Roman',serif;font-size:22px;font-weight:900;color:#FDF4E7;letter-spacing:-0.02em;line-height:1.3;">${sub}</p>
+          </td></tr>
+        </table>
+        <!-- Meta -->
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+          <tr><td style="padding:24px 36px 0;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:separate;">
+              <tr>
+                <td style="padding:12px 16px;background-color:#2E2720;border-radius:10px 10px 0 0;border-bottom:1px solid rgba(255,255,255,0.03);">
+                  <p style="margin:0;font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:#A89880;">From</p>
+                  <p style="margin:4px 0 0;font-size:15px;font-weight:600;color:#FDF4E7;">${n}</p>
+                </td>
+                <td style="padding:12px 16px;background-color:#2E2720;border-radius:10px 10px 0 0;border-bottom:1px solid rgba(255,255,255,0.03);">
+                  <p style="margin:0;font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:#A89880;">Role</p>
+                  <p style="margin:4px 0 0;font-size:15px;font-weight:600;color:#FDF4E7;">${roleLabel}</p>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="2" style="padding:12px 16px;background-color:#2E2720;border-radius:0 0 10px 10px;">
+                  <p style="margin:0;font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:#A89880;">Email</p>
+                  <p style="margin:4px 0 0;font-size:15px;color:#FDF4E7;"><a href="mailto:${em}" style="color:#E8500A;text-decoration:none;">${em}</a></p>
+                </td>
+              </tr>
+            </table>
+          </td></tr>
+        </table>
+        <!-- Message -->
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+          <tr><td style="padding:24px 36px 32px;">
+            <p style="margin:0 0 12px;font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:#A89880;">Message</p>
+            <div style="background-color:#2E2720;border-radius:10px;padding:20px 20px;border-left:3px solid #E8500A;">
+              <p style="margin:0;font-size:14px;color:#FDF4E7;line-height:1.7;white-space:pre-wrap;">${msg.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>')}</p>
+            </div>
+          </td></tr>
+        </table>
+        <!-- Reply button -->
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+          <tr><td style="padding:0 36px 32px;" align="center">
+            <a href="mailto:${em}?subject=Re: ${encodeURIComponent(sub)}" style="display:inline-block;background-color:#E8500A;color:#ffffff;font-size:14px;font-weight:700;text-decoration:none;padding:12px 32px;border-radius:9px;">Reply to ${n.split(' ')[0]}</a>
+          </td></tr>
+        </table>
+      </td></tr>
+      <!-- Footer -->
+      <tr><td style="padding:24px 0 0;text-align:center;">
+        <p style="margin:0;font-size:12px;color:#6B5A4A;">Received ${ts} ACST via onpitch.com.au/contact</p>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>
+</body></html>`,
+        `New contact form message\n\nFrom: ${n} (${em})\nRole: ${roleLabel}\nSubject: ${sub}\nReceived: ${ts}\n\n${msg}`
       );
     } catch (mailErr) {
       console.error('[contact] Email notification failed:', mailErr.message);
