@@ -182,7 +182,7 @@ body::before {
   content: attr(data-num);
   position: absolute; top: 20px; right: 24px;
   font-family: var(--fd); font-size: 72px; font-weight: 900;
-  color: #ffffff04; line-height: 1; pointer-events: none;
+  color: #ffffff08; line-height: 1; pointer-events: none;
   letter-spacing: -0.04em;
 }
 .hiw-step-card-icon {
@@ -201,7 +201,7 @@ body::before {
   color: var(--text-hi); margin-bottom: 8px; letter-spacing: -0.01em;
 }
 .hiw-step-card-desc {
-  font-size: 14px; color: var(--text-lo); line-height: 1.7;
+  font-size: 14px; color: var(--text-mid); line-height: 1.7;
 }
 .hiw-step-card-tip {
   margin-top: 16px; padding: 10px 14px;
@@ -227,7 +227,7 @@ body::before {
   font-family: var(--fd); font-size: 17px; font-weight: 800;
   color: var(--text-hi); margin-bottom: 8px;
 }
-.hiw-trust-desc { font-size: 13px; color: var(--text-lo); line-height: 1.65; }
+.hiw-trust-desc { font-size: 13px; color: var(--text-mid); line-height: 1.65; }
 
 /* ── FAQ ── */
 .hiw-faq { max-width: 720px; margin: 0 auto; }
@@ -253,10 +253,16 @@ body::before {
 }
 .hiw-faq-item.open .hiw-faq-chevron { transform: rotate(45deg); color: var(--ember); border-color: var(--ember); }
 .hiw-faq-body {
-  display: none; padding: 0 4px 20px;
+  display: grid; grid-template-rows: 0fr;
+  transition: grid-template-rows 0.25s ease;
+}
+.hiw-faq-body > div {
+  overflow: hidden;
+  padding: 0 4px;
   font-size: 14px; color: var(--text-mid); line-height: 1.75;
 }
-.hiw-faq-item.open .hiw-faq-body { display: block; }
+.hiw-faq-item.open .hiw-faq-body { grid-template-rows: 1fr; }
+.hiw-faq-item.open .hiw-faq-body > div { padding-bottom: 20px; }
 
 /* ── CTA SECTION ── */
 .hiw-cta-wrap {
@@ -313,19 +319,49 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
 .footer-bl { font-family: var(--fd); font-size: 18px; font-weight: 900; letter-spacing: -0.04em; color: var(--text-mid); text-decoration: none; }
 .footer-bl .dot { color: var(--ember); }
 
+/* Hamburger */
+.nav-hamburger {
+  display: none; flex-direction: column; gap: 5px;
+  cursor: pointer; padding: 8px; border: none; background: transparent;
+}
+.nav-hamburger span {
+  display: block; width: 22px; height: 2px;
+  background: var(--text-mid); border-radius: 2px;
+  transition: all 0.2s;
+}
+
+/* Mobile menu */
+.mobile-menu {
+  display: none; position: fixed;
+  top: 66px; left: 0; right: 0; bottom: 0;
+  background: rgba(26,22,18,0.98);
+  z-index: 199; flex-direction: column;
+  align-items: center; justify-content: center; gap: 28px;
+}
+.mobile-menu.open { display: flex; }
+.mobile-menu a {
+  font-family: var(--fd); font-size: 32px; font-weight: 900;
+  letter-spacing: -0.03em; color: var(--text-hi); text-decoration: none;
+  transition: color 0.14s;
+}
+.mobile-menu a:hover { color: var(--ember); }
+.mobile-menu-actions {
+  display: flex; gap: 12px; margin-top: 8px;
+}
+
 /* ── RESPONSIVE ── */
 @media (max-width: 860px) {
   .hiw-step-grid { grid-template-columns: 1fr; }
   .hiw-trust-grid { grid-template-columns: 1fr; }
   .navbar { padding: 0 20px; }
+  .nav-links { display: none; }
+  .nav-actions { display: none; }
+  .nav-hamburger { display: flex; }
   .hiw-hero { padding: 120px 20px 60px; }
   .hiw-section { padding: 60px 20px; }
   .hiw-cta-wrap { padding: 60px 20px; }
   .footer-main { grid-template-columns: 1fr 1fr; gap: 28px; padding: 40px 28px 28px; }
   .footer-bottom { padding: 16px 28px 20px; }
-}
-@media (max-width: 480px) {
-  .nav-links { display: none; }
 }
 </style>
 </head>
@@ -347,7 +383,23 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
   <div id="nav-loggedin" style="display:none;align-items:center;gap:8px;">
     <a href="/dashboard/vendor" id="nav-dashboard-link" style="font-size:13px;font-weight:600;color:var(--text-mid);text-decoration:none;padding:9px 16px;border-radius:8px;"><span id="nav-user-label">Account</span> ▾</a>
   </div>
+
+  <button class="nav-hamburger" id="hamburger" onclick="toggleMobileMenu()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
+
+<!-- Mobile menu -->
+<div class="mobile-menu" id="mobile-menu">
+  <a href="/events" onclick="closeMobileMenu()">Events</a>
+  <a href="/vendors" onclick="closeMobileMenu()">Vendors</a>
+  <a href="/how-it-works" onclick="closeMobileMenu()">How It Works</a>
+  <a href="/pricing" onclick="closeMobileMenu()">Pricing</a>
+  <div class="mobile-menu-actions">
+    <a href="/login" class="btn-login" style="font-size:15px;">Log in</a>
+    <a href="/signup" class="btn-get-started" style="font-size:15px;">Get Started</a>
+  </div>
+</div>
 <script>(function(){var u=window.__PITCH_USER__;if(!u)return;var lo=document.getElementById('nav-loggedout');if(lo)lo.style.display='none';if(u.role==='foodie'){var nl=document.querySelector('.nav-links'),p=location.pathname;if(nl)nl.innerHTML='<li><a href="/discover">My Feed</a></li><li><a href="/events"'+(p==='/events'?' class="active"':'')+'>All Events</a></li><li><a href="/vendors"'+(p==='/vendors'?' class="active"':'')+'>Vendors</a></li>';if(lo)lo.remove();var li=document.getElementById('nav-loggedin');if(li)li.remove();var nav=document.querySelector('.navbar'),ham=nav&&nav.querySelector('.nav-hamburger'),fn=(u.name||'').split(' ')[0]||'Account';var rh='<div style="display:flex;align-items:center;gap:10px;" id="nav-foodie-right"><div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--text-mid)"><div style="width:28px;height:28px;border-radius:50%;background:var(--ember);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff">🍜</div><span>'+fn+'</span></div><button onclick="fetch(\'/api/logout\',{method:\'POST\'}).then(function(){location.href=\'/\'})" style="font-size:13px;font-weight:600;color:var(--text-lo);background:transparent;border:none;cursor:pointer;padding:8px;font-family:inherit">Sign out</button></div>';if(ham)ham.insertAdjacentHTML('beforebegin',rh);else if(nav)nav.insertAdjacentHTML('beforeend',rh)}else{var li2=document.getElementById('nav-loggedin');if(li2){li2.style.display='flex';var lbl=document.getElementById('nav-user-label');if(lbl)lbl.textContent=(u.name||'').split(' ')[0]||'Account';var dl=document.getElementById('nav-dashboard-link');if(dl)dl.href=u.role==='organiser'?'/dashboard/organiser':u.role==='admin'?'/dashboard/admin':'/dashboard/vendor'}}})();</script>
 
 <main>
@@ -414,6 +466,7 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
 <!-- ═══════════════════ FOR ORGANISERS ═══════════════════ -->
 <div id="section-organisers">
 
+  <div style="background:var(--char);border-top:1px solid #ffffff06;border-bottom:1px solid #ffffff06;">
   <div class="hiw-section">
     <div class="hiw-section-label">For organisers</div>
     <h2 class="hiw-section-title">From listing to full <em>lineup.</em></h2>
@@ -454,6 +507,7 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
       </div>
 
     </div>
+  </div>
   </div>
 
 </div>
@@ -500,7 +554,7 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
         How long does vendor verification take?
         <span class="hiw-faq-chevron">+</span>
       </button>
-      <div class="hiw-faq-body">Verification typically takes 1–2 business days after you submit your documents. You'll receive an email notification as soon as your account is approved. While pending, your profile is visible but marked as unverified.</div>
+      <div class="hiw-faq-body"><div>Verification typically takes 1–2 business days after you submit your documents. You'll receive an email notification as soon as your account is approved. While pending, your profile is visible but marked as unverified.</div></div>
     </div>
 
     <div class="hiw-faq-item">
@@ -508,7 +562,7 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
         Is Pitch. free to use for vendors?
         <span class="hiw-faq-chevron">+</span>
       </button>
-      <div class="hiw-faq-body">The Starter plan is free — you can create a profile and apply to a limited number of events at no cost. Pro ($29/month) unlocks unlimited applications, priority placement, a Pro badge, direct messaging, and analytics. Growth ($79/month) is built for high-volume vendors and adds advanced analytics, featured placement, and dedicated support. See our <a href="/pricing" style="color:var(--ember);">pricing page</a> for a full comparison.</div>
+      <div class="hiw-faq-body"><div>The Starter plan is free — you can create a profile and apply to a limited number of events at no cost. Pro ($29/month) unlocks unlimited applications, priority placement, a Pro badge, direct messaging, and analytics. Growth ($79/month) is built for high-volume vendors and adds advanced analytics, featured placement, and dedicated support. See our <a href="/pricing" style="color:var(--ember);">pricing page</a> for a full comparison.</div></div>
     </div>
 
     <div class="hiw-faq-item">
@@ -516,7 +570,7 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
         What if an organiser doesn't respond to my application?
         <span class="hiw-faq-chevron">+</span>
       </button>
-      <div class="hiw-faq-body">Organisers can approve, decline, or leave applications open. If your application is still open when the event starts, it is automatically treated as unsuccessful. You can track all application statuses from your dashboard. Organiser response rates are visible on their public profile.</div>
+      <div class="hiw-faq-body"><div>Organisers can approve, decline, or leave applications open. If your application is still open when the event starts, it is automatically treated as unsuccessful. You can track all application statuses from your dashboard. Organiser response rates are visible on their public profile.</div></div>
     </div>
 
     <div class="hiw-faq-item">
@@ -524,7 +578,7 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
         Can I apply to multiple events at once?
         <span class="hiw-faq-chevron">+</span>
       </button>
-      <div class="hiw-faq-body">Yes. There's no limit on the number of simultaneous applications. Your dashboard shows all pending, approved, and declined applications in one place so you can track everything easily.</div>
+      <div class="hiw-faq-body"><div>Yes. There's no limit on the number of simultaneous applications. Your dashboard shows all pending, approved, and declined applications in one place so you can track everything easily.</div></div>
     </div>
 
     <div class="hiw-faq-item">
@@ -532,7 +586,7 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
         What subscription plans are available for vendors?
         <span class="hiw-faq-chevron">+</span>
       </button>
-      <div class="hiw-faq-body">Pitch offers three plans — Starter (free), Basic ($29/month), and Pro ($79/month). Starter lets you apply to a limited number of events. Basic and Pro unlock more applications, priority placement, and advanced features. See our <a href="/pricing" style="color:var(--ember);">pricing page</a> for a full comparison.</div>
+      <div class="hiw-faq-body"><div>Pitch offers three plans — Starter (free), Pro ($29/month), and Growth ($79/month). Starter lets you apply to a limited number of events. Pro and Growth unlock more applications, priority placement, and advanced features. See our <a href="/pricing" style="color:var(--ember);">pricing page</a> for a full comparison.</div></div>
     </div>
 
     <div class="hiw-faq-item">
@@ -540,7 +594,7 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
         What happens if a vendor cancels after being confirmed?
         <span class="hiw-faq-chevron">+</span>
       </button>
-      <div class="hiw-faq-body">If a confirmed vendor cancels, it will be recorded on their profile and reflected in their reliability rating. Organisers are notified immediately and can re-open the spot to other applicants.</div>
+      <div class="hiw-faq-body"><div>If a confirmed vendor cancels, it will be recorded on their profile and reflected in their reliability rating. Organisers are notified immediately and can re-open the spot to other applicants.</div></div>
     </div>
 
   </div>
@@ -553,7 +607,7 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
         How do I post an event?
         <span class="hiw-faq-chevron">+</span>
       </button>
-      <div class="hiw-faq-body">Create an account, select Organiser, complete your event details including dates, location, stall specs and fees. Your event goes live immediately and verified vendors can start applying.</div>
+      <div class="hiw-faq-body"><div>Create an account, select Organiser, complete your event details including dates, location, stall specs and fees. Your event goes live immediately and verified vendors can start applying.</div></div>
     </div>
 
     <div class="hiw-faq-item">
@@ -561,7 +615,7 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
         Is it free to list my event on Pitch?
         <span class="hiw-faq-chevron">+</span>
       </button>
-      <div class="hiw-faq-body">Yes. Posting events is completely free. Pitch charges a small transaction fee when a vendor is confirmed and payment is processed.</div>
+      <div class="hiw-faq-body"><div>Yes. Posting events is completely free. Pitch charges a small transaction fee when a vendor is confirmed and payment is processed.</div></div>
     </div>
 
     <div class="hiw-faq-item">
@@ -569,7 +623,7 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
         How does the transaction fee work?
         <span class="hiw-faq-chevron">+</span>
       </button>
-      <div class="hiw-faq-body">The transaction fee is charged at the time of vendor confirmation and is included in the stall fee. You set the stall price — Pitch adds the transaction fee on top.</div>
+      <div class="hiw-faq-body"><div>The transaction fee is charged at the time of vendor confirmation and is included in the stall fee. You set the stall price — Pitch adds the transaction fee on top.</div></div>
     </div>
 
     <div class="hiw-faq-item">
@@ -577,7 +631,7 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
         Can I set my own stall fees?
         <span class="hiw-faq-chevron">+</span>
       </button>
-      <div class="hiw-faq-body">Yes. You have full control over your stall pricing, dimensions, power and water availability, and any other requirements.</div>
+      <div class="hiw-faq-body"><div>Yes. You have full control over your stall pricing, dimensions, power and water availability, and any other requirements.</div></div>
     </div>
 
     <div class="hiw-faq-item">
@@ -585,7 +639,7 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
         What happens if a confirmed vendor cancels?
         <span class="hiw-faq-chevron">+</span>
       </button>
-      <div class="hiw-faq-body">You are notified immediately and the spot is automatically re-opened for other applicants. The cancellation is recorded on the vendor's profile and affects their reliability rating.</div>
+      <div class="hiw-faq-body"><div>You are notified immediately and the spot is automatically re-opened for other applicants. The cancellation is recorded on the vendor's profile and affects their reliability rating.</div></div>
     </div>
 
     <div class="hiw-faq-item">
@@ -593,7 +647,7 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
         Can I message vendors before approving them?
         <span class="hiw-faq-chevron">+</span>
       </button>
-      <div class="hiw-faq-body">Yes. You can message any vendor who has applied to your event through the in-app messaging system before making a decision.</div>
+      <div class="hiw-faq-body"><div>Yes. You can message any vendor who has applied to your event through the in-app messaging system before making a decision.</div></div>
     </div>
 
   </div>
@@ -606,6 +660,7 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
     <p class="hiw-cta-sub">Join vendors and organisers already using Pitch across South Australia.</p>
     <div class="hiw-cta-btns">
       <a href="/signup/vendor" class="btn-cta-primary">Join as a Vendor</a>
+      <a href="/events" class="btn-cta-secondary">Browse Events</a>
     </div>
   </div>
   <div id="cta-organiser-content" style="display:none;">
@@ -613,6 +668,7 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
     <p class="hiw-cta-sub">Join organisers already using Pitch to find verified food vendors across South Australia.</p>
     <div class="hiw-cta-btns">
       <a href="/signup/organiser" class="btn-cta-primary">Post an Event →</a>
+      <a href="/vendors" class="btn-cta-secondary">Browse Vendors</a>
     </div>
   </div>
 </div>
@@ -691,6 +747,14 @@ function switchTab(tab, el) {
 function toggleFaq(btn) {
   const item = btn.closest('.hiw-faq-item');
   item.classList.toggle('open');
+}
+
+// Mobile menu toggle
+function toggleMobileMenu() {
+  document.getElementById('mobile-menu').classList.toggle('open');
+}
+function closeMobileMenu() {
+  document.getElementById('mobile-menu').classList.remove('open');
 }
 
 // Default: show vendors section
