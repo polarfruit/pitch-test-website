@@ -6,7 +6,7 @@
       "use": "@vercel/node",
       "config": {
         "memory": 1024,
-        "bundle": false,
+        "maxDuration": 30,
         "includeFiles": [
           "pages/**/*.html",
           "server/**/*.mjs",
@@ -20,8 +20,10 @@
       }
     }
   ],
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/api/index.mjs" }
+  "routes": [
+    { "src": "/fonts/(.*)", "headers": { "Cache-Control": "public, max-age=31536000, immutable" }, "continue": true },
+    { "src": "\\.(js|ico|png|woff2?|ttf|css)$", "headers": { "Cache-Control": "public, max-age=86400" }, "continue": true },
+    { "src": "/(.*)", "dest": "/api/index.mjs" }
   ],
   "crons": [
     { "path": "/api/cron/post-event", "schedule": "0 8 * * *" }

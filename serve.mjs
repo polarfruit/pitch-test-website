@@ -1285,13 +1285,13 @@ function apiCached(key, ttlMs, fn) {
   return async (req, res) => {
     const hit = _apiCache.get(key);
     if (hit && Date.now() - hit.ts < ttlMs) {
-      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=120');
       return res.json(hit.data);
     }
     try {
       const data = await fn();
       _apiCache.set(key, { data, ts: Date.now() });
-      res.setHeader('Cache-Control', 'no-cache');
+      res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=120');
       res.json(data);
     } catch(e) {
       console.error('[apiCached]', key, e);
@@ -4548,6 +4548,10 @@ function page(file, opts) {
     let html = readHtml(file);
     if (!skipBanner) html = injectBanner(html);
     html = injectSession(html, req);
+    // Edge-cache public pages for anonymous visitors
+    if (!req.session || !req.session.userId) {
+      res.setHeader('Cache-Control', 'public, s-maxage=120, stale-while-revalidate=300');
+    }
     res.send(html);
   };
 }
@@ -4557,7 +4561,7 @@ let _homeCacheTs = 0;
 const HOME_TTL = 60000;
 app.get('/', async (req, res) => {
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  res.setHeader('Cache-Control', 'public, max-age=60');
+  res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=120, stale-while-revalidate=300');
   const now = Date.now();
   if (_homeCache && now - _homeCacheTs < HOME_TTL) return res.send(injectSession(_homeCache, req));
   let html = readHtml('pages/index.html');
@@ -4597,7 +4601,7 @@ app.get('/events', async (req, res) => {
   try {
     const now = Date.now();
     if (_eventsPageCache && now - _eventsPageCacheTs < EVENTS_PAGE_TTL) {
-      res.setHeader('Cache-Control', 'public, max-age=60');
+      res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=120, stale-while-revalidate=300');
       return res.send(injectSession(_eventsPageCache, req));
     }
     const events = await stmts.publishedEvents.all();
@@ -4625,7 +4629,7 @@ window.__PITCH_MAP_EVENTS__ = ${JSON.stringify(mapData)};
     html = injectBanner(html);
     _eventsPageCache = html;
     _eventsPageCacheTs = now;
-    res.setHeader('Cache-Control', 'public, max-age=60');
+    res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=120, stale-while-revalidate=300');
     res.send(injectSession(html, req));
   } catch (e) {
     console.error('[events page]', e);
