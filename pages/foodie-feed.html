@@ -167,6 +167,30 @@ body::before {
 }
 .vc-follow-btn:hover { background: var(--ember-bg); border-color: #E8500A50; }
 .vc-follow-btn.following { background: var(--ember); color: #fff; border-color: transparent; }
+.vc-follow-btn.following:hover { background: var(--ember-glow); }
+
+/* ── Pro badge ───────────────────────────────────────────────────────────── */
+.vc-pro {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10.5px; font-weight: 700; color: var(--gold);
+  letter-spacing: 0.04em; margin-top: -2px;
+}
+.vc-pro svg { width: 13px; height: 13px; flex-shrink: 0; }
+
+/* ── Save/follow feedback toast ──────────────────────────────────────────── */
+.action-toast {
+  position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--char); color: var(--text-hi); border: 1px solid #ffffff12;
+  padding: 10px 22px; border-radius: 12px; font-size: 13px; font-weight: 600;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.5); z-index: 9999;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s;
+}
+.action-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ── Save button pulse ───────────────────────────────────────────────────── */
+@keyframes save-pulse { 0% { transform: scale(1); } 40% { transform: scale(1.25); } 100% { transform: scale(1); } }
+.ec-save-btn.pulse { animation: save-pulse 0.35s ease; }
 
 /* ── EMPTY STATE ──────────────────────────────────────────────────────────── */
 .empty-state { text-align: center; padding: 64px 0; }
@@ -272,7 +296,7 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
       <div class="ec" style="pointer-events:none;"><div class="skeleton" style="height:130px;border-radius:0;"></div><div style="padding:18px 20px 20px;"><div class="skeleton" style="height:18px;width:70%;margin-bottom:10px;"></div><div class="skeleton" style="height:12px;width:50%;margin-bottom:6px;"></div><div class="skeleton" style="height:12px;width:60%;margin-bottom:14px;"></div><div style="padding-top:12px;border-top:1px solid var(--linen);"><div class="skeleton" style="height:12px;width:40%;"></div></div></div></div>
       <div class="ec" style="pointer-events:none;"><div class="skeleton" style="height:130px;border-radius:0;"></div><div style="padding:18px 20px 20px;"><div class="skeleton" style="height:18px;width:70%;margin-bottom:10px;"></div><div class="skeleton" style="height:12px;width:50%;margin-bottom:6px;"></div><div class="skeleton" style="height:12px;width:60%;margin-bottom:14px;"></div><div style="padding-top:12px;border-top:1px solid var(--linen);"><div class="skeleton" style="height:12px;width:40%;"></div></div></div></div>
     </div>
-    <div style="text-align:center;margin-top:-24px;margin-bottom:8px;"><a href="/events" class="view-all-link">View all events <span>→</span></a></div>
+    <div style="text-align:center;margin-top:-12px;margin-bottom:8px;"><a href="/events" style="display:inline-flex;align-items:center;gap:8px;padding:10px 28px;border-radius:10px;border:1.5px solid var(--ember);color:var(--ember);font-size:14px;font-weight:700;text-decoration:none;transition:background 0.14s,color 0.14s,gap 0.14s;" onmouseover="this.style.background='var(--ember)';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='var(--ember)'">View all events <span>→</span></a></div>
   </div>
 
   <!-- Saved tab content -->
@@ -298,19 +322,49 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
 </main>
 
 <footer>
-  <div class="footer-inner">
-    <span class="footer-copy">© 2026 Pitch. Adelaide, Australia.</span>
-    <div class="footer-links-row">
-      <a href="/events">Browse events</a>
-      <a href="/vendors">Vendors</a>
-      <a href="/about">About</a>
-      <a href="/contact">Contact</a>
-      <a href="/terms">Terms</a>
-      <a href="/privacy">Privacy</a>
+  <div class="footer-inner" style="flex-direction:column;align-items:stretch;gap:24px;padding:36px 52px 28px;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:20px;">
+      <div>
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px;">
+          <div style="width:18px;height:18px;border-radius:50%;background:var(--ember);"></div>
+          <span style="font-family:var(--fd);font-size:16px;font-weight:900;color:var(--text-hi);">Pitch.</span>
+        </div>
+        <div style="font-size:12px;color:var(--text-lo);line-height:1.6;max-width:260px;">Australia's marketplace connecting food vendors with event organisers. Based in Adelaide, SA.</div>
+      </div>
+      <div style="display:flex;gap:40px;">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--text-mid);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;">Platform</div>
+          <div style="display:flex;flex-direction:column;gap:7px;">
+            <a href="/events" style="font-size:12px;color:var(--text-lo);text-decoration:none;transition:color 0.14s;">Browse events</a>
+            <a href="/vendors" style="font-size:12px;color:var(--text-lo);text-decoration:none;transition:color 0.14s;">Vendors</a>
+            <a href="/how-it-works" style="font-size:12px;color:var(--text-lo);text-decoration:none;transition:color 0.14s;">How it works</a>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--text-mid);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;">Company</div>
+          <div style="display:flex;flex-direction:column;gap:7px;">
+            <a href="/about" style="font-size:12px;color:var(--text-lo);text-decoration:none;transition:color 0.14s;">About</a>
+            <a href="/contact" style="font-size:12px;color:var(--text-lo);text-decoration:none;transition:color 0.14s;">Contact</a>
+            <a href="/pricing" style="font-size:12px;color:var(--text-lo);text-decoration:none;transition:color 0.14s;">Pricing</a>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--text-mid);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;">Legal</div>
+          <div style="display:flex;flex-direction:column;gap:7px;">
+            <a href="/terms" style="font-size:12px;color:var(--text-lo);text-decoration:none;transition:color 0.14s;">Terms</a>
+            <a href="/privacy" style="font-size:12px;color:var(--text-lo);text-decoration:none;transition:color 0.14s;">Privacy</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="border-top:1px solid #ffffff07;padding-top:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+      <span class="footer-copy">© 2026 Pitch. Adelaide, Australia.</span>
+      <span style="font-size:11px;color:var(--text-lo);">ABN 00 000 000 000</span>
     </div>
   </div>
 </footer>
 
+<div class="action-toast" id="action-toast"></div>
 <script src="/data.js"></script>
 <script>
 const CAT_STYLE = {
@@ -434,12 +488,23 @@ function renderVendorCard(v, isFollowing) {
   const avatarInner = v.avatar_url
     ? `<img src="${v.avatar_url}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:14px;">`
     : emoji;
+  const proBadge = v.isPro ? `<div class="vc-pro"><svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M12.516 2.17a.75.75 0 00-1.032 0 11.209 11.209 0 01-7.877 3.08.75.75 0 00-.722.515A12.74 12.74 0 002.25 9.75c0 5.942 4.064 10.933 9.563 12.348a.749.749 0 00.374 0c5.499-1.415 9.563-6.406 9.563-12.348 0-1.39-.223-2.73-.635-3.985a.75.75 0 00-.722-.516 11.209 11.209 0 01-7.877-3.08zm3.19 8.303a.75.75 0 00-1.06-1.06l-3.896 3.896-1.59-1.59a.75.75 0 10-1.061 1.06l2.121 2.122a.75.75 0 001.06 0l4.427-4.428z" clip-rule="evenodd"/></svg> Pro</div>` : '';
   return `<a href="/vendors/${v.id}" class="vc">
     <div class="vc-avatar" style="background:${avatarBg};">${avatarInner}</div>
     <div class="vc-name">${v.trading_name || v.name}</div>
+    ${proBadge}
     <div class="vc-cuisine">${cuisineLine}</div>
     <button class="vc-follow-btn${isFollowing?' following':''}" onclick="toggleFollow(event,'${v.id||v.userId}',this)">${isFollowing ? '✓ Following' : '+ Follow'}</button>
   </a>`;
+}
+
+let _toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('action-toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => t.classList.remove('show'), 1800);
 }
 
 async function toggleSave(e, slug, btn) {
@@ -449,8 +514,16 @@ async function toggleSave(e, slug, btn) {
   try {
     const method = isSaved ? 'DELETE' : 'POST';
     await fetch(`/api/foodie/save/${slug}`, { method });
-    if (isSaved) { savedSlugs.delete(slug); btn.classList.remove('saved'); }
-    else { savedSlugs.add(slug); btn.classList.add('saved'); }
+    if (isSaved) {
+      savedSlugs.delete(slug); btn.classList.remove('saved');
+      btn.querySelector('svg').setAttribute('fill', 'none');
+      showToast('Removed from saved');
+    } else {
+      savedSlugs.add(slug); btn.classList.add('saved');
+      btn.querySelector('svg').setAttribute('fill', 'currentColor');
+      btn.classList.remove('pulse'); void btn.offsetWidth; btn.classList.add('pulse');
+      showToast('Event saved');
+    }
   } catch {}
 }
 
@@ -461,8 +534,13 @@ async function toggleFollow(e, vendorId, btn) {
   try {
     const method = isFollowing ? 'DELETE' : 'POST';
     await fetch(`/api/foodie/follow/${vendorId}`, { method });
-    if (isFollowing) { followingIds.delete(String(vendorId)); btn.textContent = '+ Follow'; btn.classList.remove('following'); }
-    else { followingIds.add(String(vendorId)); btn.textContent = '✓ Following'; btn.classList.add('following'); }
+    if (isFollowing) {
+      followingIds.delete(String(vendorId)); btn.textContent = '+ Follow'; btn.classList.remove('following');
+      showToast('Unfollowed');
+    } else {
+      followingIds.add(String(vendorId)); btn.textContent = '✓ Following'; btn.classList.add('following');
+      showToast('Following vendor');
+    }
   } catch {}
 }
 
