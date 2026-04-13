@@ -25,16 +25,52 @@
     .btn-cta { font-family:var(--fb);font-size:13px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:10px 22px;border-radius:9px;cursor:pointer;text-decoration:none;box-shadow:0 4px 16px rgba(232,80,10,0.35);transition:background 0.14s; }
     .btn-cta:hover { background:var(--ember-glow); }
     .wrap { max-width:800px;margin:0 auto;padding:120px 52px 80px;position:relative;z-index:1; }
+    .breadcrumb { font-size:13px;color:var(--text-lo);margin-bottom:24px; }
+    .breadcrumb a { color:var(--text-lo);text-decoration:none;transition:color 0.14s; }
+    .breadcrumb a:hover { color:var(--text-mid); }
+    .breadcrumb .sep { margin:0 8px;opacity:0.5; }
     .page-tag { display:inline-block;font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--ember);background:var(--ember-bg);border:1px solid #E8500A25;border-radius:100px;padding:4px 14px;margin-bottom:20px; }
     h1 { font-family:var(--fd);font-size:clamp(36px,5vw,56px);font-weight:900;letter-spacing:-0.03em;line-height:1.1;color:var(--text-hi);margin-bottom:16px; }
-    .sub { font-size:17px;color:var(--text-mid);line-height:1.7;margin-bottom:40px; }
-    h2 { font-family:var(--fd);font-size:22px;font-weight:900;color:var(--ember);margin:40px 0 10px;letter-spacing:-0.02em; }
+    .sub { font-size:17px;color:var(--text-mid);line-height:1.7;margin-bottom:32px; }
+    .toc { background:var(--char);border:1px solid #ffffff0a;border-radius:12px;padding:24px 28px;margin-bottom:48px; }
+    .toc-title { font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-lo);margin-bottom:14px; }
+    .toc-list { list-style:none;display:flex;flex-direction:column;gap:10px; }
+    .toc-list a { font-size:14px;color:var(--text-mid);text-decoration:none !important;transition:color 0.14s; }
+    .toc-list a:hover { color:var(--ember); }
+    .breadcrumb a { text-decoration:none !important; }
+    h2 { font-family:var(--fd);font-size:22px;font-weight:900;color:var(--ember);margin:52px 0 12px;letter-spacing:-0.02em;padding-top:8px; }
+    h2:first-of-type { margin-top:0; }
     p { color:var(--text-mid);font-size:15px;margin-bottom:14px;line-height:1.75; }
     ul { color:var(--text-mid);font-size:15px;padding-left:20px;margin-bottom:14px; }
     ul li { margin-bottom:6px;line-height:1.7; }
-    a { color:var(--ember);text-decoration:none; }
-    a:hover { text-decoration:underline; }
-    footer { background:#161210;border-top:1px solid #ffffff06;padding:40px 52px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;position:relative;z-index:1; }
+    .wrap a { color:var(--ember);text-decoration:underline;text-decoration-color:#E8500A44;text-underline-offset:3px;transition:text-decoration-color 0.14s; }
+    .wrap a:hover { text-decoration-color:var(--ember); }
+
+    /* Footer */
+    footer { background:#161210;border-top:1px solid #ffffff06;position:relative;z-index:1; }
+    .footer-main { max-width:1320px;margin:0 auto;padding:64px 52px 40px;display:grid;grid-template-columns:repeat(4,1fr);gap:48px; }
+    .footer-socials { display:flex;gap:8px; }
+    .fsoc { width:36px;height:36px;border-radius:9px;background:#ffffff08;border:1px solid #ffffff0C;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;text-decoration:none;color:var(--text-lo);transition:background 0.14s,border-color 0.14s,color 0.14s; }
+    .fsoc:hover { background:var(--ember-bg);border-color:#E8500A22;color:var(--ember); }
+    .footer-col-title { font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-lo);font-weight:700;margin-bottom:18px; }
+    .footer-links { list-style:none;display:flex;flex-direction:column;gap:10px; }
+    .footer-links a { font-size:13px;color:var(--text-mid);text-decoration:none;transition:color 0.14s; }
+    .footer-links a:hover { color:var(--text-hi); }
+    .footer-bottom { max-width:1320px;margin:0 auto;padding:20px 52px 28px;border-top:1px solid #ffffff06;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px; }
+    .footer-copy { font-size:12px;color:var(--text-lo); }
+    .footer-bottom-logo { font-family:var(--fd);font-size:20px;font-weight:900;letter-spacing:-0.04em;color:var(--text-mid);text-decoration:none; }
+    .footer-bottom-logo .dot { color:var(--ember); }
+
+    @media (max-width:768px) {
+      .navbar { padding:0 20px; }
+      .wrap { padding:100px 24px 60px; }
+      .footer-main { grid-template-columns:1fr 1fr;gap:32px;padding:48px 28px 32px; }
+      .footer-bottom { padding:16px 28px 24px; }
+    }
+    @media (max-width:480px) {
+      .nav-links { display:none; }
+      .footer-main { grid-template-columns:1fr; }
+    }
   </style>
 </head>
 <body>
@@ -57,14 +93,29 @@
   <script>(function(){var u=window.__PITCH_USER__;if(!u)return;var lo=document.getElementById('nav-loggedout');if(lo)lo.style.display='none';if(u.role==='foodie'){var nl=document.querySelector('.nav-links'),p=location.pathname;if(nl)nl.innerHTML='<li><a href="/discover">My Feed</a></li><li><a href="/events"'+(p==='/events'?' class="active"':'')+'>All Events</a></li><li><a href="/vendors"'+(p==='/vendors'?' class="active"':'')+'>Vendors</a></li>';if(lo)lo.remove();var li=document.getElementById('nav-loggedin');if(li)li.remove();var nav=document.querySelector('.navbar'),ham=nav&&nav.querySelector('.nav-hamburger'),fn=(u.name||'').split(' ')[0]||'Account';var rh='<div style="display:flex;align-items:center;gap:10px;" id="nav-foodie-right"><div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--text-mid)"><div style="width:28px;height:28px;border-radius:50%;background:var(--ember);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff">🍜</div><span>'+fn+'</span></div><button onclick="fetch(\'/api/logout\',{method:\'POST\'}).then(function(){location.href=\'/\'})" style="font-size:13px;font-weight:600;color:var(--text-lo);background:transparent;border:none;cursor:pointer;padding:8px;font-family:inherit">Sign out</button></div>';if(ham)ham.insertAdjacentHTML('beforebegin',rh);else if(nav)nav.insertAdjacentHTML('beforeend',rh)}else{var li2=document.getElementById('nav-loggedin');if(li2){li2.style.display='flex';var lbl=document.getElementById('nav-user-label');if(lbl)lbl.textContent=(u.name||'').split(' ')[0]||'Account';var dl=document.getElementById('nav-dashboard-link');if(dl)dl.href=u.role==='organiser'?'/dashboard/organiser':u.role==='admin'?'/dashboard/admin':'/dashboard/vendor'}}})();</script>
 
   <div class="wrap">
+    <div class="breadcrumb"><a href="/">Home</a><span class="sep">/</span>Privacy Policy</div>
     <div class="page-tag">Legal</div>
     <h1>Privacy Policy</h1>
     <p class="sub">Last updated: March 2026. We're committed to handling your personal information with care.</p>
 
-    <h2>1. Information We Collect</h2>
+    <nav class="toc">
+      <div class="toc-title">On this page</div>
+      <ol class="toc-list">
+        <li><a href="#collect">Information We Collect</a></li>
+        <li><a href="#use">How We Use Your Information</a></li>
+        <li><a href="#share">Who We Share It With</a></li>
+        <li><a href="#security">Data Storage & Security</a></li>
+        <li><a href="#cookies">Cookies</a></li>
+        <li><a href="#rights">Your Rights (Australian Privacy Act 1988)</a></li>
+        <li><a href="#retention">Data Retention</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ol>
+    </nav>
+
+    <h2 id="collect">1. Information We Collect</h2>
     <p>We collect information you provide directly: full name, email address, mobile number, Australian Business Number (ABN), business name, and suburb/state. If you sign up as a vendor, we also collect your food business category, cuisine tags, and documents (e.g. PLI certificate). Payment information (e.g. credit card details) is processed directly by Stripe — we do not store card numbers. We also collect usage data such as pages visited, events viewed, and applications submitted.</p>
 
-    <h2>2. How We Use Your Information</h2>
+    <h2 id="use">2. How We Use Your Information</h2>
     <p>We use your information to:</p>
     <ul>
       <li>Create and manage your account</li>
@@ -75,16 +126,16 @@
       <li>Improve the Pitch. platform through aggregated analytics</li>
     </ul>
 
-    <h2>3. Who We Share It With</h2>
+    <h2 id="share">3. Who We Share It With</h2>
     <p>When a vendor applies to an event, the organiser can view that vendor's profile, trading name, ABN, and public application details. When an organiser lists an event, vendors can view the organiser's public profile and event details. We do not sell your personal data to third parties. We may share data with service providers who help us operate the platform (e.g. Stripe for payments, Mailgun for email delivery) under strict confidentiality agreements.</p>
 
-    <h2>4. Data Storage &amp; Security</h2>
+    <h2 id="security">4. Data Storage &amp; Security</h2>
     <p>All data is stored on Australian servers. Personal data is encrypted at rest and in transit using TLS 1.2+. Session tokens expire after 30 days of inactivity. We conduct periodic security reviews and follow OWASP best practices.</p>
 
-    <h2>5. Cookies</h2>
+    <h2 id="cookies">5. Cookies</h2>
     <p>Pitch. uses essential cookies to keep you logged in and maintain your session. We do not use third-party advertising cookies. We may use anonymous analytics cookies (e.g. Google Analytics with IP anonymisation enabled) to understand how users navigate the platform. You can opt out of analytics cookies in your browser settings.</p>
 
-    <h2>6. Your Rights (Australian Privacy Act 1988)</h2>
+    <h2 id="rights">6. Your Rights (Australian Privacy Act 1988)</h2>
     <p>Under the Privacy Act 1988 (Cth), you have the right to:</p>
     <ul>
       <li>Access personal information we hold about you</li>
@@ -94,23 +145,63 @@
     </ul>
     <p>To exercise these rights, contact <a href="mailto:legal@onpitch.com.au">legal@onpitch.com.au</a>.</p>
 
-    <h2>7. Data Retention</h2>
+    <h2 id="retention">7. Data Retention</h2>
     <p>We retain account data for up to 7 years after account deletion for legal, tax, and dispute-resolution purposes. Application records and payment history are retained for 7 years in accordance with Australian tax law requirements.</p>
 
-    <h2>8. Contact</h2>
+    <h2 id="contact">8. Contact</h2>
     <p>Questions about this policy? Contact us at <a href="mailto:legal@onpitch.com.au">legal@onpitch.com.au</a> or write to: Pitch. Pty Ltd, Adelaide SA 5000, Australia.</p>
   </div>
 
   <footer>
-    <a href="/" style="font-family:'Fraunces',serif;font-size:22px;font-weight:900;color:#FDF4E7;text-decoration:none;letter-spacing:-0.04em;">Pitch<span style="color:#E8500A;">.</span></a>
-    <div style="display:flex;gap:24px;flex-wrap:wrap;">
-      <a href="/about" style="font-size:13px;color:#6B5A4A;text-decoration:none;">About</a>
-      <a href="/pricing" style="font-size:13px;color:#6B5A4A;text-decoration:none;">Pricing</a>
-      <a href="/contact" style="font-size:13px;color:#6B5A4A;text-decoration:none;">Contact</a>
-      <a href="/terms" style="font-size:13px;color:#6B5A4A;text-decoration:none;">Terms</a>
-      <a href="/privacy" style="font-size:13px;color:#6B5A4A;text-decoration:none;">Privacy</a>
+    <div class="footer-main">
+      <div>
+        <div class="footer-col-title">For Vendors</div>
+        <ul class="footer-links">
+          <li><a href="/signup/vendor">Sign up as vendor</a></li>
+          <li><a href="/how-it-works">How it works</a></li>
+          <li><a href="/pricing">Pricing</a></li>
+          <li><a href="/vendors">Browse vendors</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">For Organisers</div>
+        <ul class="footer-links">
+          <li><a href="/events/new">Post an event</a></li>
+          <li><a href="/how-it-works">How it works</a></li>
+          <li><a href="/contact">Talk to sales</a></li>
+          <li><a href="/events">Find vendors</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">Company</div>
+        <ul class="footer-links">
+          <li><a href="/about">About</a></li>
+          <li><a href="/contact">Contact</a></li>
+          <li><a href="/terms">Terms</a></li>
+          <li><a href="/privacy">Privacy</a></li>
+        </ul>
+      </div>
+      <div>
+        <div class="footer-col-title">Connect</div>
+        <div class="footer-socials" style="margin-bottom:20px;">
+          <a href="https://instagram.com/pitchmkts" class="fsoc" title="Instagram" target="_blank" rel="noopener">&#9672;</a>
+          <a href="https://x.com/pitchmkts" class="fsoc" title="X" target="_blank" rel="noopener">&#120143;</a>
+          <a href="https://facebook.com/pitchmkts" class="fsoc" title="Facebook" target="_blank" rel="noopener">f</a>
+          <a href="https://linkedin.com/company/pitchmkts" class="fsoc" title="LinkedIn" target="_blank" rel="noopener">in</a>
+        </div>
+        <ul class="footer-links">
+          <li><a href="mailto:hello@onpitch.com.au">hello@onpitch.com.au</a></li>
+          <li><a href="/newsletter">Newsletter</a></li>
+        </ul>
+      </div>
     </div>
-    <span style="font-size:12px;color:#4A3C30;">© 2026 Pitch. Adelaide, Australia.</span>
+    <div class="footer-bottom">
+      <div style="display:flex;align-items:center;gap:16px;">
+        <a href="/" class="footer-bottom-logo">Pitch<span class="dot">.</span></a>
+        <span class="footer-copy">Australia's marketplace for food vendors and events.</span>
+      </div>
+      <span class="footer-copy">&copy; 2026 Pitch. Adelaide, Australia.</span>
+    </div>
   </footer>
 
 <script>
