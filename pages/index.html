@@ -93,6 +93,9 @@
 
 <link rel="preload" href="/fonts/fraunces.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/fonts/instrument-sans.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="prefetch" href="/how-it-works">
+<link rel="prefetch" href="/events">
+<link rel="prefetch" href="/vendors">
 <link rel="stylesheet" href="/fonts/fonts.css">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1873,7 +1876,7 @@ const MOCK_CAT_COUNTS = {
   </div>
 
   <div style="text-align:center;margin-top:48px;">
-    <a href="/how-it-works" class="hiw-preview-cta">See the full breakdown <span style="font-size:16px;">→</span></a>
+    <a href="/how-it-works" class="hiw-preview-cta" rel="prefetch">See the full breakdown <span style="font-size:16px;">→</span></a>
   </div>
 
 </div>
@@ -2255,26 +2258,46 @@ function fmtStat(n) {
     </a>`;
   }
 
-  // Only show featured vendors selected in admin — but only replace static cards
-  // if at least half the API vendors have a matching PITCH_VENDORS entry (so we get emojis)
+  // Only replace static marquee with API vendors that have PITCH_VENDORS data (emojis/bgs).
+  // Vendors without a match get filtered out. If fewer than 4 matched, keep static cards.
   function applyVendors(vendors) {
     if (!vendors || !vendors.length) return;
-    const matched = vendors.filter(v => vendorLookup[(v.trading_name || '').toLowerCase()]);
-    if (matched.length < vendors.length / 2) return; // keep static fallback — richer cards
+    // Only keep vendors that exist in PITCH_VENDORS so we have emojis + gradients
+    const enriched = vendors
+      .filter(v => vendorLookup[(v.trading_name || '').toLowerCase()])
+      .map(v => {
+        const pv = vendorLookup[v.trading_name.toLowerCase()];
+        return { ...v, _emoji: pv.emoji, _bg: pv.bg, _cuisines: pv.cuisines, _rating: pv.rating, _reviews: pv.reviews, _events: pv.events, _isPro: pv.isPro };
+      });
+    if (enriched.length < 4) return; // not enough rich vendors — keep static fallback
     const marquee = document.getElementById('vendor-marquee');
     if (!marquee) return;
-    // Avoid obvious duplicates: only pad if fewer than 6 unique vendors
-    let pool = [...vendors];
-    const seen = new Set(pool.map(v => v.user_id));
-    if (pool.length < 6) {
-      for (const v of vendors) {
-        if (pool.length >= 8) break;
-        pool.push(v);
-      }
-    }
-    const html = pool.map((v, i) => buildCard(v, i)).join('');
+    // Pad to at least 8 without obvious adjacent duplicates
+    let pool = [...enriched];
+    while (pool.length < 8) pool = pool.concat(enriched);
+    const html = pool.map((v, i) => buildEnrichedCard(v, i)).join('');
     marquee.innerHTML = html + html;
   }
+
+  function buildEnrichedCard(v) {
+    const tags = (v._cuisines || []).slice(0,3).map(t => `<span class="vc-tag">${t}</span>`).join('');
+    const stars = '★'.repeat(Math.round(v._rating || 5));
+    const sub = [v.setup_type, v.suburb && v.state ? v.suburb + ', ' + v.state : v.suburb || v.state].filter(Boolean).join(' · ');
+    return `<a href="/vendors/${v.user_id}" class="vendor-card">
+      <div class="vc-head">
+        <div class="vc-avatar" style="background:${v._bg};">${v._emoji}</div>
+        <div class="vc-info">
+          <div class="vc-name">${v.trading_name} <span class="vc-verified">✓</span></div>
+          <div class="vc-sub">${sub || 'Adelaide, SA'}</div>
+        </div>
+        ${planBadge(v.plan)}
+      </div>
+      <div class="vc-stars">${stars} <span>${v._rating} · ${v._reviews} reviews</span></div>
+      <div class="vc-events">${v._events} events completed</div>
+      <div class="vc-tags">${tags}</div>
+    </a>`;
+  }
+
   const _hiV = window.__HOME_INIT__;
   if (_hiV && _hiV.featuredVendors) { applyVendors(_hiV.featuredVendors); }
   else { fetch('/api/featured-vendors').then(r => r.ok ? r.json() : []).then(applyVendors).catch(() => {}); }
