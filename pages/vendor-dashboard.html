@@ -4067,7 +4067,7 @@ function initDirtyTracking() {
 // ── Subscription management modal ─────────────────────────────────────────
 let _currentSubPlan = 'free';
 
-function openSubModal() {
+function openSubModal(preselect) {
   const profile = window.__PITCH_USER__?.vendor;
   _currentSubPlan = (profile && profile.plan) || 'free';
 
@@ -4097,18 +4097,23 @@ function openSubModal() {
   // Re-enable radios (in case previously disabled by override)
   document.querySelectorAll('input[name="sub-plan"]').forEach(r => { r.disabled = false; });
 
-  // Pre-select current plan radio
-  const radio = document.querySelector(`input[name="sub-plan"][value="${_currentSubPlan}"]`);
+  // Pre-select target plan if specified, otherwise current plan
+  const selectPlan = preselect || _currentSubPlan;
+  const radio = document.querySelector(`input[name="sub-plan"][value="${selectPlan}"]`);
   if (radio) radio.checked = true;
 
   // Highlight active plan
   _highlightSubOpts();
 
-  // Hide msg, disable confirm btn
-  document.getElementById('sub-modal-msg').style.display = 'none';
-  const btn = document.getElementById('btn-confirm-sub');
-  btn.style.opacity = '0.4';
-  btn.style.pointerEvents = 'none';
+  // If preselecting a different plan, enable confirm button immediately
+  if (preselect && preselect !== _currentSubPlan) {
+    subPlanChanged();
+  } else {
+    document.getElementById('sub-modal-msg').style.display = 'none';
+    const btn = document.getElementById('btn-confirm-sub');
+    btn.style.opacity = '0.4';
+    btn.style.pointerEvents = 'none';
+  }
 
   document.getElementById('subscription-modal').classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -5369,8 +5374,8 @@ function renderPlanCard(profile, subInfo) {
       price: 'Free forever · No credit card needed',
       features: ['Up to 10 event applications per month','Up to 4 photos','Standard placement in search','Message organisers you\'ve applied to'],
       cta: `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
-        <a href="/pricing?plan=pro" style="font-family:var(--fb);font-size:13px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:10px 18px;border-radius:9px;cursor:pointer;text-decoration:none;display:inline-block;">Upgrade to Pro — $29/month →</a>
-        <a href="/pricing?plan=growth" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--gold);background:#C9840A10;border:1px solid #C9840A22;padding:10px 18px;border-radius:9px;cursor:pointer;text-decoration:none;display:inline-block;">Upgrade to Growth — $79/month →</a>
+        <button onclick="openSubModal('pro')" style="font-family:var(--fb);font-size:13px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:10px 18px;border-radius:9px;cursor:pointer;">Upgrade to Pro — $29/month →</button>
+        <button onclick="openSubModal('growth')" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--gold);background:#C9840A10;border:1px solid #C9840A22;padding:10px 18px;border-radius:9px;cursor:pointer;">Upgrade to Growth — $79/month →</button>
       </div>`
     },
     pro: {
@@ -5378,7 +5383,7 @@ function renderPlanCard(profile, subInfo) {
       price: '$29 / month · Billed monthly',
       features: ['Unlimited event applications','Priority placement in search','Pro badge on your profile','Up to 10 photos','New event alerts within 2 hours','Application analytics (30-day)'],
       cta: `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
-        <a href="/pricing?plan=growth" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--gold);background:#C9840A10;border:1px solid #C9840A22;padding:10px 18px;border-radius:9px;cursor:pointer;text-decoration:none;display:inline-block;">Upgrade to Growth — $79/month →</a>
+        <button onclick="openSubModal('growth')" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--gold);background:#C9840A10;border:1px solid #C9840A22;padding:10px 18px;border-radius:9px;cursor:pointer;">Upgrade to Growth — $79/month →</button>
         <button onclick="openSubModal()" style="font-family:var(--fb);font-size:12px;font-weight:600;color:var(--text-lo);background:#ffffff07;border:1px solid #ffffff10;padding:10px 18px;border-radius:9px;cursor:pointer;transition:background 0.14s;" onmouseover="this.style.background='#ffffff12'" onmouseout="this.style.background='#ffffff07'">Manage subscription</button>
         <button onclick="openStripePortal()" style="font-family:var(--fb);font-size:12px;font-weight:600;color:var(--text-lo);background:#ffffff07;border:1px solid #ffffff10;padding:10px 18px;border-radius:9px;cursor:pointer;transition:background 0.14s;" onmouseover="this.style.background='#ffffff12'" onmouseout="this.style.background='#ffffff07'">Manage billing →</button>
       </div>`
