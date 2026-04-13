@@ -327,6 +327,13 @@ body::before {
 .ec-fee strong { color: var(--coal); font-weight: 700; }
 .ec-dl { font-size: 11px; color: #9A8870; }
 .ec-dl.ec-dl-closed { color: var(--terra); font-weight: 600; }
+.ec-past-label {
+  position: absolute; bottom: 12px; left: 12px;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
+  padding: 3px 10px; border-radius: 100px;
+  background: rgba(0,0,0,0.45); color: var(--text-lo);
+  font-family: var(--fb);
+}
 
 /* Empty state */
 .empty-state { text-align: center; padding: 80px 0; grid-column: 1/-1; }
@@ -865,11 +872,22 @@ function renderCard(ev) {
   const dlDate = ev.deadline ? new Date(ev.deadline + 'T00:00:00') : null;
   const dlPast = dlDate && dlDate < today;
   const isFull = pct >= 100;
+  const appsClosed = isFull || dlPast || past;
   let dlHtml;
-  if (isFull || dlPast || past) {
+  if (appsClosed) {
     dlHtml = `<div class="ec-dl ec-dl-closed">Applications closed</div>`;
   } else {
     dlHtml = `<div class="ec-dl">Apply by ${formatDeadline(ev.deadline)}</div>`;
+  }
+
+  // Spots badge: show neutral "Closed" when applications are closed (unless FULL already says it)
+  let spotsBadge;
+  if (isFull) {
+    spotsBadge = `<span class="ec-spots" style="background:#C0392B14;color:#C0392B;border:1px solid #C0392B28;">FULL</span>`;
+  } else if (appsClosed) {
+    spotsBadge = `<span class="ec-spots" style="background:rgba(0,0,0,0.3);color:var(--text-lo);border:1px solid #ffffff12;">Closed</span>`;
+  } else {
+    spotsBadge = `<span class="ec-spots" style="background:${sp.bg};color:${sp.color};border:1px solid ${sp.border};">${sp.text}</span>`;
   }
 
   return `
@@ -878,7 +896,8 @@ function renderCard(ev) {
       ${imgContent}
       ${showOverlay ? '<div class="ec-overlay"></div>' : ''}
       <span class="ec-cat" style="background:${cs.bg};color:${cs.color};border:1px solid ${cs.border};">${ev.category}</span>
-      <span class="ec-spots" style="background:${sp.bg};color:${sp.color};border:1px solid ${sp.border};">${sp.text}</span>
+      ${spotsBadge}
+      ${past ? '<span class="ec-past-label">Past event</span>' : ''}
     </div>
     <div class="ec-body">
       <div class="ec-name">${ev.name}</div>
