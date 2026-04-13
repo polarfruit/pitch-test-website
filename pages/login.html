@@ -169,13 +169,7 @@ function togglePw() {
         btn.disabled = false;
         return;
       }
-      // Redirect through instant loading page — no white screen gap
-      const role = data.redirect.includes('organiser') ? 'organiser' : data.redirect.includes('vendor') ? 'vendor' : data.redirect.includes('discover') ? 'foodie' : '';
-      if (role) {
-        window.location.href = '/dashboard/loading?to=' + role;
-      } else {
-        window.location.href = data.redirect;
-      }
+      window.location.href = data.redirect;
     } catch (e) {
       errEl.textContent = 'Network error — please check your connection.';
       errEl.classList.add('show');
