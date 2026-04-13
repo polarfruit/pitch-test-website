@@ -36,6 +36,25 @@
     .btn-get-started { font-family:var(--fb);font-size:13px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:10px 22px;border-radius:9px;cursor:pointer;text-decoration:none;transition:background 0.14s,transform 0.1s;box-shadow:0 4px 16px rgba(232,80,10,0.35); }
     .btn-get-started:hover { background:var(--ember-glow); }
 
+    .nav-user { display: none; align-items: center; gap: 8px; position: relative; }
+    .nav-user-name { font-size: 13px; font-weight: 600; color: var(--text-hi); cursor: pointer; display: flex; align-items: center; gap: 5px; padding: 8px 12px; border-radius: 8px; transition: background 0.14s; }
+    .nav-user-name:hover { background: #ffffff09; }
+    .nav-user-chevron { font-size: 10px; color: var(--text-lo); }
+    .nav-dropdown { display: none; position: absolute; top: calc(100% + 8px); right: 0; background: var(--char); border: 1px solid #ffffff0C; border-radius: 12px; padding: 6px; min-width: 160px; box-shadow: 0 16px 40px #00000040; }
+    .nav-dropdown a { display: block; padding: 9px 14px; border-radius: 8px; font-size: 13px; color: var(--text-mid); text-decoration: none; transition: background 0.12s, color 0.12s; }
+    .nav-dropdown a:hover { background: #ffffff08; color: var(--text-hi); }
+    .nav-dropdown-divider { height: 1px; background: #ffffff08; margin: 4px 0; }
+    .nav-dropdown a.danger { color: var(--terra); }
+    .nav-dropdown a.danger:hover { background: #C0392B10; }
+    .nav-hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 8px; border: none; background: transparent; }
+    .nav-hamburger span { display: block; width: 22px; height: 2px; background: var(--text-mid); border-radius: 2px; transition: all 0.2s; }
+    .mobile-menu { display: none; position: fixed; top: 66px; left: 0; right: 0; bottom: 0; background: rgba(26,22,18,0.98); z-index: 199; flex-direction: column; align-items: center; justify-content: center; gap: 28px; }
+    .mobile-menu.open { display: flex; }
+    .mobile-menu a { font-family: var(--fd); font-size: 32px; font-weight: 900; letter-spacing: -0.03em; color: var(--text-hi); text-decoration: none; transition: color 0.14s; }
+    .mobile-menu a:hover { color: var(--ember); }
+    .mobile-menu-actions { display: flex; gap: 12px; margin-top: 8px; }
+    @media(max-width:768px){ .nav-hamburger { display: flex; } .nav-links, .nav-actions, .nav-user { display: none !important; } }
+
     main { position:relative;z-index:1; }
 
     .hero { padding:140px 52px 72px;max-width:680px;margin:0 auto;text-align:center; }
@@ -95,11 +114,32 @@
       <a href="/login" class="btn-login">Log in</a>
       <a href="/signup" class="btn-get-started">Get Started</a>
     </div>
-    <div id="nav-loggedin" style="display:none;align-items:center;gap:8px;">
-      <a href="/dashboard/vendor" id="nav-dashboard-link" style="color:var(--text-hi,#FDF4E7);text-decoration:none;font-size:14px;font-weight:600;display:flex;align-items:center;gap:4px;"><span id="nav-user-label">Account</span> ▾</a>
+    <div class="nav-user" id="nav-loggedin">
+      <div class="nav-user-name" onclick="toggleDropdown()">
+        <span id="nav-user-label">Account</span>
+        <span class="nav-user-chevron">▾</span>
+      </div>
+      <div class="nav-dropdown" id="nav-dropdown">
+        <a href="/dashboard/vendor" id="nav-dashboard-link">Dashboard</a>
+        <div class="nav-dropdown-divider"></div>
+        <a href="/logout" class="danger">Log out</a>
+      </div>
     </div>
+    <button class="nav-hamburger" id="hamburger" onclick="toggleMobileMenu()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
   </nav>
   <script>(function(){var u=window.__PITCH_USER__;if(!u)return;var lo=document.getElementById('nav-loggedout');if(lo)lo.style.display='none';if(u.role==='foodie'){var nl=document.querySelector('.nav-links'),p=location.pathname;if(nl)nl.innerHTML='<li><a href="/discover">My Feed</a></li><li><a href="/events"'+(p==='/events'?' class="active"':'')+'>All Events</a></li><li><a href="/vendors"'+(p==='/vendors'?' class="active"':'')+'>Vendors</a></li>';if(lo)lo.remove();var li=document.getElementById('nav-loggedin');if(li)li.remove();var nav=document.querySelector('.navbar'),ham=nav&&nav.querySelector('.nav-hamburger'),fn=(u.name||'').split(' ')[0]||'Account';var rh='<div style="display:flex;align-items:center;gap:10px;" id="nav-foodie-right"><div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--text-mid)"><div style="width:28px;height:28px;border-radius:50%;background:var(--ember);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff">🍜</div><span>'+fn+'</span></div><button onclick="fetch(\'/api/logout\',{method:\'POST\'}).then(function(){location.href=\'/\'})" style="font-size:13px;font-weight:600;color:var(--text-lo);background:transparent;border:none;cursor:pointer;padding:8px;font-family:inherit">Sign out</button></div>';if(ham)ham.insertAdjacentHTML('beforebegin',rh);else if(nav)nav.insertAdjacentHTML('beforeend',rh)}else{var li2=document.getElementById('nav-loggedin');if(li2){li2.style.display='flex';var lbl=document.getElementById('nav-user-label');if(lbl)lbl.textContent=(u.name||'').split(' ')[0]||'Account';var dl=document.getElementById('nav-dashboard-link');if(dl)dl.href=u.role==='organiser'?'/dashboard/organiser':u.role==='admin'?'/dashboard/admin':'/dashboard/vendor'}}})();</script>
+  <div class="mobile-menu" id="mobile-menu">
+    <a href="/events" onclick="closeMobileMenu()">Events</a>
+    <a href="/vendors" onclick="closeMobileMenu()">Vendors</a>
+    <a href="/how-it-works" onclick="closeMobileMenu()">How It Works</a>
+    <a href="/pricing" onclick="closeMobileMenu()">Pricing</a>
+    <div class="mobile-menu-actions">
+      <a href="/login" class="btn-login" style="font-size:15px;">Log in</a>
+      <a href="/signup" class="btn-get-started" style="font-size:15px;">Get Started</a>
+    </div>
+  </div>
 
   <main>
     <div class="hero">
@@ -255,6 +295,12 @@ fetch('/api/me',{credentials:'include'}).then(r=>r.ok?r.json():null).then(d=>{
   else if(d.user.role==='organiser'){if(link)link.href='/dashboard/organiser';if(lbl)lbl.textContent=d.user.business_name||'Dashboard';}
   else if(d.user.role==='admin'){if(link)link.href='/dashboard/admin';if(lbl)lbl.textContent='Admin';}
 }).catch(()=>{var lo=document.getElementById('nav-loggedout');if(lo)lo.style.display='';});
+</script>
+<script>
+function toggleDropdown(){var d=document.getElementById('nav-dropdown');if(d)d.style.display=d.style.display==='block'?'none':'block';}
+document.addEventListener('click',function(e){var d=document.getElementById('nav-dropdown');if(d&&!e.target.closest('.nav-user'))d.style.display='none';});
+function toggleMobileMenu(){var m=document.getElementById('mobile-menu');if(m)m.classList.toggle('open');}
+function closeMobileMenu(){var m=document.getElementById('mobile-menu');if(m)m.classList.remove('open');}
 </script>
 </body>
 </html>
