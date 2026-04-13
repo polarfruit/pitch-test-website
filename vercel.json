@@ -1,6 +1,14 @@
 {
   "version": 2,
   "builds": [
+    { "src": "fonts/**", "use": "@vercel/static" },
+    { "src": "brand_assets/**", "use": "@vercel/static" },
+    { "src": "data.js", "use": "@vercel/static" },
+    { "src": "suburbs.js", "use": "@vercel/static" },
+    { "src": "location-autocomplete.js", "use": "@vercel/static" },
+    { "src": "favicon.ico", "use": "@vercel/static" },
+    { "src": "favicon.png", "use": "@vercel/static" },
+    { "src": "apple-touch-icon.png", "use": "@vercel/static" },
     {
       "src": "api/index.mjs",
       "use": "@vercel/node",
@@ -21,8 +29,14 @@
     }
   ],
   "routes": [
-    { "src": "/fonts/(.*)", "headers": { "Cache-Control": "public, max-age=31536000, immutable" }, "continue": true },
-    { "src": "\\.(js|ico|png|woff2?|ttf|css)$", "headers": { "Cache-Control": "public, max-age=86400" }, "continue": true },
+    { "src": "/fonts/(.*)", "dest": "/fonts/$1", "headers": { "Cache-Control": "public, max-age=31536000, immutable" } },
+    { "src": "/data\\.js$", "dest": "/data.js", "headers": { "Cache-Control": "public, max-age=86400" } },
+    { "src": "/suburbs\\.js$", "dest": "/suburbs.js", "headers": { "Cache-Control": "public, max-age=86400" } },
+    { "src": "/location-autocomplete\\.js$", "dest": "/location-autocomplete.js", "headers": { "Cache-Control": "public, max-age=86400" } },
+    { "src": "/favicon\\.ico$", "dest": "/favicon.ico", "headers": { "Cache-Control": "public, max-age=86400" } },
+    { "src": "/favicon\\.png$", "dest": "/favicon.png", "headers": { "Cache-Control": "public, max-age=86400" } },
+    { "src": "/apple-touch-icon\\.png$", "dest": "/apple-touch-icon.png", "headers": { "Cache-Control": "public, max-age=86400" } },
+    { "src": "/brand_assets/(.*)", "dest": "/brand_assets/$1", "headers": { "Cache-Control": "public, max-age=86400" } },
     { "src": "/(.*)", "dest": "/api/index.mjs" }
   ],
   "crons": [
