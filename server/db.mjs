@@ -1025,6 +1025,19 @@ await _safeExec(`
   )
 `);
 
+await _safeExec(`
+  CREATE TABLE IF NOT EXISTS contact_messages (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    name       TEXT NOT NULL,
+    email      TEXT NOT NULL,
+    role       TEXT NOT NULL,
+    subject    TEXT NOT NULL,
+    message    TEXT NOT NULL,
+    read       INTEGER NOT NULL DEFAULT 0,
+    created_at DATETIME DEFAULT (datetime('now'))
+  )
+`);
+
 // ── Prepared statements ──────────────────────────────────────────────────────
 export const stmts = {
   // users
@@ -1750,6 +1763,11 @@ export const stmts = {
       )
     ORDER BY e.completed_at DESC
   `),
+
+  // contact messages
+  insertContactMessage: prepare(`INSERT INTO contact_messages (name, email, role, subject, message) VALUES (?, ?, ?, ?, ?)`),
+  allContactMessages:   prepare(`SELECT * FROM contact_messages ORDER BY created_at DESC`),
+  markContactRead:      prepare(`UPDATE contact_messages SET read = 1 WHERE id = ?`),
 };
 
 // ── Transactions ─────────────────────────────────────────────────────────────

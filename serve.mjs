@@ -1061,6 +1061,35 @@ app.get('/logout', (req, res) => {
   res.redirect('/');
 });
 
+// POST /api/contact — public contact form submission
+app.post('/api/contact', async (req, res) => {
+  try {
+    const { name, email, role, subject, message } = req.body;
+    if (!name || !email || !role || !subject || !message) {
+      return res.status(400).json({ error: 'All fields are required' });
+    }
+    if (message.length > 5000) {
+      return res.status(400).json({ error: 'Message too long (max 5000 characters)' });
+    }
+    await stmts.insertContactMessage.run(name.trim(), email.trim(), role, subject.trim(), message.trim());
+    // Send notification email to hello@onpitch.com.au
+    try {
+      await sendAdminEmail(
+        'hello@onpitch.com.au',
+        `New contact form: ${subject.trim()}`,
+        `<p><strong>From:</strong> ${name.trim()} (${email.trim()})</p><p><strong>Role:</strong> ${role}</p><p><strong>Subject:</strong> ${subject.trim()}</p><hr><p>${message.trim().replace(/\n/g, '<br>')}</p>`,
+        `From: ${name.trim()} (${email.trim()})\nRole: ${role}\nSubject: ${subject.trim()}\n\n${message.trim()}`
+      );
+    } catch (mailErr) {
+      console.error('[contact] Email notification failed:', mailErr.message);
+    }
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('[contact] Submit error:', err);
+    res.status(500).json({ error: 'Failed to send message' });
+  }
+});
+
 // POST /api/profile/avatar — save base64 data URL as avatar
 app.post('/api/profile/avatar', requireAuth, async (req, res) => {
   try {
