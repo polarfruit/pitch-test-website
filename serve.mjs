@@ -4540,8 +4540,26 @@ app.get('/', async (req, res) => {
   html = injectBanner(html);
   try {
     const today = new Date().toISOString().slice(0, 10);
-    const events = await stmts.featuredEvents.all(today);
-    html = html.replace('</head>', `<script>window.__FEATURED_EVENTS=${JSON.stringify(events)};</script>\n</head>`);
+    const [featuredEvents, allEvents, featuredVendors, catRows, vRow, eRow, aRow, rRow] = await Promise.all([
+      stmts.featuredEvents.all(today),
+      stmts.publishedEvents.all(),
+      stmts.featuredVendors.all(),
+      stmts.categoryCounts.all(today),
+      stmts.countVendors.get(),
+      stmts.countEvents.get(),
+      stmts.countAllApplications.get(),
+      stmts.getGlobalReviewAvg.get(),
+    ]);
+    const catCounts = {};
+    catRows.forEach(r => { catCounts[r.category] = r.count; });
+    const stats = {
+      vendors: Number(vRow?.n) || 0,
+      events: Number(eRow?.n) || 0,
+      applications: Number(aRow?.n) || 0,
+      rating: rRow?.avg ? Number(rRow.avg) : null,
+    };
+    const homeInit = { featuredEvents, events: allEvents, featuredVendors, categoryCounts: catCounts, stats };
+    html = html.replace('</head>', `<script>window.__HOME_INIT__=${JSON.stringify(homeInit)};</script>\n</head>`);
   } catch(e) { /* fallback to client fetch */ }
   _homeCache = html;
   _homeCacheTs = now;

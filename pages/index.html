@@ -1472,17 +1472,27 @@ footer {
     // Render immediately with static data
     renderHomeEvents(window._allHomeEvents);
 
-    fetch('/api/events')
-      .then(function(r) { return r.json(); })
-      .then(function(data) {
-        var published = new Set((data.events || []).map(function(e) { return e.slug; }));
-        var all = (window.PITCH_EVENTS || []).filter(function(e) { return published.has(e.id); });
-        if (all.length) {
-          window._allHomeEvents = all;
-          if (!window._activeCat) renderHomeEvents(all);
-        }
-      })
-      .catch(function() {});
+    var _hi = window.__HOME_INIT__;
+    if (_hi && _hi.events) {
+      var published = new Set((_hi.events || []).map(function(e) { return e.slug; }));
+      var all = (window.PITCH_EVENTS || []).filter(function(e) { return published.has(e.id); });
+      if (all.length) {
+        window._allHomeEvents = all;
+        if (!window._activeCat) renderHomeEvents(all);
+      }
+    } else {
+      fetch('/api/events')
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          var published = new Set((data.events || []).map(function(e) { return e.slug; }));
+          var all = (window.PITCH_EVENTS || []).filter(function(e) { return published.has(e.id); });
+          if (all.length) {
+            window._allHomeEvents = all;
+            if (!window._activeCat) renderHomeEvents(all);
+          }
+        })
+        .catch(function() {});
+    }
   })();
   </script>
 </div>
@@ -1766,21 +1776,24 @@ const MOCK_CAT_COUNTS = {
   'Night Market': 12, 'Festival': 8, 'Farmers Market': 15,
   'Corporate': 6, 'Pop-up': 22, 'Twilight Market': 9
 };
-fetch('/api/category-counts')
-  .then(r => r.ok ? r.json() : null)
-  .then(counts => {
+(function() {
+  const hi = window.__HOME_INIT__;
+  const counts = hi ? hi.categoryCounts : null;
+  function apply(c) {
     document.querySelectorAll('.cat-count[data-cat]').forEach(el => {
-      const n = counts ? counts[el.dataset.cat] : MOCK_CAT_COUNTS[el.dataset.cat];
+      const n = c ? c[el.dataset.cat] : MOCK_CAT_COUNTS[el.dataset.cat];
       const val = (n != null && n > 0) ? n : MOCK_CAT_COUNTS[el.dataset.cat] || 5;
       el.textContent = val + ' active event' + (val === 1 ? '' : 's');
     });
-  })
-  .catch(() => {
-    document.querySelectorAll('.cat-count[data-cat]').forEach(el => {
-      const val = MOCK_CAT_COUNTS[el.dataset.cat] || 5;
-      el.textContent = val + ' active events';
-    });
-  });
+  }
+  if (counts) { apply(counts); }
+  else {
+    fetch('/api/category-counts')
+      .then(r => r.ok ? r.json() : null)
+      .then(c => apply(c))
+      .catch(() => apply(null));
+  }
+})();
 </script>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════
@@ -2070,8 +2083,9 @@ function filterByCat(cat, btn) {
     renderTWCards(_staticEvents);
   }
 
-  // Silently update with real data once API responds
-  fetch('/api/events').then(r => r.json()).then(data => {
+  // Use injected data or fetch as fallback
+  const _hiEvents = window.__HOME_INIT__ ? { events: window.__HOME_INIT__.events } : null;
+  (_hiEvents ? Promise.resolve(_hiEvents) : fetch('/api/events').then(r => r.json())).then(data => {
     const weekendEvents = (data.events || []).filter(e => {
       if (!e.date_sort) return false;
       return e.date_sort >= friStr && e.date_sort <= sunStr;
@@ -2127,8 +2141,8 @@ document.addEventListener('click', (e) => {
   const lo = document.getElementById('nav-loggedout');
   const li = document.getElementById('nav-loggedin');
   function showPublicNav(){if(lo)lo.style.display='';}
-  fetch('/api/me').then(r => r.json()).then(d => {
-    if (!d.user) { showPublicNav(); return; }
+  function applyUser(d) {
+    if (!d || !d.user) { showPublicNav(); return; }
     if (d.user.role === 'foodie') {
       const nl = document.querySelector('.nav-links');
       if (nl) { nl.innerHTML = '<li><a href="/discover">My Feed</a></li><li><a href="/events">All Events</a></li><li><a href="/vendors">Vendors</a></li>'; }
@@ -2154,7 +2168,11 @@ document.addEventListener('click', (e) => {
         || 'Account';
     }
     if (dashLink) dashLink.href = d.user.role === 'organiser' ? '/dashboard/organiser' : '/dashboard/vendor';
-  }).catch(() => { showPublicNav(); });
+  }
+  // Use server-injected user data if available, otherwise fetch
+  const _pu = window.__PITCH_USER__;
+  if (_pu) { applyUser({ user: _pu }); }
+  else { fetch('/api/me').then(r => r.json()).then(applyUser).catch(() => showPublicNav()); }
 })();
 
 // Smart stat formatter — always shows "+" to signal growing numbers
@@ -2169,13 +2187,18 @@ function fmtStat(n) {
 }
 
 // Live stats from DB — floor values so early-stage numbers don't look broken
-fetch('/api/stats').then(r => r.json()).then(d => {
-  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-  set('stat-vendors-count', fmtStat(Math.max(d.vendors || 0, 14)));
-  set('stat-events-count',  fmtStat(Math.max(d.events  || 0, 12)));
-  set('stat-apps-count',    fmtStat(Math.max(d.applications || 0, 340)));
-  if (d.rating && d.rating > 0) set('stat-rating', d.rating.toFixed(1) + '★');
-}).catch(() => {});
+(function() {
+  function applyStats(d) {
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    set('stat-vendors-count', fmtStat(Math.max(d.vendors || 0, 14)));
+    set('stat-events-count',  fmtStat(Math.max(d.events  || 0, 12)));
+    set('stat-apps-count',    fmtStat(Math.max(d.applications || 0, 340)));
+    if (d.rating && d.rating > 0) set('stat-rating', d.rating.toFixed(1) + '★');
+  }
+  const hi = window.__HOME_INIT__;
+  if (hi && hi.stats) { applyStats(hi.stats); }
+  else { fetch('/api/stats').then(r => r.json()).then(applyStats).catch(() => {}); }
+})();
 
 // Dynamic vendor marquee — replace hardcoded cards with real DB data
 (function() {
@@ -2233,18 +2256,18 @@ fetch('/api/stats').then(r => r.json()).then(d => {
   }
 
   // Only show featured vendors selected in admin
-  fetch('/api/featured-vendors')
-    .then(r => r.ok ? r.json() : [])
-    .then(vendors => {
-      if (!vendors || !vendors.length) return; // keep static fallback
-      const marquee = document.getElementById('vendor-marquee');
-      if (!marquee) return;
-      let pool = vendors;
-      while (pool.length < 8) pool = pool.concat(vendors);
-      const html = pool.map((v, i) => buildCard(v, i)).join('');
-      marquee.innerHTML = html + html; // duplicate for seamless loop
-    })
-    .catch(() => {});
+  function applyVendors(vendors) {
+    if (!vendors || !vendors.length) return;
+    const marquee = document.getElementById('vendor-marquee');
+    if (!marquee) return;
+    let pool = vendors;
+    while (pool.length < 8) pool = pool.concat(vendors);
+    const html = pool.map((v, i) => buildCard(v, i)).join('');
+    marquee.innerHTML = html + html;
+  }
+  const _hiV = window.__HOME_INIT__;
+  if (_hiV && _hiV.featuredVendors) { applyVendors(_hiV.featuredVendors); }
+  else { fetch('/api/featured-vendors').then(r => r.ok ? r.json() : []).then(applyVendors).catch(() => {}); }
 })();
 
 // Hero search — redirect to events page with all three segment params
@@ -2299,8 +2322,8 @@ function heroSearch(e) {
   initCsel('hs-type-seg', 'hs-type-val', 'hs-type-drop');
 })();
 </script>
-<script src="/suburbs.js?v=3"></script>
-<script src="/location-autocomplete.js?v=4"></script>
+<script src="/suburbs.js?v=3" defer></script>
+<script src="/location-autocomplete.js?v=4" defer></script>
 <script>
 // Hero search autocomplete — selecting a suburb redirects immediately
 // Clicking anywhere in the location segment immediately focuses the input
@@ -2458,7 +2481,7 @@ pitchLocAC('hero-search-input', {
     setInterval(rotate, 3500);
   }
 
-  const preloaded = window.__FEATURED_EVENTS;
+  const preloaded = (window.__HOME_INIT__ && window.__HOME_INIT__.featuredEvents) || window.__FEATURED_EVENTS;
   if (preloaded) {
     buildStack(Array.isArray(preloaded) ? preloaded : []);
   } else {
