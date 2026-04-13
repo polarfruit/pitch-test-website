@@ -296,14 +296,19 @@
     }
     .faq-item.open .faq-icon { transform:rotate(45deg); color:var(--ember); border-color:var(--ember); }
     .faq-a {
-      font-size:14px; color:var(--text-mid); line-height:1.8;
-      display:none; padding-bottom:22px;
+      display:grid; grid-template-rows:0fr;
+      transition:grid-template-rows 0.25s ease;
     }
-    .faq-item.open .faq-a { display:block; }
+    .faq-a > div {
+      overflow:hidden; padding:0;
+      font-size:14px; color:var(--text-mid); line-height:1.8;
+    }
+    .faq-item.open .faq-a { grid-template-rows:1fr; }
+    .faq-item.open .faq-a > div { padding-bottom:22px; }
 
     /* ─── CTA Banner ─── */
     .cta-banner {
-      margin:0 52px; border-radius:22px;
+      margin:0 52px 64px; border-radius:22px;
       background:#1A1612;
       border:1.5px solid #ffffff08; padding:64px 52px 56px;
       text-align:center; position:relative; overflow:hidden;
@@ -346,10 +351,37 @@
     .footer-bl { font-family:var(--fd); font-size:18px; font-weight:900; letter-spacing:-0.04em; color:var(--text-mid); text-decoration:none; }
     .footer-bl .dot { color:var(--ember); }
 
+    /* Hamburger */
+    .nav-hamburger {
+      display:none; flex-direction:column; gap:5px;
+      cursor:pointer; padding:8px; border:none; background:transparent;
+    }
+    .nav-hamburger span {
+      display:block; width:22px; height:2px;
+      background:var(--text-mid); border-radius:2px; transition:all 0.2s;
+    }
+    .mobile-menu {
+      display:none; position:fixed;
+      top:66px; left:0; right:0; bottom:0;
+      background:rgba(26,22,18,0.98);
+      z-index:199; flex-direction:column;
+      align-items:center; justify-content:center; gap:28px;
+    }
+    .mobile-menu.open { display:flex; }
+    .mobile-menu a {
+      font-family:var(--fd); font-size:32px; font-weight:900;
+      letter-spacing:-0.03em; color:var(--text-hi); text-decoration:none;
+      transition:color 0.14s;
+    }
+    .mobile-menu a:hover { color:var(--ember); }
+    .mobile-menu-actions { display:flex; gap:12px; margin-top:8px; }
+
     /* ─── Responsive ─── */
     @media(max-width:768px) {
       .navbar { padding:0 20px; }
       .nav-links { display:none; }
+      .nav-actions { display:none; }
+      .nav-hamburger { display:flex; }
       .hero { padding:120px 24px 64px; }
       .tiers-section, .compare-section, .faq-section { padding-left:20px; padding-right:20px; }
       .cta-banner { margin:0 20px 64px; padding:52px 28px; }
@@ -375,7 +407,21 @@
       <span class="nav-user-name" id="nav-user-name"></span>
       <a href="/dashboard/vendor" class="nav-dashboard" id="nav-dashboard-link">Dashboard</a>
     </div>
+    <button class="nav-hamburger" id="hamburger" onclick="toggleMobileMenu()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
   </nav>
+
+  <div class="mobile-menu" id="mobile-menu">
+    <a href="/events" onclick="closeMobileMenu()">Events</a>
+    <a href="/vendors" onclick="closeMobileMenu()">Vendors</a>
+    <a href="/how-it-works" onclick="closeMobileMenu()">How It Works</a>
+    <a href="/pricing" onclick="closeMobileMenu()">Pricing</a>
+    <div class="mobile-menu-actions">
+      <a href="/login" class="btn-login" style="font-size:15px;">Log in</a>
+      <a href="/signup" class="btn-get-started" style="font-size:15px;">Get Started</a>
+    </div>
+  </div>
   <script>(function(){var u=window.__PITCH_USER__;if(!u)return;var lo=document.getElementById('nav-loggedout')||document.getElementById('nav-actions');if(lo)lo.style.display='none';if(u.role==='foodie'){var nl=document.querySelector('.nav-links'),p=location.pathname;if(nl)nl.innerHTML='<li><a href="/discover">My Feed</a></li><li><a href="/events"'+(p==='/events'?' class="active"':'')+'>All Events</a></li><li><a href="/vendors"'+(p==='/vendors'?' class="active"':'')+'>Vendors</a></li>';if(lo)lo.remove();var nu=document.getElementById('nav-user');if(nu)nu.remove();var nav=document.querySelector('.navbar'),fn=(u.name||'').split(' ')[0]||'Account';nav.insertAdjacentHTML('beforeend','<div style="display:flex;align-items:center;gap:10px;" id="nav-foodie-right"><div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--text-mid)"><div style="width:28px;height:28px;border-radius:50%;background:var(--ember);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff">🍜</div><span>'+fn+'</span></div><button onclick="fetch(\'/api/logout\',{method:\'POST\'}).then(function(){location.href=\'/\'})" style="font-size:13px;font-weight:600;color:var(--text-lo);background:transparent;border:none;cursor:pointer;padding:8px;font-family:inherit">Sign out</button></div>')}})();</script>
 
   <main>
@@ -715,7 +761,7 @@
           Can I cancel or change my plan at any time?
           <span class="faq-icon">+</span>
         </div>
-        <div class="faq-a">Yes — you can upgrade, downgrade, or cancel your subscription at any time from your account settings. If you cancel or downgrade, you keep your current plan's features until the end of your billing cycle. No cancellation fees, no lock-in periods.</div>
+        <div class="faq-a"><div>Yes — you can upgrade, downgrade, or cancel your subscription at any time from your account settings. If you cancel or downgrade, you keep your current plan's features until the end of your billing cycle. No cancellation fees, no lock-in periods.</div></div>
       </div>
 
       <div class="faq-item">
@@ -723,7 +769,7 @@
           Does the Starter plan require a credit card?
           <span class="faq-icon">+</span>
         </div>
-        <div class="faq-a">No. The Starter plan is completely free — no credit card required. You can create a profile and apply to up to 10 events per month at no cost.</div>
+        <div class="faq-a"><div>No. The Starter plan is completely free — no credit card required. You can create a profile and apply to up to 10 events per month at no cost.</div></div>
       </div>
 
       <div class="faq-item">
@@ -731,7 +777,7 @@
           What happens to my photos and data if I downgrade?
           <span class="faq-icon">+</span>
         </div>
-        <div class="faq-a">Nothing is deleted. If you downgrade and have more photos than your new plan allows, the most recently uploaded photos are hidden from your public profile — but they are safely stored and will reappear immediately if you upgrade again. All your application history, payment records, and documents are preserved regardless of plan.</div>
+        <div class="faq-a"><div>Nothing is deleted. If you downgrade and have more photos than your new plan allows, the most recently uploaded photos are hidden from your public profile — but they are safely stored and will reappear immediately if you upgrade again. All your application history, payment records, and documents are preserved regardless of plan.</div></div>
       </div>
 
       <div class="faq-item">
@@ -739,7 +785,7 @@
           Can a Starter vendor apply to every event?
           <span class="faq-icon">+</span>
         </div>
-        <div class="faq-a">Yes — Starter vendors can apply to any open event with no limit on the number of applications. What Starter vendors don't get is early event access, late application windows after the deadline, or the ability to reapply after withdrawing. But if the event is open and you're in time, you can always apply.</div>
+        <div class="faq-a"><div>Yes — Starter vendors can apply to any open event with no limit on the number of applications. What Starter vendors don't get is early event access, late application windows after the deadline, or the ability to reapply after withdrawing. But if the event is open and you're in time, you can always apply.</div></div>
       </div>
 
       <div class="faq-item">
@@ -747,7 +793,7 @@
           How does the 24-hour early access work for Growth vendors?
           <span class="faq-icon">+</span>
         </div>
-        <div class="faq-a">When an organiser posts a new event, Growth vendors are notified immediately and can apply for the first 24 hours exclusively. Pro vendors are notified within 2 hours of that 24-hour window closing. Starter vendors see the event when it appears in the general listing. This gives Growth vendors a genuine head start on competitive events with limited spots.</div>
+        <div class="faq-a"><div>When an organiser posts a new event, Growth vendors are notified immediately and can apply for the first 24 hours exclusively. Pro vendors are notified within 2 hours of that 24-hour window closing. Starter vendors see the event when it appears in the general listing. This gives Growth vendors a genuine head start on competitive events with limited spots.</div></div>
       </div>
 
       <div class="faq-item">
@@ -755,15 +801,15 @@
           Can I trial both Pro and Growth before committing?
           <span class="faq-icon">+</span>
         </div>
-        <div class="faq-a">You can trial each plan once. If you've previously trialled Pro, you can still start a fresh 14-day Growth trial. Once you've completed a trial for a plan, you'd need to subscribe to use it again — the trial is a one-time offer per plan. This is enforced at the account level, not per device.</div>
+        <div class="faq-a"><div>You can trial each plan once. If you've previously trialled Pro, you can still start a fresh 14-day Growth trial. Once you've completed a trial for a plan, you'd need to subscribe to use it again — the trial is a one-time offer per plan. This is enforced at the account level, not per device.</div></div>
       </div>
 
     </section>
 
     <!-- ─── CTA Banner ─── -->
     <div class="cta-banner">
-      <h2>Ready to find your pitch?</h2>
-      <p>Join vendors already using Pitch across South Australia.</p>
+      <h2>Ready to find your <em style="font-style:italic;color:var(--ember);">pitch?</em></h2>
+      <p>Join vendors already using Pitch across Australia.</p>
       <div class="cta-buttons">
         <a href="/signup/vendor" class="cta-primary-btn" id="cta-banner-primary">Get started free</a>
         <a href="#compare" class="cta-secondary-btn">Compare all features</a>
@@ -819,6 +865,12 @@
   <script>
     function toggleFaq(el) {
       el.closest('.faq-item').classList.toggle('open');
+    }
+    function toggleMobileMenu() {
+      document.getElementById('mobile-menu').classList.toggle('open');
+    }
+    function closeMobileMenu() {
+      document.getElementById('mobile-menu').classList.remove('open');
     }
 
     // Auth-aware CTAs
