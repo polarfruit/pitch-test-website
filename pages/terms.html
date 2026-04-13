@@ -47,7 +47,7 @@
     /* Content */
     .doc-body { }
     .doc-section { margin-bottom:52px; }
-    .doc-section h2 { font-family:var(--fd);font-size:22px;font-weight:900;letter-spacing:-0.02em;color:var(--ember);margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #ffffff08; }
+    .doc-section h2 { font-family:var(--fd);font-size:22px;font-weight:900;letter-spacing:-0.02em;color:var(--ember);margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #ffffff14; }
     .doc-section p { font-size:15px;color:var(--text-mid);line-height:1.85;margin-bottom:14px; }
     .doc-section p:last-child { margin-bottom:0; }
     .doc-section ul { list-style:none;display:flex;flex-direction:column;gap:8px;margin:14px 0; }
@@ -59,6 +59,45 @@
 
     .highlight-box { background:var(--ember-bg);border:1px solid rgba(232,80,10,0.15);border-radius:12px;padding:18px 22px;margin:20px 0; }
     .highlight-box p { font-size:14px;color:var(--text-mid);margin:0 !important; }
+
+    /* ── Back to top ── */
+    .back-to-top {
+      position:fixed;bottom:32px;right:32px;z-index:100;
+      width:40px;height:40px;border-radius:10px;border:1px solid #ffffff12;
+      background:var(--char);color:var(--text-mid);cursor:pointer;
+      display:flex;align-items:center;justify-content:center;
+      opacity:0;pointer-events:none;
+      transition:opacity 0.25s ease,transform 0.2s ease,background 0.15s,color 0.15s;
+      transform:translateY(8px);
+      box-shadow:0 4px 16px rgba(0,0,0,0.4);
+    }
+    .back-to-top.visible { opacity:1;pointer-events:auto;transform:translateY(0); }
+    .back-to-top:hover { background:var(--ember);color:#fff;border-color:var(--ember); }
+    .back-to-top:active { transform:scale(0.94); }
+    .back-to-top:focus-visible { outline:2px solid var(--ember);outline-offset:2px; }
+
+    /* ── Mobile TOC dropdown ── */
+    @media(max-width:880px){
+      .toc { display:block;position:relative;top:0;margin-bottom:8px; }
+      .toc-mobile-toggle {
+        display:flex;align-items:center;justify-content:space-between;width:100%;
+        background:var(--char);border:1px solid #ffffff0e;border-radius:10px;
+        padding:12px 16px;color:var(--text-mid);font-family:var(--fb);font-size:13px;font-weight:600;
+        cursor:pointer;transition:border-color 0.15s,color 0.15s;
+      }
+      .toc-mobile-toggle:hover { border-color:#ffffff1a;color:var(--text-hi); }
+      .toc-mobile-toggle svg { transition:transform 0.2s; }
+      .toc-mobile-toggle.open svg { transform:rotate(180deg); }
+      .toc-label { display:none; }
+      .toc-list {
+        max-height:0;overflow:hidden;opacity:0;
+        transition:max-height 0.3s ease,opacity 0.2s ease,padding 0.3s ease;
+        background:var(--char);border:1px solid #ffffff0e;border-radius:10px;
+        margin-top:6px;padding:0 8px;
+      }
+      .toc-list.open { max-height:500px;opacity:1;padding:8px; }
+    }
+    @media(min-width:881px){ .toc-mobile-toggle { display:none; } }
   </style>
 </head>
 <body>
@@ -88,6 +127,10 @@
     <div class="doc-layout">
       <!-- TOC -->
       <nav class="toc">
+        <button class="toc-mobile-toggle" onclick="this.classList.toggle('open');this.nextElementSibling.nextElementSibling.classList.toggle('open');">
+          Contents
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 4.5L6 7.5L9 4.5"/></svg>
+        </button>
         <div class="toc-label">Contents</div>
         <ul class="toc-list">
           <li><a href="#intro">1. Introduction</a></li>
@@ -162,6 +205,9 @@
             <li>Payment is processed via Stripe. By using Pitch. payment processing, you also agree to Stripe's Terms of Service</li>
             <li>Organisers who collect stall fees directly (outside of Pitch.) are not subject to the 3% platform fee</li>
           </ul>
+          <div class="highlight-box">
+            <p><strong>Platform fee:</strong> 3% on payments processed through Pitch. First three events are fee-free for organisers. Organisers collecting fees directly are not subject to this fee.</p>
+          </div>
           <p>Pitch. is not a party to the financial agreement between vendors and organisers. We provide the payment processing infrastructure only. Disputes regarding stall fees, refunds, or non-payment should first be raised directly between the parties.</p>
         </div>
 
@@ -215,6 +261,9 @@
         <div class="doc-section" id="changes">
           <h2>10. Changes to Terms</h2>
           <p>We may update these Terms from time to time. For material changes — changes that materially affect your rights or obligations — we will provide at least <strong>14 days' notice</strong> via email to your registered address and a notice on the Platform before the changes take effect.</p>
+          <div class="highlight-box">
+            <p><strong>Notice period:</strong> Material changes require at least 14 days' notice via email before taking effect.</p>
+          </div>
           <p>For non-material changes (such as corrections, clarifications, or updates reflecting new features), changes may take effect immediately upon posting. The "Last updated" date at the top of this page reflects the most recent revision.</p>
           <p>Your continued use of the Platform after the effective date of any changes constitutes your acceptance of the revised Terms.</p>
         </div>
@@ -230,6 +279,10 @@
       </div>
     </div>
   </main>
+
+  <button class="back-to-top" id="btt" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 13V3M3.5 7L8 2.5L12.5 7"/></svg>
+  </button>
 
   <script>
     (function() {
@@ -251,21 +304,33 @@
         setActive(idx >= 0 ? tocLinks[idx] : null);
       }
 
-      window.addEventListener('scroll', onScroll, { passive: true });
-      onScroll(); // set on load
+      // Back-to-top visibility
+      const btt = document.getElementById('btt');
+      function onScrollAll() {
+        onScroll();
+        btt.classList.toggle('visible', window.scrollY > 400);
+      }
+      window.addEventListener('scroll', onScrollAll, { passive: true });
+      onScrollAll();
     })();
   </script>
 
-  <footer style="background:#161210;border-top:1px solid #ffffff06;padding:40px 52px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;position:relative;z-index:1;">
+  <style>
+    .site-footer { background:#161210;border-top:1px solid #ffffff06;padding:40px 52px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;position:relative;z-index:1; }
+    .site-footer a.foot-link { font-size:13px;color:#6B5A4A;text-decoration:none;transition:color 0.14s; }
+    .site-footer a.foot-link:hover { color:var(--text-mid); }
+    .site-footer a.foot-link.current { color:var(--ember); }
+  </style>
+  <footer class="site-footer">
     <a href="/" style="font-family:'Fraunces',serif;font-size:22px;font-weight:900;color:#FDF4E7;text-decoration:none;letter-spacing:-0.04em;">Pitch<span style="color:#E8500A;">.</span></a>
     <div style="display:flex;gap:24px;flex-wrap:wrap;">
-      <a href="/about" style="font-size:13px;color:#6B5A4A;text-decoration:none;transition:color 0.14s;">About</a>
-      <a href="/pricing" style="font-size:13px;color:#6B5A4A;text-decoration:none;transition:color 0.14s;">Pricing</a>
-      <a href="/contact" style="font-size:13px;color:#6B5A4A;text-decoration:none;transition:color 0.14s;">Contact</a>
-      <a href="/terms" style="font-size:13px;color:#6B5A4A;text-decoration:none;transition:color 0.14s;">Terms</a>
-      <a href="/privacy" style="font-size:13px;color:#6B5A4A;text-decoration:none;transition:color 0.14s;">Privacy</a>
+      <a href="/about" class="foot-link">About</a>
+      <a href="/pricing" class="foot-link">Pricing</a>
+      <a href="/contact" class="foot-link">Contact</a>
+      <a href="/terms" class="foot-link current">Terms</a>
+      <a href="/privacy" class="foot-link">Privacy</a>
     </div>
-    <span style="font-size:12px;color:#4A3C30;">© 2026 Pitch. Adelaide, Australia.</span>
+    <span style="font-size:12px;color:#6B5A4A;">© 2026 Pitch. Adelaide, Australia.</span>
   </footer>
 <script>
 fetch('/api/me',{credentials:'include'}).then(r=>r.ok?r.json():null).then(d=>{
