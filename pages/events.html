@@ -1134,13 +1134,29 @@ function createPinIcon(color) {
 
 function initMap() {
   if (!_map) {
+    // Calculate minZoom so tiles always fill the container (no dark gaps)
+    const container = document.getElementById('map-canvas');
+    const worldBounds = L.latLngBounds([[-85, -180], [85, 180]]);
+    // Temp map to compute the fill zoom, then apply it
+    const tempMap = L.map(document.createElement('div'), { center: [0, 0], zoom: 1 });
+    tempMap.getSize = () => L.point(container.clientWidth, container.clientHeight);
+    const fillZoom = Math.ceil(tempMap.getBoundsZoom(worldBounds, false));
+    tempMap.remove();
+
     _map = L.map('map-canvas', {
       center: [-34.9285, 138.6007],
       zoom: 10,
-      minZoom: 3,
+      minZoom: Math.max(fillZoom, 2),
       worldCopyJump: true,
       zoomControl: false,
       attributionControl: false,
+    });
+
+    // Recalculate on resize so minZoom stays correct
+    _map.on('resize', () => {
+      const wb = L.latLngBounds([[-85, -180], [85, 180]]);
+      const newMin = Math.max(Math.ceil(_map.getBoundsZoom(wb, false)), 2);
+      _map.setMinZoom(newMin);
     });
 
     // CartoDB Dark Matter tiles — free, no API key, wraps seamlessly
