@@ -977,6 +977,8 @@ await _safeExec(`ALTER TABLE vendors ADD COLUMN invoice_address TEXT`);
 await _safeExec(`ALTER TABLE vendors ADD COLUMN hide_phone INTEGER NOT NULL DEFAULT 0`);
 await _safeExec(`ALTER TABLE vendors ADD COLUMN hide_abn INTEGER NOT NULL DEFAULT 0`);
 await _safeExec(`ALTER TABLE vendors ADD COLUMN hide_reviews INTEGER NOT NULL DEFAULT 0`);
+await _safeExec(`ALTER TABLE vendors ADD COLUMN stripe_customer_id TEXT`);
+await _safeExec(`ALTER TABLE vendors ADD COLUMN stripe_subscription_id TEXT`);
 await _safeExec(`ALTER TABLE users ADD COLUMN two_factor_enabled INTEGER NOT NULL DEFAULT 0`);
 await _safeExec(`ALTER TABLE event_applications ADD COLUMN updated_at DATETIME`);
 
@@ -1042,7 +1044,10 @@ export const stmts = {
       @cuisine_tags,@setup_type,@stall_w,@stall_d,@power,@water,@price_range,@instagram,@plan)
   `),
   getVendorByUserId:  prepare(`SELECT * FROM vendors WHERE user_id = ?`),
+  getVendorByStripeCustomerId: prepare(`SELECT * FROM vendors WHERE stripe_customer_id = ?`),
   updateVendorPlan:   prepare(`UPDATE vendors SET plan = ? WHERE user_id = ?`),
+  updateVendorStripe: prepare(`UPDATE vendors SET stripe_customer_id = @stripe_customer_id, stripe_subscription_id = @stripe_subscription_id WHERE user_id = @user_id`),
+  clearVendorStripeSubscription: prepare(`UPDATE vendors SET stripe_subscription_id = NULL, plan = 'free' WHERE user_id = ?`),
   allVendors: prepare(`SELECT u.id as user_id, COALESCE(v.trading_name, u.first_name||' '||u.last_name) as trading_name, u.email, u.first_name, u.last_name, u.status, u.created_at as joined, v.abn, v.abn_verified, v.abn_match, v.abn_entity_name, COALESCE(v.plan,'free') as plan, v.plan_override, v.suburb, v.state, v.id as vid, v.created_at, v.food_safety_url, v.pli_url, v.council_url FROM users u LEFT JOIN vendors v ON v.user_id=u.id AND v.id=(SELECT MIN(id) FROM vendors WHERE user_id=u.id) WHERE u.role='vendor' ORDER BY u.id DESC`),
   vendorsByStatus: prepare(`SELECT u.id as user_id, COALESCE(v.trading_name, u.first_name||' '||u.last_name) as trading_name, u.email, u.first_name, u.last_name, u.status, u.created_at as joined, v.abn, v.abn_verified, v.abn_match, v.abn_entity_name, COALESCE(v.plan,'free') as plan, v.plan_override, v.suburb, v.state, v.id as vid, v.created_at, v.food_safety_url, v.pli_url, v.council_url FROM users u LEFT JOIN vendors v ON v.user_id=u.id AND v.id=(SELECT MIN(id) FROM vendors WHERE user_id=u.id) WHERE u.role='vendor' AND u.status=? ORDER BY u.id DESC`),
 

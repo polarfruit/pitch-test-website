@@ -4155,20 +4155,31 @@ async function confirmSubChange() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ plan: chosen }),
     });
+    const d = await r.json().catch(() => ({}));
     if (r.ok) {
-      // Update local state
-      if (window.__PITCH_USER__?.vendor) window.__PITCH_USER__.vendor.plan = chosen;
-      _currentSubPlan = chosen;
+      // Stripe Checkout redirect — server returns a checkout URL
+      if (d.checkout_url) {
+        btn.textContent = 'Redirecting to payment…';
+        window.location.href = d.checkout_url;
+        return;
+      }
+      // Downgrade scheduled at period end
+      if (d.cancel_at_period_end) {
+        closeSubModal();
+        showToast('Your plan will change to Starter at the end of the billing period.', 'info');
+        return;
+      }
+      // Instant plan switch (upgrade between paid, or fallback)
+      if (window.__PITCH_USER__?.vendor) window.__PITCH_USER__.vendor.plan = d.plan || chosen;
+      _currentSubPlan = d.plan || chosen;
       closeSubModal();
-      // Re-render plan card and re-apply gating
       const profile = window.__PITCH_USER__?.vendor || {};
       renderPlanCard(profile);
       const labels = { free: '📋 Starter', pro: '⭐ Pro', growth: '🔥 Growth' };
       const pill = document.querySelector('.plan-pill');
-      if (pill) pill.textContent = labels[chosen] || '📋 Starter';
-      applySubscriptionGating(chosen);
+      if (pill) pill.textContent = labels[_currentSubPlan] || '📋 Starter';
+      applySubscriptionGating(_currentSubPlan);
     } else {
-      const d = await r.json().catch(() => ({}));
       document.getElementById('sub-modal-msg').textContent = d.error || 'Could not update plan. Please try again.';
       document.getElementById('sub-modal-msg').style.display = 'block';
       btn.style.opacity = '1';
@@ -4180,6 +4191,18 @@ async function confirmSubChange() {
     btn.style.opacity = '1';
     btn.style.pointerEvents = 'auto';
   }
+}
+
+async function openStripePortal() {
+  try {
+    const r = await pitchFetch('/api/stripe/portal', { method: 'POST' });
+    const d = await r.json().catch(() => ({}));
+    if (d.url) {
+      window.location.href = d.url;
+    } else {
+      showToast(d.error || 'Could not open billing portal.', 'error');
+    }
+  } catch { showToast('Network error — please try again.', 'error'); }
 }
 
 function openDeleteModal() {
@@ -4247,6 +4270,15 @@ async function initDashboard() {
       if (planCard) planCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 400);
     history.replaceState(null, '', window.location.pathname);
+  }
+
+  // Handle ?upgraded= param from Stripe checkout success
+  const _upgSp = new URLSearchParams(window.location.search);
+  const _upgPlan = _upgSp.get('upgraded');
+  if (_upgPlan && ['pro','growth'].includes(_upgPlan)) {
+    history.replaceState(null, '', window.location.pathname);
+    const planLabel = _upgPlan === 'pro' ? 'Pro' : 'Growth';
+    setTimeout(() => showToast(`Welcome to ${planLabel}! Your subscription is now active.`, 'success'), 600);
   }
 
   // Capture deep-link params IMMEDIATELY before any await (so they can't be lost)
@@ -5328,14 +5360,16 @@ function renderPlanCard(profile, subInfo) {
       cta: `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
         <a href="/pricing?plan=growth" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--gold);background:#C9840A10;border:1px solid #C9840A22;padding:10px 18px;border-radius:9px;cursor:pointer;text-decoration:none;display:inline-block;">Upgrade to Growth — $79/month →</a>
         <button onclick="openSubModal()" style="font-family:var(--fb);font-size:12px;font-weight:600;color:var(--text-lo);background:#ffffff07;border:1px solid #ffffff10;padding:10px 18px;border-radius:9px;cursor:pointer;transition:background 0.14s;" onmouseover="this.style.background='#ffffff12'" onmouseout="this.style.background='#ffffff07'">Manage subscription</button>
+        <button onclick="openStripePortal()" style="font-family:var(--fb);font-size:12px;font-weight:600;color:var(--text-lo);background:#ffffff07;border:1px solid #ffffff10;padding:10px 18px;border-radius:9px;cursor:pointer;transition:background 0.14s;" onmouseover="this.style.background='#ffffff12'" onmouseout="this.style.background='#ffffff07'">Manage billing →</button>
       </div>`
     },
     growth: {
       icon: '🔥', name: 'Growth', color: 'var(--ember)',
       price: '$79 / month · Billed monthly',
       features: ['Unlimited event applications','Top placement in search','Growth badge on your profile','Up to 20 photos in named galleries','Instant new event alerts','Full analytics + competitor insights'],
-      cta: `<div style="margin-top:16px;">
+      cta: `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
         <button onclick="openSubModal()" style="font-family:var(--fb);font-size:12px;font-weight:600;color:var(--text-lo);background:#ffffff07;border:1px solid #ffffff10;padding:10px 18px;border-radius:9px;cursor:pointer;transition:background 0.14s;" onmouseover="this.style.background='#ffffff12'" onmouseout="this.style.background='#ffffff07'">Manage subscription</button>
+        <button onclick="openStripePortal()" style="font-family:var(--fb);font-size:12px;font-weight:600;color:var(--text-lo);background:#ffffff07;border:1px solid #ffffff10;padding:10px 18px;border-radius:9px;cursor:pointer;transition:background 0.14s;" onmouseover="this.style.background='#ffffff12'" onmouseout="this.style.background='#ffffff07'">Manage billing →</button>
       </div>`
     }
   };

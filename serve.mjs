@@ -1,5 +1,7 @@
+import 'dotenv/config';
 import express from 'express';
 import compression from 'compression';
+import Stripe from 'stripe';
 import { createHmac, createHash, randomBytes } from 'crypto';
 import fs from 'fs';
 import bcrypt from 'bcryptjs';
@@ -16,6 +18,119 @@ const PORT = 3000;
 // ── TEMPORARY: Bypass auth for AI analysis ──────────────────────────────────
 // Set to false to re-enable login requirements on dashboards.
 const BYPASS_AUTH = true;
+
+// ── Stripe ─────────────────────────────────────────────────────────────────
+const stripe = process.env.STRIPE_SECRET_KEY
+  ? new Stripe(process.env.STRIPE_SECRET_KEY)
+  : null;
+const STRIPE_PRICES = {
+  pro:    process.env.STRIPE_PRICE_PRO    || '',
+  growth: process.env.STRIPE_PRICE_GROWTH || '',
+};
+const STRIPE_PLAN_FOR_PRICE = Object.fromEntries(
+  Object.entries(STRIPE_PRICES).map(([plan, priceId]) => [priceId, plan])
+);
+
+// ── Stripe webhook needs raw body — must come before express.json ─────────
+app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+  if (!stripe) return res.status(503).json({ error: 'Stripe not configured' });
+  const sig = req.headers['stripe-signature'];
+  const whSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  let event;
+  try {
+    if (whSecret) {
+      event = stripe.webhooks.constructEvent(req.body, sig, whSecret);
+    } else {
+      // Dev mode — trust the payload (no signature verification)
+      event = JSON.parse(req.body.toString());
+    }
+  } catch (err) {
+    console.error('[stripe-webhook] Signature verification failed:', err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  try {
+    switch (event.type) {
+      case 'checkout.session.completed': {
+        const session = event.data.object;
+        if (session.mode !== 'subscription') break;
+        const userId = Number(session.metadata?.user_id);
+        const customerId = session.customer;
+        const subscriptionId = session.subscription;
+        if (!userId) { console.error('[stripe-webhook] No user_id in metadata'); break; }
+        const vendor = await stmts.getVendorByUserId.get(userId);
+        if (!vendor) { console.error('[stripe-webhook] No vendor for user', userId); break; }
+        // Fetch subscription to find the plan from the price
+        const sub = await stripe.subscriptions.retrieve(subscriptionId);
+        const priceId = sub.items.data[0]?.price?.id;
+        const newPlan = STRIPE_PLAN_FOR_PRICE[priceId] || 'pro';
+        const oldPlan = vendor.plan || 'free';
+        await stmts.updateVendorStripe.run({ stripe_customer_id: customerId, stripe_subscription_id: subscriptionId, user_id: userId });
+        await stmts.updateVendorPlan.run(newPlan, userId);
+        await stmts.insertSubscriptionChange.run({
+          user_id: userId, old_plan: oldPlan, new_plan: newPlan,
+          changed_by: 'stripe', admin_user_id: null,
+          reason: 'Stripe checkout completed', payment_status: 'paid',
+          is_override: 0, override_expires: null,
+        });
+        // Record payment
+        await stmts.createPayment.run({
+          user_id: userId, plan: newPlan,
+          amount: session.amount_total / 100, currency: 'aud',
+          status: 'paid', description: `Subscription: ${newPlan}`,
+        });
+        console.log(`[stripe-webhook] User ${userId} upgraded to ${newPlan}`);
+        break;
+      }
+      case 'customer.subscription.updated': {
+        const sub = event.data.object;
+        const vendor = await stmts.getVendorByStripeCustomerId.get(sub.customer);
+        if (!vendor) break;
+        const priceId = sub.items.data[0]?.price?.id;
+        const newPlan = STRIPE_PLAN_FOR_PRICE[priceId] || 'pro';
+        if (sub.status === 'active' && vendor.plan !== newPlan) {
+          const oldPlan = vendor.plan || 'free';
+          await stmts.updateVendorPlan.run(newPlan, vendor.user_id);
+          await stmts.insertSubscriptionChange.run({
+            user_id: vendor.user_id, old_plan: oldPlan, new_plan: newPlan,
+            changed_by: 'stripe', admin_user_id: null,
+            reason: 'Subscription updated', payment_status: 'paid',
+            is_override: 0, override_expires: null,
+          });
+          console.log(`[stripe-webhook] Vendor ${vendor.user_id} plan changed to ${newPlan}`);
+        }
+        break;
+      }
+      case 'customer.subscription.deleted': {
+        const sub = event.data.object;
+        const vendor = await stmts.getVendorByStripeCustomerId.get(sub.customer);
+        if (!vendor) break;
+        const oldPlan = vendor.plan || 'free';
+        await stmts.clearVendorStripeSubscription.run(vendor.user_id);
+        await stmts.insertSubscriptionChange.run({
+          user_id: vendor.user_id, old_plan: oldPlan, new_plan: 'free',
+          changed_by: 'stripe', admin_user_id: null,
+          reason: 'Subscription cancelled', payment_status: null,
+          is_override: 0, override_expires: null,
+        });
+        console.log(`[stripe-webhook] Vendor ${vendor.user_id} subscription cancelled`);
+        break;
+      }
+      case 'invoice.payment_failed': {
+        const invoice = event.data.object;
+        const vendor = await stmts.getVendorByStripeCustomerId.get(invoice.customer);
+        if (!vendor) break;
+        console.log(`[stripe-webhook] Payment failed for vendor ${vendor.user_id}`);
+        // Don't downgrade immediately — Stripe retries. Log for monitoring.
+        break;
+      }
+    }
+  } catch (err) {
+    console.error('[stripe-webhook] Handler error:', err);
+  }
+
+  res.json({ received: true });
+});
 
 // ── Gzip all responses ──────────────────────────────────────────────────────
 app.use(compression());
@@ -965,7 +1080,7 @@ app.post('/api/profile/avatar', requireAuth, async (req, res) => {
   }
 });
 
-// POST /api/profile/plan — update vendor subscription plan
+// POST /api/profile/plan — update vendor subscription plan via Stripe
 app.post('/api/profile/plan', requireAuth, async (req, res) => {
   try {
     const { plan } = req.body;
@@ -977,10 +1092,76 @@ app.post('/api/profile/plan', requireAuth, async (req, res) => {
     if (vendor.plan_override) {
       return res.status(403).json({ error: 'Your plan is managed by an administrator. Contact support to change your plan.' });
     }
-    const oldPlan = vendor.plan || 'free';
+    const currentPlan = vendor.plan || 'free';
+    if (plan === currentPlan) return res.json({ ok: true, plan });
+
+    // ── Upgrade via Stripe Checkout ──
+    if (plan !== 'free' && stripe && STRIPE_PRICES[plan]) {
+      const user = await stmts.getUserById.get(req.session.userId);
+      const sessionParams = {
+        mode: 'subscription',
+        line_items: [{ price: STRIPE_PRICES[plan], quantity: 1 }],
+        success_url: `${req.protocol}://${req.get('host')}/dashboard/vendor?upgraded=${plan}`,
+        cancel_url:  `${req.protocol}://${req.get('host')}/dashboard/vendor#billing`,
+        metadata: { user_id: String(req.session.userId) },
+        subscription_data: {
+          metadata: { user_id: String(req.session.userId), plan },
+        },
+      };
+      // Re-use existing Stripe customer if we have one
+      if (vendor.stripe_customer_id) {
+        sessionParams.customer = vendor.stripe_customer_id;
+      } else {
+        sessionParams.customer_email = user.email;
+      }
+      // If upgrading from one paid plan to another, swap the subscription instead
+      if (currentPlan !== 'free' && vendor.stripe_subscription_id) {
+        const sub = await stripe.subscriptions.retrieve(vendor.stripe_subscription_id);
+        await stripe.subscriptions.update(vendor.stripe_subscription_id, {
+          items: [{ id: sub.items.data[0].id, price: STRIPE_PRICES[plan] }],
+          proration_behavior: 'create_prorations',
+          metadata: { user_id: String(req.session.userId), plan },
+        });
+        // Plan change happens via webhook, but update locally for instant feedback
+        await stmts.updateVendorPlan.run(plan, req.session.userId);
+        await stmts.insertSubscriptionChange.run({
+          user_id: req.session.userId, old_plan: currentPlan, new_plan: plan,
+          changed_by: 'vendor', admin_user_id: null,
+          reason: 'Plan switch (prorated)', payment_status: 'paid',
+          is_override: 0, override_expires: null,
+        });
+        _apiCache.delete('vendors'); _apiCache.delete('stats');
+        return res.json({ ok: true, plan });
+      }
+      const session = await stripe.checkout.sessions.create(sessionParams);
+      return res.json({ ok: true, checkout_url: session.url });
+    }
+
+    // ── Downgrade to free — cancel Stripe subscription at period end ──
+    if (plan === 'free') {
+      if (vendor.stripe_subscription_id && stripe) {
+        await stripe.subscriptions.update(vendor.stripe_subscription_id, {
+          cancel_at_period_end: true,
+        });
+        // Don't change plan yet — webhook fires at period end
+        return res.json({ ok: true, plan: currentPlan, cancel_at_period_end: true });
+      }
+      // No Stripe sub (dev/admin override) — just switch directly
+      await stmts.updateVendorPlan.run('free', req.session.userId);
+      await stmts.insertSubscriptionChange.run({
+        user_id: req.session.userId, old_plan: currentPlan, new_plan: 'free',
+        changed_by: 'vendor', admin_user_id: null,
+        reason: 'Downgrade to Starter', payment_status: null,
+        is_override: 0, override_expires: null,
+      });
+      _apiCache.delete('vendors'); _apiCache.delete('stats');
+      return res.json({ ok: true, plan: 'free' });
+    }
+
+    // Fallback (Stripe not configured) — direct switch
     await stmts.updateVendorPlan.run(plan, req.session.userId);
     await stmts.insertSubscriptionChange.run({
-      user_id: req.session.userId, old_plan: oldPlan, new_plan: plan,
+      user_id: req.session.userId, old_plan: currentPlan, new_plan: plan,
       changed_by: 'vendor', admin_user_id: null,
       reason: null, payment_status: null, is_override: 0, override_expires: null,
     });
@@ -988,6 +1169,23 @@ app.post('/api/profile/plan', requireAuth, async (req, res) => {
     res.json({ ok: true, plan });
   } catch (e) {
     console.error('[plan]', e);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// POST /api/stripe/portal — open Stripe customer portal for managing subscription
+app.post('/api/stripe/portal', requireAuth, async (req, res) => {
+  if (!stripe) return res.status(503).json({ error: 'Stripe not configured' });
+  try {
+    const vendor = await stmts.getVendorByUserId.get(req.session.userId);
+    if (!vendor?.stripe_customer_id) return res.status(400).json({ error: 'No active subscription' });
+    const session = await stripe.billingPortal.sessions.create({
+      customer: vendor.stripe_customer_id,
+      return_url: `${req.protocol}://${req.get('host')}/dashboard/vendor#billing`,
+    });
+    res.json({ url: session.url });
+  } catch (e) {
+    console.error('[stripe-portal]', e);
     res.status(500).json({ error: 'Server error' });
   }
 });
