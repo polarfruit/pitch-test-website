@@ -15,7 +15,7 @@
     .card {
       width: 100%; max-width: 420px;
       background: #231E19; border: 1px solid #2A2018; border-radius: 18px; padding: 40px;
-      box-shadow: 0 24px 64px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03);
+      box-shadow: 0 24px 64px rgba(0,0,0,0.5);
     }
 
     .logo { display: flex; align-items: center; gap: 9px; margin-bottom: 32px; }
@@ -64,10 +64,10 @@
     .error-box.show { display: block; }
 
     .divider { display: flex; align-items: center; gap: 12px; margin: 20px 0; }
-    .divider hr { flex: 1; border: none; border-top: 1px solid #2A2018; }
-    .divider span { font-size: 12px; color: #4A3C30; }
+    .divider hr { flex: 1; border: none; border-top: 1px solid #3A2E26; }
+    .divider span { font-size: 12px; color: #6B5A4A; white-space: nowrap; }
 
-    .sso-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .sso-btns { display: flex; justify-content: center; }
     .sso-btn {
       display: flex; align-items: center; justify-content: center; gap: 7px;
       background: #1A1612; border: 1.5px solid #2A2018; border-radius: 10px;
@@ -117,10 +117,12 @@
   <button class="btn-submit" id="login-btn" onclick="doLogin()">Sign in</button>
 
   <div class="footer-links" style="margin-top:20px;">
-    Don't have an account?
-    <a href="/signup/vendor" id="signup-link">Sign up as a vendor</a>
+    Don't have an account?<br>
+    <a href="/signup/vendor" id="signup-link">Vendor</a>
     &nbsp;·&nbsp;
-    <a href="/signup/organiser" style="color:#A89880;font-weight:500;">Sign up as an organiser</a>
+    <a href="/signup/organiser">Organiser</a>
+    &nbsp;·&nbsp;
+    <a href="/signup/foodie">Foodie</a>
   </div>
 
   <div class="footer-links" style="margin-top:8px;">
@@ -199,9 +201,9 @@ function togglePw() {
     try {
       const r = await fetch('/api/auth/oauth-config');
       _oauthConfig = await r.json();
-      if (_oauthConfig.google) initGoogleSignIn(_oauthConfig.google);
-      if (!_oauthConfig.google) document.getElementById('btn-google').style.display = 'none';
-      if (!_oauthConfig.google) {
+      if (_oauthConfig.google) {
+        initGoogleSignIn(_oauthConfig.google);
+      } else {
         document.querySelector('.sso-btns').style.display = 'none';
         document.querySelector('.divider').style.display = 'none';
       }
@@ -218,11 +220,11 @@ function togglePw() {
         ux_mode: 'popup',
       });
       google.accounts.id.renderButton(document.getElementById('g-btn-container'), {
-        theme: 'filled_black',
+        theme: 'outline',
         size: 'large',
         text: 'continue_with',
-        shape: 'rectangular',
-        width: '100%',
+        shape: 'pill',
+        width: 340,
       });
     };
     document.head.appendChild(s);
