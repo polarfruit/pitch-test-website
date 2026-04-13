@@ -3328,6 +3328,26 @@ function showPanel(name, clickedEl, pushHistory = true) {
   }
 }
 
+// ── Toast notification ────────────────────────────────────────────────────
+function showToast(message, type = 'info') {
+  const colors = { success: '#2D8B55', error: '#C0392B', info: '#2B5BA8' };
+  const t = document.createElement('div');
+  t.textContent = message;
+  Object.assign(t.style, {
+    position: 'fixed', bottom: '24px', left: '50%', transform: 'translateX(-50%) translateY(10px)',
+    background: colors[type] || colors.info, color: '#fff', fontSize: '13px', fontWeight: '600',
+    fontFamily: 'var(--fb)', padding: '12px 20px', borderRadius: '10px', zIndex: '10000',
+    maxWidth: '90vw', opacity: '0', transition: 'opacity 0.3s, transform 0.3s',
+    boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
+  });
+  document.body.appendChild(t);
+  requestAnimationFrame(() => { t.style.opacity = '1'; t.style.transform = 'translateX(-50%) translateY(0)'; });
+  setTimeout(() => {
+    t.style.opacity = '0'; t.style.transform = 'translateX(-50%) translateY(10px)';
+    setTimeout(() => t.remove(), 300);
+  }, 4000);
+}
+
 // Route on load
 // Global error toast — catches any uncaught JS errors and shows them visibly
 window.addEventListener('error', ev => {
