@@ -4642,7 +4642,6 @@ app.get('/about',               page('pages/about.html'));
 app.get('/contact',             page('pages/contact.html'));
 app.get('/terms',               page('pages/terms.html'));
 app.get('/privacy',             page('pages/privacy.html'));
-app.get('/blog',                page('pages/blog.html'));
 app.get('/forgot-password',     page('pages/forgot-password.html', { skipBanner: true }));
 app.get('/events/new',          (req, res) => {
   const sess = req.session;
@@ -4859,7 +4858,6 @@ app.get('/sitemap.xml', (req, res) => {
     { loc: '/pricing',      priority: '0.7', changefreq: 'monthly' },
     { loc: '/how-it-works', priority: '0.7', changefreq: 'monthly' },
     { loc: '/contact',      priority: '0.6', changefreq: 'monthly' },
-    { loc: '/blog',         priority: '0.7', changefreq: 'weekly' },
     { loc: '/privacy',      priority: '0.3', changefreq: 'yearly' },
     { loc: '/terms',        priority: '0.3', changefreq: 'yearly' },
   ];
