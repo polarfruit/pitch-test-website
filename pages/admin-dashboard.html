@@ -6484,8 +6484,8 @@
         _loadActivityFromData(_init.activity);
         _loadNotifsFromData(_init.notifications);
         _loadReportsFromData(_init.reports);
-        // Fetch analytics async (heavy query, not pre-injected) for sparklines/charts
-        fetch('/api/admin/analytics').then(r => r.ok ? r.json() : {}).then(d => _applyAnalytics(d)).catch(() => {});
+        if (_init.analytics) { _applyAnalytics(_init.analytics); }
+        else { fetch('/api/admin/analytics').then(r => r.ok ? r.json() : {}).then(d => _applyAnalytics(d)).catch(() => {}); }
         delete window.__ADMIN_INIT__;
       } else {
         // Fallback: fetch everything client-side

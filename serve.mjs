@@ -3893,13 +3893,14 @@ app.get('/api/admin/activity', requireAdmin, async (req, res) => {
 });
 
 // ── Admin — analytics ─────────────────────────────────────────────────────
-app.get('/api/admin/analytics', requireAdmin, async (req, res) => {
-  const from = req.query.from || null;
-  const to   = req.query.to   || null;
-  const hasRange = !!(from && to);
+let _analyticsCache = null;
+let _analyticsCacheTs = 0;
+const ANALYTICS_TTL = 60000; // 60s cache
 
-  // ── "All time" path — use pre-compiled prepared statements (fast, works on Turso) ──
-  if (!hasRange) {
+async function _computeAnalyticsAllTime() {
+  const cached = _analyticsCache;
+  if (cached && Date.now() - _analyticsCacheTs < ANALYTICS_TTL) return cached;
+
     const [
       vendors, organisers, events, appCounts, catCounts, signupsByDay,
       totalRev, revThisMonth, revLastMonth, avgTx, revByMonth, planBreakdown,
@@ -4010,7 +4011,7 @@ app.get('/api/admin/analytics', requireAdmin, async (req, res) => {
       })(),
     ]);
 
-    return res.json({
+    const result = {
       dateRange: null,
       totalVendors: vendors.n, totalOrganisers: organisers.n, totalEvents: events.n,
       applicationsByStatus: appCounts, eventsByCategory: catCounts, signups7dByDay: signupsByDay,
@@ -4025,7 +4026,25 @@ app.get('/api/admin/analytics', requireAdmin, async (req, res) => {
       funnels: { vendorsApproved: vApproved.n, vendorsPaid: vPaid.n, orgsWithEvent: oWithEvent.n, orgsWithApps: oWithApps.n },
       topVendors,
       verification: verTrust, subscription: subRetention, reviews: revQuality, eventLifecycle: evtLifecycle, appResponseTime: appResponse,
-    });
+    };
+    _analyticsCache = result;
+    _analyticsCacheTs = Date.now();
+    return result;
+}
+
+app.get('/api/admin/analytics', requireAdmin, async (req, res) => {
+  const from = req.query.from || null;
+  const to   = req.query.to   || null;
+  const hasRange = !!(from && to);
+
+  if (!hasRange) {
+    try {
+      const data = await _computeAnalyticsAllTime();
+      return res.json(data);
+    } catch (e) {
+      console.error('[analytics]', e);
+      return res.status(500).json({ error: 'Server error' });
+    }
   }
 
   // ── Date-filtered path — dynamic queries ──
@@ -4483,6 +4502,10 @@ function serveAdminDashboard() {
         notifs.push({ id:`o-${o.id}`, icon:'🎪', iconCls:'slate', title:`New organiser: ${o.org_name}`, desc:'Organiser account pending approval.', time: o.created_at ? new Date(o.created_at).toLocaleDateString('en-AU') : '', unread:false });
       }
 
+      // Fetch analytics in parallel with the rest (cached, 60s TTL)
+      let analytics = null;
+      try { analytics = await _computeAnalyticsAllTime(); } catch(e) { /* fallback to client fetch */ }
+
       const initData = {
         stats,
         vendors: vendorsRows,
@@ -4490,6 +4513,7 @@ function serveAdminDashboard() {
         activity: activityRows,
         reports: reportsRows,
         notifications: { notifications: notifs, unreadCount: notifs.filter(n => n.unread).length },
+        analytics,
       };
 
       let html = readHtml('pages/admin-dashboard.html');
