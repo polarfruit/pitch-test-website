@@ -10,41 +10,90 @@
   <link rel="stylesheet" href="/fonts/fonts.css" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root { --ember:#E8500A;--ember-glow:#FF6B2B;--ember-bg:#E8500A12;--coal:#1A1612;--char:#231E19;--ash:#2E2720;--parchment:#FDF4E7;--herb:#2D8B55;--gold:#C9840A;--terra:#C0392B;--slate:#2B5BA8;--text-hi:#FDF4E7;--text-mid:#A89880;--text-lo:#6B5A4A;--fd:'Fraunces',Georgia,serif;--fb:'Instrument Sans','Helvetica Neue',sans-serif; }
-    body { background:var(--coal);color:var(--text-hi);font-family:var(--fb);line-height:1.7;overflow-x:hidden; }
+    :root { --ember:#E8500A;--ember-glow:#FF6B2B;--ember-bg:#E8500A12;--coal:#1A1612;--char:#231E19;--ash:#2E2720;--smoke:#4A3F36;--parchment:#FDF4E7;--herb:#2D8B55;--gold:#C9840A;--terra:#C0392B;--slate:#2B5BA8;--text-hi:#FDF4E7;--text-mid:#A89880;--text-lo:#6B5A4A;--fd:'Fraunces',Georgia,serif;--fb:'Instrument Sans','Helvetica Neue',sans-serif; }
+    html { scroll-behavior: smooth; }
+    body { background:var(--coal);color:var(--text-hi);font-family:var(--fb);line-height:1.5;overflow-x:hidden; }
     body::before { content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:0.45; }
-    .navbar { position:fixed;top:0;left:0;right:0;z-index:200;height:66px;display:flex;align-items:center;justify-content:space-between;padding:0 52px;background:rgba(26,22,18,0.92);backdrop-filter:blur(16px);border-bottom:1px solid #ffffff07; }
-    .nav-logo { font-family:var(--fd);font-size:26px;font-weight:900;letter-spacing:-0.04em;color:var(--text-hi);text-decoration:none; }
+    .navbar { position:fixed;top:0;left:0;right:0;z-index:200;height:66px;display:flex;align-items:center;justify-content:space-between;padding:0 52px;background:rgba(26,22,18,0.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid #ffffff07; }
+    .nav-logo { font-family:var(--fd);font-size:26px;font-weight:900;letter-spacing:-0.04em;color:var(--text-hi);text-decoration:none;flex-shrink:0; }
     .nav-logo .dot { color:var(--ember); }
     .nav-links { display:flex;align-items:center;gap:32px;list-style:none; }
-    .nav-links a { font-size:14px;font-weight:500;color:var(--text-mid);text-decoration:none;transition:color 0.14s; }
-    .nav-links a:hover { color:var(--text-hi); }
+    .nav-links a { font-size:14px;font-weight:500;color:var(--text-mid);text-decoration:none;transition:color 0.14s;letter-spacing:0.01em; }
+    .nav-links a:hover, .nav-links a.active { color:var(--text-hi); }
     .nav-actions { display:flex;align-items:center;gap:10px; }
-    .btn-login { font-family:var(--fb);font-size:13px;font-weight:600;color:var(--text-mid);background:transparent;border:none;padding:9px 16px;border-radius:8px;cursor:pointer;text-decoration:none;transition:color 0.14s,background 0.14s; }
+    .btn-login { font-family:var(--fb);font-size:13px;font-weight:600;color:var(--text-mid);background:transparent;border:none;padding:9px 16px;border-radius:8px;cursor:pointer;transition:color 0.14s,background 0.14s;text-decoration:none; }
     .btn-login:hover { color:var(--text-hi);background:#ffffff09; }
-    .btn-cta { font-family:var(--fb);font-size:13px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:10px 22px;border-radius:9px;cursor:pointer;text-decoration:none;box-shadow:0 4px 16px rgba(232,80,10,0.35);transition:background 0.14s; }
-    .btn-cta:hover { background:var(--ember-glow); }
-    .wrap { max-width:800px;margin:0 auto;padding:120px 52px 80px;position:relative;z-index:1; }
-    .breadcrumb { font-size:13px;color:var(--text-lo);margin-bottom:24px; }
-    .breadcrumb a { color:var(--text-lo);text-decoration:none;transition:color 0.14s; }
-    .breadcrumb a:hover { color:var(--text-mid); }
-    .breadcrumb .sep { margin:0 8px;opacity:0.5; }
-    .page-tag { display:inline-block;font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--ember);background:var(--ember-bg);border:1px solid #E8500A25;border-radius:100px;padding:4px 14px;margin-bottom:20px; }
-    h1 { font-family:var(--fd);font-size:clamp(36px,5vw,56px);font-weight:900;letter-spacing:-0.03em;line-height:1.1;color:var(--text-hi);margin-bottom:16px; }
-    .sub { font-size:17px;color:var(--text-mid);line-height:1.7;margin-bottom:32px; }
-    .toc { background:var(--char);border:1px solid #ffffff0a;border-radius:12px;padding:24px 28px;margin-bottom:48px; }
-    .toc-title { font-size:11px;font-weight:700;letter-spacing:0.16em;text-transform:uppercase;color:var(--text-lo);margin-bottom:14px; }
-    .toc-list { list-style:none;display:flex;flex-direction:column;gap:10px; }
-    .toc-list a { font-size:14px;color:var(--text-mid);text-decoration:none !important;transition:color 0.14s; }
-    .toc-list a:hover { color:var(--ember); }
-    .breadcrumb a { text-decoration:none !important; }
-    h2 { font-family:var(--fd);font-size:22px;font-weight:900;color:var(--ember);margin:52px 0 12px;letter-spacing:-0.02em;padding-top:8px; }
-    h2:first-of-type { margin-top:0; }
-    p { color:var(--text-mid);font-size:15px;margin-bottom:14px;line-height:1.75; }
-    ul { color:var(--text-mid);font-size:15px;padding-left:20px;margin-bottom:14px; }
-    ul li { margin-bottom:6px;line-height:1.7; }
-    .wrap a { color:var(--ember);text-decoration:underline;text-decoration-color:#E8500A44;text-underline-offset:3px;transition:text-decoration-color 0.14s; }
-    .wrap a:hover { text-decoration-color:var(--ember); }
+    .btn-get-started { font-family:var(--fb);font-size:13px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:10px 22px;border-radius:9px;cursor:pointer;text-decoration:none;transition:background 0.14s,transform 0.1s;box-shadow:0 4px 16px rgba(232,80,10,0.35); }
+    .btn-get-started:hover { background:var(--ember-glow); }
+
+    main { position:relative;z-index:1; }
+
+    .hero { padding:140px 52px 60px;max-width:760px;margin:0 auto; }
+    .hero h1 { font-family:var(--fd);font-size:clamp(40px,5vw,58px);font-weight:900;letter-spacing:-0.03em;line-height:1.06;margin-bottom:12px; }
+    .hero .meta { font-size:14px;color:var(--text-lo); }
+
+    .doc-layout { padding:0 52px 100px;max-width:1100px;margin:0 auto;display:grid;grid-template-columns:220px 1fr;gap:64px;align-items:start; }
+    @media(max-width:880px){.doc-layout{grid-template-columns:1fr;gap:40px;}}
+
+    /* TOC */
+    .toc { position:sticky;top:90px; }
+    .toc-label { font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-lo);margin-bottom:14px; }
+    .toc-list { list-style:none;display:flex;flex-direction:column;gap:2px; }
+    .toc-list a { font-size:13px;color:var(--text-lo);text-decoration:none;padding:5px 10px;border-radius:6px;display:block;transition:color 0.14s,background 0.14s,border-left-color 0.14s;border-left:2px solid transparent; }
+    .toc-list a:hover { color:var(--text-mid);background:#ffffff06;border-left-color:#ffffff15; }
+    .toc-list a.active { color:var(--ember);border-left-color:var(--ember);background:var(--ember-bg); }
+    @media(max-width:880px){.toc{display:none;}}
+
+    /* Content */
+    .doc-section { margin-bottom:52px; }
+    .doc-section h2 { font-family:var(--fd);font-size:22px;font-weight:900;letter-spacing:-0.02em;color:var(--ember);margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid #ffffff14; }
+    .doc-section p { font-size:15px;color:var(--text-mid);line-height:1.85;margin-bottom:14px; }
+    .doc-section p:last-child { margin-bottom:0; }
+    .doc-section ul { list-style:none;display:flex;flex-direction:column;gap:8px;margin:14px 0; }
+    .doc-section ul li { font-size:14px;color:var(--text-mid);line-height:1.7;padding-left:20px;position:relative; }
+    .doc-section ul li::before { content:'\2013';position:absolute;left:0;color:var(--text-lo); }
+    .doc-section strong { color:var(--text-hi);font-weight:600; }
+    .doc-section a { color:var(--ember);text-decoration:underline;text-decoration-color:#E8500A44;text-underline-offset:3px;transition:text-decoration-color 0.14s; }
+    .doc-section a:hover { text-decoration-color:var(--ember); }
+
+    /* Back to top */
+    .back-to-top {
+      position:fixed;bottom:32px;right:32px;z-index:100;
+      width:40px;height:40px;border-radius:10px;border:1px solid #ffffff12;
+      background:var(--char);color:var(--text-mid);cursor:pointer;
+      display:flex;align-items:center;justify-content:center;
+      opacity:0;pointer-events:none;
+      transition:opacity 0.25s ease,transform 0.2s ease,background 0.15s,color 0.15s;
+      transform:translateY(8px);
+      box-shadow:0 4px 16px rgba(0,0,0,0.4);
+    }
+    .back-to-top.visible { opacity:1;pointer-events:auto;transform:translateY(0); }
+    .back-to-top:hover { background:var(--ember);color:#fff;border-color:var(--ember); }
+    .back-to-top:active { transform:scale(0.94); }
+    .back-to-top:focus-visible { outline:2px solid var(--ember);outline-offset:2px; }
+
+    /* Mobile TOC dropdown */
+    @media(max-width:880px){
+      .toc { display:block;position:relative;top:0;margin-bottom:8px; }
+      .toc-mobile-toggle {
+        display:flex;align-items:center;justify-content:space-between;width:100%;
+        background:var(--char);border:1px solid #ffffff0e;border-radius:10px;
+        padding:12px 16px;color:var(--text-mid);font-family:var(--fb);font-size:13px;font-weight:600;
+        cursor:pointer;transition:border-color 0.15s,color 0.15s;
+      }
+      .toc-mobile-toggle:hover { border-color:#ffffff1a;color:var(--text-hi); }
+      .toc-mobile-toggle svg { transition:transform 0.2s; }
+      .toc-mobile-toggle.open svg { transform:rotate(180deg); }
+      .toc-label { display:none; }
+      .toc-list {
+        max-height:0;overflow:hidden;opacity:0;
+        transition:max-height 0.3s ease,opacity 0.2s ease,padding 0.3s ease;
+        background:var(--char);border:1px solid #ffffff0e;border-radius:10px;
+        margin-top:6px;padding:0 8px;
+      }
+      .toc-list.open { max-height:500px;opacity:1;padding:8px; }
+    }
+    @media(min-width:881px){ .toc-mobile-toggle { display:none; } }
 
     /* Footer */
     footer { background:#161210;border-top:1px solid #ffffff06;position:relative;z-index:1; }
@@ -63,7 +112,8 @@
 
     @media (max-width:768px) {
       .navbar { padding:0 20px; }
-      .wrap { padding:100px 24px 60px; }
+      .hero { padding:100px 24px 40px; }
+      .doc-layout { padding:0 24px 60px; }
       .footer-main { grid-template-columns:1fr 1fr;gap:32px;padding:48px 28px 32px; }
       .footer-bottom { padding:16px 28px 24px; }
     }
@@ -74,84 +124,142 @@
   </style>
 </head>
 <body>
-
   <nav class="navbar">
     <a href="/" class="nav-logo">Pitch<span class="dot">.</span></a>
     <ul class="nav-links">
       <li><a href="/events">Events</a></li>
       <li><a href="/vendors">Vendors</a></li>
       <li><a href="/how-it-works">How It Works</a></li>
-      <li><a href="/pricing">Pricing</a></li>
     </ul>
     <div class="nav-actions" id="nav-loggedout">
       <a href="/login" class="btn-login">Log in</a>
-      <a href="/signup" class="btn-cta">Get Started</a>
+      <a href="/signup" class="btn-get-started">Get Started</a>
     </div>
     <div id="nav-loggedin" style="display:none;align-items:center;gap:8px;">
-      <a href="/dashboard/vendor" id="nav-dashboard-link" style="color:var(--text-hi,#FDF4E7);text-decoration:none;font-size:14px;font-weight:600;display:flex;align-items:center;gap:4px;"><span id="nav-user-label">Account</span> ▾</a>
+      <a href="/dashboard/vendor" id="nav-dashboard-link" style="color:var(--text-hi,#FDF4E7);text-decoration:none;font-size:14px;font-weight:600;display:flex;align-items:center;gap:4px;"><span id="nav-user-label">Account</span> &#9662;</a>
     </div>
   </nav>
-  <script>(function(){var u=window.__PITCH_USER__;if(!u)return;var lo=document.getElementById('nav-loggedout');if(lo)lo.style.display='none';if(u.role==='foodie'){var nl=document.querySelector('.nav-links'),p=location.pathname;if(nl)nl.innerHTML='<li><a href="/discover">My Feed</a></li><li><a href="/events"'+(p==='/events'?' class="active"':'')+'>All Events</a></li><li><a href="/vendors"'+(p==='/vendors'?' class="active"':'')+'>Vendors</a></li>';if(lo)lo.remove();var li=document.getElementById('nav-loggedin');if(li)li.remove();var nav=document.querySelector('.navbar'),ham=nav&&nav.querySelector('.nav-hamburger'),fn=(u.name||'').split(' ')[0]||'Account';var rh='<div style="display:flex;align-items:center;gap:10px;" id="nav-foodie-right"><div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--text-mid)"><div style="width:28px;height:28px;border-radius:50%;background:var(--ember);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff">🍜</div><span>'+fn+'</span></div><button onclick="fetch(\'/api/logout\',{method:\'POST\'}).then(function(){location.href=\'/\'})" style="font-size:13px;font-weight:600;color:var(--text-lo);background:transparent;border:none;cursor:pointer;padding:8px;font-family:inherit">Sign out</button></div>';if(ham)ham.insertAdjacentHTML('beforebegin',rh);else if(nav)nav.insertAdjacentHTML('beforeend',rh)}else{var li2=document.getElementById('nav-loggedin');if(li2){li2.style.display='flex';var lbl=document.getElementById('nav-user-label');if(lbl)lbl.textContent=(u.name||'').split(' ')[0]||'Account';var dl=document.getElementById('nav-dashboard-link');if(dl)dl.href=u.role==='organiser'?'/dashboard/organiser':u.role==='admin'?'/dashboard/admin':'/dashboard/vendor'}}})();</script>
+  <script>(function(){var u=window.__PITCH_USER__;if(!u)return;var lo=document.getElementById('nav-loggedout');if(lo)lo.style.display='none';if(u.role==='foodie'){var nl=document.querySelector('.nav-links'),p=location.pathname;if(nl)nl.innerHTML='<li><a href="/discover">My Feed</a></li><li><a href="/events"'+(p==='/events'?' class="active"':'')+'>All Events</a></li><li><a href="/vendors"'+(p==='/vendors'?' class="active"':'')+'>Vendors</a></li>';if(lo)lo.remove();var li=document.getElementById('nav-loggedin');if(li)li.remove();var nav=document.querySelector('.navbar'),ham=nav&&nav.querySelector('.nav-hamburger'),fn=(u.name||'').split(' ')[0]||'Account';var rh='<div style="display:flex;align-items:center;gap:10px;" id="nav-foodie-right"><div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--text-mid)"><div style="width:28px;height:28px;border-radius:50%;background:var(--ember);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff">&#127836;</div><span>'+fn+'</span></div><button onclick="fetch(\'/api/logout\',{method:\'POST\'}).then(function(){location.href=\'/\'})" style="font-size:13px;font-weight:600;color:var(--text-lo);background:transparent;border:none;cursor:pointer;padding:8px;font-family:inherit">Sign out</button></div>';if(ham)ham.insertAdjacentHTML('beforebegin',rh);else if(nav)nav.insertAdjacentHTML('beforeend',rh)}else{var li2=document.getElementById('nav-loggedin');if(li2){li2.style.display='flex';var lbl=document.getElementById('nav-user-label');if(lbl)lbl.textContent=(u.name||'').split(' ')[0]||'Account';var dl=document.getElementById('nav-dashboard-link');if(dl)dl.href=u.role==='organiser'?'/dashboard/organiser':u.role==='admin'?'/dashboard/admin':'/dashboard/vendor'}}})();</script>
 
-  <div class="wrap">
-    <div class="breadcrumb"><a href="/">Home</a><span class="sep">/</span>Privacy Policy</div>
-    <div class="page-tag">Legal</div>
-    <h1>Privacy Policy</h1>
-    <p class="sub">Last updated: March 2026. We're committed to handling your personal information with care.</p>
+  <main>
+    <div class="hero">
+      <h1>Privacy Policy</h1>
+      <div class="meta">Last updated: March 2026</div>
+    </div>
 
-    <nav class="toc">
-      <div class="toc-title">On this page</div>
-      <ol class="toc-list">
-        <li><a href="#collect">Information We Collect</a></li>
-        <li><a href="#use">How We Use Your Information</a></li>
-        <li><a href="#share">Who We Share It With</a></li>
-        <li><a href="#security">Data Storage & Security</a></li>
-        <li><a href="#cookies">Cookies</a></li>
-        <li><a href="#rights">Your Rights (Australian Privacy Act 1988)</a></li>
-        <li><a href="#retention">Data Retention</a></li>
-        <li><a href="#contact">Contact</a></li>
-      </ol>
-    </nav>
+    <div class="doc-layout">
+      <!-- TOC sidebar -->
+      <nav class="toc">
+        <button class="toc-mobile-toggle" onclick="this.classList.toggle('open');this.nextElementSibling.nextElementSibling.classList.toggle('open');">
+          Contents
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 4.5L6 7.5L9 4.5"/></svg>
+        </button>
+        <div class="toc-label">Contents</div>
+        <ul class="toc-list">
+          <li><a href="#collect">1. Information We Collect</a></li>
+          <li><a href="#use">2. How We Use Your Information</a></li>
+          <li><a href="#share">3. Who We Share It With</a></li>
+          <li><a href="#security">4. Data Storage &amp; Security</a></li>
+          <li><a href="#cookies">5. Cookies</a></li>
+          <li><a href="#rights">6. Your Rights</a></li>
+          <li><a href="#retention">7. Data Retention</a></li>
+          <li><a href="#contact">8. Contact</a></li>
+        </ul>
+      </nav>
 
-    <h2 id="collect">1. Information We Collect</h2>
-    <p>We collect information you provide directly: full name, email address, mobile number, Australian Business Number (ABN), business name, and suburb/state. If you sign up as a vendor, we also collect your food business category, cuisine tags, and documents (e.g. PLI certificate). Payment information (e.g. credit card details) is processed directly by Stripe — we do not store card numbers. We also collect usage data such as pages visited, events viewed, and applications submitted.</p>
+      <!-- Body -->
+      <div class="doc-body">
+        <div class="doc-section" id="collect">
+          <h2>1. Information We Collect</h2>
+          <p>We collect information you provide directly: full name, email address, mobile number, Australian Business Number (ABN), business name, and suburb/state. If you sign up as a vendor, we also collect your food business category, cuisine tags, and documents (e.g. PLI certificate). Payment information (e.g. credit card details) is processed directly by Stripe — we do not store card numbers. We also collect usage data such as pages visited, events viewed, and applications submitted.</p>
+        </div>
 
-    <h2 id="use">2. How We Use Your Information</h2>
-    <p>We use your information to:</p>
-    <ul>
-      <li>Create and manage your account</li>
-      <li>Verify your identity and ABN with the Australian Business Register</li>
-      <li>Match vendors with relevant events</li>
-      <li>Process stall fee payments</li>
-      <li>Send you notifications about applications, approvals, and event updates</li>
-      <li>Improve the Pitch. platform through aggregated analytics</li>
-    </ul>
+        <div class="doc-section" id="use">
+          <h2>2. How We Use Your Information</h2>
+          <p>We use your information to:</p>
+          <ul>
+            <li>Create and manage your account</li>
+            <li>Verify your identity and ABN with the Australian Business Register</li>
+            <li>Match vendors with relevant events</li>
+            <li>Process stall fee payments</li>
+            <li>Send you notifications about applications, approvals, and event updates</li>
+            <li>Improve the Pitch. platform through aggregated analytics</li>
+          </ul>
+        </div>
 
-    <h2 id="share">3. Who We Share It With</h2>
-    <p>When a vendor applies to an event, the organiser can view that vendor's profile, trading name, ABN, and public application details. When an organiser lists an event, vendors can view the organiser's public profile and event details. We do not sell your personal data to third parties. We may share data with service providers who help us operate the platform (e.g. Stripe for payments, Mailgun for email delivery) under strict confidentiality agreements.</p>
+        <div class="doc-section" id="share">
+          <h2>3. Who We Share It With</h2>
+          <p>When a vendor applies to an event, the organiser can view that vendor's profile, trading name, ABN, and public application details. When an organiser lists an event, vendors can view the organiser's public profile and event details. We do not sell your personal data to third parties. We may share data with service providers who help us operate the platform (e.g. Stripe for payments, Mailgun for email delivery) under strict confidentiality agreements.</p>
+        </div>
 
-    <h2 id="security">4. Data Storage &amp; Security</h2>
-    <p>All data is stored on Australian servers. Personal data is encrypted at rest and in transit using TLS 1.2+. Session tokens expire after 30 days of inactivity. We conduct periodic security reviews and follow OWASP best practices.</p>
+        <div class="doc-section" id="security">
+          <h2>4. Data Storage &amp; Security</h2>
+          <p>All data is stored on Australian servers. Personal data is encrypted at rest and in transit using TLS 1.2+. Session tokens expire after 30 days of inactivity. We conduct periodic security reviews and follow OWASP best practices.</p>
+        </div>
 
-    <h2 id="cookies">5. Cookies</h2>
-    <p>Pitch. uses essential cookies to keep you logged in and maintain your session. We do not use third-party advertising cookies. We may use anonymous analytics cookies (e.g. Google Analytics with IP anonymisation enabled) to understand how users navigate the platform. You can opt out of analytics cookies in your browser settings.</p>
+        <div class="doc-section" id="cookies">
+          <h2>5. Cookies</h2>
+          <p>Pitch. uses essential cookies to keep you logged in and maintain your session. We do not use third-party advertising cookies. We may use anonymous analytics cookies (e.g. Google Analytics with IP anonymisation enabled) to understand how users navigate the platform. You can opt out of analytics cookies in your browser settings.</p>
+        </div>
 
-    <h2 id="rights">6. Your Rights (Australian Privacy Act 1988)</h2>
-    <p>Under the Privacy Act 1988 (Cth), you have the right to:</p>
-    <ul>
-      <li>Access personal information we hold about you</li>
-      <li>Request corrections to inaccurate data</li>
-      <li>Request deletion of your account and associated data</li>
-      <li>Lodge a complaint with the Office of the Australian Information Commissioner (OAIC) if you believe we have mishandled your information</li>
-    </ul>
-    <p>To exercise these rights, contact <a href="mailto:legal@onpitch.com.au">legal@onpitch.com.au</a>.</p>
+        <div class="doc-section" id="rights">
+          <h2>6. Your Rights (Australian Privacy Act 1988)</h2>
+          <p>Under the Privacy Act 1988 (Cth), you have the right to:</p>
+          <ul>
+            <li>Access personal information we hold about you</li>
+            <li>Request corrections to inaccurate data</li>
+            <li>Request deletion of your account and associated data</li>
+            <li>Lodge a complaint with the Office of the Australian Information Commissioner (OAIC) if you believe we have mishandled your information</li>
+          </ul>
+          <p>To exercise these rights, contact <a href="mailto:legal@onpitch.com.au">legal@onpitch.com.au</a>.</p>
+        </div>
 
-    <h2 id="retention">7. Data Retention</h2>
-    <p>We retain account data for up to 7 years after account deletion for legal, tax, and dispute-resolution purposes. Application records and payment history are retained for 7 years in accordance with Australian tax law requirements.</p>
+        <div class="doc-section" id="retention">
+          <h2>7. Data Retention</h2>
+          <p>We retain account data for up to 7 years after account deletion for legal, tax, and dispute-resolution purposes. Application records and payment history are retained for 7 years in accordance with Australian tax law requirements.</p>
+        </div>
 
-    <h2 id="contact">8. Contact</h2>
-    <p>Questions about this policy? Contact us at <a href="mailto:legal@onpitch.com.au">legal@onpitch.com.au</a> or write to: Pitch. Pty Ltd, Adelaide SA 5000, Australia.</p>
-  </div>
+        <div class="doc-section" id="contact">
+          <h2>8. Contact</h2>
+          <p>Questions about this policy? Contact us at <a href="mailto:legal@onpitch.com.au">legal@onpitch.com.au</a> or write to: Pitch. Pty Ltd, Adelaide SA 5000, Australia.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <button class="back-to-top" id="btt" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Back to top">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 13V3M3.5 7L8 2.5L12.5 7"/></svg>
+  </button>
+
+  <script>
+    (function() {
+      var tocLinks = Array.from(document.querySelectorAll('.toc-list a'));
+      var sections = tocLinks.map(function(a) { return document.querySelector(a.getAttribute('href')); });
+
+      function setActive(el) {
+        tocLinks.forEach(function(a) { a.classList.remove('active'); });
+        if (el) el.classList.add('active');
+      }
+
+      function onScroll() {
+        var scrollY = window.scrollY + 120;
+        var current = null;
+        sections.forEach(function(sec) {
+          if (sec && sec.offsetTop <= scrollY) current = sec;
+        });
+        var idx = sections.indexOf(current);
+        setActive(idx >= 0 ? tocLinks[idx] : null);
+      }
+
+      var btt = document.getElementById('btt');
+      function onScrollAll() {
+        onScroll();
+        btt.classList.toggle('visible', window.scrollY > 400);
+      }
+      window.addEventListener('scroll', onScrollAll, { passive: true });
+      onScrollAll();
+    })();
+  </script>
 
   <footer>
     <div class="footer-main">
@@ -215,7 +323,7 @@ fetch('/api/me',{credentials:'include'}).then(r=>r.ok?r.json():null).then(d=>{
     const li=document.getElementById('nav-loggedin');if(li)li.remove();
     const nav=document.querySelector('.navbar'),ham=nav&&nav.querySelector('.nav-hamburger');
     const fn=d.user.first_name||d.user.business_name||'Account';
-    const rightHtml='<div style="display:flex;align-items:center;gap:10px;"><div style="width:32px;height:32px;border-radius:50%;background:#E8500A;display:flex;align-items:center;justify-content:center;font-size:14px;">🍜</div><span style="color:#FDF4E7;font-size:14px;font-weight:600;">'+fn+'</span><button onclick="fetch(\'/api/logout\',{method:\'POST\',credentials:\'include\'}).then(()=>location.href=\'/\')" style="background:none;border:1px solid #ffffff22;color:#A89880;font-size:13px;padding:4px 12px;border-radius:6px;cursor:pointer;">Sign out</button></div>';
+    const rightHtml='<div style="display:flex;align-items:center;gap:10px;"><div style="width:32px;height:32px;border-radius:50%;background:#E8500A;display:flex;align-items:center;justify-content:center;font-size:14px;">&#127836;</div><span style="color:#FDF4E7;font-size:14px;font-weight:600;">'+fn+'</span><button onclick="fetch(\'/api/logout\',{method:\'POST\',credentials:\'include\'}).then(()=>location.href=\'/\')" style="background:none;border:1px solid #ffffff22;color:#A89880;font-size:13px;padding:4px 12px;border-radius:6px;cursor:pointer;">Sign out</button></div>';
     if(ham)ham.insertAdjacentHTML('beforebegin',rightHtml);
     else if(nav)nav.insertAdjacentHTML('beforeend',rightHtml);
     return;
