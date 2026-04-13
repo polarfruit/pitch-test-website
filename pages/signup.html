@@ -82,14 +82,14 @@ h1 {
 .cards {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 14px;
+  gap: 16px;
   margin-bottom: 32px;
 }
 
 .cards-business {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 14px;
+  gap: 16px;
 }
 
 .role-card {
@@ -165,9 +165,9 @@ h1 {
 .role-card.vendor:hover { border-color: #E8500A70; box-shadow: 0 12px 40px #E8500A22, 0 2px 8px #00000040; }
 
 /* Organiser card accent */
-.role-card.organiser { border-color: #2D8B5520; }
-.role-card.organiser:hover { border-color: #2D8B5570; box-shadow: 0 12px 40px #2D8B5518, 0 2px 8px #00000040; }
-.role-card.organiser .rc-cta { color: var(--herb); }
+.role-card.organiser { border-color: #E8500A20; }
+.role-card.organiser:hover { border-color: #E8500A70; box-shadow: 0 12px 40px #E8500A22, 0 2px 8px #00000040; }
+.role-card.organiser .rc-cta { color: var(--ember); }
 
 @media (max-width: 520px) {
   .role-card.foodie { flex-direction: column; padding: 28px; }
@@ -197,7 +197,7 @@ h1 {
     <a href="/signup/foodie" class="role-card foodie">
       <div class="rc-emoji">🍜</div>
       <div class="rc-content">
-        <div class="rc-badge">Most popular</div>
+        <div class="rc-badge">Free forever</div>
         <div class="rc-label">I'm a Foodie</div>
         <p class="rc-desc">Discover markets, follow vendors, and never miss what's on near you.</p>
         <span class="rc-cta">
@@ -223,9 +223,9 @@ h1 {
         <div class="rc-emoji">🎪</div>
         <div class="rc-label">I'm an Organiser</div>
         <p class="rc-desc">Post events, browse verified food vendors, and build the perfect market or festival lineup.</p>
-        <span class="rc-cta" style="color:var(--herb);">
+        <span class="rc-cta">
           Create organiser account
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7 3l4 4-4 4" stroke="#2D8B55" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7h8M7 3l4 4-4 4" stroke="#E8500A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </span>
       </a>
     </div>
