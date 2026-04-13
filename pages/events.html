@@ -651,7 +651,7 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
   <div class="events-grid" id="events-grid"></div>
 
   <!-- Map view -->
-  <div id="map-view">
+  <div id="map-view" style="display:none">
     <div id="map-canvas"></div>
   </div>
 
@@ -1052,6 +1052,7 @@ function setView(v) {
   document.getElementById('pagination').style.display  = v === 'list' ? '' : 'none';
   const mapEl = document.getElementById('map-view');
   if (v === 'map') {
+    mapEl.style.display = 'block';
     mapEl.classList.add('active');
     // Update URL state
     const url = new URL(window.location);
@@ -1059,6 +1060,7 @@ function setView(v) {
     history.replaceState(null, '', url);
     initMap();
   } else {
+    mapEl.style.display = 'none';
     mapEl.classList.remove('active');
     closeDrawer();
     const url = new URL(window.location);
