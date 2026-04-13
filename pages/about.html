@@ -84,8 +84,8 @@
 
     /* Team */
     .team-section { padding:0 52px 80px;max-width:1100px;margin:0 auto; }
-    .team-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:40px; }
-    @media(max-width:700px){.team-grid{grid-template-columns:1fr;}}
+    .team-grid { display:flex;justify-content:center;margin-top:40px; }
+    .team-card { max-width:360px;width:100%; }
     .team-card { background:var(--char);border:1px solid #ffffff08;border-radius:16px;padding:32px;text-align:center; }
     .avatar { width:64px;height:64px;border-radius:50%;background:var(--ember-bg);border:2px solid rgba(232,80,10,0.25);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-family:var(--fd);font-size:22px;font-weight:900;color:var(--ember); }
     .team-card h3 { font-family:var(--fd);font-size:18px;font-weight:900;letter-spacing:-0.02em;margin-bottom:4px; }
@@ -211,22 +211,10 @@
       </div>
       <div class="team-grid">
         <div class="team-card">
-          <div class="avatar">JH</div>
-          <h3>Jesse Hart</h3>
-          <div class="role">Co-founder & CEO</div>
-          <p>Former market vendor turned product builder. Jesse ran a wood-fired pizza stall at Adelaide markets for three years before co-founding Pitch.</p>
-        </div>
-        <div class="team-card">
-          <div class="avatar">ML</div>
-          <h3>Maya Loureiro</h3>
-          <div class="role">Co-founder & CTO</div>
-          <p>Software engineer with a background in marketplace platforms. Built Pitch.'s matching engine and verification system.</p>
-        </div>
-        <div class="team-card">
-          <div class="avatar">TN</div>
-          <h3>Tom Nguyen</h3>
-          <div class="role">Head of Community</div>
-          <p>Event organiser and food writer based in Adelaide. Tom manages relationships with market organisers and supports vendors getting started on the platform.</p>
+          <div class="avatar">LM</div>
+          <h3>Leroy Morales</h3>
+          <div class="role">Founder</div>
+          <p>Adelaide-based and passionate about the local food scene. Leroy built Pitch. to solve the disconnect between food vendors looking for the right markets and organisers looking for the right vendors.</p>
         </div>
       </div>
     </section>
