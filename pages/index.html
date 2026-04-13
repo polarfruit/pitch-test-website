@@ -91,11 +91,10 @@
 }
 </script>
 
-<link rel="preload" href="/fonts/fraunces.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="preload" href="/fonts/instrument-sans.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="prefetch" href="/how-it-works">
-<link rel="prefetch" href="/events">
-<link rel="prefetch" href="/vendors">
+<link rel="preload" href="/fonts/fraunces.woff2" as="font" type="font/woff2" crossorigin fetchpriority="high">
+<link rel="preload" href="/fonts/instrument-sans.woff2" as="font" type="font/woff2" crossorigin fetchpriority="high">
+<link rel="dns-prefetch" href="https://images.unsplash.com">
+<link rel="preconnect" href="https://images.unsplash.com" crossorigin>
 <link rel="stylesheet" href="/fonts/fonts.css">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1962,7 +1961,6 @@ const MOCK_CAT_COUNTS = {
       </div>
       <ul class="footer-links">
         <li><a href="mailto:hello@onpitch.com.au">hello@onpitch.com.au</a></li>
-        <li><a href="/newsletter">Newsletter</a></li>
       </ul>
     </div>
   </div>
@@ -2136,45 +2134,8 @@ document.addEventListener('click', (e) => {
   if (dd && !e.target.closest('.nav-user')) dd.style.display = 'none';
 });
 
-// Auth-aware navbar — logged-out buttons show immediately (no delay).
-// Only swap to logged-in state if user is authenticated.
-(function() {
-  const lo = document.getElementById('nav-loggedout');
-  const li = document.getElementById('nav-loggedin');
-  function showPublicNav(){if(lo)lo.style.display='';}
-  function applyUser(d) {
-    if (!d || !d.user) { showPublicNav(); return; }
-    if (d.user.role === 'foodie') {
-      const nl = document.querySelector('.nav-links');
-      if (nl) { nl.innerHTML = '<li><a href="/discover">My Feed</a></li><li><a href="/events">All Events</a></li><li><a href="/vendors">Vendors</a></li>'; }
-      if (lo) lo.remove();
-      if (li) li.remove();
-      const nav = document.querySelector('.navbar');
-      const ham = nav && nav.querySelector('.nav-hamburger');
-      const rightHtml = `<div style="display:flex;align-items:center;gap:10px;"><div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--text-mid);"><div style="width:28px;height:28px;border-radius:50%;background:var(--ember);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;">🍜</div><span>${d.user.first_name || 'Account'}</span></div><button onclick="fetch('/api/logout',{method:'POST'}).then(()=>location.href='/')" style="font-size:13px;font-weight:600;color:var(--text-lo);background:transparent;border:none;cursor:pointer;padding:8px;font-family:inherit;">Sign out</button></div>`;
-      if (ham) ham.insertAdjacentHTML('beforebegin', rightHtml);
-      else if (nav) nav.insertAdjacentHTML('beforeend', rightHtml);
-      return;
-    }
-    if (lo) lo.style.display = 'none';
-    if (li) li.style.display = 'flex';
-    const lbl = document.getElementById('nav-user-label');
-    const dashLink = document.getElementById('nav-dashboard-link');
-    if (lbl) {
-      const u = d.user;
-      lbl.textContent = (u.vendor && u.vendor.trading_name)
-        || (u.organiser && u.organiser.org_name)
-        || u.first_name
-        || u.email
-        || 'Account';
-    }
-    if (dashLink) dashLink.href = d.user.role === 'organiser' ? '/dashboard/organiser' : '/dashboard/vendor';
-  }
-  // Use server-injected user data if available, otherwise fetch
-  const _pu = window.__PITCH_USER__;
-  if (_pu) { applyUser({ user: _pu }); }
-  else { fetch('/api/me').then(r => r.json()).then(applyUser).catch(() => showPublicNav()); }
-})();
+// Auth-aware navbar — handled by inline script right after nav HTML.
+// Logged-out buttons visible by default; __PITCH_USER__ swaps if logged in.
 
 // Smart stat formatter — always shows "+" to signal growing numbers
 function fmtStat(n) {
