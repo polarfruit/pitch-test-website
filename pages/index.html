@@ -917,15 +917,15 @@ body::before {
 .vc-avatar {
   width: 48px; height: 48px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-family: var(--fd); font-size: 17px; font-weight: 900;
+  font-size: 24px; line-height: 1;
   flex-shrink: 0;
 }
-.av-a { background: #E8500A18; color: var(--ember); }
-.av-b { background: #2D8B5518; color: var(--herb); }
-.av-c { background: #2B5BA818; color: var(--slate); }
-.av-d { background: #C9840A18; color: var(--gold); }
-.av-e { background: #C0392B18; color: var(--terra); }
-.av-f { background: #E8500A18; color: #b34008; }
+.av-a { background: linear-gradient(135deg,#2D1A0A 0%,#5C2A08 100%); }
+.av-b { background: linear-gradient(135deg,#0A1A2D 0%,#0A3060 100%); }
+.av-c { background: linear-gradient(135deg,#0A1A2D 0%,#0A3060 100%); }
+.av-d { background: linear-gradient(135deg,#1A2D0A 0%,#2D5C10 100%); }
+.av-e { background: linear-gradient(135deg,#1A140A 0%,#3D2A10 100%); }
+.av-f { background: linear-gradient(135deg,#2D1A2A 0%,#5C2A52 100%); }
 
 .vc-info { flex: 1; min-width: 0; }
 .vc-name { font-family: var(--fd); font-size: 15px; font-weight: 800; color: var(--coal); display: flex; align-items: center; gap: 6px; }
@@ -969,7 +969,7 @@ body::before {
 .cat-tile:hover { transform: translateY(-4px); border-color: #E8500A28; background: #E8500A08; }
 .cat-emoji { font-size: 32px; margin-bottom: 12px; line-height: 1; }
 .cat-name { font-size: 12px; font-weight: 700; color: var(--text-hi); margin-bottom: 4px; letter-spacing: 0.01em; }
-.cat-count { font-size: 10px; color: var(--text-lo); }
+.cat-count { font-size: 11px; color: var(--text-mid); }
 
 /* ── HOW IT WORKS PREVIEW ─────────────────────────────────────────────────── */
 .hiw-preview-grid {
@@ -1063,7 +1063,7 @@ body::before {
 .hiw-step-desc { font-size: 13px; color: var(--text-lo); line-height: 1.65; }
 
 /* ── TRUST SECTION ────────────────────────────────────────────────────────── */
-.trust-section { background: var(--char); border-top: 1px solid #ffffff06; }
+.trust-section { background: var(--coal); border-top: 1px solid #ffffff0a; }
 
 .trust-inner {
   max-width: 1320px; margin: 0 auto;
@@ -1372,7 +1372,7 @@ footer {
 <div class="tw-inner">
   <div class="tw-header">
     <div class="tw-live-dot"></div>
-    <h2 class="sec-title">This <em>weekend.</em></h2>
+    <h2 class="sec-title" id="tw-title">Coming <em>up.</em></h2>
     <div class="tw-subtitle" id="tw-date-range"></div>
   </div>
   <div class="tw-scroll-wrap">
@@ -1506,7 +1506,7 @@ footer {
       <!-- Set A -->
       <a href="/vendors/smoky-joes-bbq" class="vendor-card">
         <div class="vc-head">
-          <div class="vc-avatar av-a">SJ</div>
+          <div class="vc-avatar" style="background:linear-gradient(135deg,#2D1A0A 0%,#5C2A08 100%);">🔥</div>
           <div class="vc-info">
             <div class="vc-name">Smoky Joe's BBQ <span class="vc-verified">✓</span></div>
             <div class="vc-sub">Food Truck · Norwood, SA</div>
@@ -1519,7 +1519,7 @@ footer {
       </a>
       <a href="/vendors/taco-loco" class="vendor-card">
         <div class="vc-head">
-          <div class="vc-avatar av-d">TL</div>
+          <div class="vc-avatar" style="background:linear-gradient(135deg,#1A2D0A 0%,#2D5C10 100%);">🌮</div>
           <div class="vc-info">
             <div class="vc-name">Taco Loco <span class="vc-verified">✓</span></div>
             <div class="vc-sub">Pop-up Stall · Glenelg, SA</div>
@@ -1532,7 +1532,7 @@ footer {
       </a>
       <a href="/vendors/wok-and-roll" class="vendor-card">
         <div class="vc-head">
-          <div class="vc-avatar av-c">WR</div>
+          <div class="vc-avatar" style="background:linear-gradient(135deg,#0A1A2D 0%,#0A3060 100%);">🥢</div>
           <div class="vc-info">
             <div class="vc-name">Wok &amp; Roll <span class="vc-verified">✓</span></div>
             <div class="vc-sub">Food Truck · Adelaide CBD, SA</div>
@@ -1545,7 +1545,7 @@ footer {
       </a>
       <a href="/vendors/the-dessert-lab" class="vendor-card">
         <div class="vc-head">
-          <div class="vc-avatar av-f">DL</div>
+          <div class="vc-avatar" style="background:linear-gradient(135deg,#2D1A2A 0%,#5C2A52 100%);">🍰</div>
           <div class="vc-info">
             <div class="vc-name">The Dessert Lab <span class="vc-verified">✓</span></div>
             <div class="vc-sub">Cart · North Adelaide, SA</div>
@@ -1558,7 +1558,7 @@ footer {
       </a>
       <a href="/vendors/ocean-and-fire" class="vendor-card">
         <div class="vc-head">
-          <div class="vc-avatar av-b">OF</div>
+          <div class="vc-avatar" style="background:linear-gradient(135deg,#0A1A2D 0%,#0A3060 100%);">🦞</div>
           <div class="vc-info">
             <div class="vc-name">Ocean &amp; Fire <span class="vc-verified">✓</span></div>
             <div class="vc-sub">Pop-up Stall · Glenelg, SA</div>
@@ -1571,12 +1571,12 @@ footer {
       </a>
       <a href="/vendors/beanery-coffee" class="vendor-card">
         <div class="vc-head">
-          <div class="vc-avatar av-e">BC</div>
+          <div class="vc-avatar" style="background:linear-gradient(135deg,#1A140A 0%,#3D2A10 100%);">☕</div>
           <div class="vc-info">
             <div class="vc-name">Beanery Coffee Co.</div>
             <div class="vc-sub">Cart · Unley, SA</div>
           </div>
-          <span class="vc-plan-badge bdg-basic">Basic</span>
+          <span class="vc-plan-badge bdg-basic">Starter</span>
         </div>
         <div class="vc-stars">★★★★★ <span>4.7 · 33 reviews</span></div>
         <div class="vc-events">35 events completed</div>
@@ -1584,12 +1584,12 @@ footer {
       </a>
       <a href="/vendors/brewski-burgers" class="vendor-card">
         <div class="vc-head">
-          <div class="vc-avatar av-a">BB</div>
+          <div class="vc-avatar" style="background:linear-gradient(135deg,#2D1A0A 0%,#5C2A08 100%);">🍔</div>
           <div class="vc-info">
             <div class="vc-name">Brewski Burgers</div>
             <div class="vc-sub">Food Truck · Port Adelaide, SA</div>
           </div>
-          <span class="vc-plan-badge bdg-basic">Basic</span>
+          <span class="vc-plan-badge bdg-basic">Starter</span>
         </div>
         <div class="vc-stars">★★★★☆ <span>4.5 · 19 reviews</span></div>
         <div class="vc-events">12 events completed</div>
@@ -1597,12 +1597,12 @@ footer {
       </a>
       <a href="/vendors/punjab-palace" class="vendor-card">
         <div class="vc-head">
-          <div class="vc-avatar av-d">PP</div>
+          <div class="vc-avatar" style="background:linear-gradient(135deg,#2D0A0A 0%,#601818 100%);">🍛</div>
           <div class="vc-info">
             <div class="vc-name">Punjab Palace</div>
             <div class="vc-sub">Food Truck · Elizabeth, SA</div>
           </div>
-          <span class="vc-plan-badge bdg-basic">Basic</span>
+          <span class="vc-plan-badge bdg-basic">Starter</span>
         </div>
         <div class="vc-stars">★★★★★ <span>4.6 · 27 reviews</span></div>
         <div class="vc-events">22 events completed</div>
@@ -1611,7 +1611,7 @@ footer {
       <!-- Set B (duplicate for seamless loop) -->
       <a href="/vendors/smoky-joes-bbq" class="vendor-card">
         <div class="vc-head">
-          <div class="vc-avatar av-a">SJ</div>
+          <div class="vc-avatar" style="background:linear-gradient(135deg,#2D1A0A 0%,#5C2A08 100%);">🔥</div>
           <div class="vc-info">
             <div class="vc-name">Smoky Joe's BBQ <span class="vc-verified">✓</span></div>
             <div class="vc-sub">Food Truck · Norwood, SA</div>
@@ -1624,7 +1624,7 @@ footer {
       </a>
       <a href="/vendors/taco-loco" class="vendor-card">
         <div class="vc-head">
-          <div class="vc-avatar av-d">TL</div>
+          <div class="vc-avatar" style="background:linear-gradient(135deg,#1A2D0A 0%,#2D5C10 100%);">🌮</div>
           <div class="vc-info">
             <div class="vc-name">Taco Loco <span class="vc-verified">✓</span></div>
             <div class="vc-sub">Pop-up Stall · Glenelg, SA</div>
@@ -1637,7 +1637,7 @@ footer {
       </a>
       <a href="/vendors/wok-and-roll" class="vendor-card">
         <div class="vc-head">
-          <div class="vc-avatar av-c">WR</div>
+          <div class="vc-avatar" style="background:linear-gradient(135deg,#0A1A2D 0%,#0A3060 100%);">🥢</div>
           <div class="vc-info">
             <div class="vc-name">Wok &amp; Roll <span class="vc-verified">✓</span></div>
             <div class="vc-sub">Food Truck · Adelaide CBD, SA</div>
@@ -1650,7 +1650,7 @@ footer {
       </a>
       <a href="/vendors/the-dessert-lab" class="vendor-card">
         <div class="vc-head">
-          <div class="vc-avatar av-f">DL</div>
+          <div class="vc-avatar" style="background:linear-gradient(135deg,#2D1A2A 0%,#5C2A52 100%);">🍰</div>
           <div class="vc-info">
             <div class="vc-name">The Dessert Lab <span class="vc-verified">✓</span></div>
             <div class="vc-sub">Cart · North Adelaide, SA</div>
@@ -1663,7 +1663,7 @@ footer {
       </a>
       <a href="/vendors/ocean-and-fire" class="vendor-card">
         <div class="vc-head">
-          <div class="vc-avatar av-b">OF</div>
+          <div class="vc-avatar" style="background:linear-gradient(135deg,#0A1A2D 0%,#0A3060 100%);">🦞</div>
           <div class="vc-info">
             <div class="vc-name">Ocean &amp; Fire <span class="vc-verified">✓</span></div>
             <div class="vc-sub">Pop-up Stall · Glenelg, SA</div>
@@ -1676,12 +1676,12 @@ footer {
       </a>
       <a href="/vendors/beanery-coffee" class="vendor-card">
         <div class="vc-head">
-          <div class="vc-avatar av-e">BC</div>
+          <div class="vc-avatar" style="background:linear-gradient(135deg,#1A140A 0%,#3D2A10 100%);">☕</div>
           <div class="vc-info">
             <div class="vc-name">Beanery Coffee Co.</div>
             <div class="vc-sub">Cart · Unley, SA</div>
           </div>
-          <span class="vc-plan-badge bdg-basic">Basic</span>
+          <span class="vc-plan-badge bdg-basic">Starter</span>
         </div>
         <div class="vc-stars">★★★★★ <span>4.7 · 33 reviews</span></div>
         <div class="vc-events">35 events completed</div>
@@ -1689,12 +1689,12 @@ footer {
       </a>
       <a href="/vendors/brewski-burgers" class="vendor-card">
         <div class="vc-head">
-          <div class="vc-avatar av-a">BB</div>
+          <div class="vc-avatar" style="background:linear-gradient(135deg,#2D1A0A 0%,#5C2A08 100%);">🍔</div>
           <div class="vc-info">
             <div class="vc-name">Brewski Burgers</div>
             <div class="vc-sub">Food Truck · Port Adelaide, SA</div>
           </div>
-          <span class="vc-plan-badge bdg-basic">Basic</span>
+          <span class="vc-plan-badge bdg-basic">Starter</span>
         </div>
         <div class="vc-stars">★★★★☆ <span>4.5 · 19 reviews</span></div>
         <div class="vc-events">12 events completed</div>
@@ -1702,12 +1702,12 @@ footer {
       </a>
       <a href="/vendors/punjab-palace" class="vendor-card">
         <div class="vc-head">
-          <div class="vc-avatar av-d">PP</div>
+          <div class="vc-avatar" style="background:linear-gradient(135deg,#2D0A0A 0%,#601818 100%);">🍛</div>
           <div class="vc-info">
             <div class="vc-name">Punjab Palace</div>
             <div class="vc-sub">Food Truck · Elizabeth, SA</div>
           </div>
-          <span class="vc-plan-badge bdg-basic">Basic</span>
+          <span class="vc-plan-badge bdg-basic">Starter</span>
         </div>
         <div class="vc-stars">★★★★★ <span>4.6 · 27 reviews</span></div>
         <div class="vc-events">22 events completed</div>
@@ -2058,7 +2058,13 @@ function filterByCat(cat, btn) {
   }
 
   // Render immediately from static data so carousel is never blank on load
-  const _staticEvents = (window.PITCH_EVENTS || []).slice(0, 3);
+  // Show next 5 upcoming events from static data
+  const _today = new Date().toISOString().slice(0,10);
+  const _upcoming = (window.PITCH_EVENTS || [])
+    .filter(e => e.date >= _today)
+    .sort((a,b) => a.date.localeCompare(b.date))
+    .slice(0, 5);
+  const _staticEvents = _upcoming.length >= 2 ? _upcoming : (window.PITCH_EVENTS || []).slice(0, 5);
   if (_staticEvents.length) {
     if (dateEl) dateEl.textContent = '';
     renderTWCards(_staticEvents);
@@ -2070,14 +2076,27 @@ function filterByCat(cat, btn) {
       if (!e.date_sort) return false;
       return e.date_sort >= friStr && e.date_sort <= sunStr;
     });
-    if (weekendEvents.length) {
+    const titleEl = document.getElementById('tw-title');
+    if (weekendEvents.length >= 2) {
+      if (titleEl) titleEl.innerHTML = 'This <em>weekend.</em>';
       if (dateEl) dateEl.textContent = '· ' + fmt(fri) + ' – ' + fmt(sun);
       const allEvents = window.PITCH_EVENTS || [];
       const evMap = {};
       allEvents.forEach(e => { evMap[e.id] = e; });
       renderTWCards(weekendEvents.map(ev => ({ ...evMap[ev.slug], ...ev })));
+    } else {
+      // Not enough weekend events — show next upcoming instead
+      const upcoming = (data.events || [])
+        .filter(e => e.date_sort && e.date_sort >= _today)
+        .sort((a,b) => a.date_sort.localeCompare(b.date_sort))
+        .slice(0, 5);
+      if (upcoming.length) {
+        const allEvents = window.PITCH_EVENTS || [];
+        const evMap = {};
+        allEvents.forEach(e => { evMap[e.id] = e; });
+        renderTWCards(upcoming.map(ev => ({ ...evMap[ev.slug], ...ev })));
+      }
     }
-    // If no weekend events, static cards already showing — leave them
   }).catch(() => {
     // Static cards already showing — nothing to do
   });
@@ -2160,15 +2179,29 @@ fetch('/api/stats').then(r => r.json()).then(d => {
 
 // Dynamic vendor marquee — replace hardcoded cards with real DB data
 (function() {
-  const AVATAR_COLORS = ['av-a','av-b','av-c','av-d','av-e','av-f','av-g','av-h'];
   const FALLBACK_TAGS = [['Food','Market','Adelaide'],['Gourmet','Local','SA'],['Events','Catering','Fresh']];
+  const FALLBACK_BG = [
+    'linear-gradient(135deg,#2D1A0A 0%,#5C2A08 100%)',
+    'linear-gradient(135deg,#0A1A2D 0%,#0A3060 100%)',
+    'linear-gradient(135deg,#1A2D0A 0%,#2D5C10 100%)',
+    'linear-gradient(135deg,#2D1A2A 0%,#5C2A52 100%)',
+    'linear-gradient(135deg,#1A140A 0%,#3D2A10 100%)',
+    'linear-gradient(135deg,#2D0A0A 0%,#601818 100%)',
+  ];
 
-  function initials(name) {
-    if (!name) return '??';
-    const parts = name.trim().split(/\s+/);
-    return parts.length >= 2
-      ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
-      : name.slice(0,2).toUpperCase();
+  // Build a lookup from PITCH_VENDORS for emoji + bg
+  const vendorLookup = {};
+  (window.PITCH_VENDORS || []).forEach(pv => {
+    vendorLookup[pv.name.toLowerCase()] = pv;
+  });
+
+  function getVendorEmoji(name) {
+    const match = vendorLookup[(name || '').toLowerCase()];
+    return match ? match.emoji : '🍴';
+  }
+  function getVendorBg(name, idx) {
+    const match = vendorLookup[(name || '').toLowerCase()];
+    return match ? match.bg : FALLBACK_BG[idx % FALLBACK_BG.length];
   }
 
   function planBadge(plan) {
@@ -2182,12 +2215,13 @@ fetch('/api/stats').then(r => r.json()).then(d => {
       try { const t = JSON.parse(v.cuisine_tags); return Array.isArray(t) && t.length ? t : FALLBACK_TAGS[idx % FALLBACK_TAGS.length]; }
       catch(e) { return FALLBACK_TAGS[idx % FALLBACK_TAGS.length]; }
     })();
-    const avCls  = AVATAR_COLORS[idx % AVATAR_COLORS.length];
+    const emoji = getVendorEmoji(v.trading_name);
+    const bg = getVendorBg(v.trading_name, idx);
     const sub    = [v.setup_type, v.suburb && v.state ? v.suburb + ', ' + v.state : v.suburb || v.state].filter(Boolean).join(' · ');
     const tagHtml = tags.slice(0,3).map(t => `<span class="vc-tag">${t}</span>`).join('');
     return `<a href="/vendors/${v.user_id}" class="vendor-card">
       <div class="vc-head">
-        <div class="vc-avatar ${avCls}">${initials(v.trading_name)}</div>
+        <div class="vc-avatar" style="background:${bg};">${emoji}</div>
         <div class="vc-info">
           <div class="vc-name">${v.trading_name} <span class="vc-verified">✓</span></div>
           <div class="vc-sub">${sub || 'Adelaide, SA'}</div>
