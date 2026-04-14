@@ -7443,7 +7443,7 @@ function previewMenuPhoto() {
 function handleMenuPhotoFile(input) {
   const file = input.files[0];
   if (!file) return;
-  if (file.size > 5 * 1024 * 1024) { alert('Photo must be under 5MB.'); input.value = ''; return; }
+  if (file.size > 5 * 1024 * 1024) { showMenuToast('Photo must be under 5 MB', false); input.value = ''; return; }
   const reader = new FileReader();
   reader.onload = function(e) {
     const dataUrl = e.target.result;
@@ -10105,7 +10105,7 @@ function previewMenuPhoto() {
 function handleMenuPhotoFile(input) {
   const file = input.files[0];
   if (!file) return;
-  if (file.size > 5 * 1024 * 1024) { alert('Photo must be under 5MB.'); input.value = ''; return; }
+  if (file.size > 5 * 1024 * 1024) { showMenuToast('Photo must be under 5 MB', false); input.value = ''; return; }
   const reader = new FileReader();
   reader.onload = function(e) {
     const dataUrl = e.target.result;
@@ -12782,7 +12782,7 @@ function previewMenuPhoto() {
 function handleMenuPhotoFile(input) {
   const file = input.files[0];
   if (!file) return;
-  if (file.size > 5 * 1024 * 1024) { alert('Photo must be under 5MB.'); input.value = ''; return; }
+  if (file.size > 5 * 1024 * 1024) { showMenuToast('Photo must be under 5 MB', false); input.value = ''; return; }
   const reader = new FileReader();
   reader.onload = function(e) {
     const dataUrl = e.target.result;
