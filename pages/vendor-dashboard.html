@@ -5430,11 +5430,14 @@ function renderDocuments(uploadingState, uploadingKey) {
   const hintEl = document.getElementById('doc-hint');
   if (hintEl) {
     if (missing > 0) {
-      hintEl.textContent = missing === 1
-        ? '1 document remaining — upload it to complete your profile.'
-        : missing + ' documents remaining — upload them to complete your profile.';
+      hintEl.className = 'doc-remaining';
+      hintEl.innerHTML = `<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M7 4v3.5M7 9.5v.01" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg> ` +
+        (missing === 1
+          ? '1 document remaining — upload it to complete your profile.'
+          : missing + ' documents remaining — upload them to complete your profile.');
     } else {
-      hintEl.textContent = 'All documents uploaded. Your profile is ready for applications.';
+      hintEl.className = 'doc-remaining complete';
+      hintEl.innerHTML = '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M4.5 7l2 2 3-3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg> All documents uploaded — your profile is ready for applications.';
     }
     hintEl.style.display = '';
   }
