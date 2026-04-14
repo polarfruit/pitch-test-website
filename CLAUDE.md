@@ -53,6 +53,16 @@
 - **Navigation must go somewhere.** Every link, every clickable name, every "View" or "Manage" button must route to a real page or open a real panel. If the destination doesn't exist yet, build it — don't leave a dead link.
 - **Forms must submit.** If there's a form, it must validate, POST to the backend, handle errors, and show success/failure feedback.
 
+## Vercel Hosting (Hobby Plan)
+- This project is deployed on **Vercel Hobby (free) plan**. Respect all Hobby tier limits:
+  - **Cron jobs:** Only `0 x * * *` (once-per-day) schedules allowed. Never use `*/5`, `*/10`, `*/15`, or any sub-daily cron — it will silently block ALL deployments.
+  - **Serverless functions:** 100 GB-hours/month, 10s default timeout (30s max with config).
+  - **Bandwidth:** 100 GB/month.
+  - **Build time:** 45 min max per build.
+- **vercel.json crons:** Before adding or modifying cron schedules, verify they run at most once per day. If you need more frequent execution, use an external cron service (e.g. cron-job.org) to hit an API endpoint instead.
+- **Deployments:** Use `npx vercel --prod --yes` to deploy via CLI if git-triggered deploys fail. The deploy hook URL is: `https://api.vercel.com/v1/integrations/deploy/prj_7wnDlupRTLEfKx6E1U8mJX2nngXa/ypF1Fnqf3w`
+- **Git email:** Must be `polarfruit@outlook.com` — already set globally. Never change or override this. Mismatched emails will cause "Git Email Invalid" deploy failures.
+
 ## Hard Rules
 - Do not add sections, features, or content not in the reference
 - Do not "improve" a reference design — match it
