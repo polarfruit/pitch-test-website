@@ -4369,7 +4369,15 @@ async function initDashboard() {
   if (_upgPlan && ['pro','growth'].includes(_upgPlan)) {
     history.replaceState(null, '', window.location.pathname);
     const planLabel = _upgPlan === 'pro' ? 'Pro' : 'Growth';
-    setTimeout(() => showToast(`Welcome to ${planLabel}! Your subscription is now active.`, 'success'), 600);
+    _currentSubPlan = _upgPlan;
+    if (window.__PITCH_USER__?.vendor) window.__PITCH_USER__.vendor.plan = _upgPlan;
+    const labels = { free: '📋 Starter', pro: '⭐ Pro', growth: '🔥 Growth' };
+    const pill = document.querySelector('.plan-pill');
+    if (pill) pill.textContent = labels[_upgPlan] || '📋 Starter';
+    setTimeout(() => {
+      showToast(`Welcome to ${planLabel}! Your subscription is now active.`, 'success');
+      applySubscriptionGating(_upgPlan);
+    }, 600);
   }
 
   // Capture deep-link params IMMEDIATELY before any await (so they can't be lost)

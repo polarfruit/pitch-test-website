@@ -1240,8 +1240,23 @@ app.post('/api/profile/plan', requireAuth, async (req, res) => {
       return res.status(403).json({ error: 'Your plan is managed by an administrator. Contact support to change your plan.' });
     }
     const currentPlan = vendor.plan || 'free';
-    console.log('[plan] Request:', { userId: req.session.userId, currentPlan, requestedPlan: plan });
-    if (plan === currentPlan) return res.json({ ok: true, plan });
+    console.log('[plan] Request:', { userId: req.session.userId, currentPlan, requestedPlan: plan, hasStripeSub: !!vendor.stripe_subscription_id });
+
+    // If already on this plan AND has a Stripe subscription (or is free), nothing to do
+    if (plan === currentPlan && (plan === 'free' || vendor.stripe_subscription_id)) {
+      return res.json({ ok: true, plan });
+    }
+
+    // If on a paid plan without a Stripe subscription, reset to free first
+    // (this fixes plans set by the old fallback that bypassed payment)
+    const effectivePlan = (currentPlan !== 'free' && !vendor.stripe_subscription_id) ? 'free' : currentPlan;
+    if (effectivePlan !== currentPlan) {
+      console.log('[plan] Resetting phantom plan:', currentPlan, '→ free (no Stripe subscription)');
+      await stmts.updateVendorPlan.run('free', req.session.userId);
+    }
+
+    // If requesting the corrected plan (free→free), nothing to do
+    if (plan === effectivePlan) return res.json({ ok: true, plan });
 
     // ── Upgrade via Stripe Checkout ──
     const stripe = await getStripe();
