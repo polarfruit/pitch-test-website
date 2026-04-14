@@ -215,12 +215,10 @@ body::before {
 @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
 /* ── FOOTER ───────────────────────────────────────────────────────────────── */
-footer { background: var(--char); border-top: 1px solid #ffffff07; position: relative; z-index: 1; }
-.footer-inner { max-width: 1240px; margin: 0 auto; padding: 28px 52px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
-.footer-copy { font-size: 12px; color: var(--text-lo); }
-.footer-links-row { display: flex; gap: 20px; }
-.footer-links-row a { font-size: 12px; color: var(--text-lo); text-decoration: none; transition: color 0.14s; }
-.footer-links-row a:hover { color: var(--text-mid); }
+.site-footer { background:#161210;border-top:1px solid #ffffff06;padding:40px 52px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;position:relative;z-index:1; }
+.site-footer a.foot-link { font-size:13px;color:var(--text-lo);text-decoration:none;transition:color 0.14s; }
+.site-footer a.foot-link:hover { color:var(--text-mid); }
+@media(max-width:480px){ .site-footer { flex-direction:column;align-items:flex-start;gap:20px;padding:32px 24px; } }
 
 /* ── RESPONSIVE ───────────────────────────────────────────────────────────── */
 @media (max-width: 1024px) {
@@ -321,47 +319,16 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
 </div>
 </main>
 
-<footer>
-  <div class="footer-inner" style="flex-direction:column;align-items:stretch;gap:24px;padding:36px 52px 28px;">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:20px;">
-      <div>
-        <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px;">
-          <div style="width:18px;height:18px;border-radius:50%;background:var(--ember);"></div>
-          <span style="font-family:var(--fd);font-size:16px;font-weight:900;color:var(--text-hi);">Pitch.</span>
-        </div>
-        <div style="font-size:12px;color:var(--text-lo);line-height:1.6;max-width:260px;">Australia's marketplace connecting food vendors with event organisers. Based in Adelaide, SA.</div>
-      </div>
-      <div style="display:flex;gap:40px;">
-        <div>
-          <div style="font-size:11px;font-weight:700;color:var(--text-mid);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;">Platform</div>
-          <div style="display:flex;flex-direction:column;gap:7px;">
-            <a href="/events" style="font-size:12px;color:var(--text-lo);text-decoration:none;transition:color 0.14s;">Browse events</a>
-            <a href="/vendors" style="font-size:12px;color:var(--text-lo);text-decoration:none;transition:color 0.14s;">Vendors</a>
-            <a href="/how-it-works" style="font-size:12px;color:var(--text-lo);text-decoration:none;transition:color 0.14s;">How it works</a>
-          </div>
-        </div>
-        <div>
-          <div style="font-size:11px;font-weight:700;color:var(--text-mid);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;">Company</div>
-          <div style="display:flex;flex-direction:column;gap:7px;">
-            <a href="/about" style="font-size:12px;color:var(--text-lo);text-decoration:none;transition:color 0.14s;">About</a>
-            <a href="/contact" style="font-size:12px;color:var(--text-lo);text-decoration:none;transition:color 0.14s;">Contact</a>
-            <a href="/pricing" style="font-size:12px;color:var(--text-lo);text-decoration:none;transition:color 0.14s;">Pricing</a>
-          </div>
-        </div>
-        <div>
-          <div style="font-size:11px;font-weight:700;color:var(--text-mid);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;">Legal</div>
-          <div style="display:flex;flex-direction:column;gap:7px;">
-            <a href="/terms" style="font-size:12px;color:var(--text-lo);text-decoration:none;transition:color 0.14s;">Terms</a>
-            <a href="/privacy" style="font-size:12px;color:var(--text-lo);text-decoration:none;transition:color 0.14s;">Privacy</a>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div style="border-top:1px solid #ffffff07;padding-top:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-      <span class="footer-copy">© 2026 Pitch. Adelaide, Australia.</span>
-      <span style="font-size:11px;color:var(--text-lo);">ABN 00 000 000 000</span>
-    </div>
+<footer class="site-footer">
+  <a href="/" style="font-family:var(--fd);font-size:22px;font-weight:900;color:var(--text-hi);text-decoration:none;letter-spacing:-0.04em;">Pitch<span style="color:var(--ember);">.</span></a>
+  <div style="display:flex;gap:24px;flex-wrap:wrap;">
+    <a href="/about" class="foot-link">About</a>
+    <a href="/pricing" class="foot-link">Pricing</a>
+    <a href="/contact" class="foot-link">Contact</a>
+    <a href="/terms" class="foot-link">Terms</a>
+    <a href="/privacy" class="foot-link">Privacy</a>
   </div>
+  <span style="font-size:12px;color:var(--text-lo);">&copy; 2026 Pitch. Adelaide, Australia.</span>
 </footer>
 
 <div class="action-toast" id="action-toast"></div>
