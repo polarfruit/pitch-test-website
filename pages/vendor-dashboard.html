@@ -6781,120 +6781,126 @@ function renderCalendar() {
 let _historyData = [];
 let _historyFilter = 'all';
 let _historyCatFilter = null;
+let _historyLoaded = false;
+
+function renderHistoryPanel(history) {
+  _historyData = history;
+  const list = document.getElementById('history-list');
+  const statsEl = document.getElementById('history-stats');
+  const bestEl = document.getElementById('history-best');
+  const filtersEl = document.getElementById('history-filters');
+
+  if (!history.length) {
+    if (statsEl) statsEl.style.display = 'none';
+    if (bestEl) bestEl.style.display = 'none';
+    if (filtersEl) filtersEl.style.display = 'none';
+    list.innerHTML = `<div style="text-align:center;padding:48px 20px;">
+      <div style="font-size:36px;margin-bottom:12px;opacity:0.4;">🗓</div>
+      <div style="font-size:14px;font-weight:700;color:var(--text-hi);margin-bottom:6px;">No markets yet</div>
+      <div style="font-size:12px;color:var(--text-lo);line-height:1.6;max-width:300px;margin:0 auto;">Once you've been approved and attended a market through Pitch, your history will appear here.</div>
+      <a href="#" onclick="event.preventDefault();showPanel('browse',null)" style="display:inline-block;margin-top:16px;font-size:12px;font-weight:700;color:var(--ember);text-decoration:none;">Browse events →</a>
+    </div>`;
+    return;
+  }
+
+  const now = new Date();
+  const attended = history.filter(h => h.date_sort && new Date(h.date_sort + 'T00:00:00') < now);
+  const allReviews = history.flatMap(h => h.reviews || []);
+  const avgRating = allReviews.length
+    ? (allReviews.reduce((s, rv) => s + (rv.rating || 0), 0) / allReviews.length).toFixed(1)
+    : '—';
+  const totalFees = attended.reduce((s, h) => s + (h.stall_fee_min || 0), 0);
+
+  if (statsEl) {
+    statsEl.style.display = '';
+    statsEl.innerHTML = `
+      <div class="stat-card ember no-blob"><div class="stat-label">Total Markets</div><div class="stat-value">${history.length}</div></div>
+      <div class="stat-card herb no-blob"><div class="stat-label">Attended</div><div class="stat-value">${attended.length}</div></div>
+      <div class="stat-card gold no-blob"><div class="stat-label">Avg Rating</div><div class="stat-value${avgRating === '—' ? ' muted' : ''}">${avgRating !== '—' ? '★ ' + avgRating : 'N/A'}</div></div>
+      <div class="stat-card slate no-blob"><div class="stat-label">Total Fees</div><div class="stat-value${totalFees <= 0 ? ' muted' : ''}">${totalFees > 0 ? '$' + totalFees.toLocaleString() : '$0'}</div></div>
+    `;
+  }
+
+  if (bestEl) {
+    let bestMarket = null;
+    let bestRating = 0;
+    for (const h of history) {
+      if (h.reviews && h.reviews.length) {
+        const avg = h.reviews.reduce((s, rv) => s + (rv.rating || 0), 0) / h.reviews.length;
+        if (avg > bestRating) { bestRating = avg; bestMarket = h; }
+      }
+    }
+    if (bestMarket) {
+      bestEl.style.display = '';
+      bestEl.innerHTML = `<div class="history-best">
+        <div class="history-best-icon">🏆</div>
+        <div class="history-best-body">
+          <div class="history-best-label">Best Rated Market</div>
+          <div class="history-best-name">${bestMarket.event_name}</div>
+          <div class="history-best-meta">${bestMarket.date_sort ? _fmtDate(bestMarket.date_sort) : '—'} · ${[bestMarket.suburb, bestMarket.state].filter(Boolean).join(', ') || '—'} · ${bestMarket.reviews.length} review${bestMarket.reviews.length !== 1 ? 's' : ''}</div>
+        </div>
+        <div class="history-best-rating">★ ${bestRating.toFixed(1)}</div>
+      </div>`;
+    } else {
+      bestEl.style.display = 'none';
+    }
+  }
+
+  if (filtersEl) {
+    filtersEl.style.display = '';
+    const cats = [...new Set(history.map(h => h.category).filter(Boolean))];
+    filtersEl.querySelectorAll('.history-cat-btn, .history-filter-sep').forEach(el => el.remove());
+    if (cats.length > 1) {
+      const sep = document.createElement('div');
+      sep.className = 'history-filter-sep';
+      filtersEl.appendChild(sep);
+      for (const cat of cats) {
+        const btn = document.createElement('button');
+        btn.className = 'history-filter-btn history-cat-btn';
+        btn.dataset.cat = cat;
+        btn.textContent = cat;
+        btn.onclick = () => {
+          filtersEl.querySelectorAll('.history-cat-btn').forEach(b => b.classList.remove('active'));
+          if (_historyCatFilter === cat) { _historyCatFilter = null; }
+          else { btn.classList.add('active'); _historyCatFilter = cat; }
+          renderHistoryList();
+        };
+        filtersEl.appendChild(btn);
+      }
+    }
+    filtersEl.querySelectorAll('.history-filter-btn:not(.history-cat-btn)').forEach(btn => {
+      btn.onclick = () => {
+        filtersEl.querySelectorAll('.history-filter-btn:not(.history-cat-btn)').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        _historyFilter = btn.dataset.filter;
+        renderHistoryList();
+      };
+    });
+  }
+
+  renderHistoryList();
+}
 
 async function loadMarketHistory() {
+  // Instant render from prefetched/cached data
+  if (_historyLoaded) {
+    renderHistoryPanel(_historyData);
+    // Silent background refresh
+    pitchFetch('/api/vendor/history').then(r => r.ok ? r.json() : null).then(data => {
+      if (data && JSON.stringify(data.history) !== JSON.stringify(_historyData)) {
+        renderHistoryPanel(data.history);
+      }
+    }).catch(() => {});
+    return;
+  }
+
+  // First load without prefetched data
   try {
     const r = await pitchFetch('/api/vendor/history');
     if (!r.ok) return;
     const { history } = await r.json();
-    _historyData = history;
-
-    const list = document.getElementById('history-list');
-    const statsEl = document.getElementById('history-stats');
-    const bestEl = document.getElementById('history-best');
-    const filtersEl = document.getElementById('history-filters');
-
-    if (!history.length) {
-      if (statsEl) statsEl.style.display = 'none';
-      if (bestEl) bestEl.style.display = 'none';
-      if (filtersEl) filtersEl.style.display = 'none';
-      list.innerHTML = `<div style="text-align:center;padding:48px 20px;">
-        <div style="font-size:36px;margin-bottom:12px;opacity:0.4;">🗓</div>
-        <div style="font-size:14px;font-weight:700;color:var(--text-hi);margin-bottom:6px;">No markets yet</div>
-        <div style="font-size:12px;color:var(--text-lo);line-height:1.6;max-width:300px;margin:0 auto;">Once you've been approved and attended a market through Pitch, your history will appear here.</div>
-        <a href="#" onclick="event.preventDefault();showPanel('browse',null)" style="display:inline-block;margin-top:16px;font-size:12px;font-weight:700;color:var(--ember);text-decoration:none;">Browse events →</a>
-      </div>`;
-      return;
-    }
-
-    // ── Compute stats ──
-    const now = new Date();
-    const attended = history.filter(h => h.date_sort && new Date(h.date_sort + 'T00:00:00') < now);
-    const allReviews = history.flatMap(h => h.reviews || []);
-    const avgRating = allReviews.length
-      ? (allReviews.reduce((s, rv) => s + (rv.rating || 0), 0) / allReviews.length).toFixed(1)
-      : '—';
-    const totalFees = attended.reduce((s, h) => s + (h.stall_fee_min || 0), 0);
-
-    // ── Render stat cards (reusing .stat-card from Overview) ──
-    if (statsEl) {
-      statsEl.style.display = '';
-      statsEl.innerHTML = `
-        <div class="stat-card ember no-blob"><div class="stat-label">Total Markets</div><div class="stat-value">${history.length}</div></div>
-        <div class="stat-card herb no-blob"><div class="stat-label">Attended</div><div class="stat-value">${attended.length}</div></div>
-        <div class="stat-card gold no-blob"><div class="stat-label">Avg Rating</div><div class="stat-value${avgRating === '—' ? ' muted' : ''}">${avgRating !== '—' ? '★ ' + avgRating : 'N/A'}</div></div>
-        <div class="stat-card slate no-blob"><div class="stat-label">Total Fees</div><div class="stat-value${totalFees <= 0 ? ' muted' : ''}">${totalFees > 0 ? '$' + totalFees.toLocaleString() : '$0'}</div></div>
-      `;
-    }
-
-    // ── Best market highlight ──
-    if (bestEl) {
-      // Find the market with highest average review rating
-      let bestMarket = null;
-      let bestRating = 0;
-      for (const h of history) {
-        if (h.reviews && h.reviews.length) {
-          const avg = h.reviews.reduce((s, rv) => s + (rv.rating || 0), 0) / h.reviews.length;
-          if (avg > bestRating) { bestRating = avg; bestMarket = h; }
-        }
-      }
-      if (bestMarket) {
-        bestEl.style.display = '';
-        bestEl.innerHTML = `<div class="history-best">
-          <div class="history-best-icon">🏆</div>
-          <div class="history-best-body">
-            <div class="history-best-label">Best Rated Market</div>
-            <div class="history-best-name">${bestMarket.event_name}</div>
-            <div class="history-best-meta">${bestMarket.date_sort ? _fmtDate(bestMarket.date_sort) : '—'} · ${[bestMarket.suburb, bestMarket.state].filter(Boolean).join(', ') || '—'} · ${bestMarket.reviews.length} review${bestMarket.reviews.length !== 1 ? 's' : ''}</div>
-          </div>
-          <div class="history-best-rating">★ ${bestRating.toFixed(1)}</div>
-        </div>`;
-      } else {
-        bestEl.style.display = 'none';
-      }
-    }
-
-    // ── Category filter pills ──
-    if (filtersEl) {
-      filtersEl.style.display = '';
-      const cats = [...new Set(history.map(h => h.category).filter(Boolean))];
-      // Remove any previously injected category pills
-      filtersEl.querySelectorAll('.history-cat-btn, .history-filter-sep').forEach(el => el.remove());
-      if (cats.length > 1) {
-        const sep = document.createElement('div');
-        sep.className = 'history-filter-sep';
-        filtersEl.appendChild(sep);
-        for (const cat of cats) {
-          const btn = document.createElement('button');
-          btn.className = 'history-filter-btn history-cat-btn';
-          btn.dataset.cat = cat;
-          btn.textContent = cat;
-          btn.onclick = () => {
-            filtersEl.querySelectorAll('.history-cat-btn').forEach(b => b.classList.remove('active'));
-            if (_historyCatFilter === cat) {
-              _historyCatFilter = null;
-            } else {
-              btn.classList.add('active');
-              _historyCatFilter = cat;
-            }
-            renderHistoryList();
-          };
-          filtersEl.appendChild(btn);
-        }
-      }
-
-      // Wire up status filter buttons
-      filtersEl.querySelectorAll('.history-filter-btn:not(.history-cat-btn)').forEach(btn => {
-        btn.onclick = () => {
-          filtersEl.querySelectorAll('.history-filter-btn:not(.history-cat-btn)').forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          _historyFilter = btn.dataset.filter;
-          renderHistoryList();
-        };
-      });
-    }
-
-    renderHistoryList();
+    _historyLoaded = true;
+    renderHistoryPanel(history);
   } catch(e) {
     console.error('[history]', e);
     const list = document.getElementById('history-list');
@@ -7192,6 +7198,7 @@ async function _loadConnectedAccounts() {
 // ── MENU ─────────────────────────────────────────────────────────────────────
 let _menuItems   = [];
 let _menuDragSrc = null;
+let _pendingDeleteIdx = null;
 
 async function loadMenu() {
   try {
@@ -7234,9 +7241,12 @@ function renderMenuGrid() {
   grid.innerHTML = _menuItems.map((item, idx) => {
     const price = formatMenuPrice(item);
     return `<div class="menu-item-card${item.is_signature?' is-signature':''}"
-      data-idx="${idx}" draggable="true"
-      ondragstart="menuDragStart(event,${idx})" ondragover="menuDragOver(event)"
+      data-idx="${idx}"
+      ondragover="menuDragOver(event)"
       ondrop="menuDrop(event,${idx})" ondragend="menuDragEnd(event)">
+      <div class="menu-drag-handle" draggable="true" ondragstart="menuDragStart(event,${idx})" title="Drag to reorder">
+        <svg width="12" height="18" viewBox="0 0 12 18" fill="currentColor"><circle cx="3" cy="3" r="1.5"/><circle cx="9" cy="3" r="1.5"/><circle cx="3" cy="9" r="1.5"/><circle cx="9" cy="9" r="1.5"/><circle cx="3" cy="15" r="1.5"/><circle cx="9" cy="15" r="1.5"/></svg>
+      </div>
       ${item.photo_url
         ? `<img class="menu-item-photo" src="${item.photo_url}" alt="${esc(item.name)}" onerror="this.style.display='none'" />`
         : `<div class="menu-item-no-photo">🍽</div>`}
@@ -7457,11 +7467,12 @@ function handleMenuPhotoFile(input) {
 // Drag-to-reorder
 function menuDragStart(e, idx) {
   _menuDragSrc = idx;
-  e.currentTarget.classList.add('dragging');
+  const card = e.currentTarget.closest('.menu-item-card') || e.currentTarget;
+  card.classList.add('dragging');
   e.dataTransfer.effectAllowed = 'move';
 }
 function menuDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect='move'; e.currentTarget.classList.add('drag-over'); }
-function menuDragEnd(e)  { e.currentTarget.classList.remove('dragging','drag-over'); document.querySelectorAll('.menu-item-card').forEach(c=>c.classList.remove('drag-over')); }
+function menuDragEnd(e)  { const card = e.currentTarget.closest('.menu-item-card') || e.currentTarget; card.classList.remove('dragging','drag-over'); document.querySelectorAll('.menu-item-card').forEach(c=>c.classList.remove('drag-over')); }
 function menuDrop(e, toIdx) {
   e.preventDefault();
   e.currentTarget.classList.remove('drag-over');
@@ -7482,7 +7493,7 @@ async function saveMenuOrder() {
     });
     const btn = document.querySelector('.btn-save-order');
     if (btn) { const orig = btn.textContent; btn.textContent = 'Saved ✓'; btn.style.background='var(--herb)'; setTimeout(()=>{btn.textContent=orig;btn.style.background='';},1800); }
-  } catch(e) { alert('Could not save order.'); }
+  } catch(e) { showMenuToast('Could not save order', false); }
 }
 
 async function togglePause() {
@@ -9854,6 +9865,7 @@ async function _loadConnectedAccounts() {
 // ── MENU ─────────────────────────────────────────────────────────────────────
 let _menuItems   = [];
 let _menuDragSrc = null;
+let _pendingDeleteIdx = null;
 
 async function loadMenu() {
   try {
@@ -9896,9 +9908,12 @@ function renderMenuGrid() {
   grid.innerHTML = _menuItems.map((item, idx) => {
     const price = formatMenuPrice(item);
     return `<div class="menu-item-card${item.is_signature?' is-signature':''}"
-      data-idx="${idx}" draggable="true"
-      ondragstart="menuDragStart(event,${idx})" ondragover="menuDragOver(event)"
+      data-idx="${idx}"
+      ondragover="menuDragOver(event)"
       ondrop="menuDrop(event,${idx})" ondragend="menuDragEnd(event)">
+      <div class="menu-drag-handle" draggable="true" ondragstart="menuDragStart(event,${idx})" title="Drag to reorder">
+        <svg width="12" height="18" viewBox="0 0 12 18" fill="currentColor"><circle cx="3" cy="3" r="1.5"/><circle cx="9" cy="3" r="1.5"/><circle cx="3" cy="9" r="1.5"/><circle cx="9" cy="9" r="1.5"/><circle cx="3" cy="15" r="1.5"/><circle cx="9" cy="15" r="1.5"/></svg>
+      </div>
       ${item.photo_url
         ? `<img class="menu-item-photo" src="${item.photo_url}" alt="${esc(item.name)}" onerror="this.style.display='none'" />`
         : `<div class="menu-item-no-photo">🍽</div>`}
@@ -10119,11 +10134,12 @@ function handleMenuPhotoFile(input) {
 // Drag-to-reorder
 function menuDragStart(e, idx) {
   _menuDragSrc = idx;
-  e.currentTarget.classList.add('dragging');
+  const card = e.currentTarget.closest('.menu-item-card') || e.currentTarget;
+  card.classList.add('dragging');
   e.dataTransfer.effectAllowed = 'move';
 }
 function menuDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect='move'; e.currentTarget.classList.add('drag-over'); }
-function menuDragEnd(e)  { e.currentTarget.classList.remove('dragging','drag-over'); document.querySelectorAll('.menu-item-card').forEach(c=>c.classList.remove('drag-over')); }
+function menuDragEnd(e)  { const card = e.currentTarget.closest('.menu-item-card') || e.currentTarget; card.classList.remove('dragging','drag-over'); document.querySelectorAll('.menu-item-card').forEach(c=>c.classList.remove('drag-over')); }
 function menuDrop(e, toIdx) {
   e.preventDefault();
   e.currentTarget.classList.remove('drag-over');
@@ -10144,7 +10160,7 @@ async function saveMenuOrder() {
     });
     const btn = document.querySelector('.btn-save-order');
     if (btn) { const orig = btn.textContent; btn.textContent = 'Saved ✓'; btn.style.background='var(--herb)'; setTimeout(()=>{btn.textContent=orig;btn.style.background='';},1800); }
-  } catch(e) { alert('Could not save order.'); }
+  } catch(e) { showMenuToast('Could not save order', false); }
 }
 
 async function togglePause() {
@@ -12531,6 +12547,7 @@ async function _loadConnectedAccounts() {
 // ── MENU ─────────────────────────────────────────────────────────────────────
 let _menuItems   = [];
 let _menuDragSrc = null;
+let _pendingDeleteIdx = null;
 
 async function loadMenu() {
   try {
@@ -12573,9 +12590,12 @@ function renderMenuGrid() {
   grid.innerHTML = _menuItems.map((item, idx) => {
     const price = formatMenuPrice(item);
     return `<div class="menu-item-card${item.is_signature?' is-signature':''}"
-      data-idx="${idx}" draggable="true"
-      ondragstart="menuDragStart(event,${idx})" ondragover="menuDragOver(event)"
+      data-idx="${idx}"
+      ondragover="menuDragOver(event)"
       ondrop="menuDrop(event,${idx})" ondragend="menuDragEnd(event)">
+      <div class="menu-drag-handle" draggable="true" ondragstart="menuDragStart(event,${idx})" title="Drag to reorder">
+        <svg width="12" height="18" viewBox="0 0 12 18" fill="currentColor"><circle cx="3" cy="3" r="1.5"/><circle cx="9" cy="3" r="1.5"/><circle cx="3" cy="9" r="1.5"/><circle cx="9" cy="9" r="1.5"/><circle cx="3" cy="15" r="1.5"/><circle cx="9" cy="15" r="1.5"/></svg>
+      </div>
       ${item.photo_url
         ? `<img class="menu-item-photo" src="${item.photo_url}" alt="${esc(item.name)}" onerror="this.style.display='none'" />`
         : `<div class="menu-item-no-photo">🍽</div>`}
@@ -12796,11 +12816,12 @@ function handleMenuPhotoFile(input) {
 // Drag-to-reorder
 function menuDragStart(e, idx) {
   _menuDragSrc = idx;
-  e.currentTarget.classList.add('dragging');
+  const card = e.currentTarget.closest('.menu-item-card') || e.currentTarget;
+  card.classList.add('dragging');
   e.dataTransfer.effectAllowed = 'move';
 }
 function menuDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect='move'; e.currentTarget.classList.add('drag-over'); }
-function menuDragEnd(e)  { e.currentTarget.classList.remove('dragging','drag-over'); document.querySelectorAll('.menu-item-card').forEach(c=>c.classList.remove('drag-over')); }
+function menuDragEnd(e)  { const card = e.currentTarget.closest('.menu-item-card') || e.currentTarget; card.classList.remove('dragging','drag-over'); document.querySelectorAll('.menu-item-card').forEach(c=>c.classList.remove('drag-over')); }
 function menuDrop(e, toIdx) {
   e.preventDefault();
   e.currentTarget.classList.remove('drag-over');
@@ -12821,7 +12842,7 @@ async function saveMenuOrder() {
     });
     const btn = document.querySelector('.btn-save-order');
     if (btn) { const orig = btn.textContent; btn.textContent = 'Saved ✓'; btn.style.background='var(--herb)'; setTimeout(()=>{btn.textContent=orig;btn.style.background='';},1800); }
-  } catch(e) { alert('Could not save order.'); }
+  } catch(e) { showMenuToast('Could not save order', false); }
 }
 
 async function togglePause() {

@@ -4681,7 +4681,7 @@ function serveAdminDashboard() {
 function injectSession(html, req) {
   const s = req.session;
   if (s && s.userId && s.role) {
-    const u = JSON.stringify({ role: s.role, name: s.name || '' });
+    const u = JSON.stringify({ id: s.userId, role: s.role, name: s.name || '' });
     html = html.replace('</head>', `<script>window.__PITCH_USER__=${u};</script>\n</head>`);
   }
   return html;
@@ -4930,13 +4930,14 @@ app.get('/vendors/:id', async (req, res) => {
           stmts.recordProfileView.run(Number(id), viewerUserId, viewerRole, ipHash, ref);
         } catch (e) { /* non-blocking */ }
         let html = readHtml('pages/vendor-detail.html');
+        html = injectSession(html, req);
         html = html.replace('</head>', `<script>window.__PITCH_VENDOR__=${JSON.stringify(vendor)};</script></head>`);
         return res.send(html);
       }
     } catch (e) { console.error('[vendor page]', e); }
   }
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  res.send(readHtml('pages/vendor-detail.html'));
+  res.send(injectSession(readHtml('pages/vendor-detail.html'), req));
 });
 // GET /dashboard/loading — instant loading page (no DB queries)
 app.get('/dashboard/loading', (req, res) => {
