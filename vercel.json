@@ -40,6 +40,7 @@
     { "src": "/(.*)", "dest": "/api/index.mjs" }
   ],
   "crons": [
+    { "path": "/api/cron/warm", "schedule": "*/5 * * * *" },
     { "path": "/api/cron/post-event", "schedule": "0 8 * * *" }
   ]
 }
