@@ -54,8 +54,32 @@ app.get('/api/stripe/status', async (req, res) => {
     stripe_initialized: !!s,
     price_pro: !!process.env.STRIPE_PRICE_PRO,
     price_growth: !!process.env.STRIPE_PRICE_GROWTH,
+    price_pro_value: process.env.STRIPE_PRICE_PRO || '(empty)',
+    price_growth_value: process.env.STRIPE_PRICE_GROWTH || '(empty)',
     webhook_secret: !!process.env.STRIPE_WEBHOOK_SECRET,
   });
+});
+
+// ── Stripe checkout test (remove after confirming) ───────────────────────
+app.get('/api/stripe/test-checkout', async (req, res) => {
+  try {
+    const stripe = await getStripe();
+    if (!stripe) return res.json({ error: 'Stripe not initialized — STRIPE_SECRET_KEY missing' });
+    const priceId = STRIPE_PRICES.pro;
+    if (!priceId) return res.json({ error: 'STRIPE_PRICE_PRO is empty' });
+    const host = `${req.protocol}://${req.get('host')}`;
+    const session = await stripe.checkout.sessions.create({
+      mode: 'subscription',
+      line_items: [{ price: priceId, quantity: 1 }],
+      success_url: `${host}/dashboard/vendor?upgraded=pro`,
+      cancel_url: `${host}/dashboard/vendor`,
+      metadata: { test: 'true' },
+      subscription_data: { metadata: { test: 'true' } },
+    });
+    res.json({ ok: true, checkout_url: session.url, session_id: session.id });
+  } catch (err) {
+    res.json({ error: err.message, type: err.type, code: err.code });
+  }
 });
 
 // ── Stripe webhook needs raw body — must come before express.json ─────────
