@@ -3974,10 +3974,25 @@ function updatePreview() {
   if (priceEl) { priceEl.textContent = formatPrice(priceVal); priceEl.style.display = priceVal ? '' : 'none'; }
 }
 
-// ── ABN auto-verify with cross-referencing ──────────────────────────────────
+// ── ABN auto-format + auto-verify ────────────────────────────────────────────
+function formatAbnValue(raw) {
+  const d = raw.replace(/\D/g, '').slice(0, 11);
+  if (d.length <= 2) return d;
+  if (d.length <= 5) return d.slice(0,2) + ' ' + d.slice(2);
+  if (d.length <= 8) return d.slice(0,2) + ' ' + d.slice(2,5) + ' ' + d.slice(5);
+  return d.slice(0,2) + ' ' + d.slice(2,5) + ' ' + d.slice(5,8) + ' ' + d.slice(8);
+}
 let _abnDebounce = null;
 function abnAutoVerify(rawVal) {
   clearTimeout(_abnDebounce);
+  const el = document.getElementById('v-abn');
+  if (el) {
+    const pos = el.selectionStart;
+    const formatted = formatAbnValue(rawVal);
+    el.value = formatted;
+    const newPos = Math.min(pos + (formatted.length - rawVal.length), formatted.length);
+    el.setSelectionRange(newPos, newPos);
+  }
   const clean = rawVal.replace(/\s/g, '');
   const resultEl = document.getElementById('v-abn-result');
   if (clean.length < 11) { if (resultEl) resultEl.innerHTML = ''; return; }
@@ -4526,7 +4541,7 @@ async function initDashboard() {
     if (document.getElementById('v-state')) document.getElementById('v-state').value = v.state || '';
     if (document.getElementById('v-suburb')) document.getElementById('v-suburb').value = v.suburb || '';
     if (document.getElementById('v-instagram')) document.getElementById('v-instagram').value = v.instagram || '';
-    if (document.getElementById('v-abn')) { document.getElementById('v-abn').value = v.abn || ''; abnHydrateStored(); }
+    if (document.getElementById('v-abn')) { document.getElementById('v-abn').value = formatAbnValue(v.abn || ''); abnHydrateStored(); }
     if (document.getElementById('v-stall-w') && v.stall_w) document.getElementById('v-stall-w').value = v.stall_w;
     if (document.getElementById('v-stall-d') && v.stall_d) document.getElementById('v-stall-d').value = v.stall_d;
     if (document.getElementById('v-power'))  document.getElementById('v-power').checked  = !!v.power;
