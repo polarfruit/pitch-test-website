@@ -4521,7 +4521,7 @@ app.get('/api/vendor/menu', requireAuth, async (req, res) => {
 // POST /api/vendor/menu — create item
 app.post('/api/vendor/menu', requireAuth, async (req, res) => {
   if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Vendor only' });
-  const { name, description, price_type, price_min, price_max, category, photo_url, available, seasonal, is_signature } = req.body;
+  const { name, description, price_type, price_min, price_max, category, photo_url, available, seasonal, is_signature, dietary_tags } = req.body;
   if (!name || !name.trim()) return res.status(400).json({ error: 'Name required' });
   // if setting signature, clear previous
   if (is_signature) await stmts.clearSignature.run(req.session.userId);
@@ -4537,6 +4537,7 @@ app.post('/api/vendor/menu', requireAuth, async (req, res) => {
     available: available ? 1 : 0,
     seasonal: seasonal ? 1 : 0,
     is_signature: is_signature ? 1 : 0,
+    dietary_tags: Array.isArray(dietary_tags) ? JSON.stringify(dietary_tags) : null,
   });
   const item = await stmts.getMenuItemById.get(result.lastInsertRowid ?? result.insertId, req.session.userId);
   res.json(item);
@@ -4545,7 +4546,7 @@ app.post('/api/vendor/menu', requireAuth, async (req, res) => {
 // PUT /api/vendor/menu/:id — update item
 app.put('/api/vendor/menu/:id', requireAuth, async (req, res) => {
   if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Vendor only' });
-  const { name, description, price_type, price_min, price_max, category, photo_url, available, seasonal, is_signature } = req.body;
+  const { name, description, price_type, price_min, price_max, category, photo_url, available, seasonal, is_signature, dietary_tags } = req.body;
   if (!name || !name.trim()) return res.status(400).json({ error: 'Name required' });
   if (is_signature) await stmts.clearSignature.run(req.session.userId);
   await stmts.updateMenuItem.run({
@@ -4561,6 +4562,7 @@ app.put('/api/vendor/menu/:id', requireAuth, async (req, res) => {
     available: available ? 1 : 0,
     seasonal: seasonal ? 1 : 0,
     is_signature: is_signature ? 1 : 0,
+    dietary_tags: Array.isArray(dietary_tags) ? JSON.stringify(dietary_tags) : null,
   });
   const item = await stmts.getMenuItemById.get(req.params.id, req.session.userId);
   res.json(item);
