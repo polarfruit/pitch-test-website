@@ -757,7 +757,11 @@ body::before {
 .doc-card.warn { border-color: #C9840A28; background: linear-gradient(to bottom, #C9840A06, var(--char)); }
 .doc-card.missing { border-color: #ffffff0a; border-style: dashed; }
 .doc-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
-.doc-icon { font-size: 22px; }
+.doc-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.doc-icon svg { width: 20px; height: 20px; }
+.doc-icon.food-safety { background: #E8500A14; color: var(--ember); }
+.doc-icon.pli { background: #2B5BA814; color: #5B8BE8; }
+.doc-icon.council { background: #6B5A4A14; color: var(--text-mid); }
 .doc-name { font-size: 13px; font-weight: 700; color: var(--text-hi); margin-bottom: 3px; }
 .doc-optional { font-size: 10px; color: var(--text-lo); }
 .doc-status-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
@@ -4124,8 +4128,11 @@ function initDirtyTracking() {
 let _currentSubPlan = 'free';
 
 function openSubModal(preselect) {
-  const profile = window.__PITCH_USER__?.vendor;
-  _currentSubPlan = (profile && profile.plan) || 'free';
+  const profile = window.__PITCH_PROFILE__ || window.__PITCH_USER__?.vendor;
+  // If on a paid plan but no Stripe subscription, treat as free (phantom plan from old bug)
+  const rawPlan = (profile && profile.plan) || 'free';
+  const hasStripeSub = !!(profile && profile.stripe_subscription_id);
+  _currentSubPlan = (rawPlan !== 'free' && !hasStripeSub) ? 'free' : rawPlan;
 
   // Block if admin override is active
   if (profile && profile.plan_override) {
@@ -4445,7 +4452,11 @@ async function initDashboard() {
   const tradingName = (profile && profile.trading_name) ? profile.trading_name : (user.first_name + ' ' + user.last_name);
   const nameEl = document.getElementById('vendor-display-name') || document.querySelector('.vendor-mini-name');
   if (nameEl) nameEl.textContent = tradingName;
-  const _plan = (profile && profile.plan) || 'free';
+  // If on a paid plan but no Stripe subscription, show as free (phantom plan)
+  const _rawPlan = (profile && profile.plan) || 'free';
+  const _hasStripeSub = !!(profile && profile.stripe_subscription_id);
+  const _plan = (_rawPlan !== 'free' && !_hasStripeSub) ? 'free' : _rawPlan;
+  _currentSubPlan = _plan;
   const planLabels = { free: '📋 Starter', pro: '⭐ Pro', growth: '🔥 Growth' };
   document.querySelector('.plan-pill').textContent = planLabels[_plan] || '📋 Starter';
   // Apply all subscription gating
@@ -4753,6 +4764,8 @@ function renderBrowseGrid(events) {
       const badgeClass = ev.appStatus==='approved'?'approved':ev.appStatus==='rejected'?'rejected':'pending';
       const statusText = ev.appStatus==='approved'?'✓ Approved':ev.appStatus==='rejected'?'✕ Not accepted':'● Applied';
       statusBadge = `<span class="browse-applied-badge ${badgeClass}">${statusText}</span>`;
+    } else if (isPastEvent) {
+      statusBadge = `<button class="btn-view-event" style="opacity:0.45;cursor:default;background:#2E2720;border:1px solid #ffffff10;color:var(--text-lo);" onclick="event.stopPropagation();openEventDetail(${ev.id})">Ended</button>`;
     } else if (atLimit) {
       statusBadge = `<button class="btn-view-event" style="opacity:0.45;cursor:not-allowed;background:#2E2720;border:1px solid #ffffff10;color:var(--text-lo);" onclick="event.stopPropagation();showLimitModal({used:${sub.apps_used},limit:${sub.apps_limit}})">Limit reached</button>`;
     } else {
