@@ -1216,18 +1216,22 @@ app.post('/api/profile/plan', requireAuth, async (req, res) => {
       return res.status(403).json({ error: 'Your plan is managed by an administrator. Contact support to change your plan.' });
     }
     const currentPlan = vendor.plan || 'free';
+    console.log('[plan] Request:', { userId: req.session.userId, currentPlan, requestedPlan: plan });
     if (plan === currentPlan) return res.json({ ok: true, plan });
 
     // ── Upgrade via Stripe Checkout ──
     const stripe = await getStripe();
+    console.log('[plan] Stripe check:', { stripeOk: !!stripe, priceId: STRIPE_PRICES[plan] });
     if (plan !== 'free' && stripe && STRIPE_PRICES[plan]) {
       const user = await stmts.getUserById.get(req.session.userId);
       const planLabel = plan === 'growth' ? 'Growth' : 'Pro';
+      const baseUrl = `${req.protocol}://${req.get('host')}`;
+      console.log('[plan] Building checkout, baseUrl:', baseUrl, 'email:', user?.email);
       const sessionParams = {
         mode: 'subscription',
         line_items: [{ price: STRIPE_PRICES[plan], quantity: 1 }],
-        success_url: `${req.protocol}://${req.get('host')}/dashboard/vendor?upgraded=${plan}`,
-        cancel_url:  `${req.protocol}://${req.get('host')}/dashboard/vendor#billing`,
+        success_url: `${baseUrl}/dashboard/vendor?upgraded=${plan}`,
+        cancel_url:  `${baseUrl}/dashboard/vendor#billing`,
         metadata: { user_id: String(req.session.userId) },
         subscription_data: {
           metadata: { user_id: String(req.session.userId), plan },
@@ -1235,13 +1239,12 @@ app.post('/api/profile/plan', requireAuth, async (req, res) => {
         custom_text: {
           submit: { message: `You're subscribing to Pitch. ${planLabel}. Cancel anytime from your dashboard.` },
         },
-        consent_collection: { terms_of_service: 'none' },
         allow_promotion_codes: true,
       };
       // Re-use existing Stripe customer if we have one
       if (vendor.stripe_customer_id) {
         sessionParams.customer = vendor.stripe_customer_id;
-      } else {
+      } else if (user?.email) {
         sessionParams.customer_email = user.email;
       }
       // If upgrading from one paid plan to another, swap the subscription instead
@@ -1252,7 +1255,6 @@ app.post('/api/profile/plan', requireAuth, async (req, res) => {
           proration_behavior: 'create_prorations',
           metadata: { user_id: String(req.session.userId), plan },
         });
-        // Plan change happens via webhook, but update locally for instant feedback
         await stmts.updateVendorPlan.run(plan, req.session.userId);
         await stmts.insertSubscriptionChange.run({
           user_id: req.session.userId, old_plan: currentPlan, new_plan: plan,
@@ -1263,8 +1265,14 @@ app.post('/api/profile/plan', requireAuth, async (req, res) => {
         _apiCache.delete('vendors'); _apiCache.delete('stats');
         return res.json({ ok: true, plan });
       }
-      const session = await stripe.checkout.sessions.create(sessionParams);
-      return res.json({ ok: true, checkout_url: session.url });
+      try {
+        const session = await stripe.checkout.sessions.create(sessionParams);
+        console.log('[plan] Checkout session created:', session.id);
+        return res.json({ ok: true, checkout_url: session.url });
+      } catch (stripeErr) {
+        console.error('[plan] Stripe checkout FAILED:', stripeErr.message);
+        return res.status(502).json({ error: `Payment error: ${stripeErr.message}` });
+      }
     }
 
     // ── Downgrade to free — cancel Stripe subscription at period end ──
@@ -4697,7 +4705,12 @@ let _homeCacheTs = 0;
 const HOME_TTL = 60000;
 app.get('/', async (req, res) => {
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=600, stale-while-revalidate=900');
+  const isLoggedIn = req.session && req.session.userId;
+  if (isLoggedIn) {
+    res.setHeader('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+  } else {
+    res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=600, stale-while-revalidate=900');
+  }
   const now = Date.now();
   if (_homeCache && now - _homeCacheTs < HOME_TTL) return res.send(injectSession(_homeCache, req));
   let html = readHtml('pages/index.html');
@@ -4737,7 +4750,9 @@ app.get('/events', async (req, res) => {
   try {
     const now = Date.now();
     if (_eventsPageCache && now - _eventsPageCacheTs < EVENTS_PAGE_TTL) {
-      res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=600, stale-while-revalidate=900');
+      if (!req.session || !req.session.userId) {
+        res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=600, stale-while-revalidate=900');
+      }
       return res.send(injectSession(_eventsPageCache, req));
     }
     const events = await stmts.publishedEvents.all();
@@ -4765,7 +4780,9 @@ window.__PITCH_MAP_EVENTS__ = ${JSON.stringify(mapData)};
     html = injectBanner(html);
     _eventsPageCache = html;
     _eventsPageCacheTs = now;
-    res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=600, stale-while-revalidate=900');
+    if (!req.session || !req.session.userId) {
+      res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=600, stale-while-revalidate=900');
+    }
     res.send(injectSession(html, req));
   } catch (e) {
     console.error('[events page]', e);

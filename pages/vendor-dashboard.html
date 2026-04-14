@@ -86,8 +86,8 @@ body::before {
 }
 .plan-pill {
   display: inline-flex; align-items: center; gap: 4px;
-  background: linear-gradient(135deg, #C9840A20, #E89B1A14);
-  border: 1px solid #C9840A28; color: var(--gold);
+  background: linear-gradient(135deg, #E8500A20, #FF6B2B14);
+  border: 1px solid #E8500A30; color: var(--ember-glow);
   font-size: 9px; font-weight: 700; letter-spacing: 0.08em;
   padding: 2px 7px; border-radius: 100px; margin-top: 2px;
 }
@@ -310,7 +310,7 @@ body::before {
 .stat-trend.flat { color: var(--text-lo); background: #ffffff08; }
 
 /* Two-col overview layout */
-.overview-grid { display: grid; grid-template-columns: 1fr 360px; gap: 24px; align-items: start; }
+.overview-grid { display: grid; grid-template-columns: 1fr 360px; gap: 24px; align-items: start; min-height: calc(100vh - 280px); }
 @media (max-width: 1100px) { .overview-grid { grid-template-columns: 1fr; } .overview-grid > :last-child { position: static; } .overview-grid > :last-child .card { min-height: auto; } }
 .overview-grid > :last-child { position: sticky; top: 80px; }
 .overview-grid > :last-child .card { min-height: 280px; display: flex; flex-direction: column; }
@@ -342,6 +342,8 @@ body::before {
   padding: 5px 12px; border-radius: 7px; cursor: pointer; transition: all 0.14s;
 }
 .btn-apply-mini:hover { background: #E8500A22; }
+.btn-apply-mini.applied { color: var(--text-mid); background: #ffffff08; border-color: #ffffff12; }
+.btn-apply-mini.applied:hover { color: var(--text-hi); background: #ffffff10; }
 
 /* ── BROWSE EVENTS ──────────────────────────────────────────────────────── */
 .browse-grid {
@@ -410,6 +412,23 @@ body::before {
 .browse-applied-badge.rejected { background: #C0392B14; color: #A0392B; border: 1px solid #C0392B1C; }
 .browse-card.applied { opacity: 0.82; }
 .browse-card.applied:hover { opacity: 1; }
+.browse-card.past-event { opacity: 0.55; filter: grayscale(0.3); }
+.browse-card.past-event:hover { opacity: 0.85; filter: grayscale(0); }
+.browse-past-badge {
+  position: absolute; bottom: 10px; right: 12px; z-index: 1;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.04em;
+  padding: 3px 9px; border-radius: 100px;
+  background: rgba(0,0,0,0.55); color: #A89880; border: 1px solid #ffffff12;
+  backdrop-filter: blur(4px);
+}
+.browse-empty-state {
+  grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding: 60px 20px; text-align: center; gap: 12px;
+}
+.browse-empty-state svg { opacity: 0.3; }
+.browse-empty-state p { color: #6B5A4A; font-size: 14px; max-width: 300px; line-height: 1.6; }
+.browse-empty-state button { font-family: var(--fb); font-size: 13px; font-weight: 700; color: var(--ember); background: none; border: 1px solid var(--ember); border-radius: 8px; padding: 8px 18px; cursor: pointer; transition: background 0.14s, color 0.14s; }
+.browse-empty-state button:hover { background: var(--ember); color: #fff; }
 .btn-view-event {
   font-family: var(--fb); font-size: 12px; font-weight: 700;
   color: #fff; background: var(--ember); border: none;
@@ -563,6 +582,13 @@ body::before {
 /* ── PROFILE ─────────────────────────────────────────────────────────────── */
 .profile-grid { display: grid; grid-template-columns: 1fr 300px; gap: 24px; align-items: start; }
 @media (max-width: 1100px) { .profile-grid { grid-template-columns: 1fr; } }
+.profile-sidebar { position: sticky; top: 24px; align-self: start; display: flex; flex-direction: column; gap: 20px; }
+@media (max-width: 1100px) { .profile-sidebar { position: static; order: -1; } }
+.profile-section-divider { border: none; border-top: 1px solid #ffffff0A; margin: 4px 0 20px; }
+.profile-section-heading { font-size: 11px; font-weight: 700; color: var(--ember); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+.profile-section-heading::before { content: ''; flex: 0 0 3px; height: 14px; background: var(--ember); border-radius: 2px; }
+.profile-save-bar { position: sticky; bottom: 0; background: linear-gradient(to top, var(--char) 60%, transparent); padding: 20px 0 4px; margin-top: 8px; z-index: 5; }
+
 
 .form-group { margin-bottom: 20px; }
 .form-label {
@@ -1273,7 +1299,7 @@ body::before {
   transition: border-color 0.14s, box-shadow 0.14s;
 }
 .browse-date-text-input:focus { border-color: #E8500A40; box-shadow: 0 0 0 3px #E8500A12; }
-.browse-date-text-input::placeholder { color: var(--text-lo); }
+.browse-date-text-input::placeholder { color: var(--text-mid); opacity: 0.6; }
 .browse-date-text-input.has-value { border-color: #E8500A40; }
 .browse-date-sep { font-size: 13px; color: var(--text-lo); align-self: flex-end; padding-bottom: 8px; }
 .browse-cal-toggle-btn {
@@ -1453,17 +1479,22 @@ body::before {
 .cal-nav { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; gap:12px; }
 .cal-nav-center { display:flex; align-items:center; gap:12px; }
 .cal-month { font-family:var(--fd); font-size:24px; font-weight:900; letter-spacing:-0.02em; color:var(--text-hi); }
-.cal-nav-btn { background:#ffffff08; border:1px solid #ffffff10; color:var(--text-mid); width:38px; height:38px; border-radius:10px; cursor:pointer; font-size:20px; transition:all 0.12s; display:flex; align-items:center; justify-content:center; }
-.cal-nav-btn:hover { background:#ffffff14; color:var(--text-hi); }
+.cal-nav-btn { background:#ffffff08; border:1px solid #ffffff10; color:var(--text-mid); width:38px; height:38px; border-radius:50%; cursor:pointer; font-size:20px; transition:background 0.14s, border-color 0.14s, color 0.14s; display:flex; align-items:center; justify-content:center; }
+.cal-nav-btn:hover { background:#ffffff18; border-color:#ffffff20; color:var(--text-hi); }
+.cal-nav-btn:active { background:#ffffff10; transform:scale(0.95); }
 .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
 .cal-day-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-lo); text-align:center; padding:8px 0; }
-.cal-day { min-height:88px; background:#ffffff04; border:1px solid #ffffff06; border-radius:10px; padding:6px; cursor:default; transition:background 0.12s, border-color 0.12s; }
-.cal-day:not(.other-month):hover { background:#ffffff0a; border-color:#ffffff14; }
+.cal-day-label.weekend { color:var(--text-lo); opacity:0.6; }
+.cal-day { min-height:88px; background:#ffffff04; border:1px solid #ffffff06; border-radius:10px; padding:6px; cursor:default; transition:background 0.14s, border-color 0.14s; }
+.cal-day:not(.other-month):hover { background:#ffffff0c; border-color:#ffffff18; }
 .cal-day.has-events { cursor:pointer; }
-.cal-day.other-month { opacity:0.3; }
-.cal-day.today { border-color:var(--ember); background:#E8500A08; }
+.cal-day.has-events:hover { background:#ffffff10; border-color:#ffffff20; }
+.cal-day.other-month { opacity:0.18; }
+.cal-day.weekend-col { background:#ffffff02; }
+.cal-day.today { border-color:var(--ember); background:#E8500A0C; position:relative; }
 .cal-day-num { font-size:11px; font-weight:600; color:var(--text-lo); margin-bottom:4px; }
 .cal-day.today .cal-day-num { color:var(--ember); font-weight:800; }
+.cal-today-chip { display:inline-block; font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:var(--ember); background:#E8500A18; padding:1px 6px; border-radius:4px; margin-left:4px; vertical-align:middle; }
 .cal-event-dot { font-size:10px; font-weight:700; padding:3px 6px; border-radius:4px; margin-bottom:2px; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .cal-event-dot.pending { background:#C9840A20; color:var(--gold); }
 .cal-event-dot.approved { background:#2D8B5520; color:var(--herb); }
@@ -1900,7 +1931,7 @@ body::before {
         </div>
         <div class="stat-card gold">
           <div class="stat-label">Average Rating</div>
-          <div class="stat-value" id="stat-rating-value">—</div>
+          <div class="stat-value" id="stat-rating-value" style="opacity:0.25;font-size:28px;">☆</div>
           <div class="stat-delta" id="stat-rating-sub">No reviews yet</div>
         </div>
         <div class="stat-card slate" id="stat-card-views">
@@ -2101,27 +2132,13 @@ body::before {
 
     <!-- ── PANEL: PROFILE ───────────────────────────────────────────────── -->
     <div class="panel" id="panel-profile">
-      <!-- Avatar upload card -->
-      <div class="card" style="max-width:480px;margin-bottom:20px;">
-        <div style="font-size:13px;font-weight:700;color:var(--text-hi);text-transform:uppercase;letter-spacing:.06em;margin-bottom:16px;">Profile Picture</div>
-        <div style="display:flex;align-items:center;gap:20px;">
-          <div id="avatar-preview-large" style="width:80px;height:80px;border-radius:16px;background:linear-gradient(135deg,#3D1A06,#6B2E08);display:flex;align-items:center;justify-content:center;font-size:36px;overflow:hidden;flex-shrink:0;">🔥</div>
-          <div style="flex:1;">
-            <div style="font-size:13px;color:var(--text-mid);margin-bottom:10px;line-height:1.5;">Upload a photo to show on your profile, event applications, and messages.</div>
-            <label style="display:inline-flex;align-items:center;gap:8px;background:var(--ember);color:#fff;font-size:13px;font-weight:700;padding:9px 16px;border-radius:10px;cursor:pointer;font-family:var(--fb);">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-              Choose photo
-              <input type="file" accept="image/jpeg,image/png,image/webp" style="display:none;" onchange="previewAndUploadAvatar(this)">
-            </label>
-            <div id="avatar-upload-status" style="font-size:12px;margin-top:8px;color:var(--text-lo);"></div>
-          </div>
-        </div>
-      </div>
-
       <div class="profile-grid">
 
         <!-- Form -->
         <div class="card">
+          <!-- Section: Identity -->
+          <div class="profile-section-heading">Identity</div>
+
           <div class="form-group">
             <label class="form-label">Business name</label>
             <input class="form-input" id="prof-name" type="text" value="" oninput="updatePreview()" />
@@ -2130,7 +2147,7 @@ body::before {
           <div class="form-group">
             <label class="form-label">Bio <span style="color:var(--text-lo);font-weight:400;letter-spacing:0;text-transform:none;">(max 250 characters)</span></label>
             <textarea class="form-textarea" id="prof-bio" maxlength="250" oninput="updateBioCounter();updatePreview()"></textarea>
-            <div class="char-counter" id="bio-counter">140/250</div>
+            <div class="char-counter" id="bio-counter">0/250</div>
           </div>
 
           <div class="form-group">
@@ -2157,6 +2174,11 @@ body::before {
               <label class="radio-option"><input type="radio" name="setup" value="Cart" onchange="updatePreview()" /> Cart</label>
             </div>
           </div>
+
+          <hr class="profile-section-divider">
+
+          <!-- Section: Operations -->
+          <div class="profile-section-heading">Operations</div>
 
           <div class="form-group">
             <label class="form-label">Stall dimensions (metres)</label>
@@ -2191,11 +2213,16 @@ body::before {
           <div class="form-group">
             <label class="form-label">Price range</label>
             <div class="price-group">
-              <button class="price-btn active" data-price="$" onclick="setPrice(this)">$ <span style="font-weight:400;opacity:0.7;">(under $15)</span></button>
-              <button class="price-btn" data-price="$$" onclick="setPrice(this)">$$ <span style="font-weight:400;opacity:0.7;">($15–$25)</span></button>
-              <button class="price-btn" data-price="$$$" onclick="setPrice(this)">$$$ <span style="font-weight:400;opacity:0.7;">($25+)</span></button>
+              <button class="price-btn active" data-price="$" onclick="setPrice(this)">$ <span style="font-weight:400;opacity:0.7;">(under )</span></button>
+              <button class="price-btn" data-price="78064" onclick="setPrice(this)">78064 <span style="font-weight:400;opacity:0.7;">(–)</span></button>
+              <button class="price-btn" data-price="78064$" onclick="setPrice(this)">78064$ <span style="font-weight:400;opacity:0.7;">(+)</span></button>
             </div>
           </div>
+
+          <hr class="profile-section-divider">
+
+          <!-- Section: Verification -->
+          <div class="profile-section-heading">Verification</div>
 
           <div class="form-group">
             <label class="form-label">Instagram handle</label>
@@ -2224,8 +2251,13 @@ body::before {
             <div style="font-size:11px;color:var(--text-lo);margin-top:5px;">Lowercase letters, numbers, and hyphens only.</div>
           </div>
 
-          <div class="form-group">
-            <label class="form-label">Photos <span style="color:var(--text-lo);font-weight:400;letter-spacing:0;text-transform:none;" id="photo-limit-label">(up to 4)</span></label>
+          <hr class="profile-section-divider">
+
+          <!-- Section: Photos -->
+          <div class="profile-section-heading">Photos</div>
+
+          <div class="form-group" style="margin-bottom:0;">
+            <label class="form-label">Gallery <span style="color:var(--text-lo);font-weight:400;letter-spacing:0;text-transform:none;" id="photo-limit-label">(up to 4)</span></label>
             <div class="photo-upload-area" id="photo-drop-zone"
               ondragover="event.preventDefault();this.classList.add('dragover')"
               ondragleave="this.classList.remove('dragover')"
@@ -2248,28 +2280,50 @@ body::before {
             </div>
           </div>
 
-          <button class="btn-save" id="profile-save-btn" onclick="saveProfile(this)">Save changes</button>
+          <div class="profile-save-bar">
+            <button class="btn-save" id="profile-save-btn" onclick="saveProfile(this)" style="width:100%;">Save changes</button>
+          </div>
         </div>
 
-        <!-- Live preview -->
-        <div style="position:sticky;top:24px;align-self:start;">
-          <div class="section-title">Live preview</div>
-          <p style="font-size:12px;color:var(--text-lo);margin-bottom:14px;">How your card looks to organisers &amp; consumers.</p>
-          <div class="preview-card">
-            <div class="preview-top" id="preview-banner" style="background:linear-gradient(135deg,#2D1A0A 0%,#5C2A08 100%);">
-              <div class="preview-top-overlay"></div>
-              <div class="preview-avatar-wrap" id="preview-avatar">🔥</div>
-            </div>
-            <div class="preview-body">
-              <div class="preview-name" id="preview-name"></div>
-              <div class="preview-tags" id="preview-tags">
-                <span class="preview-tag">BBQ</span>
-                <span class="preview-tag">Food Truck</span>
+        <!-- Sidebar: Live preview + Profile picture -->
+        <div class="profile-sidebar">
+          <!-- Live preview -->
+          <div>
+            <div class="section-title">Live preview</div>
+            <p style="font-size:12px;color:var(--text-lo);margin-bottom:14px;">How your card looks to organisers &amp; consumers.</p>
+            <div class="preview-card">
+              <div class="preview-top" id="preview-banner" style="background:linear-gradient(135deg,#2D1A0A 0%,#5C2A08 100%);">
+                <div class="preview-top-overlay"></div>
+                <div class="preview-avatar-wrap" id="preview-avatar">🔥</div>
               </div>
-              <div id="preview-bio" class="preview-bio-text" style="display:none;"></div>
-              <div class="preview-stats" id="preview-stats">
-                <span style="font-size:10px;color:var(--text-lo);">📍 <span id="preview-location">—</span></span>
-                <span id="preview-price" style="font-size:10px;color:var(--ember);font-weight:700;display:none;"></span>
+              <div class="preview-body">
+                <div class="preview-name" id="preview-name"></div>
+                <div class="preview-tags" id="preview-tags">
+                  <span class="preview-tag">BBQ</span>
+                  <span class="preview-tag">Food Truck</span>
+                </div>
+                <div id="preview-bio" class="preview-bio-text" style="display:none;"></div>
+                <div class="preview-stats" id="preview-stats">
+                  <span style="font-size:10px;color:var(--text-lo);">📍 <span id="preview-location">—</span></span>
+                  <span id="preview-price" style="font-size:10px;color:var(--ember);font-weight:700;display:none;"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Profile picture (moved to sidebar) -->
+          <div class="card" style="margin-bottom:0;">
+            <div style="font-size:13px;font-weight:700;color:var(--text-hi);text-transform:uppercase;letter-spacing:.06em;margin-bottom:16px;">Profile Picture</div>
+            <div style="display:flex;align-items:center;gap:16px;">
+              <div id="avatar-preview-large" style="width:64px;height:64px;border-radius:14px;background:linear-gradient(135deg,#3D1A06,#6B2E08);display:flex;align-items:center;justify-content:center;font-size:28px;overflow:hidden;flex-shrink:0;">🔥</div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:12px;color:var(--text-mid);margin-bottom:8px;line-height:1.5;">Show on your profile, applications &amp; messages.</div>
+                <label style="display:inline-flex;align-items:center;gap:6px;background:var(--ember);color:#fff;font-size:12px;font-weight:700;padding:7px 14px;border-radius:9px;cursor:pointer;font-family:var(--fb);">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  Choose photo
+                  <input type="file" accept="image/jpeg,image/png,image/webp" style="display:none;" onchange="previewAndUploadAvatar(this)">
+                </label>
+                <div id="avatar-upload-status" style="font-size:11px;margin-top:6px;color:var(--text-lo);"></div>
               </div>
             </div>
           </div>
@@ -2524,8 +2578,8 @@ body::before {
             <button class="cal-nav-btn" onclick="calNav(1)">›</button>
           </div>
           <div class="gate-tooltip-wrap" id="ical-export-wrap">
-            <button id="ical-export-btn" onclick="exportICal()" style="font-family:var(--fb);font-size:12px;font-weight:600;color:var(--text-mid);background:#ffffff08;border:1px solid #ffffff12;padding:8px 16px;border-radius:9px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .14s;">
-              <span>📅</span> Export to calendar
+            <button id="ical-export-btn" onclick="exportICal()" style="font-family:var(--fb);font-size:12px;font-weight:600;color:var(--text-mid);background:#ffffff08;border:1px solid #ffffff12;padding:8px 16px;border-radius:9px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:background .14s, border-color .14s, color .14s;">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="2.5" width="11" height="10" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M1.5 5.5h11M4.5 1v3M9.5 1v3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg> Export to calendar
             </button>
             <span class="gate-tooltip" id="ical-tooltip"></span>
           </div>
@@ -2533,14 +2587,16 @@ body::before {
         <div class="card" style="padding:20px;position:relative;">
           <div class="cal-grid" id="cal-grid">
             <div class="cal-day-label">Mon</div><div class="cal-day-label">Tue</div><div class="cal-day-label">Wed</div>
-            <div class="cal-day-label">Thu</div><div class="cal-day-label">Fri</div><div class="cal-day-label">Sat</div>
-            <div class="cal-day-label">Sun</div>
+            <div class="cal-day-label">Thu</div><div class="cal-day-label">Fri</div><div class="cal-day-label weekend">Sat</div>
+            <div class="cal-day-label weekend">Sun</div>
           </div>
           <div class="cal-empty-state" id="cal-empty-state" style="display:none;">
-            <div style="font-size:32px;margin-bottom:12px;opacity:0.5;">📅</div>
-            <div>Your events will appear here once you apply</div>
-            <div style="margin-top:8px;"><a href="#" onclick="event.preventDefault();switchPanel('browse-events');">Browse Events →</a></div>
+            <svg width="40" height="40" viewBox="0 0 40 40" fill="none" style="margin-bottom:12px;opacity:0.4;"><rect x="4" y="7" width="32" height="28" rx="5" stroke="var(--text-lo)" stroke-width="2.5"/><path d="M4 15h32M12 3v8M28 3v8" stroke="var(--text-lo)" stroke-width="2.5" stroke-linecap="round"/></svg>
+            <div style="font-weight:600;color:var(--text-hi);margin-bottom:4px;">No events this month</div>
+            <div>Your events will appear here once you apply to markets</div>
+            <div style="margin-top:12px;"><a href="#" onclick="event.preventDefault();switchPanel('browse-events');" style="display:inline-flex;align-items:center;gap:4px;">Browse Events <span style="font-size:16px;">&#8594;</span></a></div>
           </div>
+          <div id="cal-month-hint" style="display:none;text-align:center;padding:16px 0 4px;font-size:13px;color:var(--text-lo);">No events this month — use the arrows to navigate</div>
           <div class="cal-legend">
             <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--gold);"></div> Pending</div>
             <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--herb);"></div> Approved</div>
@@ -4051,7 +4107,7 @@ function clearProfileDirty() {
 }
 // Attach listeners after profile hydrates
 function initDirtyTracking() {
-  const form = document.querySelector('#panel-profile .card');
+  const form = document.querySelector('#panel-profile .profile-grid > .card');
   if (!form) return;
   form.querySelectorAll('input, textarea, select').forEach(el => {
     el.addEventListener('input', markProfileDirty);
@@ -4170,6 +4226,7 @@ async function confirmSubChange() {
   if (!chosen || chosen === _currentSubPlan) return;
 
   const btn = document.getElementById('btn-confirm-sub');
+  const msgEl = document.getElementById('sub-modal-msg');
   btn.textContent = 'Saving…';
   btn.style.opacity = '0.6';
   btn.style.pointerEvents = 'none';
@@ -4181,6 +4238,7 @@ async function confirmSubChange() {
       body: JSON.stringify({ plan: chosen }),
     });
     const d = await r.json().catch(() => ({}));
+    console.log('[plan] Response:', r.status, d);
     if (r.ok) {
       // Stripe Checkout redirect — server returns a checkout URL
       if (d.checkout_url) {
@@ -4198,21 +4256,29 @@ async function confirmSubChange() {
       if (window.__PITCH_USER__?.vendor) window.__PITCH_USER__.vendor.plan = d.plan || chosen;
       _currentSubPlan = d.plan || chosen;
       closeSubModal();
-      const profile = window.__PITCH_USER__?.vendor || {};
-      renderPlanCard(profile);
+      // Update sidebar pill
       const labels = { free: '📋 Starter', pro: '⭐ Pro', growth: '🔥 Growth' };
       const pill = document.querySelector('.plan-pill');
       if (pill) pill.textContent = labels[_currentSubPlan] || '📋 Starter';
+      // Update settings plan card
+      const profile = window.__PITCH_USER__?.vendor || {};
+      renderPlanCard(profile);
       applySubscriptionGating(_currentSubPlan);
+      showToast(`Plan updated to ${labels[_currentSubPlan] || chosen}`, 'success');
     } else {
-      document.getElementById('sub-modal-msg').textContent = d.error || 'Could not update plan. Please try again.';
-      document.getElementById('sub-modal-msg').style.display = 'block';
+      msgEl.textContent = d.error || 'Could not update plan. Please try again.';
+      msgEl.style.color = 'var(--terra)';
+      msgEl.style.display = 'block';
+      btn.textContent = 'Confirm change';
       btn.style.opacity = '1';
       btn.style.pointerEvents = 'auto';
     }
   } catch(e) {
-    document.getElementById('sub-modal-msg').textContent = 'Network error — please try again.';
-    document.getElementById('sub-modal-msg').style.display = 'block';
+    console.error('[plan] Network error:', e);
+    msgEl.textContent = 'Network error — please try again.';
+    msgEl.style.color = 'var(--terra)';
+    msgEl.style.display = 'block';
+    btn.textContent = 'Confirm change';
     btn.style.opacity = '1';
     btn.style.pointerEvents = 'auto';
   }
@@ -4488,7 +4554,10 @@ async function initDashboard() {
   if (init && init.avgRating != null) {
     const val = document.getElementById('stat-rating-value');
     const sub = document.getElementById('stat-rating-sub');
-    if (val) val.textContent = init.totalReviews ? init.avgRating : '—';
+    if (val) {
+      if (init.totalReviews) { val.textContent = init.avgRating; }
+      else { val.textContent = '☆'; val.style.opacity = '0.25'; val.style.fontSize = '28px'; }
+    }
     if (sub) sub.innerHTML = init.totalReviews
       ? init.totalReviews + ' review' + (init.totalReviews === 1 ? '' : 's')
       : 'Attend your first event to earn reviews';
@@ -4523,7 +4592,10 @@ async function loadOverviewRating() {
   const { avgRating, totalReviews } = await r.json();
   const val = document.getElementById('stat-rating-value');
   const sub = document.getElementById('stat-rating-sub');
-  if (val) val.textContent = totalReviews ? avgRating.toFixed(1) : '—';
+  if (val) {
+    if (totalReviews) { val.textContent = avgRating.toFixed(1); val.style.opacity = ''; val.style.fontSize = ''; }
+    else { val.textContent = '☆'; val.style.opacity = '0.25'; val.style.fontSize = '28px'; }
+  }
   if (sub) sub.innerHTML = totalReviews
     ? totalReviews + ' review' + (totalReviews === 1 ? '' : 's')
     : 'Attend your first event to earn reviews';
@@ -4546,12 +4618,16 @@ function renderEventsMiniList(events) {
     const statusBadge = ev.applied
       ? `<span class="event-mini-spots" style="color:${ev.appStatus==='approved'?'var(--herb)':ev.appStatus==='rejected'?'var(--terra)':'var(--gold);'}">${ev.appStatus==='approved'?'✓ Approved':ev.appStatus==='rejected'?'✕ Not accepted':'● Applied'}</span>`
       : '';
-    const viewBtn = `<button class="btn-apply-mini" onclick="event.stopPropagation();openEventDetail(${ev.id})">${ev.applied ? 'Details →' : 'View →'}</button>`;
+    const viewBtn = ev.applied
+      ? `<button class="btn-apply-mini applied" onclick="event.stopPropagation();openEventDetail(${ev.id})">Details →</button>`
+      : `<button class="btn-apply-mini" onclick="event.stopPropagation();openEventDetail(${ev.id})">View →</button>`;
+    const cc = _getCatConfig(ev.category);
+    const evDateFmt = ev.date_sort ? new Date(ev.date_sort + 'T00:00:00').toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' }) : 'TBC';
     return `<div class="event-mini" data-event-id="${ev.id}" onclick="openEventDetail(${ev.id})" style="cursor:pointer;">
-      <div class="event-mini-icon" style="background:linear-gradient(135deg,#1A1208,#3D2C10);">🎪</div>
+      <div class="event-mini-icon" style="background:linear-gradient(135deg,${cc.grad[0]},${cc.grad[1]});">${cc.icon}</div>
       <div class="event-mini-body">
         <div class="event-mini-name">${ev.name}</div>
-        <div class="event-mini-meta">📍 ${ev.suburb || ''}${ev.state ? ', ' + ev.state : ''} · ${ev.date_sort || ''}</div>
+        <div class="event-mini-meta">📍 ${ev.suburb || ''}${ev.state ? ', ' + ev.state : ''} · ${evDateFmt}</div>
       </div>
       <div class="event-mini-right">
         ${ev.stalls_available ? `<div class="event-mini-spots">${ev.stalls_available} spots</div>` : ''}
@@ -4610,7 +4686,11 @@ function renderBrowseGrid(events) {
   const grid = document.getElementById('browse-grid');
   if (!grid) return;
   if (!events.length) {
-    grid.innerHTML = '<div style="color:#6B5A4A;font-size:13px;grid-column:1/-1;padding:40px 0;text-align:center;">No events match your filters.</div>';
+    grid.innerHTML = `<div class="browse-empty-state">
+      <svg width="48" height="48" viewBox="0 0 48 48" fill="none"><rect x="6" y="10" width="36" height="32" rx="4" stroke="#6B5A4A" stroke-width="2"/><path d="M6 18h36M16 6v8M32 6v8" stroke="#6B5A4A" stroke-width="2" stroke-linecap="round"/><circle cx="24" cy="30" r="4" stroke="#6B5A4A" stroke-width="2"/></svg>
+      <p>No events match your filters. Try adjusting your search or clearing filters.</p>
+      <button onclick="clearBrowseFilters()">Clear all filters</button>
+    </div>`;
     return;
   }
   const plan = window.__PITCH_PLAN__ || 'free';
@@ -4623,7 +4703,20 @@ function renderBrowseGrid(events) {
   // "Early access" threshold: Growth sees events within 48hrs of creation
   const earlyAccessCutoff = isGrowth ? (Date.now() - 48*60*60*1000) : 0;
 
-  grid.innerHTML = events.map(ev => {
+  // Sort: upcoming events first, past events at the bottom
+  const todayISO = new Date().toISOString().slice(0, 10);
+  const sorted = [...events].sort((a, b) => {
+    const aEnd = a.date_end || a.date_sort || '';
+    const bEnd = b.date_end || b.date_sort || '';
+    const aPast = aEnd && aEnd < todayISO;
+    const bPast = bEnd && bEnd < todayISO;
+    if (aPast !== bPast) return aPast ? 1 : -1;
+    return (a.date_sort || '').localeCompare(b.date_sort || '');
+  });
+
+  grid.innerHTML = sorted.map(ev => {
+    const evEndDate = ev.date_end || ev.date_sort || '';
+    const isPastEvent = evEndDate && evEndDate < todayISO;
     const dateStr = ev.date_sort ? _browseFmtDate(ev.date_sort) + (ev.date_end ? ' → ' + _browseFmtDate(ev.date_end) : '') : 'TBC';
     const total  = Number(ev.stalls_available) || 0;
     const filled = Number(ev.stalls_filled)    || 0;
@@ -4660,7 +4753,7 @@ function renderBrowseGrid(events) {
 
     // Late window indicator for Pro/Growth
     const lateWindowHrs = isGrowth ? 48 : isPro ? 12 : 0;
-    const lateWindowHtml = lateWindowHrs > 0
+    const lateWindowHtml = (lateWindowHrs > 0 && ev.deadline && !isPastEvent)
       ? `<span class="late-window-badge ${isGrowth?'growth':'pro'}" title="You can apply up to ${lateWindowHrs} hours after the application deadline">⏰ +${lateWindowHrs}hr window</span>`
       : '';
 
@@ -4671,10 +4764,11 @@ function renderBrowseGrid(events) {
       ? `<span class="browse-card-dl">Apply by ${_browseFmtDeadline(ev.deadline)}</span>`
       : '';
     const appliedClass = ev.applied ? ' applied' : '';
+    const pastClass = isPastEvent ? ' past-event' : '';
     const statusAccentColor = ev.applied ? (ev.appStatus==='approved'?'var(--herb)':ev.appStatus==='rejected'?'#A0392B':'var(--gold)') : '';
     const statusBorderStyle = ev.applied ? `box-shadow:inset 3px 0 0 ${statusAccentColor};` : '';
     const catPillPos = showEarlyAccess ? 'top:auto;bottom:12px;' : '';
-    return `<div class="browse-card${appliedClass}" style="${statusBorderStyle}" onclick="openEventDetail(${ev.id})">
+    return `<div class="browse-card${appliedClass}${pastClass}" style="${statusBorderStyle}" onclick="openEventDetail(${ev.id})">
       <div class="browse-card-accent" style="background:${cc.accent};"></div>
       <div class="browse-card-header" style="background-image:${cc.pattern},linear-gradient(135deg,${cc.grad[0]},${cc.grad[1]});position:relative;">
         ${ev.cover_image ? `<img src="${ev.cover_image}" alt="${ev.name}" onerror="this.remove()">` : ''}
@@ -4684,6 +4778,7 @@ function renderBrowseGrid(events) {
         ${total > 0 ? `<span class="browse-card-spots-badge" style="background:${spotsBg};color:${spotsCol};border:1px solid ${spotsCol}33;">${spotsTxt}</span>` : ''}
         ${showEarlyAccess ? `<span class="early-access-badge">⚡ Early access</span>` : ''}
         ${urgencyHtml}
+        ${isPastEvent ? '<span class="browse-past-badge">Past event</span>' : ''}
       </div>
       <div class="browse-card-body">
         <div class="browse-card-name">${ev.name}</div>
@@ -4998,7 +5093,7 @@ function renderApplicationsData(applications) {
   if (statActiveSub) {
     const trendHtml = recentActive > 0
       ? ` <span class="stat-trend up">↑ +${recentActive} this week</span>`
-      : activeCount > 0 ? ` <span class="stat-trend flat">— steady</span>` : '';
+      : activeCount > 0 ? ` <span class="stat-trend flat">→ steady</span>` : '';
     statActiveSub.innerHTML = counts.pending + ' pending, ' + counts.approved + ' approved' + trendHtml;
   }
   if (statApproved) statApproved.textContent = approvedCount;
@@ -6315,19 +6410,25 @@ function renderCalendar() {
   grid.innerHTML = '';
   labels.forEach(l => grid.appendChild(l));
 
+  // Helper: returns 'weekend-col' if column index is 5 (Sat) or 6 (Sun)
+  function _wkCls(col) { return (col % 7 >= 5) ? ' weekend-col' : ''; }
+
   // Pad with previous month days
   for (let i = 0; i < startOffset; i++) {
     const d = new Date(_calYear, _calMonth, -startOffset + i + 1);
-    grid.appendChild(Object.assign(document.createElement('div'), { className: 'cal-day other-month', innerHTML: `<div class="cal-day-num">${d.getDate()}</div>` }));
+    const col = i;
+    grid.appendChild(Object.assign(document.createElement('div'), { className: 'cal-day other-month' + _wkCls(col), innerHTML: `<div class="cal-day-num">${d.getDate()}</div>` }));
   }
 
   for (let d = 1; d <= lastDay.getDate(); d++) {
     const iso = `${_calYear}-${String(_calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const events = dayMap[iso] || [];
     const isToday = iso === today;
+    const col = (startOffset + d - 1) % 7;
     const cell = document.createElement('div');
-    cell.className = 'cal-day' + (isToday ? ' today' : '') + (events.length ? ' has-events' : '');
-    cell.innerHTML = `<div class="cal-day-num">${d}</div>` +
+    cell.className = 'cal-day' + (isToday ? ' today' : '') + (events.length ? ' has-events' : '') + _wkCls(col);
+    const todayChip = isToday ? '<span class="cal-today-chip">Today</span>' : '';
+    cell.innerHTML = `<div class="cal-day-num">${d}${todayChip}</div>` +
       events.slice(0,3).map(ev => `<span class="cal-event-dot ${ev.status}" title="${ev.name}">${ev.name}</span>`).join('') +
       (events.length > 3 ? `<span style="font-size:10px;color:var(--text-lo);">+${events.length-3} more</span>` : '');
     grid.appendChild(cell);
@@ -6337,12 +6438,19 @@ function renderCalendar() {
   const total = startOffset + lastDay.getDate();
   const remaining = total % 7 === 0 ? 0 : 7 - (total % 7);
   for (let i = 1; i <= remaining; i++) {
-    grid.appendChild(Object.assign(document.createElement('div'), { className: 'cal-day other-month', innerHTML: `<div class="cal-day-num">${i}</div>` }));
+    const col = (total + i - 1) % 7;
+    grid.appendChild(Object.assign(document.createElement('div'), { className: 'cal-day other-month' + _wkCls(col), innerHTML: `<div class="cal-day-num">${i}</div>` }));
   }
 
-  // Show/hide empty state
+  // Show/hide empty state — show if no events exist at all for this vendor
   const emptyEl = document.getElementById('cal-empty-state');
   if (emptyEl) emptyEl.style.display = _calApps.length === 0 ? 'flex' : 'none';
+
+  // Show month-specific empty hint if there are events in general but none this month
+  const monthPrefix = `${_calYear}-${String(_calMonth+1).padStart(2,'0')}`;
+  const hasMonthEvents = Object.keys(dayMap).some(k => k.startsWith(monthPrefix));
+  const monthHint = document.getElementById('cal-month-hint');
+  if (monthHint) monthHint.style.display = (_calApps.length > 0 && !hasMonthEvents) ? 'block' : 'none';
 }
 
 // ── MARKET HISTORY ──────────────────────────────────────────────────────────
