@@ -27,6 +27,7 @@ const STRIPE_PRICES = {
   pro:    process.env.STRIPE_PRICE_PRO    || '',
   growth: process.env.STRIPE_PRICE_GROWTH || '',
 };
+console.log('[stripe] Initialized:', !!stripe, '| Prices:', JSON.stringify(STRIPE_PRICES));
 const STRIPE_PLAN_FOR_PRICE = Object.fromEntries(
   Object.entries(STRIPE_PRICES).map(([plan, priceId]) => [priceId, plan])
 );
@@ -1193,6 +1194,7 @@ app.post('/api/profile/plan', requireAuth, async (req, res) => {
     // ── Upgrade via Stripe Checkout ──
     if (plan !== 'free' && stripe && STRIPE_PRICES[plan]) {
       const user = await stmts.getUserById.get(req.session.userId);
+      const planLabel = plan === 'growth' ? 'Growth' : 'Pro';
       const sessionParams = {
         mode: 'subscription',
         line_items: [{ price: STRIPE_PRICES[plan], quantity: 1 }],
@@ -1202,6 +1204,11 @@ app.post('/api/profile/plan', requireAuth, async (req, res) => {
         subscription_data: {
           metadata: { user_id: String(req.session.userId), plan },
         },
+        custom_text: {
+          submit: { message: `You're subscribing to Pitch. ${planLabel}. Cancel anytime from your dashboard.` },
+        },
+        consent_collection: { terms_of_service: 'none' },
+        allow_promotion_codes: true,
       };
       // Re-use existing Stripe customer if we have one
       if (vendor.stripe_customer_id) {
@@ -1253,7 +1260,12 @@ app.post('/api/profile/plan', requireAuth, async (req, res) => {
       return res.json({ ok: true, plan: 'free' });
     }
 
-    // Fallback (Stripe not configured) — direct switch
+    // Fallback — Stripe not configured, block paid upgrades
+    if (plan !== 'free') {
+      console.error('[plan] Stripe not configured — cannot process paid upgrade to', plan,
+        '| stripe:', !!stripe, '| price:', STRIPE_PRICES[plan]);
+      return res.status(503).json({ error: 'Payment system is temporarily unavailable. Please try again shortly.' });
+    }
     await stmts.updateVendorPlan.run(plan, req.session.userId);
     await stmts.insertSubscriptionChange.run({
       user_id: req.session.userId, old_plan: currentPlan, new_plan: plan,
