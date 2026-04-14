@@ -543,6 +543,8 @@ footer { background:#161210;border-top:1px solid #ffffff06;margin-top:80px;posit
 .pmb-sig  { background: #E8500A15; color: var(--ember); }
 .pmb-seas { background: #2D8B5515; color: var(--herb); }
 .pmb-off  { background: #ffffff08; color: var(--text-lo); }
+.pmb-cat  { background: #ffffff08; color: var(--text-mid); border: 1px solid #ffffff10; }
+.pmb-diet { background: #2D8B5510; color: var(--herb); border: 1px solid #2D8B5520; }
 @media (max-width: 600px) { .pub-menu-card.is-sig { flex-direction: column; } .pub-menu-card.is-sig .pub-menu-photo { width: 100%; height: 140px; } }
 
 /* ── APPLY TO SAME MARKETS ───────────────────────────────────────────────── */
@@ -1706,6 +1708,8 @@ function renderPublicMenu() {
           ${isSig         ? '<span class="pub-menu-badge pmb-sig">⭐ Signature</span>' : ''}
           ${item.seasonal ? '<span class="pub-menu-badge pmb-seas">🌿 Seasonal</span>' : ''}
           ${!item.available ? '<span class="pub-menu-badge pmb-off">Not available today</span>' : ''}
+          ${item.category ? `<span class="pub-menu-badge pmb-cat">${escH(item.category)}</span>` : ''}
+          ${(function(){ try { var t = typeof item.dietary_tags === 'string' ? JSON.parse(item.dietary_tags) : (item.dietary_tags || []); return t.map(function(d){ return '<span class="pub-menu-badge pmb-diet">' + escH(d) + '</span>'; }).join(''); } catch(e){ return ''; } })()}
         </div>
       </div>
     </div>`;
