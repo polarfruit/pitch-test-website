@@ -533,7 +533,12 @@ body::before {
 .status-filter-btn:hover { background: #ffffff09; color: var(--text-hi); }
 .status-filter-btn.active { background: var(--ember); border-color: var(--ember); color: #fff; }
 
-.app-table { width: 100%; border-collapse: collapse; }
+.app-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.app-table colgroup .col-event { width: 36%; }
+.app-table colgroup .col-cat { width: 14%; }
+.app-table colgroup .col-status { width: 16%; }
+.app-table colgroup .col-applied { width: 14%; }
+.app-table colgroup .col-action { width: 20%; }
 .app-table thead th {
   font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
   color: var(--text-lo); padding: 0 16px 12px; text-align: left; white-space: nowrap;
@@ -2005,6 +2010,9 @@ body::before {
 
       <div class="card" style="padding:0;overflow:hidden;">
         <table class="app-table" id="app-table">
+          <colgroup>
+            <col class="col-event"><col class="col-cat"><col class="col-status"><col class="col-applied"><col class="col-action">
+          </colgroup>
           <thead>
             <tr>
               <th style="padding-left:24px;">Event</th>
@@ -2018,6 +2026,19 @@ body::before {
             <tr id="app-empty-row"><td colspan="5" style="padding:32px 24px;text-align:center;color:var(--text-lo);font-size:13px;">No applications yet — browse events and apply below.</td></tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- Browse nudge — shown when few applications -->
+      <div id="app-browse-nudge" style="display:none;margin-top:16px;">
+        <a href="#" onclick="event.preventDefault();showPanel('browse')"
+          style="display:flex;align-items:center;justify-content:center;gap:6px;
+          padding:14px;color:var(--ember);font-size:13px;font-weight:700;
+          text-decoration:none;border-radius:12px;background:#ffffff06;
+          border:1px dashed #ffffff12;transition:background 0.14s;"
+          onmouseover="this.style.background='#ffffff0d'"
+          onmouseout="this.style.background='#ffffff06'">
+          Browse events to find your next gig →
+        </a>
       </div>
     </div>
 
@@ -5162,16 +5183,16 @@ function renderApplicationsData(applications) {
   // Acceptance rate bar (Pro/Growth only — shown via applySubscriptionGating)
   const rateEl = document.getElementById('acceptance-rate-value');
   if (rateEl) {
-    const submitted = applications.filter(a => a.status !== 'withdrawn').length;
-    const acc = submitted > 0 ? Math.round((counts.approved / submitted) * 100) : null;
+    const decided = applications.filter(a => a.status === 'approved' || a.status === 'rejected').length;
+    const acc = decided > 0 ? Math.round((counts.approved / decided) * 100) : null;
     rateEl.textContent = acc !== null ? acc + '%' : '—';
   }
   // Also update analytics panel if visible
   const analyticsRate = document.getElementById('analytics-acc-rate');
   const analyticsCount = document.getElementById('analytics-app-count');
   if (analyticsRate) {
-    const sub2 = applications.filter(a => a.status !== 'withdrawn').length;
-    analyticsRate.textContent = sub2 > 0 ? Math.round((counts.approved / sub2) * 100) + '%' : '—';
+    const decided2 = applications.filter(a => a.status === 'approved' || a.status === 'rejected').length;
+    analyticsRate.textContent = decided2 > 0 ? Math.round((counts.approved / decided2) * 100) + '%' : '—';
   }
   if (analyticsCount) analyticsCount.textContent = applications.length;
 
@@ -5201,6 +5222,8 @@ function renderApplicationsData(applications) {
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
           ${a.status === 'pending'
             ? `<button onclick="withdrawApp(${a.event_id}, this)" style="background:none;border:none;color:var(--text-lo);cursor:pointer;font-size:12px;font-family:inherit;text-decoration:underline;">Withdraw</button>`
+            : a.status === 'withdrawn'
+            ? `<a class="action-link" href="/events/${a.event_slug||a.event_id}" target="_blank" rel="noopener" style="color:var(--text-mid);">View event →</a>`
             : `<a class="action-link" href="/events/${a.event_slug||a.event_id}" target="_blank" rel="noopener">View →</a>`
           }
           ${a.status !== 'withdrawn' ? `<button onclick="startChatWithOrganiser(${a.organiser_user_id||0},'${(a.organiser_name||'Organiser').replace(/'/g,"\\'")}','${(a.event_name||'').replace(/'/g,"\\'")}',false,${a.event_id||0})" style="font-family:var(--fb);font-size:11px;font-weight:700;color:var(--ember);background:var(--ember-bg);border:1px solid #E8500A22;padding:4px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;">💬 Message</button>` : ''}
@@ -5208,6 +5231,10 @@ function renderApplicationsData(applications) {
       </td>
     </tr>
   `).join('');
+
+  // Show browse nudge when few applications
+  const nudge = document.getElementById('app-browse-nudge');
+  if (nudge) nudge.style.display = applications.length < 5 ? 'block' : 'none';
 }
 
 async function loadActivity() {
