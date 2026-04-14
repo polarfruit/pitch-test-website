@@ -1248,12 +1248,11 @@ function applyAndReveal(v) {
   }
 
   // Show contact button for logged-in organisers
-  fetch('/api/me').then(function(r){ return r.ok ? r.json() : null; }).then(function(d){
-    if (d && d.user && d.user.role === 'organiser') {
-      var c = document.getElementById('contact-btn');
-      if (c) c.style.display = '';
-    }
-  }).catch(function(){});
+  var _pu = window.__PITCH_USER__;
+  if (_pu && _pu.role === 'organiser') {
+    var c = document.getElementById('contact-btn');
+    if (c) c.style.display = '';
+  }
 
   // What they sell — use cuisine_tags from DB vendor
   var _cuisines = Array.isArray(v.cuisine_tags) ? v.cuisine_tags : [];
@@ -1655,16 +1654,11 @@ async function loadPublicMenu(vendorUserId) {
   const section = document.getElementById('vd-menu-section');
   if (section) section.style.display = '';
   // Own-profile edit shortcut — check if logged-in user is this vendor
-  try {
-    const me = await fetch('/api/me');
-    if (me.ok) {
-      const { user } = await me.json();
-      if (user && user.id === vendorUserId) {
-        const editBtn = document.getElementById('vd-menu-own-edit');
-        if (editBtn) editBtn.style.display = '';
-      }
-    }
-  } catch(_) {}
+  const _pUser = window.__PITCH_USER__;
+  if (_pUser && _pUser.id === vendorUserId) {
+    const editBtn = document.getElementById('vd-menu-own-edit');
+    if (editBtn) editBtn.style.display = '';
+  }
   renderPublicMenu();
 }
 
@@ -1721,32 +1715,6 @@ function filterPublicMenu(cat) {
   renderPublicMenu();
 }
 </script>
-<script>
-(function() {
-  function showPublicNav(){var l=document.getElementById('nav-loggedout');if(l)l.style.display='';}
-  fetch('/api/me').then(r => r.json()).then(d => {
-    if (!d.user) { showPublicNav(); return; }
-    if (d.user.role === 'foodie') {
-      const nl = document.querySelector('.nav-links');
-      if (nl) { nl.innerHTML = '<li><a href="/discover">My Feed</a></li><li><a href="/events">All Events</a></li><li><a href="/vendors">Vendors</a></li>'; }
-      const lo = document.getElementById('nav-loggedout'); if (lo) lo.remove();
-      const li = document.getElementById('nav-loggedin'); if (li) li.remove();
-      const nav = document.querySelector('.navbar'), ham = nav && nav.querySelector('.nav-hamburger');
-      const rightHtml = `<div style="display:flex;align-items:center;gap:10px;"><div style="display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600;color:var(--text-mid);"><div style="width:28px;height:28px;border-radius:50%;background:var(--ember);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;">🍜</div><span>${d.user.first_name || 'Account'}</span></div><button onclick="fetch('/api/logout',{method:'POST'}).then(()=>location.href='/')" style="font-size:13px;font-weight:600;color:var(--text-lo);background:transparent;border:none;cursor:pointer;padding:8px;font-family:inherit;">Sign out</button></div>`;
-      if (ham) ham.insertAdjacentHTML('beforebegin', rightHtml);
-      else if (nav) nav.insertAdjacentHTML('beforeend', rightHtml);
-      return;
-    }
-    const lo = document.getElementById('nav-loggedout');
-    const li = document.getElementById('nav-loggedin');
-    if (lo) lo.style.display = 'none';
-    if (li) li.style.display = 'flex';
-    const lbl = document.getElementById('nav-user-label');
-    if (lbl) lbl.textContent = (d.user.vendor && d.user.vendor.trading_name) || (d.user.organiser && d.user.organiser.org_name) || d.user.first_name || 'Account';
-    const dl = document.getElementById('nav-dashboard-link');
-    if (dl) dl.href = d.user.role === 'organiser' ? '/dashboard/organiser' : '/dashboard/vendor';
-  }).catch(() => { showPublicNav(); });
-})();
-</script>
+<!-- Nav handled by __PITCH_USER__ inline script above -->
 </body>
 </html>
