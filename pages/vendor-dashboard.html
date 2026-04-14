@@ -1549,6 +1549,7 @@ body::before {
 
 /* ── MARKET HISTORY ───────────────────────────────────────────────────────── */
 .stat-card.no-blob::before { display:none; }
+.stat-card.no-blob { border:1px solid #6B5A4A30; }
 .stat-card .stat-value.muted { color:var(--text-mid) !important; font-size:28px; }
 #panel-history .stat-grid { margin-bottom:16px; }
 #panel-history .section-sub { font-size:13px; color:var(--text-mid); line-height:1.5; }
@@ -1583,7 +1584,7 @@ body::before {
 .history-detail-label { color:var(--text-lo); font-weight:700; }
 .history-cat-pill {
   display:inline-flex; font-size:10px; font-weight:700; letter-spacing:0.06em;
-  padding:2px 8px; border-radius:6px; background:#ffffff08; color:var(--text-mid);
+  padding:2px 8px; border-radius:6px; background:#6B5A4A18; color:var(--text-lo); border:1px solid #6B5A4A25;
   text-transform:uppercase; vertical-align:middle; margin-right:8px;
 }
 .history-reviews { margin-top:10px; padding-top:10px; border-top:1px solid #ffffff06; }
@@ -6803,6 +6804,11 @@ function renderHistoryList() {
       ${reviewsHtml}
     </div>`;
   }).join('');
+
+  // Subtle hint when few events
+  if (filtered.length > 0 && filtered.length <= 3) {
+    list.innerHTML += `<div style="text-align:center;padding:28px 20px 12px;font-size:12px;color:var(--text-lo);line-height:1.6;">Your event history will grow as you attend more markets through Pitch.</div>`;
+  }
 }
 
 // ── SETTINGS ────────────────────────────────────────────────────────────────
@@ -7103,6 +7109,8 @@ function openMenuModal(editIdx) {
   document.getElementById('mi-price-min').value  = item?.price_min ?? '';
   document.getElementById('mi-price-max').value  = item?.price_max ?? '';
   document.getElementById('mi-category').value   = item?.category || '';
+  setCategoryChip(item?.category || '');
+  setDietTags(item?.dietary_tags ? (typeof item.dietary_tags === 'string' ? JSON.parse(item.dietary_tags) : item.dietary_tags) : []);
   document.getElementById('mi-available').checked  = item ? !!item.available : true;
   document.getElementById('mi-seasonal').checked   = item ? !!item.seasonal : false;
   document.getElementById('mi-signature').checked  = item ? !!item.is_signature : false;
