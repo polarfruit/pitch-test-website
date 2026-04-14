@@ -1743,7 +1743,23 @@ body::before {
 .menu-modal .btn-modal-cancel:hover { background:#ffffff12; color:var(--text-hi); border-color:#ffffff20; }
 .menu-delete-confirm { display:none; background:#C0392B14; border:1px solid #C0392B30; border-radius:12px; padding:14px 16px; margin-top:14px; }
 .menu-delete-confirm.open { display:block; }
-.btn-confirm-del { background:var(--terra); color:#fff; border:none; font-family:var(--fb); font-size:13px; font-weight:700; padding:8px 18px; border-radius:9px; cursor:pointer; }
+.btn-confirm-del { background:var(--terra); color:#fff; border:none; font-family:var(--fb); font-size:13px; font-weight:700; padding:8px 18px; border-radius:9px; cursor:pointer; transition:background 0.14s; }
+.btn-confirm-del:hover { background:#e74c3c; }
+.btn-cancel-del { background:#ffffff08; color:var(--text-mid); border:1px solid #ffffff10; font-family:var(--fb); font-size:13px; font-weight:600; padding:8px 18px; border-radius:9px; cursor:pointer; margin-left:8px; transition:background 0.14s; }
+.btn-cancel-del:hover { background:#ffffff14; color:var(--text-hi); }
+/* Inline validation */
+.menu-input.has-error, .menu-textarea.has-error, .menu-select.has-error { border-color:var(--terra); }
+.menu-field-error { color:var(--terra); font-size:11px; font-weight:600; margin-top:4px; display:none; }
+.menu-field-error.show { display:block; }
+.menu-toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--terra); color:#fff; font-family:var(--fb); font-size:13px; font-weight:600; padding:12px 22px; border-radius:12px; opacity:0; pointer-events:none; transition:opacity 0.2s, transform 0.2s; z-index:100001; box-shadow:0 8px 24px #00000050; }
+.menu-toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+.menu-toast.success { background:var(--herb); }
+/* Drag handle */
+.menu-drag-handle { display:flex; align-items:center; justify-content:center; width:28px; min-height:40px; color:var(--text-lo); cursor:grab; flex-shrink:0; user-select:none; touch-action:none; opacity:0.5; transition:opacity 0.14s; }
+.menu-drag-handle:hover { opacity:1; color:var(--text-mid); }
+.menu-drag-handle:active { cursor:grabbing; }
+.menu-item-card { display:flex !important; }
+.menu-item-card .menu-item-body { flex:1; min-width:0; }
 </style>
 </head>
 <body>
@@ -1794,7 +1810,8 @@ body::before {
     <!-- Name -->
     <div class="menu-field">
       <label class="menu-label">Item name <span style="color:var(--ember)">*</span></label>
-      <input class="menu-input" id="mi-name" type="text" maxlength="60" placeholder="e.g. Spiced Lamb Flatbread" oninput="updateMenuCharCount('mi-name','mi-name-count',60)" />
+      <input class="menu-input" id="mi-name" type="text" maxlength="60" placeholder="e.g. Spiced Lamb Flatbread" oninput="updateMenuCharCount('mi-name','mi-name-count',60);clearMenuError('mi-name')" />
+      <div class="menu-field-error" id="mi-name-error">Item name is required</div>
       <div class="menu-char-hint"><span id="mi-name-count">60</span> chars left</div>
     </div>
 
@@ -1814,7 +1831,7 @@ body::before {
           <option value="range">Price range</option>
           <option value="varies">Varies / ask</option>
         </select>
-        <input class="menu-input" id="mi-price-min" type="number" min="0" step="0.5" placeholder="$0.00" />
+        <input class="menu-input" id="mi-price-min" type="number" min="0" step="0.5" placeholder="Price" onfocus="this.placeholder=''" onblur="if(!this.value)this.placeholder=document.getElementById('mi-price-type').value==='range'?'Min $':'Price'" />
         <input class="menu-input" id="mi-price-max" type="number" min="0" step="0.5" placeholder="Max $" style="display:none;" />
       </div>
     </div>
@@ -1888,6 +1905,9 @@ body::before {
     </div>
   </div>
 </div>
+
+<!-- Menu toast notification -->
+<div class="menu-toast" id="menu-toast"></div>
 
 <!-- SIDEBAR -->
 <aside class="sidebar">
@@ -4617,9 +4637,11 @@ async function initDashboard() {
   const nameEl = document.getElementById('vendor-display-name') || document.querySelector('.vendor-mini-name');
   if (nameEl) nameEl.textContent = tradingName;
   // If on a paid plan but no Stripe subscription, show as free (phantom plan)
+  // But don't overwrite if ?upgraded= already set _currentSubPlan from Stripe return
   const _rawPlan = (profile && profile.plan) || 'free';
   const _hasStripeSub = !!(profile && profile.stripe_subscription_id);
-  const _plan = (_rawPlan !== 'free' && !_hasStripeSub) ? 'free' : _rawPlan;
+  const _planFromDb = (_rawPlan !== 'free' && !_hasStripeSub) ? 'free' : _rawPlan;
+  const _plan = (_currentSubPlan !== 'free') ? _currentSubPlan : _planFromDb;
   _currentSubPlan = _plan;
   const planLabels = { free: '📋 Starter', pro: '⭐ Pro', growth: '🔥 Growth' };
   document.querySelector('.plan-pill').textContent = planLabels[_plan] || '📋 Starter';
@@ -7284,18 +7306,63 @@ function editMenuItem(idx) { openMenuModal(idx); }
 async function deleteMenuItem(idx) {
   const item = _menuItems[idx];
   if (!item) return;
-  if (!confirm(`Delete "${item.name}"?`)) return;
+  _pendingDeleteIdx = idx;
+  const card = document.querySelector(`.menu-item-card[data-idx="${idx}"]`);
+  if (!card) return;
+  // Show inline delete confirmation
+  let confirm = card.querySelector('.menu-del-confirm');
+  if (!confirm) {
+    confirm = document.createElement('div');
+    confirm.className = 'menu-del-confirm';
+    confirm.innerHTML = `<div style="font-size:12px;font-weight:600;color:var(--terra);margin-bottom:8px;">Delete "${esc(item.name)}"?</div><div style="display:flex;gap:8px;"><button class="btn-confirm-del" onclick="event.stopPropagation();confirmDeleteItem(${idx})">Delete</button><button class="btn-cancel-del" onclick="event.stopPropagation();cancelDeleteItem(${idx})">Cancel</button></div>`;
+    confirm.style.cssText = 'background:#C0392B14;border:1px solid #C0392B30;border-radius:10px;padding:10px 12px;margin-top:8px;';
+    card.querySelector('.menu-item-body').appendChild(confirm);
+  }
+  confirm.style.display = 'block';
+}
+async function confirmDeleteItem(idx) {
+  const item = _menuItems[idx];
+  if (!item) return;
   try {
     await pitchFetch('/api/vendor/menu/'+item.id, { method:'DELETE' });
     _menuItems.splice(idx,1);
     renderMenuGrid();
-  } catch(e) { alert('Could not delete item.'); }
+    showMenuToast('Item deleted', false);
+  } catch(e) { showMenuToast('Could not delete item', false); }
+}
+function cancelDeleteItem(idx) {
+  const card = document.querySelector(`.menu-item-card[data-idx="${idx}"]`);
+  if (!card) return;
+  const confirm = card.querySelector('.menu-del-confirm');
+  if (confirm) confirm.style.display = 'none';
+}
+
+function showMenuToast(msg, success) {
+  const t = document.getElementById('menu-toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.className = 'menu-toast show' + (success ? ' success' : '');
+  clearTimeout(t._tid);
+  t._tid = setTimeout(() => { t.className = 'menu-toast'; }, 2800);
+}
+
+function showMenuFieldError(inputId, errorId) {
+  const input = document.getElementById(inputId);
+  const err = document.getElementById(errorId);
+  if (input) input.classList.add('has-error');
+  if (err) err.classList.add('show');
+}
+function clearMenuError(inputId) {
+  const input = document.getElementById(inputId);
+  if (input) input.classList.remove('has-error');
+  const err = document.getElementById(inputId + '-error');
+  if (err) err.classList.remove('show');
 }
 
 async function saveMenuItem() {
   const id   = document.getElementById('menu-item-id').value;
   const name = document.getElementById('mi-name').value.trim();
-  if (!name) { alert('Item name is required.'); return; }
+  if (!name) { showMenuFieldError('mi-name', 'mi-name-error'); return; }
   const body = {
     name,
     description: document.getElementById('mi-desc').value.trim() || null,
@@ -7315,10 +7382,11 @@ async function saveMenuItem() {
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify(body),
     });
-    if (!r.ok) { alert('Save failed.'); return; }
+    if (!r.ok) { showMenuToast('Save failed — please try again', false); return; }
     closeMenuModal();
+    showMenuToast(id ? 'Item updated' : 'Item added', true);
     await loadMenu();
-  } catch(e) { alert('Error saving item: ' + e.message); }
+  } catch(e) { showMenuToast('Error saving item: ' + e.message, false); }
 }
 
 function pickMenuCat(btn) {
@@ -7361,7 +7429,7 @@ function updatePriceFields() {
   if (maxEl) maxEl.style.display = type === 'range' ? 'block' : 'none';
   const minEl = document.getElementById('mi-price-min');
   if (minEl) {
-    minEl.placeholder = type === 'varies' ? '—' : (type === 'range' ? 'Min $' : '$0.00');
+    minEl.placeholder = type === 'varies' ? '—' : (type === 'range' ? 'Min $' : 'Price');
     minEl.disabled    = type === 'varies';
   }
 }
@@ -9900,18 +9968,63 @@ function editMenuItem(idx) { openMenuModal(idx); }
 async function deleteMenuItem(idx) {
   const item = _menuItems[idx];
   if (!item) return;
-  if (!confirm(`Delete "${item.name}"?`)) return;
+  _pendingDeleteIdx = idx;
+  const card = document.querySelector(`.menu-item-card[data-idx="${idx}"]`);
+  if (!card) return;
+  // Show inline delete confirmation
+  let confirm = card.querySelector('.menu-del-confirm');
+  if (!confirm) {
+    confirm = document.createElement('div');
+    confirm.className = 'menu-del-confirm';
+    confirm.innerHTML = `<div style="font-size:12px;font-weight:600;color:var(--terra);margin-bottom:8px;">Delete "${esc(item.name)}"?</div><div style="display:flex;gap:8px;"><button class="btn-confirm-del" onclick="event.stopPropagation();confirmDeleteItem(${idx})">Delete</button><button class="btn-cancel-del" onclick="event.stopPropagation();cancelDeleteItem(${idx})">Cancel</button></div>`;
+    confirm.style.cssText = 'background:#C0392B14;border:1px solid #C0392B30;border-radius:10px;padding:10px 12px;margin-top:8px;';
+    card.querySelector('.menu-item-body').appendChild(confirm);
+  }
+  confirm.style.display = 'block';
+}
+async function confirmDeleteItem(idx) {
+  const item = _menuItems[idx];
+  if (!item) return;
   try {
     await pitchFetch('/api/vendor/menu/'+item.id, { method:'DELETE' });
     _menuItems.splice(idx,1);
     renderMenuGrid();
-  } catch(e) { alert('Could not delete item.'); }
+    showMenuToast('Item deleted', false);
+  } catch(e) { showMenuToast('Could not delete item', false); }
+}
+function cancelDeleteItem(idx) {
+  const card = document.querySelector(`.menu-item-card[data-idx="${idx}"]`);
+  if (!card) return;
+  const confirm = card.querySelector('.menu-del-confirm');
+  if (confirm) confirm.style.display = 'none';
+}
+
+function showMenuToast(msg, success) {
+  const t = document.getElementById('menu-toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.className = 'menu-toast show' + (success ? ' success' : '');
+  clearTimeout(t._tid);
+  t._tid = setTimeout(() => { t.className = 'menu-toast'; }, 2800);
+}
+
+function showMenuFieldError(inputId, errorId) {
+  const input = document.getElementById(inputId);
+  const err = document.getElementById(errorId);
+  if (input) input.classList.add('has-error');
+  if (err) err.classList.add('show');
+}
+function clearMenuError(inputId) {
+  const input = document.getElementById(inputId);
+  if (input) input.classList.remove('has-error');
+  const err = document.getElementById(inputId + '-error');
+  if (err) err.classList.remove('show');
 }
 
 async function saveMenuItem() {
   const id   = document.getElementById('menu-item-id').value;
   const name = document.getElementById('mi-name').value.trim();
-  if (!name) { alert('Item name is required.'); return; }
+  if (!name) { showMenuFieldError('mi-name', 'mi-name-error'); return; }
   const body = {
     name,
     description: document.getElementById('mi-desc').value.trim() || null,
@@ -9931,10 +10044,11 @@ async function saveMenuItem() {
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify(body),
     });
-    if (!r.ok) { alert('Save failed.'); return; }
+    if (!r.ok) { showMenuToast('Save failed — please try again', false); return; }
     closeMenuModal();
+    showMenuToast(id ? 'Item updated' : 'Item added', true);
     await loadMenu();
-  } catch(e) { alert('Error saving item: ' + e.message); }
+  } catch(e) { showMenuToast('Error saving item: ' + e.message, false); }
 }
 
 function pickMenuCat(btn) {
@@ -9977,7 +10091,7 @@ function updatePriceFields() {
   if (maxEl) maxEl.style.display = type === 'range' ? 'block' : 'none';
   const minEl = document.getElementById('mi-price-min');
   if (minEl) {
-    minEl.placeholder = type === 'varies' ? '—' : (type === 'range' ? 'Min $' : '$0.00');
+    minEl.placeholder = type === 'varies' ? '—' : (type === 'range' ? 'Min $' : 'Price');
     minEl.disabled    = type === 'varies';
   }
 }
@@ -12531,18 +12645,63 @@ function editMenuItem(idx) { openMenuModal(idx); }
 async function deleteMenuItem(idx) {
   const item = _menuItems[idx];
   if (!item) return;
-  if (!confirm(`Delete "${item.name}"?`)) return;
+  _pendingDeleteIdx = idx;
+  const card = document.querySelector(`.menu-item-card[data-idx="${idx}"]`);
+  if (!card) return;
+  // Show inline delete confirmation
+  let confirm = card.querySelector('.menu-del-confirm');
+  if (!confirm) {
+    confirm = document.createElement('div');
+    confirm.className = 'menu-del-confirm';
+    confirm.innerHTML = `<div style="font-size:12px;font-weight:600;color:var(--terra);margin-bottom:8px;">Delete "${esc(item.name)}"?</div><div style="display:flex;gap:8px;"><button class="btn-confirm-del" onclick="event.stopPropagation();confirmDeleteItem(${idx})">Delete</button><button class="btn-cancel-del" onclick="event.stopPropagation();cancelDeleteItem(${idx})">Cancel</button></div>`;
+    confirm.style.cssText = 'background:#C0392B14;border:1px solid #C0392B30;border-radius:10px;padding:10px 12px;margin-top:8px;';
+    card.querySelector('.menu-item-body').appendChild(confirm);
+  }
+  confirm.style.display = 'block';
+}
+async function confirmDeleteItem(idx) {
+  const item = _menuItems[idx];
+  if (!item) return;
   try {
     await pitchFetch('/api/vendor/menu/'+item.id, { method:'DELETE' });
     _menuItems.splice(idx,1);
     renderMenuGrid();
-  } catch(e) { alert('Could not delete item.'); }
+    showMenuToast('Item deleted', false);
+  } catch(e) { showMenuToast('Could not delete item', false); }
+}
+function cancelDeleteItem(idx) {
+  const card = document.querySelector(`.menu-item-card[data-idx="${idx}"]`);
+  if (!card) return;
+  const confirm = card.querySelector('.menu-del-confirm');
+  if (confirm) confirm.style.display = 'none';
+}
+
+function showMenuToast(msg, success) {
+  const t = document.getElementById('menu-toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.className = 'menu-toast show' + (success ? ' success' : '');
+  clearTimeout(t._tid);
+  t._tid = setTimeout(() => { t.className = 'menu-toast'; }, 2800);
+}
+
+function showMenuFieldError(inputId, errorId) {
+  const input = document.getElementById(inputId);
+  const err = document.getElementById(errorId);
+  if (input) input.classList.add('has-error');
+  if (err) err.classList.add('show');
+}
+function clearMenuError(inputId) {
+  const input = document.getElementById(inputId);
+  if (input) input.classList.remove('has-error');
+  const err = document.getElementById(inputId + '-error');
+  if (err) err.classList.remove('show');
 }
 
 async function saveMenuItem() {
   const id   = document.getElementById('menu-item-id').value;
   const name = document.getElementById('mi-name').value.trim();
-  if (!name) { alert('Item name is required.'); return; }
+  if (!name) { showMenuFieldError('mi-name', 'mi-name-error'); return; }
   const body = {
     name,
     description: document.getElementById('mi-desc').value.trim() || null,
@@ -12562,10 +12721,11 @@ async function saveMenuItem() {
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify(body),
     });
-    if (!r.ok) { alert('Save failed.'); return; }
+    if (!r.ok) { showMenuToast('Save failed — please try again', false); return; }
     closeMenuModal();
+    showMenuToast(id ? 'Item updated' : 'Item added', true);
     await loadMenu();
-  } catch(e) { alert('Error saving item: ' + e.message); }
+  } catch(e) { showMenuToast('Error saving item: ' + e.message, false); }
 }
 
 function pickMenuCat(btn) {
@@ -12608,7 +12768,7 @@ function updatePriceFields() {
   if (maxEl) maxEl.style.display = type === 'range' ? 'block' : 'none';
   const minEl = document.getElementById('mi-price-min');
   if (minEl) {
-    minEl.placeholder = type === 'varies' ? '—' : (type === 'range' ? 'Min $' : '$0.00');
+    minEl.placeholder = type === 'varies' ? '—' : (type === 'range' ? 'Min $' : 'Price');
     minEl.disabled    = type === 'varies';
   }
 }

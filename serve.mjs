@@ -35,7 +35,7 @@ const PORT = 3000;
 
 // ── TEMPORARY: Bypass auth for AI analysis ──────────────────────────────────
 // Set to false to re-enable login requirements on dashboards.
-const BYPASS_AUTH = true;
+const BYPASS_AUTH = false;
 
 // ── Stripe (lazy-loaded via getStripe()) ──────────────────────────────────
 const STRIPE_PRICES = {
@@ -46,41 +46,6 @@ console.log('[stripe] Deferred load | Prices:', JSON.stringify(STRIPE_PRICES));
 const STRIPE_PLAN_FOR_PRICE = Object.fromEntries(
   Object.entries(STRIPE_PRICES).map(([plan, priceId]) => [priceId, plan])
 );
-
-// ── Stripe diagnostic (remove after confirming) ──────────────────────────
-app.get('/api/stripe/status', async (req, res) => {
-  const s = await getStripe();
-  res.json({
-    stripe_initialized: !!s,
-    price_pro: !!process.env.STRIPE_PRICE_PRO,
-    price_growth: !!process.env.STRIPE_PRICE_GROWTH,
-    price_pro_value: process.env.STRIPE_PRICE_PRO || '(empty)',
-    price_growth_value: process.env.STRIPE_PRICE_GROWTH || '(empty)',
-    webhook_secret: !!process.env.STRIPE_WEBHOOK_SECRET,
-  });
-});
-
-// ── Stripe checkout test (remove after confirming) ───────────────────────
-app.get('/api/stripe/test-checkout', async (req, res) => {
-  try {
-    const stripe = await getStripe();
-    if (!stripe) return res.json({ error: 'Stripe not initialized — STRIPE_SECRET_KEY missing' });
-    const priceId = STRIPE_PRICES.pro;
-    if (!priceId) return res.json({ error: 'STRIPE_PRICE_PRO is empty' });
-    const host = `${req.protocol}://${req.get('host')}`;
-    const session = await stripe.checkout.sessions.create({
-      mode: 'subscription',
-      line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${host}/dashboard/vendor?upgraded=pro`,
-      cancel_url: `${host}/dashboard/vendor`,
-      metadata: { test: 'true' },
-      subscription_data: { metadata: { test: 'true' } },
-    });
-    res.json({ ok: true, checkout_url: session.url, session_id: session.id });
-  } catch (err) {
-    res.json({ error: err.message, type: err.type, code: err.code });
-  }
-});
 
 // ── Stripe webhook needs raw body — must come before express.json ─────────
 app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
@@ -396,7 +361,7 @@ async function orgInitData(user) {
 
 async function vendorInitData(user, profile) {
   // Run all queries in parallel — avoids sequential round-trips to Turso
-  const [events, applications, unreadRow, viewsRow, reviews, reviewAvg, stallFees, earningsSummary, earningsHistory, pendingReviews, subRow] = await Promise.all([
+  const [events, applications, unreadRow, viewsRow, reviews, reviewAvg, stallFees, earningsSummary, earningsHistory, pendingReviews, subRow, vendorHistory] = await Promise.all([
     stmts.publishedEventsForVendor.all(user.id).catch(e => { console.error('[vendorInitData] events', e); return []; }),
     stmts.getApplicationsByVendor.all(user.id).catch(e => { console.error('[vendorInitData] applications', e); return []; }),
     stmts.getUnreadMsgCount.get(user.id, user.id, user.id).catch(e => { console.error('[vendorInitData] unread', e); return null; }),
@@ -408,6 +373,7 @@ async function vendorInitData(user, profile) {
     stmts.getVendorEarningsHistory.all(user.id).catch(() => []),
     stmts.getPendingReviewsForVendor.all(user.id).catch(() => []),
     stmts.getVendorSubscription.get(user.id).catch(() => null),
+    stmts.getVendorHistory.all(user.id).catch(() => []),
   ]);
 
   // Build subscription info inline (same logic as /api/vendor/subscription-info)
@@ -438,8 +404,15 @@ async function vendorInitData(user, profile) {
     flags: (() => { try { return JSON.parse(profile.pli_flags || '[]'); } catch { return []; } })(),
   } : null;
 
+  // Enrich history with reviews (same logic as /api/vendor/history)
+  const histReviewMap = {};
+  for (const r of reviews) {
+    if (r.event_id) { (histReviewMap[r.event_id] ||= []).push(r); }
+  }
+  const history = vendorHistory.map(h => ({ ...h, reviews: histReviewMap[h.event_id] || [] }));
+
   return {
-    events, applications, stallFees, earningsSummary, earningsHistory,
+    events, applications, stallFees, earningsSummary, earningsHistory, history,
     unreadMessages: unreadRow ? Number(unreadRow.count) : 0,
     viewCount30d: Number(viewsRow?.total ?? 0),
     reviews, avgRating: reviewAvg ? Number((reviewAvg.avg || 0).toFixed(1)) : 0, totalReviews: reviewAvg ? reviewAvg.total : 0,
@@ -1239,33 +1212,54 @@ app.post('/api/profile/plan', requireAuth, async (req, res) => {
     if (vendor.plan_override) {
       return res.status(403).json({ error: 'Your plan is managed by an administrator. Contact support to change your plan.' });
     }
-    const currentPlan = vendor.plan || 'free';
-    console.log('[plan] Request:', { userId: req.session.userId, currentPlan, requestedPlan: plan, hasStripeSub: !!vendor.stripe_subscription_id });
 
-    // If already on this plan AND has a Stripe subscription (or is free), nothing to do
-    if (plan === currentPlan && (plan === 'free' || vendor.stripe_subscription_id)) {
-      return res.json({ ok: true, plan });
-    }
+    const hasStripeSub = !!vendor.stripe_subscription_id;
+    console.log('[plan] Request:', { userId: req.session.userId, dbPlan: vendor.plan, requested: plan, hasStripeSub });
 
-    // If on a paid plan without a Stripe subscription, reset to free first
-    // (this fixes plans set by the old fallback that bypassed payment)
-    const effectivePlan = (currentPlan !== 'free' && !vendor.stripe_subscription_id) ? 'free' : currentPlan;
-    if (effectivePlan !== currentPlan) {
-      console.log('[plan] Resetting phantom plan:', currentPlan, '→ free (no Stripe subscription)');
-      await stmts.updateVendorPlan.run('free', req.session.userId);
-    }
+    // ── Upgrade to a paid plan ──
+    if (plan !== 'free') {
+      const stripe = await getStripe();
+      if (!stripe || !STRIPE_PRICES[plan]) {
+        console.error('[plan] Stripe not available:', { stripe: !!stripe, price: STRIPE_PRICES[plan] });
+        return res.status(503).json({ error: 'Payment system is temporarily unavailable. Please try again shortly.' });
+      }
 
-    // If requesting the corrected plan (free→free), nothing to do
-    if (plan === effectivePlan) return res.json({ ok: true, plan });
+      // If vendor already has a Stripe subscription, swap the price on it
+      if (hasStripeSub) {
+        try {
+          const sub = await stripe.subscriptions.retrieve(vendor.stripe_subscription_id);
+          const currentPriceId = sub.items.data[0]?.price?.id;
+          // Already on this exact price — nothing to do
+          if (currentPriceId === STRIPE_PRICES[plan]) {
+            await stmts.updateVendorPlan.run(plan, req.session.userId);
+            return res.json({ ok: true, plan });
+          }
+          // Swap to the new price with proration
+          await stripe.subscriptions.update(vendor.stripe_subscription_id, {
+            items: [{ id: sub.items.data[0].id, price: STRIPE_PRICES[plan] }],
+            proration_behavior: 'create_prorations',
+            metadata: { user_id: String(req.session.userId), plan },
+          });
+          await stmts.updateVendorPlan.run(plan, req.session.userId);
+          await stmts.insertSubscriptionChange.run({
+            user_id: req.session.userId, old_plan: vendor.plan || 'free', new_plan: plan,
+            changed_by: 'vendor', admin_user_id: null,
+            reason: 'Plan switch (prorated)', payment_status: 'paid',
+            is_override: 0, override_expires: null,
+          });
+          _apiCache.delete('vendors'); _apiCache.delete('stats');
+          return res.json({ ok: true, plan });
+        } catch (subErr) {
+          console.error('[plan] Subscription swap failed:', subErr.message);
+          // If sub is invalid/cancelled, clear it and fall through to checkout
+          await stmts.clearVendorStripeSubscription.run(req.session.userId);
+        }
+      }
 
-    // ── Upgrade via Stripe Checkout ──
-    const stripe = await getStripe();
-    console.log('[plan] Stripe check:', { stripeOk: !!stripe, priceId: STRIPE_PRICES[plan] });
-    if (plan !== 'free' && stripe && STRIPE_PRICES[plan]) {
+      // No active Stripe subscription — create a Checkout session
       const user = await stmts.getUserById.get(req.session.userId);
       const planLabel = plan === 'growth' ? 'Growth' : 'Pro';
       const baseUrl = `${req.protocol}://${req.get('host')}`;
-      console.log('[plan] Building checkout, baseUrl:', baseUrl, 'email:', user?.email);
       const sessionParams = {
         mode: 'subscription',
         line_items: [{ price: STRIPE_PRICES[plan], quantity: 1 }],
@@ -1280,30 +1274,12 @@ app.post('/api/profile/plan', requireAuth, async (req, res) => {
         },
         allow_promotion_codes: true,
       };
-      // Re-use existing Stripe customer if we have one
       if (vendor.stripe_customer_id) {
         sessionParams.customer = vendor.stripe_customer_id;
       } else if (user?.email) {
         sessionParams.customer_email = user.email;
       }
-      // If upgrading from one paid plan to another, swap the subscription instead
-      if (currentPlan !== 'free' && vendor.stripe_subscription_id) {
-        const sub = await stripe.subscriptions.retrieve(vendor.stripe_subscription_id);
-        await stripe.subscriptions.update(vendor.stripe_subscription_id, {
-          items: [{ id: sub.items.data[0].id, price: STRIPE_PRICES[plan] }],
-          proration_behavior: 'create_prorations',
-          metadata: { user_id: String(req.session.userId), plan },
-        });
-        await stmts.updateVendorPlan.run(plan, req.session.userId);
-        await stmts.insertSubscriptionChange.run({
-          user_id: req.session.userId, old_plan: currentPlan, new_plan: plan,
-          changed_by: 'vendor', admin_user_id: null,
-          reason: 'Plan switch (prorated)', payment_status: 'paid',
-          is_override: 0, override_expires: null,
-        });
-        _apiCache.delete('vendors'); _apiCache.delete('stats');
-        return res.json({ ok: true, plan });
-      }
+
       try {
         const session = await stripe.checkout.sessions.create(sessionParams);
         console.log('[plan] Checkout session created:', session.id);
@@ -1314,41 +1290,26 @@ app.post('/api/profile/plan', requireAuth, async (req, res) => {
       }
     }
 
-    // ── Downgrade to free — cancel Stripe subscription at period end ──
-    if (plan === 'free') {
-      if (vendor.stripe_subscription_id && stripe) {
+    // ── Downgrade to free ──
+    if (hasStripeSub) {
+      const stripe = await getStripe();
+      if (stripe) {
         await stripe.subscriptions.update(vendor.stripe_subscription_id, {
           cancel_at_period_end: true,
         });
-        // Don't change plan yet — webhook fires at period end
-        return res.json({ ok: true, plan: currentPlan, cancel_at_period_end: true });
+        return res.json({ ok: true, plan: vendor.plan, cancel_at_period_end: true });
       }
-      // No Stripe sub (dev/admin override) — just switch directly
-      await stmts.updateVendorPlan.run('free', req.session.userId);
-      await stmts.insertSubscriptionChange.run({
-        user_id: req.session.userId, old_plan: currentPlan, new_plan: 'free',
-        changed_by: 'vendor', admin_user_id: null,
-        reason: 'Downgrade to Starter', payment_status: null,
-        is_override: 0, override_expires: null,
-      });
-      _apiCache.delete('vendors'); _apiCache.delete('stats');
-      return res.json({ ok: true, plan: 'free' });
     }
-
-    // Fallback — Stripe not configured, block paid upgrades
-    if (plan !== 'free') {
-      console.error('[plan] Stripe not configured — cannot process paid upgrade to', plan,
-        '| stripe:', !!_Stripe, '| price:', STRIPE_PRICES[plan]);
-      return res.status(503).json({ error: 'Payment system is temporarily unavailable. Please try again shortly.' });
-    }
-    await stmts.updateVendorPlan.run(plan, req.session.userId);
+    // No Stripe sub — just switch directly
+    await stmts.updateVendorPlan.run('free', req.session.userId);
     await stmts.insertSubscriptionChange.run({
-      user_id: req.session.userId, old_plan: currentPlan, new_plan: plan,
+      user_id: req.session.userId, old_plan: vendor.plan || 'free', new_plan: 'free',
       changed_by: 'vendor', admin_user_id: null,
-      reason: null, payment_status: null, is_override: 0, override_expires: null,
+      reason: 'Downgrade to Starter', payment_status: null,
+      is_override: 0, override_expires: null,
     });
     _apiCache.delete('vendors'); _apiCache.delete('stats');
-    res.json({ ok: true, plan });
+    return res.json({ ok: true, plan: 'free' });
   } catch (e) {
     console.error('[plan]', e);
     res.status(500).json({ error: 'Server error' });
