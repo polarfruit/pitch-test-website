@@ -1,7 +1,6 @@
 import 'dotenv/config';
 import express from 'express';
 import compression from 'compression';
-import Stripe from 'stripe';
 import { createHmac, createHash, randomBytes } from 'crypto';
 import fs from 'fs';
 import bcrypt from 'bcryptjs';
@@ -9,31 +8,59 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import db, { stmts, txSignupVendor, txSignupOrganiser, txSignupFoodie, prepare } from './server/db.mjs';
 import { sendVerificationEmail, sendVerificationSMS, sendAdminEmail, buildSuspensionEmailHtml, buildSuspensionNoticeHtml, buildPostEventOrgHtml, buildPostEventVendorHtml } from './server/mailer.mjs';
-import { analysePli } from './server/pli-analyser.mjs';
+
+// Lazy-loaded heavy modules (deferred to first use — saves ~1s cold start)
+let _Stripe = null;
+let _analysePli = null;
+async function getStripe() {
+  if (!process.env.STRIPE_SECRET_KEY) return null;
+  if (!_Stripe) {
+    const mod = await import('stripe');
+    _Stripe = new mod.default(process.env.STRIPE_SECRET_KEY);
+  }
+  return _Stripe;
+}
+async function analysePli(...args) {
+  if (!_analysePli) {
+    const mod = await import('./server/pli-analyser.mjs');
+    _analysePli = mod.analysePli;
+  }
+  return _analysePli(...args);
+}
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
+app.set('trust proxy', true);   // Vercel/reverse proxy — req.protocol returns 'https'
 const PORT = 3000;
 
 // ── TEMPORARY: Bypass auth for AI analysis ──────────────────────────────────
 // Set to false to re-enable login requirements on dashboards.
 const BYPASS_AUTH = true;
 
-// ── Stripe ─────────────────────────────────────────────────────────────────
-const stripe = process.env.STRIPE_SECRET_KEY
-  ? new Stripe(process.env.STRIPE_SECRET_KEY)
-  : null;
+// ── Stripe (lazy-loaded via getStripe()) ──────────────────────────────────
 const STRIPE_PRICES = {
   pro:    process.env.STRIPE_PRICE_PRO    || '',
   growth: process.env.STRIPE_PRICE_GROWTH || '',
 };
-console.log('[stripe] Initialized:', !!stripe, '| Prices:', JSON.stringify(STRIPE_PRICES));
+console.log('[stripe] Deferred load | Prices:', JSON.stringify(STRIPE_PRICES));
 const STRIPE_PLAN_FOR_PRICE = Object.fromEntries(
   Object.entries(STRIPE_PRICES).map(([plan, priceId]) => [priceId, plan])
 );
 
+// ── Stripe diagnostic (remove after confirming) ──────────────────────────
+app.get('/api/stripe/status', async (req, res) => {
+  const s = await getStripe();
+  res.json({
+    stripe_initialized: !!s,
+    price_pro: !!process.env.STRIPE_PRICE_PRO,
+    price_growth: !!process.env.STRIPE_PRICE_GROWTH,
+    webhook_secret: !!process.env.STRIPE_WEBHOOK_SECRET,
+  });
+});
+
 // ── Stripe webhook needs raw body — must come before express.json ─────────
 app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
+  const stripe = await getStripe();
   if (!stripe) return res.status(503).json({ error: 'Stripe not configured' });
   const sig = req.headers['stripe-signature'];
   const whSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -1192,6 +1219,7 @@ app.post('/api/profile/plan', requireAuth, async (req, res) => {
     if (plan === currentPlan) return res.json({ ok: true, plan });
 
     // ── Upgrade via Stripe Checkout ──
+    const stripe = await getStripe();
     if (plan !== 'free' && stripe && STRIPE_PRICES[plan]) {
       const user = await stmts.getUserById.get(req.session.userId);
       const planLabel = plan === 'growth' ? 'Growth' : 'Pro';
@@ -1263,7 +1291,7 @@ app.post('/api/profile/plan', requireAuth, async (req, res) => {
     // Fallback — Stripe not configured, block paid upgrades
     if (plan !== 'free') {
       console.error('[plan] Stripe not configured — cannot process paid upgrade to', plan,
-        '| stripe:', !!stripe, '| price:', STRIPE_PRICES[plan]);
+        '| stripe:', !!_Stripe, '| price:', STRIPE_PRICES[plan]);
       return res.status(503).json({ error: 'Payment system is temporarily unavailable. Please try again shortly.' });
     }
     await stmts.updateVendorPlan.run(plan, req.session.userId);
@@ -1282,6 +1310,7 @@ app.post('/api/profile/plan', requireAuth, async (req, res) => {
 
 // POST /api/stripe/portal — open Stripe customer portal for managing subscription
 app.post('/api/stripe/portal', requireAuth, async (req, res) => {
+  const stripe = await getStripe();
   if (!stripe) return res.status(503).json({ error: 'Stripe not configured' });
   try {
     const vendor = await stmts.getVendorByUserId.get(req.session.userId);
@@ -1392,13 +1421,13 @@ function apiCached(key, ttlMs, fn) {
   return async (req, res) => {
     const hit = _apiCache.get(key);
     if (hit && Date.now() - hit.ts < ttlMs) {
-      res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=120');
+      res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
       return res.json(hit.data);
     }
     try {
       const data = await fn();
       _apiCache.set(key, { data, ts: Date.now() });
-      res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=120');
+      res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
       res.json(data);
     } catch(e) {
       console.error('[apiCached]', key, e);
@@ -4657,7 +4686,7 @@ function page(file, opts) {
     html = injectSession(html, req);
     // Edge-cache public pages for anonymous visitors
     if (!req.session || !req.session.userId) {
-      res.setHeader('Cache-Control', 'public, s-maxage=120, stale-while-revalidate=300');
+      res.setHeader('Cache-Control', 'public, s-maxage=600, stale-while-revalidate=900');
     }
     res.send(html);
   };
@@ -4668,7 +4697,7 @@ let _homeCacheTs = 0;
 const HOME_TTL = 60000;
 app.get('/', async (req, res) => {
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=120, stale-while-revalidate=300');
+  res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=600, stale-while-revalidate=900');
   const now = Date.now();
   if (_homeCache && now - _homeCacheTs < HOME_TTL) return res.send(injectSession(_homeCache, req));
   let html = readHtml('pages/index.html');
@@ -4708,7 +4737,7 @@ app.get('/events', async (req, res) => {
   try {
     const now = Date.now();
     if (_eventsPageCache && now - _eventsPageCacheTs < EVENTS_PAGE_TTL) {
-      res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=120, stale-while-revalidate=300');
+      res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=600, stale-while-revalidate=900');
       return res.send(injectSession(_eventsPageCache, req));
     }
     const events = await stmts.publishedEvents.all();
@@ -4736,7 +4765,7 @@ window.__PITCH_MAP_EVENTS__ = ${JSON.stringify(mapData)};
     html = injectBanner(html);
     _eventsPageCache = html;
     _eventsPageCacheTs = now;
-    res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=120, stale-while-revalidate=300');
+    res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=600, stale-while-revalidate=900');
     res.send(injectSession(html, req));
   } catch (e) {
     console.error('[events page]', e);
@@ -4924,6 +4953,11 @@ app.get('/admin',               serveAdminDashboard());
 app.get('/admin/*splat',        serveAdminDashboard());
 
 // ── Post-event cron endpoint (Vercel cron or manual trigger) ────────────────
+// Keep serverless function warm — Vercel cron pings this every 5 min
+app.get('/api/cron/warm', (req, res) => {
+  res.json({ ok: true, ts: Date.now() });
+});
+
 app.get('/api/cron/post-event', async (req, res) => {
   const secret = process.env.CRON_SECRET;
   if (secret && req.headers.authorization !== `Bearer ${secret}`) {
