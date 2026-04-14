@@ -1927,7 +1927,7 @@ body::before {
         <div class="stat-card herb">
           <div class="stat-label">Approved Events</div>
           <div class="stat-value" id="stat-approved">—</div>
-          <div class="stat-delta" id="stat-approved-sub">From your applications</div>
+          <div class="stat-delta" id="stat-approved-sub">from your applications</div>
         </div>
         <div class="stat-card gold">
           <div class="stat-label">Average Rating</div>
@@ -2213,9 +2213,9 @@ body::before {
           <div class="form-group">
             <label class="form-label">Price range</label>
             <div class="price-group">
-              <button class="price-btn active" data-price="$" onclick="setPrice(this)">$ <span style="font-weight:400;opacity:0.7;">(under )</span></button>
-              <button class="price-btn" data-price="78064" onclick="setPrice(this)">78064 <span style="font-weight:400;opacity:0.7;">(–)</span></button>
-              <button class="price-btn" data-price="78064$" onclick="setPrice(this)">78064$ <span style="font-weight:400;opacity:0.7;">(+)</span></button>
+              <button class="price-btn active" data-price="$" onclick="setPrice(this)">$ <span style="font-weight:400;opacity:0.7;">(under $15)</span></button>
+              <button class="price-btn" data-price="$$" onclick="setPrice(this)">$$ <span style="font-weight:400;opacity:0.7;">($15&#8211;$25)</span></button>
+              <button class="price-btn" data-price="$$$" onclick="setPrice(this)">$$$ <span style="font-weight:400;opacity:0.7;">($25+)</span></button>
             </div>
           </div>
 
@@ -5110,7 +5110,8 @@ function renderApplicationsData(applications) {
     const approvedTrend = recentApproved > 0
       ? ` <span class="stat-trend up">↑ +${recentApproved} this week</span>`
       : '';
-    statApprovedSub.innerHTML = 'From your applications' + approvedTrend;
+    const appWord = activeCount === 1 ? 'application' : 'applications';
+    statApprovedSub.innerHTML = `from ${activeCount} ${appWord}` + approvedTrend;
   }
 
   // Nav badge
@@ -5214,6 +5215,17 @@ function renderActivityData(applications) {
   }).join('');
   if (applications.length <= 2) {
     feed.innerHTML += '<div class="feed-empty" style="padding-top:16px;border-top:1px solid #ffffff06;">Activity builds as you apply to events</div>';
+  }
+  if (applications.length > 2) {
+    feed.innerHTML += `<a href="#" onclick="event.preventDefault();showPanel('applications')"
+      style="display:flex;align-items:center;justify-content:center;gap:6px;
+      padding:10px;color:var(--ember);font-size:13px;font-weight:700;
+      text-decoration:none;border-radius:10px;background:#ffffff06;
+      border:1px dashed #ffffff12;transition:background 0.14s;margin-top:8px;"
+      onmouseover="this.style.background='#ffffff0d'"
+      onmouseout="this.style.background='#ffffff06'">
+      View all activity →
+    </a>`;
   }
 }
 
