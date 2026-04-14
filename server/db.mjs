@@ -688,6 +688,7 @@ await _safeExec(`
   )
 `);
 await _safeExec(`CREATE INDEX IF NOT EXISTS idx_menu_vendor ON menu_items(vendor_user_id, sort_order)`);
+await _safeExec(`ALTER TABLE menu_items ADD COLUMN dietary_tags TEXT`);
 
 // ── Analytics tracking tables ────────────────────────────────────────────────
 await _safeExec(`CREATE TABLE IF NOT EXISTS vendor_profile_views (
@@ -1366,7 +1367,8 @@ export const stmts = {
       COALESCE(v.trading_name, uv.first_name||' '||uv.last_name) as vendor_name,
       COALESCE(o.org_name, CASE WHEN uo.role='admin' THEN 'Pitch. Admin' ELSE uo.first_name||' '||uo.last_name END) as organiser_name,
       uv.last_active as vendor_last_active,
-      uo.last_active as organiser_last_active
+      uo.last_active as organiser_last_active,
+      (SELECT e.name FROM event_applications ea JOIN events e ON e.id = ea.event_id WHERE ea.vendor_user_id = mt.vendor_user_id AND e.organiser_user_id = mt.organiser_user_id ORDER BY ea.created_at DESC LIMIT 1) as event_name
     FROM message_threads mt
     LEFT JOIN vendors v ON v.user_id = mt.vendor_user_id AND v.id=(SELECT MIN(id) FROM vendors WHERE user_id=mt.vendor_user_id)
     LEFT JOIN users uv ON uv.id = mt.vendor_user_id
@@ -1383,7 +1385,8 @@ export const stmts = {
       uo.last_active as organiser_last_active,
       (SELECT body FROM messages m2 WHERE m2.thread_key = mt.thread_key ORDER BY m2.id DESC LIMIT 1) as last_body,
       (SELECT m2.created_at FROM messages m2 WHERE m2.thread_key = mt.thread_key ORDER BY m2.id DESC LIMIT 1) as last_at,
-      (SELECT COUNT(*) FROM messages m2 WHERE m2.thread_key = mt.thread_key AND m2.sender_user_id != ? AND m2.is_read = 0) as unread_count
+      (SELECT COUNT(*) FROM messages m2 WHERE m2.thread_key = mt.thread_key AND m2.sender_user_id != ? AND m2.is_read = 0) as unread_count,
+      (SELECT e.name FROM event_applications ea JOIN events e ON e.id = ea.event_id WHERE ea.vendor_user_id = mt.vendor_user_id AND e.organiser_user_id = mt.organiser_user_id ORDER BY ea.created_at DESC LIMIT 1) as event_name
     FROM message_threads mt
     LEFT JOIN vendors v ON v.user_id = mt.vendor_user_id AND v.id=(SELECT MIN(id) FROM vendors WHERE user_id=mt.vendor_user_id)
     LEFT JOIN users uv ON uv.id = mt.vendor_user_id
@@ -1525,8 +1528,8 @@ export const stmts = {
   // menu items
   getMenuItems:       prepare(`SELECT * FROM menu_items WHERE vendor_user_id=? ORDER BY is_signature DESC, sort_order ASC, id ASC`),
   getMenuItemById:    prepare(`SELECT * FROM menu_items WHERE id=? AND vendor_user_id=?`),
-  createMenuItem:     prepare(`INSERT INTO menu_items (vendor_user_id,name,description,price_type,price_min,price_max,category,photo_url,available,seasonal,is_signature,sort_order) VALUES (@vendor_user_id,@name,@description,@price_type,@price_min,@price_max,@category,@photo_url,@available,@seasonal,@is_signature,(SELECT COALESCE(MAX(sort_order),0)+1 FROM menu_items WHERE vendor_user_id=@vendor_user_id))`),
-  updateMenuItem:     prepare(`UPDATE menu_items SET name=@name,description=@description,price_type=@price_type,price_min=@price_min,price_max=@price_max,category=@category,photo_url=@photo_url,available=@available,seasonal=@seasonal,is_signature=@is_signature WHERE id=@id AND vendor_user_id=@vendor_user_id`),
+  createMenuItem:     prepare(`INSERT INTO menu_items (vendor_user_id,name,description,price_type,price_min,price_max,category,photo_url,available,seasonal,is_signature,dietary_tags,sort_order) VALUES (@vendor_user_id,@name,@description,@price_type,@price_min,@price_max,@category,@photo_url,@available,@seasonal,@is_signature,@dietary_tags,(SELECT COALESCE(MAX(sort_order),0)+1 FROM menu_items WHERE vendor_user_id=@vendor_user_id))`),
+  updateMenuItem:     prepare(`UPDATE menu_items SET name=@name,description=@description,price_type=@price_type,price_min=@price_min,price_max=@price_max,category=@category,photo_url=@photo_url,available=@available,seasonal=@seasonal,is_signature=@is_signature,dietary_tags=@dietary_tags WHERE id=@id AND vendor_user_id=@vendor_user_id`),
   deleteMenuItem:     prepare(`DELETE FROM menu_items WHERE id=? AND vendor_user_id=?`),
   clearSignature:     prepare(`UPDATE menu_items SET is_signature=0 WHERE vendor_user_id=?`),
   updateMenuOrder:    prepare(`UPDATE menu_items SET sort_order=@sort_order WHERE id=@id AND vendor_user_id=@vendor_user_id`),

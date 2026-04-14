@@ -3631,6 +3631,7 @@ async function _loadConversation(threadKey) {
   _threadCache[threadKey].messages = messages || [];
   if (thread && thread.organiser_name) _threadCache[threadKey].orgName = thread.organiser_name;
   if (thread && thread.organiser_user_id) _threadCache[threadKey].orgUserId = thread.organiser_user_id;
+  if (thread && thread.event_name) _threadCache[threadKey].eventName = thread.event_name;
   // Determine which last_active belongs to the OTHER party
   const myId = window.__PITCH_USER__ && window.__PITCH_USER__.id;
   if (thread) {
@@ -3887,6 +3888,7 @@ async function loadAllThreads() {
       if (!_threadCache[key]) _threadCache[key] = { orgName: t.organiser_name || '', eventName: '', messages: [] };
       _threadCache[key].orgName     = t.organiser_name || _threadCache[key].orgName;
       _threadCache[key].orgUserId   = t.organiser_user_id || _threadCache[key].orgUserId;
+      if (t.event_name) _threadCache[key].eventName = t.event_name;
       _threadCache[key].unreadCount = t.unread_count || 0;
       _threadCache[key].lastBody    = t.last_body || '';
       _threadCache[key].lastAt      = t.last_at || '';
