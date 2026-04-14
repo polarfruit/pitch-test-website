@@ -774,9 +774,9 @@ body::before {
 .doc-expiry.warn-text { color: var(--gold); font-weight: 600; }
 .doc-view-link { font-size: 12px; color: var(--ember); text-decoration: none; margin-left: 10px; transition: color 0.12s; }
 .doc-view-link:hover { text-decoration: underline; color: #FF6B2B; }
-.doc-upload-zone { border: 1.5px dashed #ffffff18; border-radius: 10px; padding: 20px 16px; text-align: center; cursor: pointer; transition: border-color 0.14s, background 0.14s; margin-top: auto; }
+.doc-upload-zone { border: 1.5px dashed #ffffff18; border-radius: 10px; padding: 14px 16px; text-align: center; cursor: pointer; transition: border-color 0.14s, background 0.14s; margin-top: auto; }
 .doc-upload-zone:hover { border-color: var(--ember); background: #E8500A08; }
-.doc-upload-zone svg { margin-bottom: 4px; opacity: 0.4; }
+.doc-upload-zone svg { margin-bottom: 2px; opacity: 0.4; }
 .doc-upload-zone:hover svg { opacity: 0.7; }
 .doc-upload-zone-text { font-size: 12px; font-weight: 600; color: var(--text-mid); }
 .doc-upload-zone:hover .doc-upload-zone-text { color: var(--ember); }
@@ -1549,7 +1549,7 @@ body::before {
 
 /* ── MARKET HISTORY ───────────────────────────────────────────────────────── */
 .stat-card.no-blob::before { display:none; }
-.stat-card .stat-value.muted { color:var(--text-lo) !important; }
+.stat-card .stat-value.muted { color:var(--text-mid) !important; font-size:28px; }
 #panel-history .stat-grid { margin-bottom:16px; }
 #panel-history .section-sub { font-size:13px; color:var(--text-mid); line-height:1.5; }
 .history-filters {
@@ -1695,11 +1695,31 @@ body::before {
 .menu-toggle-row > div:first-child { flex:1; min-width:0; }
 .menu-toggle-label { font-size:13px; font-weight:600; color:var(--text-hi); }
 .menu-toggle-sub { font-size:12px; color:var(--text-lo); margin-top:2px; }
+/* Custom toggle switch */
+.menu-switch { position:relative; width:42px; height:24px; flex-shrink:0; }
+.menu-switch input { opacity:0; width:0; height:0; position:absolute; }
+.menu-switch-track { position:absolute; inset:0; background:#ffffff12; border:1px solid #ffffff18; border-radius:12px; cursor:pointer; transition:background 0.18s, border-color 0.18s; }
+.menu-switch input:checked + .menu-switch-track { background:var(--ember); border-color:var(--ember); }
+.menu-switch-knob { position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:50%; background:#fff; transition:transform 0.18s; pointer-events:none; box-shadow:0 1px 4px rgba(0,0,0,0.3); }
+.menu-switch input:checked ~ .menu-switch-knob { transform:translateX(18px); }
+/* Dietary tag pills */
+.menu-diet-wrap { display:flex; flex-wrap:wrap; gap:7px; margin-top:6px; }
+.menu-diet-pill { font-size:12px; font-weight:600; font-family:var(--fb); padding:6px 12px; border-radius:20px; border:1px solid #ffffff14; background:#ffffff07; color:var(--text-lo); cursor:pointer; transition:all 0.14s; user-select:none; }
+.menu-diet-pill:hover { border-color:#ffffff28; color:var(--text-mid); }
+.menu-diet-pill.selected { background:var(--ember); border-color:var(--ember); color:#fff; }
+/* Photo divider */
+.menu-photo-or { display:flex; align-items:center; gap:8px; color:var(--text-lo); font-size:11px; flex-shrink:0; }
+.menu-photo-or::before, .menu-photo-or::after { content:''; width:1px; height:18px; background:#ffffff14; }
+/* Category chips */
+.menu-cat-wrap { display:flex; flex-wrap:wrap; gap:6px; }
+.menu-cat-chip { font-size:12px; font-weight:600; font-family:var(--fb); padding:6px 14px; border-radius:20px; border:1px solid #ffffff14; background:#ffffff07; color:var(--text-lo); cursor:pointer; transition:all 0.14s; user-select:none; }
+.menu-cat-chip:hover { border-color:#ffffff28; color:var(--text-mid); }
+.menu-cat-chip.selected { background:#ffffff18; border-color:#ffffff30; color:var(--text-hi); }
 .menu-modal-actions { display:flex; gap:10px; margin-top:22px; }
 .btn-modal-save { flex:1; background:var(--ember); color:#fff; border:none; font-family:var(--fb); font-size:14px; font-weight:700; padding:13px; border-radius:12px; cursor:pointer; transition:background 0.14s; }
 .btn-modal-save:hover { background:var(--ember-glow); }
-.menu-modal .btn-modal-cancel { background:transparent; color:var(--text-lo); border:none; font-family:var(--fb); font-size:13px; font-weight:600; padding:13px 22px; border-radius:12px; cursor:pointer; transition:color 0.14s; }
-.menu-modal .btn-modal-cancel:hover { background:transparent; color:var(--text-hi); }
+.menu-modal .btn-modal-cancel { background:#ffffff08; color:var(--text-mid); border:1px solid #ffffff10; font-family:var(--fb); font-size:13px; font-weight:600; padding:13px 22px; border-radius:12px; cursor:pointer; transition:all 0.14s; }
+.menu-modal .btn-modal-cancel:hover { background:#ffffff12; color:var(--text-hi); border-color:#ffffff20; }
 .menu-delete-confirm { display:none; background:#C0392B14; border:1px solid #C0392B30; border-radius:12px; padding:14px 16px; margin-top:14px; }
 .menu-delete-confirm.open { display:block; }
 .btn-confirm-del { background:var(--terra); color:#fff; border:none; font-family:var(--fb); font-size:13px; font-weight:700; padding:8px 18px; border-radius:9px; cursor:pointer; }
@@ -1738,12 +1758,13 @@ body::before {
     <!-- Photo -->
     <div class="menu-field">
       <label class="menu-label">Photo</label>
-      <div style="display:flex;gap:8px;align-items:center;">
+      <div style="display:flex;gap:10px;align-items:center;">
         <label style="display:flex;align-items:center;gap:8px;background:var(--ember);color:#fff;font-family:var(--fb);font-size:12px;font-weight:700;padding:9px 16px;border-radius:10px;cursor:pointer;white-space:nowrap;transition:background 0.14s;" onmouseover="this.style.background='var(--ember-glow)'" onmouseout="this.style.background='var(--ember)'">
-          📷 Upload photo
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          Upload photo
           <input type="file" id="mi-photo-file" accept="image/jpeg,image/png,image/webp" style="display:none;" onchange="handleMenuPhotoFile(this)" />
         </label>
-        <span style="font-size:11px;color:var(--text-lo);">or</span>
+        <span class="menu-photo-or">or</span>
         <input class="menu-input" id="mi-photo" type="url" placeholder="Paste image URL" style="flex:1;" oninput="previewMenuPhoto()" />
       </div>
       <img class="menu-photo-preview" id="mi-photo-preview" style="display:none;" alt="preview" />
@@ -1780,18 +1801,41 @@ body::before {
     <!-- Category -->
     <div class="menu-field">
       <label class="menu-label">Category</label>
-      <input class="menu-input" id="mi-category" type="text" placeholder="e.g. Mains, Drinks, Desserts, Snacks" />
+      <input type="hidden" id="mi-category" />
+      <div class="menu-cat-wrap" id="mi-cat-chips">
+        <button type="button" class="menu-cat-chip" data-cat="Mains" onclick="pickMenuCat(this)">Mains</button>
+        <button type="button" class="menu-cat-chip" data-cat="Sides" onclick="pickMenuCat(this)">Sides</button>
+        <button type="button" class="menu-cat-chip" data-cat="Snacks" onclick="pickMenuCat(this)">Snacks</button>
+        <button type="button" class="menu-cat-chip" data-cat="Desserts" onclick="pickMenuCat(this)">Desserts</button>
+        <button type="button" class="menu-cat-chip" data-cat="Drinks" onclick="pickMenuCat(this)">Drinks</button>
+        <button type="button" class="menu-cat-chip" data-cat="Specials" onclick="pickMenuCat(this)">Specials</button>
+        <button type="button" class="menu-cat-chip" data-cat="Kids" onclick="pickMenuCat(this)">Kids</button>
+      </div>
+    </div>
+
+    <!-- Dietary tags -->
+    <div class="menu-field">
+      <label class="menu-label">Dietary</label>
+      <div class="menu-diet-wrap" id="mi-diet-tags">
+        <button type="button" class="menu-diet-pill" data-diet="GF" onclick="toggleDietTag(this)">GF</button>
+        <button type="button" class="menu-diet-pill" data-diet="Vegan" onclick="toggleDietTag(this)">Vegan</button>
+        <button type="button" class="menu-diet-pill" data-diet="Vegetarian" onclick="toggleDietTag(this)">Vegetarian</button>
+        <button type="button" class="menu-diet-pill" data-diet="DF" onclick="toggleDietTag(this)">DF</button>
+        <button type="button" class="menu-diet-pill" data-diet="Halal" onclick="toggleDietTag(this)">Halal</button>
+        <button type="button" class="menu-diet-pill" data-diet="Nut-free" onclick="toggleDietTag(this)">Nut-free</button>
+      </div>
     </div>
 
     <!-- Toggles -->
     <div class="menu-toggle-row">
       <div>
         <div class="menu-toggle-label">Available now</div>
-        <div class="menu-toggle-sub">Uncheck to grey this item out on your profile</div>
+        <div class="menu-toggle-sub">Turn off to grey this item out on your profile</div>
       </div>
-      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-        <input type="checkbox" id="mi-available" checked style="width:18px;height:18px;accent-color:var(--ember);" />
-        <span style="font-size:12px;color:var(--text-lo);" id="mi-avail-label">Yes</span>
+      <label class="menu-switch">
+        <input type="checkbox" id="mi-available" checked />
+        <span class="menu-switch-track"></span>
+        <span class="menu-switch-knob"></span>
       </label>
     </div>
     <div class="menu-toggle-row">
@@ -1799,19 +1843,21 @@ body::before {
         <div class="menu-toggle-label">Seasonal item</div>
         <div class="menu-toggle-sub">Shown with a seasonal badge</div>
       </div>
-      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-        <input type="checkbox" id="mi-seasonal" style="width:18px;height:18px;accent-color:var(--herb);" />
-        <span style="font-size:12px;color:var(--text-lo);">Seasonal</span>
+      <label class="menu-switch">
+        <input type="checkbox" id="mi-seasonal" />
+        <span class="menu-switch-track"></span>
+        <span class="menu-switch-knob"></span>
       </label>
     </div>
     <div class="menu-toggle-row" style="border-bottom:none;">
       <div>
-        <div class="menu-toggle-label">⭐ Signature item</div>
+        <div class="menu-toggle-label">Signature item</div>
         <div class="menu-toggle-sub">Pin this item first — only one at a time</div>
       </div>
-      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
-        <input type="checkbox" id="mi-signature" style="width:18px;height:18px;accent-color:var(--ember);" />
-        <span style="font-size:12px;color:var(--text-lo);">Make signature</span>
+      <label class="menu-switch">
+        <input type="checkbox" id="mi-signature" />
+        <span class="menu-switch-track"></span>
+        <span class="menu-switch-knob"></span>
       </label>
     </div>
 
@@ -5456,8 +5502,8 @@ function renderDocuments(uploadingState, uploadingKey) {
                <button onclick="removeDoc('${d.key}')">Remove</button>
              </div>`
           : `<div style="margin-top:auto;">
-               <span class="status-badge badge-missing" style="margin-bottom:10px;display:inline-flex;">⚠ Not uploaded</span>
-               <label class="doc-upload-zone" style="display:block;margin-top:10px;">
+               <span class="status-badge badge-missing" style="margin-bottom:8px;display:inline-flex;">⚠ Not uploaded</span>
+               <label class="doc-upload-zone" style="display:block;margin-top:6px;">
                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 14V4m0 0L6.5 7.5M10 4l3.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 13v2a2 2 0 002 2h10a2 2 0 002-2v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
                  <div class="doc-upload-zone-text">Drop file or click to upload</div>
                  <div class="doc-upload-zone-hint">PDF, JPG or PNG — max 10MB</div>
@@ -7099,6 +7145,7 @@ async function saveMenuItem() {
     available:   document.getElementById('mi-available').checked,
     seasonal:    document.getElementById('mi-seasonal').checked,
     is_signature:document.getElementById('mi-signature').checked,
+    dietary_tags: getSelectedDietTags(),
   };
   try {
     const r = await pitchFetch(id ? '/api/vendor/menu/'+id : '/api/vendor/menu', {
@@ -7110,6 +7157,34 @@ async function saveMenuItem() {
     closeMenuModal();
     await loadMenu();
   } catch(e) { alert('Error saving item: ' + e.message); }
+}
+
+function pickMenuCat(btn) {
+  const wasSelected = btn.classList.contains('selected');
+  document.querySelectorAll('#mi-cat-chips .menu-cat-chip').forEach(c => c.classList.remove('selected'));
+  if (!wasSelected) btn.classList.add('selected');
+  document.getElementById('mi-category').value = wasSelected ? '' : btn.dataset.cat;
+}
+
+function toggleDietTag(btn) {
+  btn.classList.toggle('selected');
+}
+
+function getSelectedDietTags() {
+  return Array.from(document.querySelectorAll('#mi-diet-tags .menu-diet-pill.selected')).map(b => b.dataset.diet);
+}
+
+function setDietTags(tags) {
+  document.querySelectorAll('#mi-diet-tags .menu-diet-pill').forEach(b => {
+    b.classList.toggle('selected', (tags || []).includes(b.dataset.diet));
+  });
+}
+
+function setCategoryChip(cat) {
+  document.querySelectorAll('#mi-cat-chips .menu-cat-chip').forEach(c => {
+    c.classList.toggle('selected', c.dataset.cat === cat);
+  });
+  document.getElementById('mi-category').value = cat || '';
 }
 
 function updateMenuCharCount(inputId, countId, max) {
