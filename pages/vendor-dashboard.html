@@ -1046,8 +1046,8 @@ body::before {
 
 /* ── Danger zone */
 .danger-zone {
-  border: 1px solid #C0392B22; border-radius: 14px; padding: 20px 22px;
-  background: #C0392B06;
+  border: 1.5px solid #C0392B35; border-radius: 14px; padding: 20px 22px;
+  background: #C0392B08;
 }
 .danger-title { font-size: 14px; font-weight: 700; color: var(--terra); margin-bottom: 8px; }
 .danger-desc { font-size: 13px; color: var(--text-lo); margin-bottom: 14px; line-height: 1.6; }
@@ -3045,6 +3045,9 @@ body::before {
     <div class="panel" id="panel-settings">
       <div style="max-width:600px;">
 
+        <!-- ── ACCOUNT ──────────────────────────────────────────────────────── -->
+        <div style="font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-lo);padding-bottom:4px;">Account</div>
+
         <!-- Email -->
         <div class="settings-section">
           <div class="settings-section-title">Email address</div>
@@ -3079,6 +3082,176 @@ body::before {
             <span class="settings-save-msg" id="pw-err-msg" style="color:var(--terra)"></span>
           </div>
         </div>
+
+        <!-- Phone number -->
+        <div class="settings-section">
+          <div class="settings-section-title">Phone number</div>
+          <div class="card">
+            <div class="settings-form-field">
+              <label class="settings-label">Mobile number</label>
+              <input class="settings-input" type="tel" id="settings-phone" placeholder="0400 000 000" />
+            </div>
+            <div style="font-size:11px;color:var(--text-lo);margin-top:6px;margin-bottom:10px;">Used for organiser contact and SMS reminders. Not shown publicly unless you choose.</div>
+            <button class="settings-save-btn" onclick="savePhone()">Save phone</button>
+            <span class="settings-save-msg" id="phone-save-msg">Phone updated!</span>
+          </div>
+        </div>
+
+        <!-- Two-factor authentication -->
+        <div class="settings-section">
+          <div class="settings-section-title">Two-factor authentication</div>
+          <div class="card">
+            <div class="settings-row">
+              <div class="settings-row-left">
+                <div class="settings-row-label">Email verification on login</div>
+                <div class="settings-row-desc">Require a verification code sent to your email each time you log in.</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="settings-2fa" onchange="save2FA()" />
+                <div class="toggle-track"></div><div class="toggle-thumb"></div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── PROFILE ──────────────────────────────────────────────────────── -->
+        <div style="height:1px;background:#ffffff08;margin:28px 0 0;"></div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-lo);padding:16px 0 4px;">Profile</div>
+
+        <!-- Profile visibility -->
+        <div class="settings-section">
+          <div class="settings-section-title">Profile visibility</div>
+          <div class="card">
+            <div style="font-size:12px;color:var(--text-lo);margin-bottom:14px;">Control what organisers and the public can see on your profile.</div>
+            <div class="settings-row">
+              <div class="settings-row-left">
+                <div class="settings-row-label">Hide phone number</div>
+                <div class="settings-row-desc">Your mobile won't be visible on your public vendor profile.</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="vis-hide-phone" onchange="saveVisibility()" />
+                <div class="toggle-track"></div><div class="toggle-thumb"></div>
+              </label>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-left">
+                <div class="settings-row-label">Hide ABN</div>
+                <div class="settings-row-desc">Your ABN won't be shown on your public profile.</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="vis-hide-abn" onchange="saveVisibility()" />
+                <div class="toggle-track"></div><div class="toggle-thumb"></div>
+              </label>
+            </div>
+            <div class="settings-row">
+              <div class="settings-row-left">
+                <div class="settings-row-label">Hide reviews</div>
+                <div class="settings-row-desc">Consumer reviews won't appear on your public profile.</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="vis-hide-reviews" onchange="saveVisibility()" />
+                <div class="toggle-track"></div><div class="toggle-thumb"></div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pause profile -->
+        <div class="settings-section">
+          <div class="settings-section-title">Pause profile</div>
+          <div class="pause-card">
+            <div class="pause-title">Temporarily hide from search</div>
+            <div class="pause-desc">Your profile won't appear in search results and you won't receive event recommendations. Existing data is preserved — unpause any time.</div>
+            <button class="btn-pause" id="btn-pause-profile" onclick="togglePause()">Pause my profile</button>
+          </div>
+        </div>
+
+        <!-- Default application message -->
+        <div class="settings-section">
+          <div class="settings-section-title">Default application message</div>
+          <div class="card">
+            <div style="font-size:12px;color:var(--text-lo);margin-bottom:10px;">This message will auto-fill when you apply to events. You can still edit it before submitting.</div>
+            <textarea class="settings-input" id="settings-default-msg" rows="4" placeholder="Introduce your stall, mention relevant experience, or ask a question…" style="resize:vertical;min-height:80px;font-family:var(--fb);font-size:13px;line-height:1.6;"></textarea>
+            <div style="display:flex;align-items:center;gap:10px;margin-top:10px;">
+              <button class="settings-save-btn" onclick="saveExtSettings()" style="margin:0;">Save</button>
+              <span class="settings-save-msg" id="ext-save-msg">Saved!</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── BILLING ──────────────────────────────────────────────────────── -->
+        <div style="height:1px;background:#ffffff08;margin:28px 0 0;"></div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-lo);padding:16px 0 4px;">Billing</div>
+
+        <!-- Subscription -->
+        <div class="settings-section">
+          <div class="settings-section-title">Subscription</div>
+          <div class="plan-card" id="settings-plan-card">
+            <div>
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+                <span style="font-size:22px;">📋</span>
+                <span style="font-family:var(--fd);font-size:18px;font-weight:900;letter-spacing:-0.02em;color:var(--text-hi);">Starter</span>
+              </div>
+              <div style="font-size:13px;color:var(--text-mid);margin-bottom:14px;">Free forever · No credit card needed</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
+                <button onclick="directUpgrade('pro', this)" style="font-family:var(--fb);font-size:13px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:10px 18px;border-radius:9px;cursor:pointer;">Upgrade to Pro — $29/month →</button>
+                <button onclick="directUpgrade('growth', this)" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--gold);background:#C9840A10;border:1px solid #C9840A22;padding:10px 18px;border-radius:9px;cursor:pointer;">Upgrade to Growth — $79/month →</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Invoice details -->
+        <div class="settings-section">
+          <div class="settings-section-title">Invoice details</div>
+          <div class="card">
+            <div style="font-size:12px;color:var(--text-lo);margin-bottom:14px;">Used on payment PDFs and bookkeeping exports. Falls back to your trading name if left blank.</div>
+            <div class="settings-form-field">
+              <label class="settings-label">Business name</label>
+              <input class="settings-input" type="text" id="settings-invoice-name" placeholder="e.g. Polar Fruit Pty Ltd" />
+            </div>
+            <div class="settings-form-field">
+              <label class="settings-label">Business address</label>
+              <textarea class="settings-input" id="settings-invoice-address" rows="2" placeholder="e.g. 123 Rundle St, Adelaide SA 5000" style="resize:vertical;min-height:50px;font-family:var(--fb);font-size:13px;line-height:1.6;"></textarea>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;margin-top:10px;">
+              <button class="settings-save-btn" onclick="saveExtSettings()" style="margin:0;">Save</button>
+              <span class="settings-save-msg" id="invoice-save-msg">Saved!</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Growth: CSV exports -->
+        <div class="settings-section" id="exports-section" style="display:none;">
+          <div class="settings-section-title">Exports</div>
+          <div class="card" style="display:flex;flex-direction:column;gap:10px;">
+            <button onclick="downloadApplicationCSV()" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--text-hi);background:#ffffff08;border:1px solid #ffffff12;padding:11px 18px;border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .14s;text-align:left;" onmouseover="this.style.background='#ffffff12'" onmouseout="this.style.background='#ffffff08'">
+              📊 <span>Download application CSV</span>
+              <span style="margin-left:auto;font-size:11px;color:var(--text-lo);font-weight:400;">Includes all applications and statuses</span>
+            </button>
+            <button onclick="downloadBookkeepingSummary()" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--text-hi);background:#ffffff08;border:1px solid #ffffff12;padding:11px 18px;border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .14s;text-align:left;" onmouseover="this.style.background='#ffffff12'" onmouseout="this.style.background='#ffffff08'">
+              📒 <span>Download bookkeeping summary</span>
+              <span style="margin-left:auto;font-size:11px;color:var(--text-lo);font-weight:400;">Fees, payments, and stall income</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Growth: Team member -->
+        <div class="settings-section" id="team-invite-section" style="display:none;">
+          <div class="settings-section-title">Team</div>
+          <div class="card">
+            <div style="font-size:13px;color:var(--text-mid);margin-bottom:14px;line-height:1.6;">Invite a team member to access and manage your Pitch. account alongside you.</div>
+            <div style="display:flex;gap:10px;">
+              <input class="settings-input" type="email" id="team-invite-email" placeholder="Team member email address" style="flex:1;" />
+              <button onclick="sendTeamInvite()" style="font-family:var(--fb);font-size:13px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:0 18px;border-radius:10px;cursor:pointer;white-space:nowrap;transition:background .14s;" onmouseover="this.style.background='var(--ember-glow)'" onmouseout="this.style.background='var(--ember)'">Send invite</button>
+            </div>
+            <div id="team-invite-msg" style="font-size:12px;color:var(--herb);margin-top:8px;display:none;">Invite sent!</div>
+          </div>
+        </div>
+
+        <!-- ── PREFERENCES ──────────────────────────────────────────────────── -->
+        <div style="height:1px;background:#ffffff08;margin:28px 0 0;"></div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-lo);padding:16px 0 4px;">Preferences</div>
 
         <!-- Notifications -->
         <div class="settings-section">
@@ -3169,167 +3342,6 @@ body::before {
           </div>
         </div>
 
-        <!-- Pause profile -->
-        <div class="settings-section">
-          <div class="settings-section-title">Pause profile</div>
-          <div class="pause-card">
-            <div class="pause-title">Temporarily hide from search</div>
-            <div class="pause-desc">When paused, your profile won't appear in vendor search results and you won't receive new event recommendations. Your existing applications and data are preserved. Unpause at any time to go back to active.</div>
-            <button class="btn-pause" id="btn-pause-profile" onclick="togglePause()">Pause my profile</button>
-          </div>
-        </div>
-
-        <!-- Subscription -->
-        <div class="settings-section">
-          <div class="settings-section-title">Subscription</div>
-          <div class="plan-card" id="settings-plan-card">
-            <div>
-              <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
-                <span style="font-size:22px;">📋</span>
-                <span style="font-family:var(--fd);font-size:18px;font-weight:900;letter-spacing:-0.02em;color:var(--text-hi);">Starter</span>
-              </div>
-              <div style="font-size:13px;color:var(--text-mid);margin-bottom:14px;">Free forever · No credit card needed</div>
-              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
-                <button onclick="directUpgrade('pro', this)" style="font-family:var(--fb);font-size:13px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:10px 18px;border-radius:9px;cursor:pointer;">Upgrade to Pro — $29/month →</button>
-                <button onclick="directUpgrade('growth', this)" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--gold);background:#C9840A10;border:1px solid #C9840A22;padding:10px 18px;border-radius:9px;cursor:pointer;">Upgrade to Growth — $79/month →</button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Growth: CSV exports -->
-        <div class="settings-section" id="exports-section" style="display:none;">
-          <div class="settings-section-title">Exports</div>
-          <div class="card" style="display:flex;flex-direction:column;gap:10px;">
-            <button onclick="downloadApplicationCSV()" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--text-hi);background:#ffffff08;border:1px solid #ffffff12;padding:11px 18px;border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .14s;text-align:left;" onmouseover="this.style.background='#ffffff12'" onmouseout="this.style.background='#ffffff08'">
-              📊 <span>Download application CSV</span>
-              <span style="margin-left:auto;font-size:11px;color:var(--text-lo);font-weight:400;">Includes all applications and statuses</span>
-            </button>
-            <button onclick="downloadBookkeepingSummary()" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--text-hi);background:#ffffff08;border:1px solid #ffffff12;padding:11px 18px;border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .14s;text-align:left;" onmouseover="this.style.background='#ffffff12'" onmouseout="this.style.background='#ffffff08'">
-              📒 <span>Download bookkeeping summary</span>
-              <span style="margin-left:auto;font-size:11px;color:var(--text-lo);font-weight:400;">Fees, payments, and stall income</span>
-            </button>
-          </div>
-        </div>
-
-        <!-- Growth: Team member -->
-        <div class="settings-section" id="team-invite-section" style="display:none;">
-          <div class="settings-section-title">Team</div>
-          <div class="card">
-            <div style="font-size:13px;color:var(--text-mid);margin-bottom:14px;line-height:1.6;">Invite a team member to access and manage your Pitch. account alongside you.</div>
-            <div style="display:flex;gap:10px;">
-              <input class="settings-input" type="email" id="team-invite-email" placeholder="Team member email address" style="flex:1;" />
-              <button onclick="sendTeamInvite()" style="font-family:var(--fb);font-size:13px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:0 18px;border-radius:10px;cursor:pointer;white-space:nowrap;transition:background .14s;" onmouseover="this.style.background='var(--ember-glow)'" onmouseout="this.style.background='var(--ember)'">Send invite</button>
-            </div>
-            <div id="team-invite-msg" style="font-size:12px;color:var(--herb);margin-top:8px;display:none;">Invite sent!</div>
-          </div>
-        </div>
-
-        <!-- Phone number -->
-        <div class="settings-section">
-          <div class="settings-section-title">Phone number</div>
-          <div class="card">
-            <div class="settings-form-field">
-              <label class="settings-label">Mobile number</label>
-              <div style="display:flex;gap:10px;align-items:center;">
-                <input class="settings-input" type="tel" id="settings-phone" placeholder="0400 000 000" style="flex:1;" />
-                <button class="settings-save-btn" onclick="savePhone()" style="margin:0;white-space:nowrap;">Save</button>
-              </div>
-              <span class="settings-save-msg" id="phone-save-msg">Phone updated!</span>
-            </div>
-            <div style="font-size:11px;color:var(--text-lo);margin-top:6px;">Used for organiser contact and SMS reminders. Not shown publicly unless you choose.</div>
-          </div>
-        </div>
-
-        <!-- Two-factor authentication -->
-        <div class="settings-section">
-          <div class="settings-section-title">Two-factor authentication</div>
-          <div class="card">
-            <div class="settings-row">
-              <div class="settings-row-left">
-                <div class="settings-row-label">Email verification on login</div>
-                <div class="settings-row-desc">Require a verification code sent to your email each time you log in.</div>
-              </div>
-              <label class="toggle-switch">
-                <input type="checkbox" id="settings-2fa" onchange="save2FA()" />
-                <div class="toggle-track"></div><div class="toggle-thumb"></div>
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <!-- Profile visibility -->
-        <div class="settings-section">
-          <div class="settings-section-title">Profile visibility</div>
-          <div class="card">
-            <div style="font-size:12px;color:var(--text-lo);margin-bottom:14px;">Control what organisers and the public can see on your profile.</div>
-            <div class="settings-row">
-              <div class="settings-row-left">
-                <div class="settings-row-label">Hide phone number</div>
-                <div class="settings-row-desc">Your mobile won't be visible on your public vendor profile.</div>
-              </div>
-              <label class="toggle-switch">
-                <input type="checkbox" id="vis-hide-phone" onchange="saveVisibility()" />
-                <div class="toggle-track"></div><div class="toggle-thumb"></div>
-              </label>
-            </div>
-            <div class="settings-row">
-              <div class="settings-row-left">
-                <div class="settings-row-label">Hide ABN</div>
-                <div class="settings-row-desc">Your ABN won't be shown on your public profile.</div>
-              </div>
-              <label class="toggle-switch">
-                <input type="checkbox" id="vis-hide-abn" onchange="saveVisibility()" />
-                <div class="toggle-track"></div><div class="toggle-thumb"></div>
-              </label>
-            </div>
-            <div class="settings-row">
-              <div class="settings-row-left">
-                <div class="settings-row-label">Hide reviews</div>
-                <div class="settings-row-desc">Consumer reviews won't appear on your public profile.</div>
-              </div>
-              <label class="toggle-switch">
-                <input type="checkbox" id="vis-hide-reviews" onchange="saveVisibility()" />
-                <div class="toggle-track"></div><div class="toggle-thumb"></div>
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <!-- Connected accounts -->
-        <div class="settings-section">
-          <div class="settings-section-title">Connected accounts</div>
-          <div class="card" id="connected-accounts-card">
-            <div class="settings-row">
-              <div class="settings-row-left">
-                <div class="settings-row-label">Google</div>
-                <div class="settings-row-desc" id="google-link-status">Checking…</div>
-              </div>
-              <span id="google-link-badge" style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:100px;"></span>
-            </div>
-            <div class="settings-row">
-              <div class="settings-row-left">
-                <div class="settings-row-label">Email &amp; password</div>
-                <div class="settings-row-desc" id="email-login-status">—</div>
-              </div>
-              <span id="email-login-badge" style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:100px;"></span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Default application message -->
-        <div class="settings-section">
-          <div class="settings-section-title">Default application message</div>
-          <div class="card">
-            <div style="font-size:12px;color:var(--text-lo);margin-bottom:10px;">This message will auto-fill when you apply to events. You can still edit it before submitting.</div>
-            <textarea class="settings-input" id="settings-default-msg" rows="4" placeholder="Introduce your stall, mention relevant experience, or ask a question…" style="resize:vertical;min-height:80px;font-family:var(--fb);font-size:13px;line-height:1.6;"></textarea>
-            <div style="display:flex;align-items:center;gap:10px;margin-top:10px;">
-              <button class="settings-save-btn" onclick="saveExtSettings()" style="margin:0;">Save</button>
-              <span class="settings-save-msg" id="ext-save-msg">Saved!</span>
-            </div>
-          </div>
-        </div>
-
         <!-- Timezone -->
         <div class="settings-section">
           <div class="settings-section-title">Timezone</div>
@@ -3348,28 +3360,33 @@ body::before {
           </div>
         </div>
 
-        <!-- Invoice details -->
+        <!-- ── CONNECTIONS ──────────────────────────────────────────────────── -->
+        <div style="height:1px;background:#ffffff08;margin:28px 0 0;"></div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-lo);padding:16px 0 4px;">Connections</div>
+
+        <!-- Connected accounts -->
         <div class="settings-section">
-          <div class="settings-section-title">Invoice details</div>
-          <div class="card">
-            <div style="font-size:12px;color:var(--text-lo);margin-bottom:14px;">Used on payment PDFs and bookkeeping exports. Falls back to your trading name if left blank.</div>
-            <div class="settings-form-field">
-              <label class="settings-label">Business name</label>
-              <input class="settings-input" type="text" id="settings-invoice-name" placeholder="e.g. Polar Fruit Pty Ltd" />
+          <div class="settings-section-title">Connected accounts</div>
+          <div class="card" id="connected-accounts-card">
+            <div class="settings-row">
+              <div class="settings-row-left">
+                <div class="settings-row-label">Google</div>
+                <div class="settings-row-desc" id="google-link-status">Checking…</div>
+              </div>
+              <span id="google-link-badge" style="font-size:11px;font-weight:700;padding:4px 12px;border-radius:100px;border:1px solid transparent;"></span>
             </div>
-            <div class="settings-form-field">
-              <label class="settings-label">Business address</label>
-              <textarea class="settings-input" id="settings-invoice-address" rows="2" placeholder="e.g. 123 Rundle St, Adelaide SA 5000" style="resize:vertical;min-height:50px;font-family:var(--fb);font-size:13px;line-height:1.6;"></textarea>
-            </div>
-            <div style="display:flex;align-items:center;gap:10px;margin-top:10px;">
-              <button class="settings-save-btn" onclick="saveExtSettings()" style="margin:0;">Save</button>
-              <span class="settings-save-msg" id="invoice-save-msg">Saved!</span>
+            <div class="settings-row">
+              <div class="settings-row-left">
+                <div class="settings-row-label">Email &amp; password</div>
+                <div class="settings-row-desc" id="email-login-status">—</div>
+              </div>
+              <span id="email-login-badge" style="font-size:11px;font-weight:700;padding:4px 12px;border-radius:100px;border:1px solid transparent;"></span>
             </div>
           </div>
         </div>
 
         <!-- Danger zone -->
-        <div class="settings-section">
+        <div class="settings-section" style="margin-top:40px;">
           <div class="settings-section-title" style="color:var(--terra);">Danger zone</div>
           <div class="danger-zone">
             <div class="danger-title">⚠️ Delete account</div>
@@ -7369,23 +7386,23 @@ async function _loadConnectedAccounts() {
     const badgeEl = document.getElementById('google-link-badge');
     if (data.google.linked) {
       statusEl.textContent = 'Linked to your Google account';
-      badgeEl.textContent = 'Connected';
-      badgeEl.style.background = '#2D8B5518'; badgeEl.style.color = '#2D8B55';
+      badgeEl.innerHTML = '&#10003; Connected';
+      badgeEl.style.background = '#2D8B5518'; badgeEl.style.color = '#2D8B55'; badgeEl.style.borderColor = '#2D8B5530';
     } else {
       statusEl.textContent = 'Not connected';
       badgeEl.textContent = 'Not linked';
-      badgeEl.style.background = '#ffffff08'; badgeEl.style.color = 'var(--text-lo)';
+      badgeEl.style.background = '#ffffff08'; badgeEl.style.color = 'var(--text-lo)'; badgeEl.style.borderColor = '#ffffff10';
     }
     const emailStatusEl = document.getElementById('email-login-status');
     const emailBadgeEl = document.getElementById('email-login-badge');
     if (data.email_login) {
       emailStatusEl.textContent = 'Password login enabled';
-      emailBadgeEl.textContent = 'Active';
-      emailBadgeEl.style.background = '#2D8B5518'; emailBadgeEl.style.color = '#2D8B55';
+      emailBadgeEl.innerHTML = '&#10003; Active';
+      emailBadgeEl.style.background = '#2D8B5518'; emailBadgeEl.style.color = '#2D8B55'; emailBadgeEl.style.borderColor = '#2D8B5530';
     } else {
       emailStatusEl.textContent = 'Sign in with Google only — no password set';
       emailBadgeEl.textContent = 'OAuth only';
-      emailBadgeEl.style.background = '#C9840A18'; emailBadgeEl.style.color = '#C9840A';
+      emailBadgeEl.style.background = '#C9840A18'; emailBadgeEl.style.color = '#C9840A'; emailBadgeEl.style.borderColor = '#C9840A30';
     }
   } catch(e) { console.error('[connected accounts]', e); }
 }
