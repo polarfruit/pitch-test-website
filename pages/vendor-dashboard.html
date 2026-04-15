@@ -6456,7 +6456,7 @@ function setupPaymentMethod() {
     </div>
     <div>
       <label style="font-size:11px;font-weight:700;color:var(--text-lo);text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:6px;">Card number</label>
-      <input class="form-input" id="pm-card" type="text" placeholder="4242 4242 4242 4242" maxlength="19" oninput="this.value=this.value.replace(/[^\\d ]/g,'').replace(/(\\d{4})(?=\\d)/g,'\$1 ').trim()" />
+      <input class="form-input" id="pm-card" type="text" placeholder="4242 4242 4242 4242" maxlength="19" oninput="this.value=this.value.replace(/[^\d ]/g,'').replace(/(\d{4})(?=\d)/g,'$1 ').trim()" />
     </div>
     <div style="display:flex;gap:12px;">
       <div style="flex:1;">
