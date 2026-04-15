@@ -1103,11 +1103,16 @@ body::before {
   display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px;
 }
 .earnings-stat {
-  background: var(--char); border: 1px solid #ffffff10; border-radius: 14px;
+  background: var(--char); border: 1px solid #6B5A4A30; border-radius: 14px;
   padding: 20px; display: flex; flex-direction: column; gap: 4px;
 }
 .earnings-stat-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-lo); }
 .earnings-stat-value { font-family: var(--fd); font-size: 28px; font-weight: 900; letter-spacing: -0.03em; color: var(--text-hi); }
+.earnings-stat-value.muted { color: var(--text-mid) !important; }
+.earnings-stat.accent-ember .earnings-stat-value:not(.muted) { color: var(--ember); }
+.earnings-stat.accent-herb  .earnings-stat-value:not(.muted) { color: var(--herb); }
+.earnings-stat.accent-slate .earnings-stat-value:not(.muted) { color: #5B8BE8; }
+.earnings-stat.accent-gold  .earnings-stat-value:not(.muted) { color: var(--gold); }
 .earnings-stat-sub { font-size: 12px; color: var(--text-lo); }
 .earnings-table-wrap { overflow-x: auto; }
 .earnings-table { width: 100%; border-collapse: collapse; font-size: 13px; }
@@ -2477,24 +2482,24 @@ body::before {
 
       <!-- Summary row -->
       <div class="earnings-summary">
-        <div class="earnings-stat">
+        <div class="earnings-stat accent-ember">
           <div class="earnings-stat-label">All-time earned</div>
-          <div class="earnings-stat-value" id="earn-alltime-val">$0.00</div>
-          <div class="earnings-stat-sub" id="earn-alltime-sub">0 events completed</div>
+          <div class="earnings-stat-value muted" id="earn-alltime-val">$0.00</div>
+          <div class="earnings-stat-sub" id="earn-alltime-sub">No events completed</div>
         </div>
-        <div class="earnings-stat">
+        <div class="earnings-stat accent-herb">
           <div class="earnings-stat-label">This month</div>
-          <div class="earnings-stat-value" id="earn-month-val">$0.00</div>
+          <div class="earnings-stat-value muted" id="earn-month-val">$0.00</div>
           <div class="earnings-stat-sub" id="earn-month-sub">No events this month</div>
         </div>
-        <div class="earnings-stat">
+        <div class="earnings-stat accent-slate">
           <div class="earnings-stat-label">Last month</div>
-          <div class="earnings-stat-value" id="earn-lastmonth-val">$0.00</div>
-          <div class="earnings-stat-sub" id="earn-lastmonth-sub">0 events last month</div>
+          <div class="earnings-stat-value muted" id="earn-lastmonth-val">$0.00</div>
+          <div class="earnings-stat-sub" id="earn-lastmonth-sub">No events last month</div>
         </div>
-        <div class="earnings-stat">
+        <div class="earnings-stat accent-gold">
           <div class="earnings-stat-label">Pending payout</div>
-          <div class="earnings-stat-value" id="earn-pending-val">$0.00</div>
+          <div class="earnings-stat-value muted" id="earn-pending-val">$0.00</div>
           <div class="earnings-stat-sub" id="earn-pending-sub">No pending payouts</div>
         </div>
       </div>
@@ -2505,8 +2510,8 @@ body::before {
         <div class="earnings-table-wrap">
           <table class="earnings-table">
             <thead><tr>
-              <th>Event</th><th>Date</th><th>Organiser</th>
-              <th>Stall fee</th><th>Platform fee (5%)</th><th>Net</th><th>Status</th>
+              <th style="width:22%">Event</th><th style="width:14%">Date</th><th style="width:16%">Organiser</th>
+              <th style="width:12%">Stall fee</th><th style="width:14%">Platform fee (5%)</th><th style="width:10%">Net</th><th style="width:12%">Status</th>
             </tr></thead>
             <tbody id="earnings-tbody">
               <tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-lo);font-size:13px;">No earnings yet — completed events will appear here.</td></tr>
@@ -6554,13 +6559,22 @@ async function loadEarnings() {
 
 function _renderEarningsSummary(s) {
   const el = (id) => document.getElementById(id);
+  const _setMuted = (id, isEmpty) => { el(id).classList.toggle('muted', isEmpty); };
+
   el('earn-alltime-val').textContent = _fmtCurrency(s.total_net);
-  el('earn-alltime-sub').textContent = s.events_completed ? `${s.events_completed} event${s.events_completed !== 1 ? 's' : ''} completed` : '0 events completed';
+  _setMuted('earn-alltime-val', !s.total_net);
+  el('earn-alltime-sub').textContent = s.events_completed ? `${s.events_completed} event${s.events_completed !== 1 ? 's' : ''} completed` : 'No events completed';
+
   el('earn-month-val').textContent = _fmtCurrency(s.this_month_net);
+  _setMuted('earn-month-val', !s.this_month_net);
   el('earn-month-sub').textContent = s.this_month_events ? `${s.this_month_events} event${s.this_month_events !== 1 ? 's' : ''} this month` : 'No events this month';
+
   el('earn-lastmonth-val').textContent = _fmtCurrency(s.last_month_net);
-  el('earn-lastmonth-sub').textContent = `${s.last_month_events || 0} event${(s.last_month_events || 0) !== 1 ? 's' : ''} last month`;
+  _setMuted('earn-lastmonth-val', !s.last_month_net);
+  el('earn-lastmonth-sub').textContent = s.last_month_events ? `${s.last_month_events} event${s.last_month_events !== 1 ? 's' : ''} last month` : 'No events last month';
+
   el('earn-pending-val').textContent = _fmtCurrency(s.pending_net);
+  _setMuted('earn-pending-val', !s.pending_net);
   el('earn-pending-sub').textContent = s.pending > 0 ? `${_fmtCurrency(s.pending)} gross` : 'No pending payouts';
 }
 
@@ -6595,7 +6609,10 @@ function _renderEarningsTax(tax) {
   const label = document.getElementById('earn-fy-label');
   const total = document.getElementById('earn-fy-total');
   if (label) label.textContent = `Total earnings FY ${tax.fy_label}`;
-  if (total) total.textContent = _fmtCurrency(tax.fy_net);
+  if (total) {
+    total.textContent = _fmtCurrency(tax.fy_net);
+    total.style.color = tax.fy_net > 0 ? 'var(--text-hi)' : 'var(--text-mid)';
+  }
 }
 
 async function downloadEarningsPDF() {
