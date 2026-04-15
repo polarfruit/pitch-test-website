@@ -1304,6 +1304,7 @@ app.post('/api/profile/plan', requireAuth, async (req, res) => {
           submit: { message: `You're subscribing to Pitch. ${planLabel}. Cancel anytime from your dashboard.` },
         },
         allow_promotion_codes: true,
+        payment_method_collection: 'always',
       };
       if (vendor.stripe_customer_id) {
         sessionParams.customer = vendor.stripe_customer_id;
