@@ -4537,14 +4537,21 @@ async function directUpgrade(plan, btn) {
   btn.textContent = 'Processing…';
   btn.disabled = true;
   btn.style.opacity = '0.6';
+  function showErr(msg) {
+    if (errEl) { errEl.textContent = msg; errEl.style.display = 'block'; }
+    else { alert(msg); }
+    btn.textContent = origText; btn.disabled = false; btn.style.opacity = '1';
+  }
   try {
     const r = await pitchFetch('/api/profile/plan', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ plan }),
     });
-    const d = await r.json().catch(() => ({}));
-    console.log('[directUpgrade] Response:', r.status, d);
+    const text = await r.text();
+    let d;
+    try { d = JSON.parse(text); } catch { d = {}; }
+    console.log('[directUpgrade] Status:', r.status, 'Body:', text.substring(0, 500));
     if (r.ok && d.checkout_url) {
       btn.textContent = 'Redirecting to payment…';
       window.location.href = d.checkout_url;
@@ -4560,14 +4567,12 @@ async function directUpgrade(plan, btn) {
       showToast(`Plan updated to ${labels[_currentSubPlan]}`, 'success');
       return;
     }
-    const msg = d.error || 'Could not start checkout. Please try again.';
-    if (errEl) { errEl.textContent = msg; errEl.style.display = 'block'; }
-    else showToast(msg, 'error');
+    showErr(d.error || `Server returned ${r.status}: ${text.substring(0, 200)}`);
+    return;
   } catch (e) {
     console.error('[directUpgrade] Error:', e);
-    const msg = 'Network error — please try again.';
-    if (errEl) { errEl.textContent = msg; errEl.style.display = 'block'; }
-    else showToast(msg, 'error');
+    showErr('Network error: ' + e.message);
+    return;
   }
   btn.textContent = origText;
   btn.disabled = false;

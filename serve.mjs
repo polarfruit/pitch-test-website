@@ -1216,6 +1216,21 @@ app.post('/api/profile/avatar', requireAuth, async (req, res) => {
   }
 });
 
+// GET /api/stripe/debug — temporary diagnostic (remove after fix)
+app.get('/api/stripe/debug', async (req, res) => {
+  try {
+    const stripe = await getStripe();
+    const prices = STRIPE_PRICES;
+    const hasKey = !!process.env.STRIPE_SECRET_KEY;
+    const keyPrefix = hasKey ? process.env.STRIPE_SECRET_KEY.substring(0, 12) + '...' : 'NOT SET';
+    let stripeOk = false;
+    if (stripe) {
+      try { await stripe.prices.list({ limit: 1 }); stripeOk = true; } catch (e) { stripeOk = e.message; }
+    }
+    res.json({ hasKey, keyPrefix, prices, stripeOk, stripeLoaded: !!stripe });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
 // POST /api/profile/plan — update vendor subscription plan via Stripe
 app.post('/api/profile/plan', requireAuth, async (req, res) => {
   try {
