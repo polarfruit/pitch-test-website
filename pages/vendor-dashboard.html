@@ -2735,7 +2735,7 @@ body::before {
             <div id="stripe-pay-summary" style="background:#ffffff06;border:1px solid #ffffff08;border-radius:12px;padding:16px;margin-bottom:20px;font-size:13px;color:var(--text-mid);line-height:1.7;">
             </div>
             <div id="stripe-payment-element" style="margin-bottom:20px;min-height:40px;"></div>
-            <div id="stripe-pay-error" style="display:none;color:var(--terra);font-size:12px;margin-bottom:12px;"></div>
+            <div id="stripe-pay-error" style="color:var(--terra);font-size:12px;margin-bottom:12px;"></div>
             <div style="display:flex;gap:10px;">
               <button onclick="closeStripePayModal()" style="flex:1;font-family:var(--fb);font-size:13px;font-weight:600;color:var(--text-mid);background:#ffffff08;border:1px solid #ffffff12;padding:12px;border-radius:10px;cursor:pointer;">Cancel</button>
               <button id="stripe-pay-submit" onclick="submitStripePayment()" style="flex:2;font-family:var(--fb);font-size:13px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:12px;border-radius:10px;cursor:pointer;transition:background 0.14s;" onmouseover="this.style.background='var(--ember-glow)'" onmouseout="this.style.background='var(--ember)'">Pay</button>
@@ -3183,7 +3183,17 @@ body::before {
         <div class="settings-section">
           <div class="settings-section-title">Subscription</div>
           <div class="plan-card" id="settings-plan-card">
-            <!-- Populated by initDashboard -->
+            <div>
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+                <span style="font-size:22px;">📋</span>
+                <span style="font-family:var(--fd);font-size:18px;font-weight:900;letter-spacing:-0.02em;color:var(--text-hi);">Starter</span>
+              </div>
+              <div style="font-size:13px;color:var(--text-mid);margin-bottom:14px;">Free forever · No credit card needed</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
+                <button onclick="openSubModal('pro')" style="font-family:var(--fb);font-size:13px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:10px 18px;border-radius:9px;cursor:pointer;">Upgrade to Pro — $29/month →</button>
+                <button onclick="openSubModal('growth')" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--gold);background:#C9840A10;border:1px solid #C9840A22;padding:10px 18px;border-radius:9px;cursor:pointer;">Upgrade to Growth — $79/month →</button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -6435,7 +6445,7 @@ async function loadStallFees() {
             <div class="fee-due">${f.due_date ? `Due ${_fmtDate(f.due_date)}${overdue ? ' — <span style="color:var(--terra);font-weight:700;">Overdue</span>' : ''}` : 'No due date set'}</div>
           </div>
           <div class="fee-amount">$${Number(f.amount).toFixed(2)}</div>
-          <button class="btn-pay" onclick="payFee(${f.id}, this)">Pay now</button>
+          <button class="btn-pay" onclick="payFee(${f.id}, '${(f.event_name||'').replace(/'/g,"\\'")}', ${Number(f.amount)}, '${f.due_date||''}', this)">Pay now</button>
         </div>`;
       }).join('');
     }
@@ -6475,90 +6485,141 @@ async function loadStallFees() {
   } catch(e) { console.error('[stall fees]', e); }
 }
 
-async function payFee(id, btn) {
+async function payFee(id, eventName, amount, dueDate, btn) {
   btn.disabled = true; btn.textContent = 'Processing…';
   try {
     const r = await pitchFetch(`/api/vendor/stall-fees/${id}/pay`, { method: 'POST' });
-    if (r.ok) {
+    const data = await r.json();
+    if (data.client_secret && data.publishable_key) {
+      // Real Stripe — open payment modal
+      btn.disabled = false; btn.textContent = 'Pay now';
+      openStripePayModal(id, eventName, amount, dueDate, data.client_secret, data.publishable_key);
+    } else if (data.ok) {
+      // Mock/dev mode — already marked as paid
       loadStallFees();
+      showToast('Fee marked as paid', 'success');
     } else {
       btn.disabled = false; btn.textContent = 'Pay now';
-      alert('Payment failed. Please try again.');
+      alert(data.error || 'Payment failed. Please try again.');
     }
-  } catch(e) { btn.disabled = false; btn.textContent = 'Pay now'; }
+  } catch(e) { btn.disabled = false; btn.textContent = 'Pay now'; console.error('[payFee]', e); }
 }
 
-function setupPaymentMethod() {
-  const card = document.getElementById('pay-method-card');
-  if (!card) return;
-  card.innerHTML = `<div class="pay-method-row" style="margin-bottom:16px;">
-    <div class="pay-method-icon">🏦</div>
-    <div class="pay-method-info">
-      <div class="pay-method-title">Add payment method</div>
-      <div class="pay-method-desc">Enter your card details for paying stall fees.</div>
-    </div>
-  </div>
-  <div style="display:flex;flex-direction:column;gap:12px;">
-    <div>
-      <label style="font-size:11px;font-weight:700;color:var(--text-lo);text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:6px;">Cardholder name</label>
-      <input class="form-input" id="pm-name" type="text" placeholder="Full name on card" />
-    </div>
-    <div>
-      <label style="font-size:11px;font-weight:700;color:var(--text-lo);text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:6px;">Card number</label>
-      <input class="form-input" id="pm-card" type="text" placeholder="4242 4242 4242 4242" maxlength="19" oninput="this.value=this.value.replace(/[^\d ]/g,'').replace(/(\d{4})(?=\d)/g,'$1 ').trim()" />
-    </div>
-    <div style="display:flex;gap:12px;">
-      <div style="flex:1;">
-        <label style="font-size:11px;font-weight:700;color:var(--text-lo);text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:6px;">Expiry</label>
-        <input class="form-input" id="pm-expiry" type="text" placeholder="MM/YY" maxlength="5" oninput="let v=this.value.replace(/[^\d]/g,'');if(v.length>2)v=v.slice(0,2)+'/'+v.slice(2);this.value=v" />
-      </div>
-      <div style="flex:1;">
-        <label style="font-size:11px;font-weight:700;color:var(--text-lo);text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:6px;">CVC</label>
-        <input class="form-input" id="pm-cvc" type="text" placeholder="123" maxlength="4" oninput="this.value=this.value.replace(/\D/g,'')" />
-      </div>
-    </div>
-    <div style="display:flex;gap:10px;margin-top:4px;">
-      <button onclick="savePaymentMethod()" style="font-family:var(--fb);font-size:13px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:10px 24px;border-radius:10px;cursor:pointer;transition:background 0.14s;" onmouseover="this.style.background='var(--ember-glow)'" onmouseout="this.style.background='var(--ember)'">Save card</button>
-      <button onclick="cancelPaymentMethod()" style="font-family:var(--fb);font-size:13px;font-weight:600;color:var(--text-mid);background:#ffffff08;border:1px solid #ffffff12;padding:10px 24px;border-radius:10px;cursor:pointer;transition:background 0.14s;">Cancel</button>
-    </div>
-    <div style="font-size:11px;color:var(--text-lo);line-height:1.5;margin-top:4px;">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px;margin-right:4px;"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
-      Secured with Stripe. Your card details are encrypted and never stored on our servers.
-    </div>
-  </div>`;
+// ── STRIPE ELEMENTS PAYMENT FLOW ──────────────────────────────────────────
+let _stripeInstance = null;
+let _stripeElements = null;
+let _stripePayFeeId = null;
+
+function _loadStripeJs() {
+  return new Promise((resolve, reject) => {
+    if (window.Stripe) return resolve(window.Stripe);
+    const s = document.createElement('script');
+    s.src = 'https://js.stripe.com/v3/';
+    s.onload = () => resolve(window.Stripe);
+    s.onerror = () => reject(new Error('Failed to load Stripe.js'));
+    document.head.appendChild(s);
+  });
 }
 
-function savePaymentMethod() {
-  const name = (document.getElementById('pm-name') || {}).value || '';
-  const card = (document.getElementById('pm-card') || {}).value || '';
-  const expiry = (document.getElementById('pm-expiry') || {}).value || '';
-  const cvc = (document.getElementById('pm-cvc') || {}).value || '';
-  if (!name || card.replace(/\s/g,'').length < 15 || !expiry || !cvc) {
-    alert('Please fill in all card details.');
-    return;
+async function openStripePayModal(feeId, eventName, amount, dueDate, clientSecret, publishableKey) {
+  const modal = document.getElementById('stripe-pay-modal');
+  const summary = document.getElementById('stripe-pay-summary');
+  const errEl = document.getElementById('stripe-pay-error');
+  const submitBtn = document.getElementById('stripe-pay-submit');
+  const peContainer = document.getElementById('stripe-payment-element');
+
+  // Fill summary
+  summary.innerHTML = `
+    <div style="font-weight:700;color:var(--text-hi);font-size:15px;margin-bottom:4px;">${eventName}</div>
+    <div style="color:var(--text-mid);font-size:12px;">${dueDate ? 'Due ' + _fmtDate(dueDate) : 'No due date'}</div>
+    <div style="font-family:var(--fd);font-size:28px;font-weight:900;color:var(--text-hi);margin-top:12px;">$${Number(amount).toFixed(2)}</div>
+  `;
+  errEl.textContent = '';
+  submitBtn.disabled = false;
+  submitBtn.textContent = `Pay $${Number(amount).toFixed(2)}`;
+  peContainer.innerHTML = '';
+  _stripePayFeeId = feeId;
+
+  // Show modal
+  modal.style.display = 'flex';
+
+  try {
+    const StripeCtor = await _loadStripeJs();
+    _stripeInstance = StripeCtor(publishableKey);
+    _stripeElements = _stripeInstance.elements({
+      clientSecret,
+      appearance: {
+        theme: 'night',
+        variables: {
+          colorPrimary: '#E8500A',
+          colorBackground: '#231E19',
+          colorText: '#FDF4E7',
+          colorDanger: '#C0392B',
+          fontFamily: 'Instrument Sans, Helvetica Neue, sans-serif',
+          borderRadius: '10px',
+          spacingUnit: '4px'
+        },
+        rules: {
+          '.Input': { border: '1px solid #ffffff18', backgroundColor: '#1A1612' },
+          '.Input:focus': { borderColor: '#E8500A', boxShadow: '0 0 0 1px #E8500A40' },
+          '.Label': { color: '#A89880', fontSize: '11px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.08em' }
+        }
+      }
+    });
+    const paymentElement = _stripeElements.create('payment');
+    paymentElement.mount('#stripe-payment-element');
+  } catch(e) {
+    errEl.textContent = 'Failed to load payment form. Please try again.';
+    console.error('[stripe]', e);
   }
-  const last4 = card.replace(/\s/g,'').slice(-4);
-  const pmCard = document.getElementById('pay-method-card');
-  pmCard.innerHTML = `<div class="pay-method-row">
-    <div class="pay-method-icon">💳</div>
-    <div class="pay-method-info">
-      <div class="pay-method-title">Visa ending in ${last4}</div>
-      <div class="pay-method-desc">${name} &middot; Expires ${expiry}</div>
-    </div>
-    <span class="pay-method-badge" style="background:#2D8B5518;color:var(--herb);border:1px solid #2D8B5528;">Active</span>
-  </div>`;
 }
 
-function cancelPaymentMethod() {
-  const pmCard = document.getElementById('pay-method-card');
-  pmCard.innerHTML = `<div class="pay-method-row">
-    <div class="pay-method-icon">🏦</div>
-    <div class="pay-method-info">
-      <div class="pay-method-title" id="pay-method-title">No payment method</div>
-      <div class="pay-method-desc" id="pay-method-desc">Add a payment method to pay stall fees online.</div>
-    </div>
-    <button id="pay-method-btn" onclick="setupPaymentMethod()" style="font-family:var(--fb);font-size:12px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:8px 16px;border-radius:9px;cursor:pointer;transition:background 0.14s;white-space:nowrap;" onmouseover="this.style.background='var(--ember-glow)'" onmouseout="this.style.background='var(--ember)'">Add method</button>
-  </div>`;
+function closeStripePayModal() {
+  const modal = document.getElementById('stripe-pay-modal');
+  modal.style.display = 'none';
+  _stripeElements = null;
+  _stripePayFeeId = null;
+  document.getElementById('stripe-payment-element').innerHTML = '';
+}
+
+async function submitStripePayment() {
+  const submitBtn = document.getElementById('stripe-pay-submit');
+  const errEl = document.getElementById('stripe-pay-error');
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Processing…';
+  errEl.textContent = '';
+
+  try {
+    const { error } = await _stripeInstance.confirmPayment({
+      elements: _stripeElements,
+      redirect: 'if_required'
+    });
+
+    if (error) {
+      errEl.textContent = error.message || 'Payment failed. Please try again.';
+      submitBtn.disabled = false;
+      submitBtn.textContent = submitBtn.dataset.label || 'Pay';
+      return;
+    }
+
+    // Confirm on our server
+    const r = await pitchFetch(`/api/vendor/stall-fees/${_stripePayFeeId}/confirm`, { method: 'POST' });
+    const data = await r.json();
+    if (data.ok) {
+      closeStripePayModal();
+      loadStallFees();
+      showToast('Payment successful!', 'success');
+    } else {
+      errEl.textContent = data.error || 'Payment confirmed but failed to update. Please refresh.';
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Retry';
+    }
+  } catch(e) {
+    errEl.textContent = 'Something went wrong. Please try again.';
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Retry';
+    console.error('[stripe-pay]', e);
+  }
 }
 
 // ── EARNINGS ───────────────────────────────────────────────────────────────
