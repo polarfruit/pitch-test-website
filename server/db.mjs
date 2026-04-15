@@ -980,6 +980,7 @@ await _safeExec(`ALTER TABLE vendors ADD COLUMN hide_abn INTEGER NOT NULL DEFAUL
 await _safeExec(`ALTER TABLE vendors ADD COLUMN hide_reviews INTEGER NOT NULL DEFAULT 0`);
 await _safeExec(`ALTER TABLE vendors ADD COLUMN stripe_customer_id TEXT`);
 await _safeExec(`ALTER TABLE vendors ADD COLUMN stripe_subscription_id TEXT`);
+await _safeExec(`ALTER TABLE stall_fees ADD COLUMN stripe_payment_intent_id TEXT`);
 await _safeExec(`ALTER TABLE users ADD COLUMN two_factor_enabled INTEGER NOT NULL DEFAULT 0`);
 await _safeExec(`ALTER TABLE event_applications ADD COLUMN updated_at DATETIME`);
 
@@ -1470,6 +1471,9 @@ export const stmts = {
   createStallFee:       prepare(`INSERT INTO stall_fees (vendor_user_id,event_id,event_name,amount,due_date,status) VALUES (@vendor_user_id,@event_id,@event_name,@amount,@due_date,@status)`),
   payStallFee:          prepare(`UPDATE stall_fees SET status='paid',paid_at=datetime('now') WHERE id=? AND vendor_user_id=?`),
   getStallFeeById:      prepare(`SELECT * FROM stall_fees WHERE id=?`),
+  updateStallFeeStripePI: prepare(`UPDATE stall_fees SET stripe_payment_intent_id=? WHERE id=? AND vendor_user_id=?`),
+  getStallFeeByStripePI:  prepare(`SELECT * FROM stall_fees WHERE stripe_payment_intent_id=?`),
+  markStallFeePaid:       prepare(`UPDATE stall_fees SET status='paid',paid_at=datetime('now') WHERE stripe_payment_intent_id=?`),
 
   // vendor earnings
   getVendorEarningsSummary: prepare(`SELECT COALESCE(SUM(CASE WHEN status='paid' THEN amount ELSE 0 END),0) as total_earned, COUNT(CASE WHEN status='paid' THEN 1 END) as events_completed, COALESCE(SUM(CASE WHEN status='paid' AND paid_at>=date('now','start of month') THEN amount ELSE 0 END),0) as this_month, COUNT(CASE WHEN status='paid' AND paid_at>=date('now','start of month') THEN 1 END) as this_month_events, COALESCE(SUM(CASE WHEN status='paid' AND paid_at>=date('now','start of month','-1 month') AND paid_at<date('now','start of month') THEN amount ELSE 0 END),0) as last_month, COUNT(CASE WHEN status='paid' AND paid_at>=date('now','start of month','-1 month') AND paid_at<date('now','start of month') THEN 1 END) as last_month_events, COALESCE(SUM(CASE WHEN status='unpaid' THEN amount ELSE 0 END),0) as pending FROM stall_fees WHERE vendor_user_id=?`),

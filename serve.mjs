@@ -141,6 +141,22 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
         // Don't downgrade immediately — Stripe retries. Log for monitoring.
         break;
       }
+      case 'payment_intent.succeeded': {
+        const pi = event.data.object;
+        if (pi.metadata?.type !== 'stall_fee') break;
+        const fee = await stmts.getStallFeeByStripePI.get(pi.id);
+        if (fee && fee.status === 'unpaid') {
+          await stmts.markStallFeePaid.run(pi.id);
+          console.log(`[stripe-webhook] Stall fee ${fee.id} paid via PI ${pi.id}`);
+        }
+        break;
+      }
+      case 'payment_intent.payment_failed': {
+        const pi = event.data.object;
+        if (pi.metadata?.type !== 'stall_fee') break;
+        console.log(`[stripe-webhook] Stall fee payment failed: PI ${pi.id}`);
+        break;
+      }
     }
   } catch (err) {
     console.error('[stripe-webhook] Handler error:', err);
@@ -2981,11 +2997,77 @@ app.get('/api/vendor/stall-fees', requireAuth, async (req, res) => {
 
 app.post('/api/vendor/stall-fees/:id/pay', requireAuth, async (req, res) => {
   if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Vendors only' });
-  const fee = await stmts.getStallFeeById.get(req.params.id);
-  if (!fee || fee.vendor_user_id !== req.session.userId) return res.status(404).json({ error: 'Not found' });
-  if (fee.status !== 'unpaid') return res.status(400).json({ error: 'Fee is not unpaid' });
-  await stmts.payStallFee.run(req.params.id, req.session.userId);
-  res.json({ ok: true });
+  try {
+    const fee = await stmts.getStallFeeById.get(req.params.id);
+    if (!fee || fee.vendor_user_id !== req.session.userId) return res.status(404).json({ error: 'Not found' });
+    if (fee.status !== 'unpaid') return res.status(400).json({ error: 'Fee is not unpaid' });
+
+    const stripe = await getStripe();
+    if (!stripe || !process.env.STRIPE_PUBLISHABLE_KEY) {
+      // No Stripe configured — mock payment (dev/local)
+      await stmts.payStallFee.run(req.params.id, req.session.userId);
+      return res.json({ ok: true, mock: true });
+    }
+
+    // Get or create Stripe customer
+    const vendor = await stmts.getVendorByUserId.get(req.session.userId);
+    let customerId = vendor?.stripe_customer_id;
+    if (!customerId) {
+      const user = await stmts.getUserById.get(req.session.userId);
+      const customer = await stripe.customers.create({
+        email: user?.email || undefined,
+        name: vendor?.trading_name || `${user?.first_name || ''} ${user?.last_name || ''}`.trim() || undefined,
+        metadata: { user_id: String(req.session.userId), role: 'vendor' },
+      });
+      customerId = customer.id;
+      await stmts.updateVendorStripe.run({
+        stripe_customer_id: customerId,
+        stripe_subscription_id: vendor?.stripe_subscription_id || null,
+        user_id: req.session.userId,
+      });
+    }
+
+    // Create PaymentIntent
+    const pi = await stripe.paymentIntents.create({
+      amount: Math.round(fee.amount * 100), // cents
+      currency: 'aud',
+      customer: customerId,
+      metadata: { type: 'stall_fee', fee_id: String(fee.id), vendor_user_id: String(req.session.userId), event_name: fee.event_name },
+      description: `Stall fee: ${fee.event_name}`,
+    });
+
+    // Save PI id to fee row
+    await stmts.updateStallFeeStripePI.run(pi.id, fee.id, req.session.userId);
+
+    res.json({ client_secret: pi.client_secret, publishable_key: process.env.STRIPE_PUBLISHABLE_KEY });
+  } catch (e) {
+    console.error('[stall-fee pay]', e);
+    res.status(500).json({ error: 'Payment setup failed: ' + e.message });
+  }
+});
+
+// Confirm stall fee payment after Stripe card submission
+app.post('/api/vendor/stall-fees/:id/confirm', requireAuth, async (req, res) => {
+  if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Vendors only' });
+  try {
+    const fee = await stmts.getStallFeeById.get(req.params.id);
+    if (!fee || fee.vendor_user_id !== req.session.userId) return res.status(404).json({ error: 'Not found' });
+    if (fee.status === 'paid') return res.json({ ok: true, already_paid: true });
+    if (!fee.stripe_payment_intent_id) return res.status(400).json({ error: 'No payment intent found' });
+
+    const stripe = await getStripe();
+    if (!stripe) return res.status(500).json({ error: 'Stripe not configured' });
+
+    const pi = await stripe.paymentIntents.retrieve(fee.stripe_payment_intent_id);
+    if (pi.status === 'succeeded') {
+      await stmts.payStallFee.run(fee.id, req.session.userId);
+      return res.json({ ok: true });
+    }
+    res.json({ ok: false, status: pi.status });
+  } catch (e) {
+    console.error('[stall-fee confirm]', e);
+    res.status(500).json({ error: 'Confirmation failed: ' + e.message });
+  }
 });
 
 // ── API: Vendor earnings ──────────────────────────────────────────────────
