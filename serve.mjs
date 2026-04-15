@@ -2737,7 +2737,7 @@ app.get('/api/vendor/analytics', requireAuth, async (req, res) => {
       const [viewsBySource, viewsByRole, viewsHourly, searchTotal, searchDaily, vendorRate, catRate, catCount, catRank] = await Promise.all([
         q(`SELECT COALESCE(referrer,'direct') as referrer, COUNT(*) as views FROM vendor_profile_views WHERE vendor_user_id=? ${vDateCond} GROUP BY referrer ORDER BY views DESC`).all(uid).catch(() => []),
         q(`SELECT COALESCE(viewer_role,'anonymous') as viewer_role, COUNT(*) as views FROM vendor_profile_views WHERE vendor_user_id=? ${vDateCond} GROUP BY viewer_role ORDER BY views DESC`).all(uid).catch(() => []),
-        q(`SELECT CAST(strftime('%H', created_at) AS INTEGER) as hour, COUNT(*) as views FROM vendor_profile_views WHERE vendor_user_id=? ${vDateCond} GROUP BY hour ORDER BY hour ASC`).all(uid).catch(() => []),
+        q(`SELECT CAST(strftime('%H', created_at, 'localtime') AS INTEGER) as hour, COUNT(*) as views FROM vendor_profile_views WHERE vendor_user_id=? ${vDateCond} GROUP BY hour ORDER BY hour ASC`).all(uid).catch(() => []),
         q(`SELECT COUNT(*) as total FROM vendor_search_appearances WHERE vendor_user_id=? ${vDateCond}`).get(uid).catch(() => ({ total: 0 })),
         q(`SELECT date(created_at) as day, COUNT(*) as appearances FROM vendor_search_appearances WHERE vendor_user_id=? ${vDateCond} GROUP BY date(created_at) ORDER BY day ASC`).all(uid).catch(() => []),
         stmts.getVendorAcceptanceRate.get(uid).catch(() => ({ total_apps: 0, approved_apps: 0 })),
