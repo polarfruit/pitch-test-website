@@ -1195,8 +1195,8 @@ body::before {
 }
 .inbox-search::placeholder { color: var(--text-mid); }
 .inbox-search:focus { border-color: var(--ember); }
-.thread-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
-.thread-list:empty::after, .thread-list > div:only-child { margin: auto 0; }
+.thread-list { flex: 1; overflow-y: auto; }
+.thread-list-empty { padding:40px 20px; text-align:center; color:var(--text-lo); font-size:13px; line-height:1.7; height:100%; display:flex; align-items:center; justify-content:center; }
 .thread-item {
   display: flex; align-items: flex-start; gap: 12px;
   padding: 16px 20px; border-bottom: 1px solid #ffffff06;
@@ -2594,7 +2594,7 @@ body::before {
             🔒 <strong>Cold contact is a Growth feature.</strong> You can message any organiser you've applied to. <a href="/pricing">Upgrade to Growth</a> to contact any organiser on Pitch.
           </div>
           <div class="thread-list" id="thread-list">
-            <div style="padding:40px 20px;text-align:center;color:var(--text-lo);font-size:13px;line-height:1.7;">
+            <div class="thread-list-empty">
               No messages yet.<br>Organisers will reach out here when they respond to your applications.
             </div>
           </div>
@@ -3953,7 +3953,7 @@ function _refreshThreadList() {
   const keys = Object.keys(_threadCache);
   const realKeys = keys.filter(k => k !== '__announcements__');
   if (!keys.length) {
-    list.innerHTML = `<div style="padding:40px 20px;text-align:center;color:var(--text-lo);font-size:13px;line-height:1.7;">No messages yet.<br>Use the Message button on any event or application to start a conversation.</div>`;
+    list.innerHTML = `<div class="thread-list-empty">No messages yet.<br>Use the Message button on any event or application to start a conversation.</div>`;
     return;
   }
   // Announcements thread always first
