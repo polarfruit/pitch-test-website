@@ -4730,18 +4730,18 @@ async function initDashboard() {
   }
 
   // Subscription info — use injected or fetch
+  // Always render plan card immediately with current plan state
+  renderPlanCard(profile);
+  applySubscriptionGating(_currentSubPlan);
+
   if (init && init.subscriptionInfo) {
     window.__PITCH_SUB_INFO__ = init.subscriptionInfo;
-    applySubscriptionGating(profile.plan || 'free');
     renderPlanCard(profile, init.subscriptionInfo);
   } else {
     pitchFetch('/api/vendor/subscription-info').then(r => r.ok ? r.json() : null).then(subInfo => {
-      if (subInfo) {
-        window.__PITCH_SUB_INFO__ = subInfo;
-        applySubscriptionGating(profile.plan || 'free');
-      }
+      if (subInfo) window.__PITCH_SUB_INFO__ = subInfo;
       renderPlanCard(profile, subInfo);
-    }).catch(() => renderPlanCard(profile));
+    }).catch(() => {});
   }
 
   // Load threads (non-blocking for deep-link case)
@@ -5687,7 +5687,8 @@ async function removeDoc(key) {
 function renderPlanCard(profile, subInfo) {
   const el = document.getElementById('settings-plan-card');
   if (!el) return;
-  const plan = (profile && profile.plan) || 'free';
+  // Use _currentSubPlan which respects phantom plan detection (no stripe sub = free)
+  const plan = _currentSubPlan || (profile && profile.plan) || 'free';
   const appsUsed = subInfo ? subInfo.apps_used : 0;
   const appsLimit = subInfo ? subInfo.apps_limit : 10;
 
