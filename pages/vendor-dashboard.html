@@ -2575,8 +2575,8 @@ body::before {
       <!-- Starter: messaging locked gate -->
       <div class="messages-gate" id="messages-gate">
         <div class="messages-gate-icon">💬</div>
-        <div class="messages-gate-title">Messaging is a Pro feature</div>
-        <div class="messages-gate-sub">Message organisers you've applied to, track conversations, and never miss a response. Available on Pro and Growth plans.</div>
+        <div class="messages-gate-title">Messaging unlocks when you're approved</div>
+        <div class="messages-gate-sub">Get approved for an event to start messaging organisers directly. Or upgrade to Pro to message any organiser you've applied to.</div>
         <a href="/pricing" style="display:inline-block;background:var(--ember);color:#fff;font-family:var(--fb);font-size:14px;font-weight:700;padding:12px 28px;border-radius:12px;text-decoration:none;margin-top:8px;">Upgrade to Pro — $29/month →</a>
       </div>
       <div class="messages-layout" id="messages-layout">
@@ -3690,6 +3690,15 @@ function _fmtTime(iso) {
   } catch { return ''; }
 }
 
+// ── Helper: does vendor have an approved app for this organiser/event? ───
+function _hasApprovedApp(orgUserId, eventId) {
+  const apps = window.__PITCH_ALL_APPS__ || [];
+  return apps.some(a => a.status === 'approved' && (
+    (eventId && Number(a.event_id) === Number(eventId)) ||
+    (orgUserId && Number(a.organiser_user_id) === Number(orgUserId))
+  ));
+}
+
 // ── Open a conversation — called from onclick or deep-link ────────────────
 async function startChatWithOrganiser(orgUserId, orgName, eventName, skipPanelSwitch, eventId) {
   const plan = window.__PITCH_PLAN__ || 'free';
@@ -3697,8 +3706,8 @@ async function startChatWithOrganiser(orgUserId, orgName, eventName, skipPanelSw
   const isPro     = plan === 'pro';
   const isGrowth  = plan === 'growth';
 
-  // Starter: messaging entirely disabled
-  if (isStarter) {
+  // Starter: can only message organisers for approved applications
+  if (isStarter && !_hasApprovedApp(orgUserId, eventId)) {
     showPanel('messages', null);
     return;
   }
@@ -5402,6 +5411,8 @@ async function loadApplications() {
 function renderApplicationsData(applications) {
   // Cache globally for analytics
   window.__PITCH_ALL_APPS__ = applications;
+  const _plan = window.__PITCH_PLAN__ || 'free';
+  const _isStarter = _plan === 'free' || !_plan;
 
   // Counts by status
   const counts = { pending: 0, approved: 0, rejected: 0, withdrawn: 0 };
@@ -5499,7 +5510,7 @@ function renderApplicationsData(applications) {
             ? `<a class="action-link" href="/events/${a.event_slug||a.event_id}" target="_blank" rel="noopener" style="color:var(--text-mid);">View event →</a>`
             : `<a class="action-link" href="/events/${a.event_slug||a.event_id}" target="_blank" rel="noopener">View →</a>`
           }
-          ${a.status !== 'withdrawn' ? `<button onclick="startChatWithOrganiser(${a.organiser_user_id||0},'${(a.organiser_name||'Organiser').replace(/'/g,"\\'")}','${(a.event_name||'').replace(/'/g,"\\'")}',false,${a.event_id||0})" style="font-family:var(--fb);font-size:11px;font-weight:700;color:var(--ember);background:var(--ember-bg);border:1px solid #E8500A22;padding:4px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;">💬 Message</button>` : ''}
+          ${(_isStarter ? a.status === 'approved' : a.status !== 'withdrawn') ? `<button onclick="startChatWithOrganiser(${a.organiser_user_id||0},'${(a.organiser_name||'Organiser').replace(/'/g,"\\'")}','${(a.event_name||'').replace(/'/g,"\\'")}',false,${a.event_id||0})" style="font-family:var(--fb);font-size:11px;font-weight:700;color:var(--ember);background:var(--ember-bg);border:1px solid #E8500A22;padding:4px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;">💬 Message</button>` : ''}
         </div>
       </td>
     </tr>
@@ -8797,26 +8808,42 @@ function applySubscriptionGating(plan) {
   const teamSection = document.getElementById('team-invite-section');
   if (teamSection) teamSection.style.display = isGrowth ? 'block' : 'none';
 
-  // ── Messaging: Starter locked, Pro/Growth enabled ──
+  // ── Messaging: tiered access ──
   const messagesGate = document.getElementById('messages-gate');
   const messagesLayout = document.getElementById('messages-layout');
   const msgNavBtn = document.querySelector('.nav-link[onclick*="messages"]');
-  if (isStarter) {
+  const coldGate = document.getElementById('cold-contact-gate');
+  const _apps = window.__PITCH_ALL_APPS__ || [];
+  const hasApprovedApps = _apps.some(a => a.status === 'approved');
+
+  if (isStarter && !hasApprovedApps) {
+    // Starter with no approved events — full gate
     if (messagesGate) messagesGate.classList.add('visible');
     if (messagesLayout) messagesLayout.style.display = 'none';
     if (msgNavBtn && !msgNavBtn.querySelector('.nav-lock-icon')) {
       msgNavBtn.insertAdjacentHTML('beforeend', '<span class="nav-lock-icon">🔒</span>');
     }
-  } else {
+    if (coldGate) coldGate.style.display = 'none';
+  } else if (isStarter && hasApprovedApps) {
+    // Starter with approved events — show layout with restriction banner
     if (messagesGate) messagesGate.classList.remove('visible');
     if (messagesLayout) messagesLayout.style.display = '';
-    // Remove lock icon if present
     const lockIcon = msgNavBtn && msgNavBtn.querySelector('.nav-lock-icon');
     if (lockIcon) lockIcon.remove();
-
-    // Pro: show cold-contact gate banner
-    const coldGate = document.getElementById('cold-contact-gate');
-    if (coldGate) coldGate.style.display = isPro ? 'block' : 'none';
+    if (coldGate) {
+      coldGate.style.display = 'block';
+      coldGate.innerHTML = '\u{1F512} <strong>Starter plan:</strong> You can message organisers for events you\u2019re approved for. <a href="/pricing" style="color:var(--ember);text-decoration:none;font-weight:600;">Upgrade to Pro</a> to message any organiser you\u2019ve applied to.';
+    }
+  } else {
+    // Pro / Growth
+    if (messagesGate) messagesGate.classList.remove('visible');
+    if (messagesLayout) messagesLayout.style.display = '';
+    const lockIcon = msgNavBtn && msgNavBtn.querySelector('.nav-lock-icon');
+    if (lockIcon) lockIcon.remove();
+    if (coldGate) {
+      coldGate.style.display = isPro ? 'block' : 'none';
+      if (isPro) coldGate.innerHTML = '\u{1F512} <strong>Cold contact is a Growth feature.</strong> You can message any organiser you\u2019ve applied to. <a href="/pricing" style="color:var(--ember);text-decoration:none;font-weight:600;">Upgrade to Growth</a> to contact any organiser on Pitch.';
+    }
   }
 
   // ── Document expiry notifications — locked for Starter ──
