@@ -684,11 +684,12 @@ await _safeExec(`
     seasonal       INTEGER NOT NULL DEFAULT 0,
     is_signature   INTEGER NOT NULL DEFAULT 0,
     sort_order     INTEGER NOT NULL DEFAULT 0,
-    created_at     DATETIME DEFAULT (datetime('now'))
+    created_at     DATETIME DEFAULT (datetime('now')),
+    dietary_tags   TEXT
   )
 `);
 await _safeExec(`CREATE INDEX IF NOT EXISTS idx_menu_vendor ON menu_items(vendor_user_id, sort_order)`);
-await _safeExec(`ALTER TABLE menu_items ADD COLUMN dietary_tags TEXT`);
+try { await _safeExec(`ALTER TABLE menu_items ADD COLUMN dietary_tags TEXT`); } catch(e) { console.error('[db] menu_items dietary_tags migration:', e.message); }
 
 // ── Analytics tracking tables ────────────────────────────────────────────────
 await _safeExec(`CREATE TABLE IF NOT EXISTS vendor_profile_views (
