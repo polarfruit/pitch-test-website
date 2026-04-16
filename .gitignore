@@ -22,6 +22,10 @@ scripts/screenshot*.mjs
 # macOS
 .DS_Store
 
+# Next.js
+.next/
+out/
+
 # Logs
 *.log
 npm-debug.log*

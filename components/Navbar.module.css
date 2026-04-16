@@ -1,0 +1,149 @@
+.navbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  height: 66px;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 52px;
+  background: transparent;
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
+  border-bottom: 1px solid transparent;
+  transition: background 0.28s ease, backdrop-filter 0.28s ease, -webkit-backdrop-filter 0.28s ease, border-color 0.28s ease;
+}
+
+.scrolled {
+  background: rgba(26,22,18,0.92);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-bottom-color: rgba(255,255,255,0.04);
+}
+
+.logo {
+  font-family: var(--fd);
+  font-size: 26px; font-weight: 900;
+  letter-spacing: -0.04em;
+  color: var(--text-hi);
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.dot { color: var(--ember); }
+
+.links {
+  display: flex; align-items: center; gap: 32px;
+  list-style: none;
+}
+
+.links a {
+  font-size: 14px; font-weight: 500;
+  color: var(--text-mid);
+  text-decoration: none;
+  transition: color 0.14s;
+  letter-spacing: 0.01em;
+}
+
+.links a:hover { color: var(--text-hi); }
+
+.actions { display: flex; align-items: center; gap: 10px; }
+
+.btnLogin {
+  font-family: var(--fb); font-size: 13px; font-weight: 600;
+  color: var(--text-mid); background: transparent; border: none;
+  padding: 9px 16px; border-radius: 8px; cursor: pointer;
+  transition: color 0.14s, background 0.14s;
+  text-decoration: none;
+}
+
+.btnLogin:hover { color: var(--text-hi); background: rgba(255,255,255,0.035); }
+
+.btnCta {
+  font-family: var(--fb); font-size: 13px; font-weight: 700;
+  color: #fff; background: var(--ember); border: none;
+  padding: 10px 22px; border-radius: 9px; cursor: pointer;
+  box-shadow: 0 4px 16px rgba(232,80,10,0.18);
+  transition: background 0.14s, box-shadow 0.14s, transform 0.14s;
+  text-decoration: none;
+}
+
+.btnCta:hover {
+  background: var(--ember-glow);
+  box-shadow: 0 6px 22px rgba(232,80,10,0.25);
+  transform: translateY(-1px);
+}
+
+/* Auth — logged in */
+.navUser { display: flex; align-items: center; gap: 8px; position: relative; }
+
+.userName {
+  font-family: var(--fb);
+  font-size: 13px; font-weight: 600; color: var(--text-hi); cursor: pointer;
+  display: flex; align-items: center; gap: 5px;
+  padding: 8px 12px; border-radius: 8px;
+  border: none; background: transparent;
+  transition: background 0.14s;
+}
+
+.userName:hover { background: rgba(255,255,255,0.035); }
+
+.chevron { font-size: 10px; color: var(--text-lo); }
+
+.dropdown {
+  position: absolute; top: calc(100% + 8px); right: 0;
+  background: var(--char); border: 1px solid rgba(255,255,255,0.047);
+  border-radius: 12px; padding: 6px; min-width: 160px;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.25);
+}
+
+.dropdown a {
+  display: block; padding: 9px 14px; border-radius: 8px;
+  font-size: 13px; color: var(--text-mid); text-decoration: none;
+  transition: background 0.12s, color 0.12s;
+}
+
+.dropdown a:hover { background: rgba(255,255,255,0.03); color: var(--text-hi); }
+
+.divider { height: 1px; background: rgba(255,255,255,0.03); margin: 4px 0; }
+
+.danger { color: var(--terra) !important; }
+.danger:hover { background: rgba(192,57,43,0.06) !important; }
+
+/* Hamburger */
+.hamburger {
+  display: none; flex-direction: column; gap: 5px;
+  cursor: pointer; padding: 8px; border: none; background: transparent;
+}
+
+.hamburger span {
+  display: block; width: 22px; height: 2px;
+  background: var(--text-mid); border-radius: 2px;
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+/* Mobile menu */
+.mobileMenu {
+  display: none; position: fixed;
+  top: 66px; left: 0; right: 0; bottom: 0;
+  background: rgba(26,22,18,0.98);
+  z-index: 199; flex-direction: column;
+  align-items: center; justify-content: center; gap: 28px;
+}
+
+.mobileMenuOpen { display: flex; }
+
+.mobileMenu a {
+  font-family: var(--fd); font-size: 32px; font-weight: 900;
+  letter-spacing: -0.03em; color: var(--text-hi); text-decoration: none;
+  transition: color 0.14s;
+}
+
+.mobileMenu a:hover { color: var(--ember); }
+
+.mobileActions { display: flex; gap: 12px; margin-top: 8px; }
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .navbar { padding: 0 28px; }
+  .links { display: none; }
+  .actions { display: none; }
+  .navUser { display: none; }
+  .hamburger { display: flex; }
+}

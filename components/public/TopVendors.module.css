@@ -1,0 +1,76 @@
+.wrap {
+  position: relative; z-index: 1;
+  background: var(--char);
+  border-top: 1px solid rgba(255,255,255,0.024);
+}
+
+.section {
+  max-width: 1320px; margin: 0 auto;
+  padding: 80px 52px; padding-top: 40px;
+}
+
+.header {
+  display: flex; align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 32px;
+}
+
+.tag {
+  display: inline-flex; align-items: center; gap: 9px;
+  font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase;
+  color: var(--ember); font-weight: 700; margin-bottom: 12px;
+}
+.tag::before {
+  content: ''; width: 18px; height: 2px;
+  background: var(--ember); border-radius: 1px;
+}
+
+.title {
+  font-family: var(--fd);
+  font-size: clamp(30px, 3.5vw, 48px);
+  font-weight: 900; letter-spacing: -0.03em;
+  color: var(--text-hi); line-height: 1.02;
+  margin-bottom: 12px;
+}
+.title em { font-style: italic; color: var(--ember); }
+
+.link {
+  font-size: 13px; font-weight: 700; color: var(--ember);
+  text-decoration: none; display: inline-flex;
+  align-items: center; gap: 5px; flex-shrink: 0;
+  transition: gap 0.14s; margin-bottom: 4px;
+}
+.link:hover { gap: 8px; }
+
+.marqueeOuter { position: relative; }
+
+.marqueeWrap {
+  overflow: hidden;
+  mask-image: linear-gradient(to right, transparent 0%, black 8%, black 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8%, black 100%);
+}
+
+.rFade {
+  position: absolute; top: 0; right: 0; bottom: 0; width: 140px;
+  background: linear-gradient(to right, transparent, var(--char));
+  pointer-events: none; z-index: 10;
+}
+
+.marqueeTrack {
+  display: flex; gap: 18px;
+  animation: marqueeScroll 36s linear infinite;
+  width: max-content;
+}
+
+.marqueeTrack > * { min-width: 260px; max-width: 300px; flex-shrink: 0; }
+
+.marqueeTrack:hover { animation-play-state: paused; }
+
+@keyframes marqueeScroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+@media (max-width: 1024px) {
+  .section { padding: 64px 28px; }
+}

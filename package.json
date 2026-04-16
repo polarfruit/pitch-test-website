@@ -1,8 +1,11 @@
 {
   "type": "module",
   "scripts": {
-    "start": "node serve.mjs",
-    "dev": "node serve.mjs"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "express": "PORT=3001 node serve.mjs",
+    "express:win": "set PORT=3001 && node serve.mjs"
   },
   "engines": {
     "node": "20.x"
@@ -14,8 +17,11 @@
     "compression": "^1.8.1",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "next": "^15.3.1",
     "nodemailer": "^8.0.1",
     "pdf-parse": "^1.1.1",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
     "stripe": "^22.0.1"
   },
   "devDependencies": {

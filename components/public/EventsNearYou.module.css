@@ -1,0 +1,56 @@
+.wrap { position: relative; z-index: 1; }
+
+.section {
+  max-width: 1320px; margin: 0 auto;
+  padding: 80px 52px; padding-top: 56px;
+}
+
+.header {
+  display: flex; align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 32px;
+}
+
+.tag {
+  display: inline-flex; align-items: center; gap: 9px;
+  font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase;
+  color: var(--ember); font-weight: 700; margin-bottom: 12px;
+}
+.tag::before {
+  content: ''; width: 18px; height: 2px;
+  background: var(--ember); border-radius: 1px;
+}
+
+.title {
+  font-family: var(--fd);
+  font-size: clamp(30px, 3.5vw, 48px);
+  font-weight: 900; letter-spacing: -0.03em;
+  color: var(--text-hi); line-height: 1.02;
+  margin-bottom: 12px;
+}
+
+.link {
+  font-size: 13px; font-weight: 700; color: var(--ember);
+  text-decoration: none; display: inline-flex;
+  align-items: center; gap: 5px; flex-shrink: 0;
+  transition: gap 0.14s;
+  margin-bottom: 4px;
+}
+.link:hover { gap: 8px; }
+
+.scrollWrap {
+  overflow-x: auto; padding-bottom: 12px;
+  margin: 0 -52px; padding-left: 52px; padding-right: 52px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--ash) transparent;
+}
+.scrollWrap::-webkit-scrollbar { height: 4px; }
+.scrollWrap::-webkit-scrollbar-track { background: transparent; }
+.scrollWrap::-webkit-scrollbar-thumb { background: var(--ash); border-radius: 2px; }
+
+.scroll { display: flex; gap: 18px; width: max-content; }
+
+@media (max-width: 1024px) {
+  .section { padding: 64px 28px; }
+  .scrollWrap { margin: 0 -28px; padding-left: 28px; padding-right: 28px; }
+}

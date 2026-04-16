@@ -1,0 +1,82 @@
+.section { position: relative; z-index: 1; padding: 56px 0 0; }
+.inner { max-width: 1320px; margin: 0 auto; padding: 0 52px; }
+
+.header { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+
+.liveDot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--ember);
+  box-shadow: 0 0 0 0 rgba(232,80,10,0.25);
+  animation: twPulse 2s ease-out infinite;
+  flex-shrink: 0;
+}
+@keyframes twPulse {
+  0%   { box-shadow: 0 0 0 0 rgba(232,80,10,0.38); }
+  70%  { box-shadow: 0 0 0 8px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+.title {
+  font-family: var(--fd);
+  font-size: clamp(30px, 3.5vw, 48px);
+  font-weight: 900; letter-spacing: -0.03em;
+  color: var(--text-hi); line-height: 1.02;
+  margin-bottom: 0;
+}
+.title em { font-style: italic; color: var(--ember); }
+
+.scrollWrap {
+  overflow-x: auto; margin: 0 -52px; padding: 0 52px 20px;
+  scrollbar-width: none;
+}
+.scrollWrap::-webkit-scrollbar { display: none; }
+
+.scroll { display: flex; gap: 16px; width: max-content; }
+
+.card {
+  width: 256px; flex-shrink: 0;
+  background: var(--ash); border: 1px solid rgba(255,255,255,0.09);
+  border-top: 3px solid var(--ember);
+  border-radius: 14px; padding: 0; cursor: pointer;
+  text-decoration: none; display: flex; flex-direction: column;
+  overflow: hidden;
+  transition: transform 0.14s, box-shadow 0.14s;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.3);
+}
+.card:hover { transform: translateY(-3px); box-shadow: 0 8px 28px rgba(0,0,0,0.4); }
+
+.cardBody { padding: 24px 24px 12px; flex: 1; display: flex; flex-direction: column; }
+
+.cardDay {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--ember); margin-bottom: 6px;
+}
+
+.cardName {
+  font-family: var(--fd); font-size: 16px; font-weight: 800;
+  color: var(--text-hi); line-height: 1.25; margin-bottom: 5px;
+}
+
+.cardWhere { font-size: 11px; color: var(--text-lo); margin-bottom: 8px; }
+
+.cardMeta { font-size: 11px; color: var(--herb); font-weight: 600; }
+
+.cardFoot {
+  padding: 12px 24px 16px;
+  border-top: 1px solid rgba(255,255,255,0.04);
+}
+
+.apply {
+  font-size: 11px; font-weight: 700;
+  color: var(--ember); border: 1px solid rgba(232,80,10,0.33);
+  padding: 5px 12px; border-radius: 6px;
+  background: transparent;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+  display: inline-block;
+}
+.card:hover .apply { background: var(--ember); color: #fff; border-color: var(--ember); }
+
+@media (max-width: 1024px) {
+  .inner { padding: 0 28px; }
+  .scrollWrap { margin: 0 -28px; padding-left: 28px; padding-right: 28px; }
+}

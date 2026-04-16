@@ -1,0 +1,69 @@
+.card {
+  background: var(--parchment);
+  border: 1px solid var(--linen);
+  border-radius: 18px; padding: 22px;
+  color: var(--coal);
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer; text-decoration: none; display: block;
+}
+
+.card:hover { transform: translateY(-3px); box-shadow: 0 18px 48px rgba(0,0,0,0.12); }
+
+.head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+
+.avatar {
+  width: 48px; height: 48px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px; line-height: 1;
+  flex-shrink: 0;
+}
+
+.info { flex: 1; min-width: 0; overflow: hidden; }
+
+.name {
+  font-family: var(--fd); font-size: 15px; font-weight: 800;
+  color: var(--coal); display: flex; align-items: center; gap: 6px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
+.verified {
+  font-size: 9px; font-weight: 700; color: #2B5BA8;
+  background: rgba(43,91,168,0.06); padding: 2px 7px;
+  border-radius: 100px; flex-shrink: 0;
+}
+
+.sub { font-size: 11px; color: #9A8870; margin-top: 1px; }
+
+.planBadge {
+  font-size: 9px; font-weight: 700; padding: 3px 10px; border-radius: 100px;
+  letter-spacing: 0.08em; text-transform: uppercase; font-family: var(--fb);
+  flex-shrink: 0; align-self: flex-start;
+}
+
+.bdgPro {
+  background: rgba(232,80,10,0.07); color: var(--ember);
+  border: 1px solid rgba(232,80,10,0.13);
+}
+
+.bdgGrowth {
+  background: rgba(232,80,10,0.12); color: var(--ember);
+  border: 1px solid rgba(232,80,10,0.25);
+}
+
+.bdgBasic {
+  background: rgba(43,91,168,0.07); color: var(--slate);
+  border: 1px solid rgba(43,91,168,0.13);
+}
+
+.stars { color: var(--ember); font-size: 12px; margin-bottom: 2px; }
+.stars span { color: #9A8870; font-size: 11px; font-family: var(--fb); margin-left: 4px; }
+
+.events { font-size: 11px; color: #9A8870; margin-bottom: 10px; }
+
+.tags { display: flex; gap: 5px; flex-wrap: wrap; }
+
+.tag {
+  font-size: 10px; font-weight: 600; padding: 3px 9px;
+  border-radius: 100px; background: var(--cream);
+  color: #6B5A4A; font-family: var(--fb);
+}

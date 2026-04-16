@@ -1,0 +1,94 @@
+/* ── RESET ─────────────────────────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── DESIGN TOKENS ─────────────────────────────────────────────────────────── */
+:root {
+  /* Primary */
+  --ember:      #E8500A;
+  --ember-glow: #FF6B2B;
+  --ember-bg:   #E8500A12;
+
+  /* Neutrals — dark */
+  --coal:       #1A1612;
+  --char:       #231E19;
+  --ash:        #2E2720;
+  --smoke:      #4A3F36;
+
+  /* Neutrals — light */
+  --parchment:  #FDF4E7;
+  --cream:      #F5EDD8;
+  --linen:      #EDE3CC;
+
+  /* Semantic */
+  --herb:       #2D8B55;
+  --gold:       #C9840A;
+  --terra:      #C0392B;
+  --slate:      #2B5BA8;
+
+  /* Text hierarchy */
+  --text-hi:    #FDF4E7;
+  --text-mid:   #A89880;
+  --text-lo:    #6B5A4A;
+
+  /* Typography — applied via next/font/local in layout.jsx */
+  /* --fd: Fraunces (display/serif)  */
+  /* --fb: Instrument Sans (body)    */
+
+  /* Spacing base unit */
+  --space: 4px;
+
+  /* Radii */
+  --radius-card:  16px;
+  --radius-btn:   10px;
+  --radius-input: 8px;
+}
+
+/* ── BASE ──────────────────────────────────────────────────────────────────── */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--coal);
+  color: var(--text-hi);
+  font-family: var(--fb);
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+/* ── GRAIN TEXTURE ─────────────────────────────────────────────────────────── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.45;
+}
+
+/* ── SCROLLBAR ─────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--coal);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--ash);
+  border-radius: 3px;
+}
+
+/* ── LINKS ─────────────────────────────────────────────────────────────────── */
+a {
+  color: inherit;
+  text-decoration: none;
+}

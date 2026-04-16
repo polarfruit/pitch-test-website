@@ -20,17 +20,17 @@ await new Promise(r => setTimeout(r, 3000));
 await page.evaluate(() => showPanel('menu', null));
 await new Promise(r => setTimeout(r, 1500));
 
-await page.screenshot({ path: 'screenshots/screenshot-menu-cards.png', fullPage: true });
-console.log('Menu cards screenshot saved');
+// Screenshot menu list
+await page.screenshot({ path: 'screenshots/screenshot-menu-list.png', fullPage: true });
+console.log('Menu list screenshot saved');
 
-// Click first card to open edit modal
+// Click first card to verify edit still works
 await page.evaluate(() => {
   const card = document.querySelector('.menu-item-card');
   if (card) card.click();
 });
 await new Promise(r => setTimeout(r, 1000));
-
 await page.screenshot({ path: 'screenshots/screenshot-menu-edit.png', fullPage: true });
-console.log('Menu edit modal screenshot saved');
+console.log('Menu edit screenshot saved');
 
 await browser.close();

@@ -1,0 +1,55 @@
+.section {
+  background: var(--coal);
+  border-top: 1px solid rgba(255,255,255,0.04);
+}
+
+.inner {
+  max-width: 1320px; margin: 0 auto;
+  padding: 88px 52px;
+}
+
+.heading {
+  font-family: var(--fd);
+  font-size: clamp(28px, 3vw, 44px);
+  font-weight: 900; letter-spacing: -0.03em;
+  color: var(--text-hi); margin-bottom: 10px;
+  text-align: left;
+}
+.heading em { font-style: italic; color: var(--ember); }
+
+.sub {
+  font-size: 15px; color: var(--text-mid); text-align: left;
+  margin-bottom: 56px; line-height: 1.7; max-width: 580px;
+}
+
+.cols {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 40px;
+}
+
+.card {
+  background: var(--coal);
+  border: 1px solid rgba(255,255,255,0.03);
+  border-radius: 20px; padding: 44px 36px;
+  text-align: center;
+}
+
+.iconWrap {
+  width: 68px; height: 68px; border-radius: 18px;
+  background: var(--ember-bg);
+  border: 1px solid rgba(232,80,10,0.13);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px; margin: 0 auto 24px;
+}
+
+.cardTitle {
+  font-family: var(--fd); font-size: 17px; font-weight: 800;
+  color: var(--text-hi); margin-bottom: 8px;
+}
+
+.cardDesc { font-size: 13px; color: var(--text-lo); line-height: 1.7; }
+
+@media (max-width: 1024px) {
+  .cols { grid-template-columns: 1fr; gap: 16px; }
+  .inner { padding: 64px 28px; }
+}
