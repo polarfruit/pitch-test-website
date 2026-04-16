@@ -1746,7 +1746,7 @@ body::before {
 .menu-diet-pill.selected { background:var(--ember); border-color:var(--ember); color:#fff; }
 /* Photo divider */
 .menu-photo-or { display:flex; align-items:center; gap:8px; color:var(--text-lo); font-size:11px; flex-shrink:0; }
-.menu-photo-or::before, .menu-photo-or::after { content:''; width:1px; height:18px; background:#ffffff14; }
+.menu-photo-or::before, .menu-photo-or::after { content:''; width:1px; height:18px; background:#ffffff28; }
 /* Category chips */
 .menu-cat-wrap { display:flex; flex-wrap:wrap; gap:6px; }
 .menu-diet-wrap, .menu-cat-wrap { margin-top:2px; }
@@ -1754,8 +1754,10 @@ body::before {
 .menu-cat-chip:hover { border-color:#ffffff28; color:var(--text-mid); }
 .menu-cat-chip.selected { background:var(--ember); border-color:var(--ember); color:#fff; }
 .menu-modal-actions { display:flex; gap:10px; margin-top:18px; padding-bottom:2px; }
-.btn-modal-save { flex:1; background:var(--ember); color:#fff; border:none; font-family:var(--fb); font-size:14px; font-weight:700; padding:13px; border-radius:12px; cursor:pointer; transition:background 0.14s; }
-.btn-modal-save:hover { background:var(--ember-glow); }
+.btn-modal-save { flex:1; background:var(--ember); color:#fff; border:none; font-family:var(--fb); font-size:14px; font-weight:700; padding:13px; border-radius:12px; cursor:pointer; box-shadow:0 4px 20px #E8500A40, 0 1px 4px #E8500A25; transition:background 0.14s, transform 0.14s, box-shadow 0.14s; }
+.btn-modal-save:hover { background:var(--ember-glow); transform:translateY(-1px); box-shadow:0 6px 24px #E8500A50, 0 2px 6px #E8500A30; }
+.btn-modal-save:focus-visible { outline:2px solid var(--ember); outline-offset:2px; }
+.btn-modal-save:active { transform:translateY(0); }
 .menu-modal .btn-modal-cancel { flex:0 0 auto; background:#ffffff08; color:var(--text-mid); border:1px solid #ffffff10; font-family:var(--fb); font-size:13px; font-weight:600; padding:13px 28px; border-radius:12px; cursor:pointer; transition:background 0.14s, color 0.14s, border-color 0.14s; }
 .menu-modal .btn-modal-cancel:hover { background:#ffffff12; color:var(--text-hi); border-color:#ffffff20; }
 .menu-delete-confirm { display:none; background:#C0392B14; border:1px solid #C0392B30; border-radius:12px; padding:14px 16px; margin-top:14px; }
@@ -5508,7 +5510,7 @@ function renderApplicationsData(applications) {
             ? `<button onclick="withdrawApp(${a.event_id}, this)" style="background:none;border:none;color:var(--text-lo);cursor:pointer;font-size:12px;font-family:inherit;text-decoration:underline;">Withdraw</button>`
             : a.status === 'withdrawn'
             ? `<a class="action-link" href="/events/${a.event_slug||a.event_id}" target="_blank" rel="noopener" style="color:var(--text-mid);">View event →</a>`
-            : `<a class="action-link" href="/events/${a.event_slug||a.event_id}" target="_blank" rel="noopener">View →</a>`
+            : `<a class="action-link" href="/events/${a.event_slug||a.event_id}" target="_blank" rel="noopener">View event →</a>`
           }
           ${(_isStarter ? a.status === 'approved' : a.status !== 'withdrawn') ? `<button onclick="startChatWithOrganiser(${a.organiser_user_id||0},'${(a.organiser_name||'Organiser').replace(/'/g,"\\'")}','${(a.event_name||'').replace(/'/g,"\\'")}',false,${a.event_id||0})" style="font-family:var(--fb);font-size:11px;font-weight:700;color:var(--ember);background:var(--ember-bg);border:1px solid #E8500A22;padding:4px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;">💬 Message</button>` : ''}
         </div>
