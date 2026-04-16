@@ -1821,6 +1821,7 @@ body::before {
 .btn-cancel-del:hover { background:#ffffff14; color:var(--text-hi); }
 /* Inline validation */
 .menu-input.has-error, .menu-textarea.has-error, .menu-select.has-error { border-color:var(--terra); }
+@keyframes menuShake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(5px)} 60%{transform:translateX(-3px)} 80%{transform:translateX(2px)} }
 .menu-field-error { color:var(--terra); font-size:11px; font-weight:600; margin-top:4px; display:none; }
 .menu-field-error.show { display:block; }
 .menu-toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--terra); color:#fff; font-family:var(--fb); font-size:13px; font-weight:600; padding:12px 22px; border-radius:12px; opacity:0; pointer-events:none; transition:opacity 0.2s, transform 0.2s; z-index:100001; box-shadow:0 8px 24px #00000050; }
@@ -7712,7 +7713,13 @@ function showMenuToast(msg, success) {
 function showMenuFieldError(inputId, errorId) {
   const input = document.getElementById(inputId);
   const err = document.getElementById(errorId);
-  if (input) input.classList.add('has-error');
+  if (input) {
+    input.classList.add('has-error');
+    input.focus();
+    input.style.animation = 'none';
+    input.offsetHeight; // reflow
+    input.style.animation = 'menuShake 0.4s ease';
+  }
   if (err) err.classList.add('show');
 }
 function clearMenuError(inputId) {
