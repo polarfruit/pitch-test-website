@@ -3630,10 +3630,10 @@ app.get('/api/organiser/analytics', requireAuth, async (req, res) => {
         stmts.getOrgReviewDistribution.all(uid),
         stmts.getOrgReviewAvg.get(uid),
         stmts.getOrgReviews.all(uid),
-        stmts.getOrgAppVelocityBuckets.all(uid),
-        stmts.getOrgAvgFirstApp.get(uid),
-        stmts.getOrgAttendanceStats.get(uid),
-        stmts.getOrgNoShowVendors.all(uid),
+        stmts.getOrgAppVelocityBuckets.all(uid).catch(() => []),
+        stmts.getOrgAvgFirstApp.get(uid).catch(() => ({ avg_hours: null })),
+        stmts.getOrgAttendanceStats.get(uid).catch(() => ({ showed: 0, no_show: 0, unmarked: 0 })),
+        stmts.getOrgNoShowVendors.all(uid).catch(() => []),
       ]);
     } else {
       // ── Date-filtered path: dynamic SQL with date conditions ──
