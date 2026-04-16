@@ -3694,6 +3694,10 @@ function showPanel(name, clickedEl, pushHistory = true) {
   } else {
     stopMsgPoll();
   }
+  if (name === 'settings') {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+    requestAnimationFrame(_updateSettingsTabs);
+  }
 }
 
 // ── Toast notification ────────────────────────────────────────────────────
@@ -9478,41 +9482,24 @@ async function loadPendingVendorReviews() {
 function scrollToSettingsSection(key) {
   const el = document.getElementById('settings-anchor-' + key);
   if (!el) return;
-  const tabBar = document.querySelector('.settings-tabs');
-  const offset = tabBar ? tabBar.offsetHeight + 12 : 0;
+  const offset = 130; // topbar(60) + tabs(~50) + gap
   const top = el.getBoundingClientRect().top + window.scrollY - offset;
   window.scrollTo({ top, behavior: 'smooth' });
 }
-(function initSettingsTabs() {
+function _updateSettingsTabs() {
   const panel = document.getElementById('panel-settings');
-  if (!panel) return;
+  if (!panel || panel.style.display === 'none') return;
   const sections = ['account','profile','billing','preferences','connections'];
-  const anchors = sections.map(s => document.getElementById('settings-anchor-' + s)).filter(Boolean);
   const tabs = panel.querySelectorAll('.settings-tab');
-  if (!anchors.length || !tabs.length) return;
-  let _activeIdx = 0;
-  function updateActive() {
-    let current = 0;
-    for (let i = anchors.length - 1; i >= 0; i--) {
-      const rect = anchors[i].getBoundingClientRect();
-      if (rect.top <= 80) { current = i; break; }
-    }
-    if (current !== _activeIdx) {
-      tabs[_activeIdx]?.classList.remove('active');
-      tabs[current]?.classList.add('active');
-      _activeIdx = current;
-    }
+  if (!tabs.length) return;
+  let current = 0;
+  for (let i = sections.length - 1; i >= 0; i--) {
+    const el = document.getElementById('settings-anchor-' + sections[i]);
+    if (el && el.getBoundingClientRect().top <= 130) { current = i; break; }
   }
-  window.addEventListener('scroll', updateActive, { passive: true });
-  // Run once on panel show
-  const origShow = window.showPanel;
-  if (origShow) {
-    window.showPanel = function(name) {
-      origShow.apply(this, arguments);
-      if (name === 'settings') requestAnimationFrame(updateActive);
-    };
-  }
-})();
+  tabs.forEach((t, i) => t.classList.toggle('active', i === current));
+}
+window.addEventListener('scroll', _updateSettingsTabs, { passive: true });
 
 </script>
 </body>

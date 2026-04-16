@@ -460,6 +460,31 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .btn-modal-send { font-family:var(--fb); font-size:13px; font-weight:700; color:#fff; background:var(--ember); border:none; padding:12px 24px; border-radius:10px; cursor:pointer; transition:all 0.14s; }
 .btn-modal-send:hover { background:var(--ember-glow); }
 
+.org-convo-back-btn {
+  display:none; background:none; border:none; color:var(--text-mid);
+  font-size:18px; cursor:pointer; padding:4px 8px 4px 0; flex-shrink:0;
+  transition:color 0.14s;
+}
+.org-convo-back-btn:hover { color:var(--text-hi); }
+.org-typing {
+  padding:4px 24px 0; font-size:12px; color:var(--text-lo); flex-shrink:0;
+  height:0; overflow:hidden; opacity:0; transition:height 0.2s, opacity 0.2s;
+}
+.org-typing.visible { height:24px; opacity:1; }
+.org-typing-dots { display:inline-flex; gap:3px; vertical-align:middle; margin-left:4px; }
+.org-typing-dots span {
+  width:5px; height:5px; border-radius:50%; background:var(--text-lo);
+  animation:orgTypingPulse 1.4s infinite;
+}
+.org-typing-dots span:nth-child(2) { animation-delay:0.2s; }
+.org-typing-dots span:nth-child(3) { animation-delay:0.4s; }
+@keyframes orgTypingPulse {
+  0%, 60%, 100% { opacity:0.3; transform:scale(0.85); }
+  30% { opacity:1; transform:scale(1); }
+}
+.org-header-dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:5px; vertical-align:middle; }
+.org-header-dot.online { background:var(--herb); box-shadow:0 0 6px rgba(45,139,85,0.5); }
+.org-header-dot.away { background:var(--gold); }
 @media (max-width:900px) {
   .sidebar { display:none; }
   .main { margin-left:0; }
@@ -469,6 +494,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
   .form-row, .form-row-3 { grid-template-columns:1fr; }
   .analytics-grid { grid-template-columns:1fr; }
   .messages-layout { grid-template-columns:1fr; }
+  .org-convo-back-btn { display:block; }
 }
 
 /* ── Date picker (matches events.html calendar) ───────────────────── */
@@ -1235,10 +1261,13 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
         <div class="msg-main" id="msg-main">
           <div class="msg-main-header">
             <div style="display:flex;align-items:center;gap:12px;">
-              <div id="org-msg-header-avatar" style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#2A1E14,#5C3A1A);display:none;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;flex-shrink:0;"></div>
+              <button class="org-convo-back-btn" onclick="closeOrgConvo()" title="Back to conversations">←</button>
+              <div id="org-msg-header-avatar" style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#2A1E14,#5C3A1A);display:none;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;flex-shrink:0;position:relative;">
+                <span id="org-avatar-dot" style="display:none;position:absolute;bottom:-1px;right:-1px;width:10px;height:10px;border-radius:50%;background:var(--herb);border:2px solid var(--char);"></span>
+              </div>
               <div>
                 <div class="msg-main-vendor" id="msg-vendor-name">Select a conversation</div>
-                <div id="org-msg-header-status" style="font-size:11px;color:var(--text-lo);margin-top:1px;display:none;"></div>
+                <div id="org-msg-header-status" style="font-size:11px;color:var(--text-lo);margin-top:1px;display:none;"><span id="org-status-dot" class="org-header-dot" style="display:none;"></span><span id="org-status-text"></span></div>
                 <div class="msg-main-event" id="msg-event-name-thread"></div>
               </div>
             </div>
@@ -1246,6 +1275,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
           <div class="msg-body" id="msg-body">
             <div style="color:var(--text-lo);font-size:13px;text-align:center;margin-top:40px;">Select a message thread to view the conversation.</div>
           </div>
+          <div class="org-typing" id="org-typing"><span id="org-typing-name"></span> is typing<span class="org-typing-dots"><span></span><span></span><span></span></span></div>
           <div class="msg-compose">
             <input class="msg-input" id="msg-input" placeholder="Type a message…" onkeydown="if(event.key==='Enter')sendMsg()" />
             <button class="btn-send" onclick="sendMsg()">Send</button>
@@ -2907,6 +2937,12 @@ function _orgFmtLastSeen(iso) {
   } catch { return 'Food Vendor'; }
 }
 
+function closeOrgConvo() {
+  const layout = document.querySelector('.messages-layout');
+  if (layout) layout.classList.remove('convo-open');
+  currentChatId = null;
+  document.querySelectorAll('.msg-thread').forEach(t => t.classList.remove('active'));
+}
 async function startChat(vendorUserId, vendorName) {
   const myId = window.__PITCH_USER__ && window.__PITCH_USER__.id;
   if (!myId || !vendorUserId) return;
@@ -3024,9 +3060,25 @@ async function openChatWindow(threadKey) {
     document.getElementById('msg-event-name-thread').textContent = '';
     // Update header avatar + status
     const avatarEl = document.getElementById('org-msg-header-avatar');
-    if (avatarEl) { avatarEl.textContent = (threadName || '?').charAt(0).toUpperCase(); avatarEl.style.display = 'flex'; }
+    if (avatarEl) {
+      const dotSpan = document.getElementById('org-avatar-dot');
+      avatarEl.childNodes.forEach(n => { if (n.nodeType === 3) n.remove(); });
+      avatarEl.insertBefore(document.createTextNode((threadName || '?').charAt(0).toUpperCase()), dotSpan);
+      avatarEl.style.display = 'flex';
+    }
     const statusEl = document.getElementById('org-msg-header-status');
-    if (statusEl) { statusEl.textContent = _orgFmtLastSeen(MSG_THREADS[threadKey].otherLastActive); statusEl.style.display = 'block'; }
+    const statusTextEl = document.getElementById('org-status-text');
+    const statusDotEl = document.getElementById('org-status-dot');
+    const avatarDotEl = document.getElementById('org-avatar-dot');
+    const statusLabel = _orgFmtLastSeen(MSG_THREADS[threadKey].otherLastActive);
+    const isOnline = statusLabel === 'Online';
+    const isRecent = statusLabel.startsWith('Active') && !statusLabel.includes('d ago') && !statusLabel.includes('yesterday');
+    if (statusEl) statusEl.style.display = 'block';
+    if (statusTextEl) { statusTextEl.textContent = statusLabel; statusTextEl.style.color = isOnline ? 'var(--herb)' : ''; }
+    if (statusDotEl) { statusDotEl.style.display = (isOnline || isRecent) ? 'inline-block' : 'none'; statusDotEl.className = 'org-header-dot ' + (isOnline ? 'online' : 'away'); }
+    if (avatarDotEl) avatarDotEl.style.display = isOnline ? '' : 'none';
+    const typingEl = document.getElementById('org-typing');
+    if (typingEl) typingEl.classList.remove('visible');
 
     renderOrgMessages(messages, threadName);
     document.getElementById('msg-input').focus();
