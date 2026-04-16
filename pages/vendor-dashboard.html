@@ -1722,21 +1722,21 @@ body::before {
 .menu-completeness { display:flex; align-items:center; gap:10px; background:#C9840A12; border:1px solid #C9840A30; border-radius:12px; padding:12px 16px; margin-bottom:20px; font-size:13px; color:var(--gold); }
 .menu-completeness .mc-icon { font-size:16px; flex-shrink:0; }
 .menu-completeness .mc-msg { line-height:1.5; }
-.menu-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:16px; }
+.menu-grid { display:flex; flex-direction:column; gap:8px; }
 .menu-item-card {
   background:var(--char); border:1px solid #ffffff0a; border-radius:14px; overflow:hidden;
-  transition:border-color 0.14s, transform 0.14s;
-  cursor:pointer; position:relative; align-items:center; padding:10px;
+  transition:border-color 0.14s, transform 0.14s, box-shadow 0.14s;
+  cursor:pointer; position:relative; align-items:center; padding:12px 16px;
 }
-.menu-item-card:hover { border-color:#ffffff18; transform:translateY(-2px); }
+.menu-item-card:hover { border-color:#ffffff18; background:#ffffff04; }
 .menu-item-card.is-signature { border-color:#E8500A40; }
 .menu-item-card.dragging { opacity:0.4; cursor:grabbing; }
 .menu-item-card.drag-over { border-color:var(--ember); border-style:dashed; }
-.menu-item-photo { width:80px; height:80px; object-fit:cover; background:var(--coal); display:block; border-radius:10px; flex-shrink:0; }
-.menu-item-no-photo { width:80px; height:80px; background:var(--coal); display:flex; align-items:center; justify-content:center; font-size:24px; color:var(--text-lo); border-radius:10px; flex-shrink:0; }
-.menu-item-body { padding:8px 14px 8px 12px; display:flex; flex-direction:column; justify-content:center; gap:4px; }
-.menu-item-top { display:flex; align-items:center; justify-content:space-between; gap:10px; }
-.menu-item-name { font-size:14px; font-weight:700; color:var(--text-hi); line-height:1.3; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.menu-item-photo { width:64px; height:64px; object-fit:cover; background:var(--coal); display:block; border-radius:10px; flex-shrink:0; }
+.menu-item-no-photo { width:64px; height:64px; background:var(--coal); display:flex; align-items:center; justify-content:center; font-size:22px; color:var(--text-lo); border-radius:10px; flex-shrink:0; }
+.menu-item-body { padding:0 0 0 14px; display:flex; flex-direction:column; justify-content:center; gap:3px; flex:1; min-width:0; }
+.menu-item-top { display:flex; align-items:center; gap:10px; }
+.menu-item-name { font-size:14px; font-weight:700; color:var(--text-hi); line-height:1.3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .menu-item-price { font-size:13px; font-weight:700; color:var(--ember); flex-shrink:0; }
 .menu-item-desc { font-size:12px; color:var(--text-lo); line-height:1.4; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .menu-item-tags { display:flex; flex-wrap:wrap; gap:4px; }
@@ -1746,12 +1746,14 @@ body::before {
 .menu-tag.unavail { background:#ffffff0a; color:var(--text-lo); text-decoration:line-through; }
 .menu-tag.cat { background:#ffffff0a; color:var(--text-mid); }
 .menu-tag.diet { background:#2D8B5510; color:var(--herb); border:1px solid #2D8B5520; }
-.menu-item-actions { display:flex; gap:6px; margin-top:2px; }
-.menu-item-btn { border:none; border-radius:8px; font-family:var(--fb); font-size:11px; font-weight:600; padding:5px 12px; cursor:pointer; transition:background 0.14s; }
+.menu-item-right { display:flex; align-items:center; gap:8px; flex-shrink:0; margin-left:auto; padding-left:16px; }
+.menu-item-btn { border:none; border-radius:8px; font-family:var(--fb); font-size:11px; font-weight:600; padding:6px 14px; cursor:pointer; transition:background 0.14s; }
 .menu-item-btn.edit { background:#ffffff0a; color:var(--text-mid); }
 .menu-item-btn.edit:hover { background:#ffffff14; color:var(--text-hi); }
-.menu-item-btn.del { background:#C0392B18; color:var(--terra); }
-.menu-item-btn.del:hover { background:#C0392B30; }
+.menu-item-btn.del { background:#C0392B12; color:var(--terra); }
+.menu-item-btn.del:hover { background:#C0392B28; }
+.menu-item-avail { width:8px; height:8px; border-radius:50%; background:var(--herb); flex-shrink:0; }
+.menu-item-avail.off { background:var(--text-lo); }
 .menu-empty { text-align:center; padding:20px; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:calc(100vh - 280px); }
 .menu-empty-icon { font-size:44px; margin-bottom:16px; }
 .menu-empty-title { font-family:var(--fd); font-size:18px; font-weight:900; color:var(--text-hi); margin-bottom:8px; }
@@ -7121,15 +7123,16 @@ var _calYear, _calMonth;
 
 async function loadCalendar() {
   try {
+    const now = new Date();
+    if (_calYear === undefined) { _calYear = now.getFullYear(); _calMonth = now.getMonth(); }
+    renderCalendar();
     if (_calApps.length === 0) {
       try {
         const r = await pitchFetch('/api/vendor/calendar');
         if (r.ok) { const d = await r.json(); _calApps = d.applications || []; }
       } catch(e) { console.error('[calendar fetch]', e); }
+      renderCalendar();
     }
-    const now = new Date();
-    if (_calYear === undefined) { _calYear = now.getFullYear(); _calMonth = now.getMonth(); }
-    renderCalendar();
   } catch(e) {
     console.error('[calendar fatal]', e);
   }
@@ -7709,6 +7712,8 @@ function renderMenuGrid() {
   if (!grid) return;
   grid.innerHTML = _menuItems.map((item, idx) => {
     const price = formatMenuPrice(item);
+    const dietHtml = (function(){ try { var t = typeof item.dietary_tags === 'string' ? JSON.parse(item.dietary_tags) : (item.dietary_tags || []); return t.map(function(d){ return '<span class="menu-tag diet">' + esc(d) + '</span>'; }).join(''); } catch(e){ return ''; } })();
+    const hasTags = item.is_signature || item.seasonal || !item.available || item.category || dietHtml;
     return `<div class="menu-item-card${item.is_signature?' is-signature':''}"
       data-idx="${idx}" onclick="editMenuItem(${idx})"
       ondragover="menuDragOver(event)"
@@ -7722,20 +7727,21 @@ function renderMenuGrid() {
       <div class="menu-item-body">
         <div class="menu-item-top">
           <div class="menu-item-name">${esc(item.name)}</div>
-          ${price ? `<div class="menu-item-price">${price}</div>` : ''}
+          ${price ? `<span class="menu-item-price">${price}</span>` : ''}
         </div>
         ${item.description ? `<div class="menu-item-desc">${esc(item.description)}</div>` : ''}
-        <div class="menu-item-tags">
+        ${hasTags ? `<div class="menu-item-tags">
           ${item.is_signature ? '<span class="menu-tag sig">⭐ Signature</span>' : ''}
           ${item.seasonal     ? '<span class="menu-tag seasonal">🌿 Seasonal</span>' : ''}
           ${!item.available   ? '<span class="menu-tag unavail">Unavailable</span>' : ''}
           ${item.category     ? `<span class="menu-tag cat">${esc(item.category)}</span>` : ''}
-          ${(function(){ try { var t = typeof item.dietary_tags === 'string' ? JSON.parse(item.dietary_tags) : (item.dietary_tags || []); return t.map(function(d){ return '<span class="menu-tag diet">' + esc(d) + '</span>'; }).join(''); } catch(e){ return ''; } })()}
-        </div>
-        <div class="menu-item-actions">
-          <button class="menu-item-btn edit" onclick="event.stopPropagation();editMenuItem(${idx})">Edit</button>
-          <button class="menu-item-btn del" onclick="event.stopPropagation();deleteMenuItem(${idx})">Delete</button>
-        </div>
+          ${dietHtml}
+        </div>` : ''}
+      </div>
+      <div class="menu-item-right">
+        <div class="menu-item-avail${item.available?'':' off'}" title="${item.available?'Available':'Unavailable'}"></div>
+        <button class="menu-item-btn edit" onclick="event.stopPropagation();editMenuItem(${idx})">Edit</button>
+        <button class="menu-item-btn del" onclick="event.stopPropagation();deleteMenuItem(${idx})">Delete</button>
       </div>
     </div>`;
   }).join('');
