@@ -709,6 +709,25 @@ if (_client) {
   } catch(e) { console.error('[db] dietary_tags migration error:', e.message); }
 }
 
+// Force attended column on event_applications — for no-show tracking
+if (_client) {
+  try {
+    const cols = await _client.execute('PRAGMA table_info(event_applications)');
+    if (!cols.rows.some(r => r.name === 'attended')) {
+      await _client.execute('ALTER TABLE event_applications ADD COLUMN attended INTEGER');
+      console.log('[db] Added attended to event_applications');
+    }
+  } catch(e) { console.error('[db] attended migration error:', e.message); }
+} else {
+  try {
+    const cols = _localDb.pragma('table_info(event_applications)');
+    if (!cols.some(r => r.name === 'attended')) {
+      _localDb.exec('ALTER TABLE event_applications ADD COLUMN attended INTEGER');
+      console.log('[db] Added attended to event_applications');
+    }
+  } catch(e) { console.error('[db] attended migration error:', e.message); }
+}
+
 // ── Analytics tracking tables ────────────────────────────────────────────────
 await _safeExec(`CREATE TABLE IF NOT EXISTS vendor_profile_views (
   id             INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -1027,6 +1046,7 @@ await _safeExec(`ALTER TABLE organisers ADD COLUMN default_water INTEGER NOT NUL
 await _safeExec(`ALTER TABLE organisers ADD COLUMN timezone TEXT DEFAULT 'Australia/Adelaide'`);
 await _safeExec(`ALTER TABLE organisers ADD COLUMN auto_response_template TEXT`);
 await _safeExec(`ALTER TABLE organisers ADD COLUMN banner_url TEXT`);
+await _safeExec(`ALTER TABLE organisers ADD COLUMN time_format TEXT DEFAULT '12'`);
 
 // ── User last_active tracking ───────────────────────────────────────────────
 await _safeExec(`ALTER TABLE users ADD COLUMN last_active DATETIME`);
@@ -1455,11 +1475,24 @@ export const stmts = {
   getOrgCategoryPerformance:prepare(`SELECT COALESCE(e.category,'Uncategorised') as category, COUNT(DISTINCT e.id) as event_count, ROUND(AVG(sub.total_apps),1) as avg_apps, ROUND(AVG(sub.fill_rate),0) as avg_fill_rate FROM events e LEFT JOIN (SELECT ea.event_id, COUNT(ea.id) as total_apps, CASE WHEN COALESCE(e2.stalls_available,0)>0 THEN SUM(CASE WHEN ea.status='approved' THEN 1 ELSE 0 END)*100.0/e2.stalls_available ELSE 0 END as fill_rate FROM event_applications ea JOIN events e2 ON ea.event_id=e2.id WHERE e2.organiser_user_id=? GROUP BY ea.event_id) sub ON sub.event_id=e.id WHERE e.organiser_user_id=? AND e.status!='deleted' GROUP BY e.category ORDER BY avg_apps DESC`),
   getOrgReviewDistribution: prepare(`SELECT rating, COUNT(*) as count FROM organiser_reviews WHERE organiser_user_id=? GROUP BY rating ORDER BY rating DESC`),
 
+  // application velocity
+  getOrgAppVelocityBuckets: prepare(`SELECT CASE WHEN julianday(ea.created_at)-julianday(e.created_at)<1 THEN 'Day 1' WHEN julianday(ea.created_at)-julianday(e.created_at)<2 THEN 'Day 2' WHEN julianday(ea.created_at)-julianday(e.created_at)<3 THEN 'Day 3' WHEN julianday(ea.created_at)-julianday(e.created_at)<7 THEN 'Days 4–7' ELSE '7+ days' END as bucket, COUNT(*) as count FROM event_applications ea JOIN events e ON ea.event_id=e.id WHERE e.organiser_user_id=? GROUP BY bucket ORDER BY MIN(julianday(ea.created_at)-julianday(e.created_at))`),
+  getOrgAvgFirstApp:        prepare(`SELECT ROUND(AVG(first_h),1) as avg_hours FROM (SELECT MIN((julianday(ea.created_at)-julianday(e.created_at))*24) as first_h FROM event_applications ea JOIN events e ON ea.event_id=e.id WHERE e.organiser_user_id=? GROUP BY e.id)`),
+
+  // no-show / attendance tracking
+  markAttendance:           prepare(`UPDATE event_applications SET attended=? WHERE id=? AND event_id IN (SELECT id FROM events WHERE organiser_user_id=?)`),
+  getOrgAttendanceStats:    prepare(`SELECT COUNT(CASE WHEN ea.attended=1 THEN 1 END) as showed, COUNT(CASE WHEN ea.attended=0 THEN 1 END) as no_show, COUNT(CASE WHEN ea.attended IS NULL AND ea.status='approved' THEN 1 END) as unmarked FROM event_applications ea JOIN events e ON ea.event_id=e.id WHERE e.organiser_user_id=? AND ea.status='approved' AND e.date_sort<date('now')`),
+  getOrgNoShowVendors:      prepare(`SELECT v.trading_name, v.user_id, COUNT(CASE WHEN ea.attended=0 THEN 1 END) as no_shows, COUNT(CASE WHEN ea.attended IS NOT NULL THEN 1 END) as total_marked FROM event_applications ea JOIN events e ON ea.event_id=e.id JOIN vendors v ON v.user_id=ea.vendor_user_id WHERE e.organiser_user_id=? AND ea.status='approved' GROUP BY ea.vendor_user_id HAVING no_shows>0 ORDER BY no_shows DESC LIMIT 5`),
+
+  // revenue forecast
+  getOrgRevenueForecast:    prepare(`SELECT e.id,e.name,e.date_sort,e.suburb, COALESCE(e.stalls_available,0) as stalls_available, COALESCE(e.stall_fee_min,0) as fee_min, COALESCE(e.stall_fee_max,0) as fee_max, COUNT(CASE WHEN ea.status='approved' THEN 1 END) as approved, COUNT(CASE WHEN ea.status='pending' THEN 1 END) as pending FROM events e LEFT JOIN event_applications ea ON ea.event_id=e.id WHERE e.organiser_user_id=? AND e.status='published' AND e.date_sort>date('now') AND (e.stall_fee_min>0 OR e.stall_fee_max>0) GROUP BY e.id ORDER BY e.date_sort ASC`),
+
   // organiser settings
   updateOrganiserSettings: prepare(`UPDATE organisers SET notif_new_apps=@notif_new_apps,notif_deadlines=@notif_deadlines,notif_messages=@notif_messages,notif_payments=@notif_payments,notif_post_event=@notif_post_event WHERE user_id=@user_id`),
   pauseOrganiser:          prepare(`UPDATE organisers SET paused=? WHERE user_id=?`),
   updateOrganiserDefaults: prepare(`UPDATE organisers SET default_stall_fee_min=@default_stall_fee_min,default_stall_fee_max=@default_stall_fee_max,default_spots=@default_spots,default_booth_size=@default_booth_size,default_power=@default_power,default_water=@default_water WHERE user_id=@user_id`),
   updateOrganiserTimezone: prepare(`UPDATE organisers SET timezone=@timezone WHERE user_id=@user_id`),
+  updateOrganiserTimeFormat: prepare(`UPDATE organisers SET time_format=@time_format WHERE user_id=@user_id`),
   updateOrganiserAutoResponse: prepare(`UPDATE organisers SET auto_response_template=@template WHERE user_id=@user_id`),
   updateOrganiserBanner:   prepare(`UPDATE organisers SET banner_url=? WHERE user_id=?`),
 
