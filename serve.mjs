@@ -4577,6 +4577,14 @@ app.get('/api/vendor/menu', requireAuth, async (req, res) => {
   res.json(items);
 });
 
+// Self-healing: runs ALTER TABLE once per process if dietary_tags column missing
+let _menuDietMigrated = false;
+async function _ensureMenuDietCol() {
+  if (_menuDietMigrated) return;
+  await safeExec('ALTER TABLE menu_items ADD COLUMN dietary_tags TEXT');
+  _menuDietMigrated = true;
+}
+
 // POST /api/vendor/menu — create item
 app.post('/api/vendor/menu', requireAuth, async (req, res) => {
   try {
@@ -4604,8 +4612,7 @@ app.post('/api/vendor/menu', requireAuth, async (req, res) => {
     } catch(insertErr) {
       // Self-heal: if dietary_tags column missing, add it and retry
       if (insertErr.message?.includes('dietary_tags')) {
-        if (db.execute) await db.execute('ALTER TABLE menu_items ADD COLUMN dietary_tags TEXT');
-        else if (db.exec) db.exec('ALTER TABLE menu_items ADD COLUMN dietary_tags TEXT');
+        await _ensureMenuDietCol();
         result = await stmts.createMenuItem.run(params);
       } else throw insertErr;
     }
@@ -4640,8 +4647,7 @@ app.put('/api/vendor/menu/:id', requireAuth, async (req, res) => {
       await stmts.updateMenuItem.run(updateParams);
     } catch(upErr) {
       if (upErr.message?.includes('dietary_tags')) {
-        if (db.execute) await db.execute('ALTER TABLE menu_items ADD COLUMN dietary_tags TEXT');
-        else if (db.exec) db.exec('ALTER TABLE menu_items ADD COLUMN dietary_tags TEXT');
+        await _ensureMenuDietCol();
         await stmts.updateMenuItem.run(updateParams);
       } else throw upErr;
     }
