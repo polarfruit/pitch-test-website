@@ -4720,7 +4720,10 @@ async function loadOrgAnalytics() {
     let _anaUrl = '/api/organiser/analytics';
     if (_oaFrom && _oaTo) _anaUrl += '?from=' + _oaFrom + '&to=' + _oaTo;
     const r = await pitchFetch(_anaUrl);
-    if (!r.ok) return;
+    if (!r.ok) {
+      document.getElementById('ana-revenue').innerHTML = `<div style="text-align:center;padding:40px;color:var(--terra);font-size:13px;">Failed to load analytics. Try refreshing.</div>`;
+      return;
+    }
     const data = await r.json();
     window._lastAnalyticsData = data;
     const summaryEl = document.getElementById('analytics-top-summary');

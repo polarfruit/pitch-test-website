@@ -3605,14 +3605,11 @@ app.get('/api/organiser/analytics', requireAuth, async (req, res) => {
   const fromQ = req.query.from, toQ = req.query.to;
   const hasRange = fromQ && toQ && /^\d{4}-\d{2}-\d{2}$/.test(fromQ) && /^\d{4}-\d{2}-\d{2}$/.test(toQ);
   try {
-    let stats, revCollected, revOutstanding, revByEvent, avgFee, appStats, avgResp, appsByMonth, topVendors, cuisineRaw, repeatVendors, vendorQuality, eventComp, catPerf, reviewDist, reviewAvg, recentReviews, velocityBuckets, avgFirstApp, attendanceStats, noShowVendors;
-
-    // Revenue forecast always runs (forward-looking, not date-filtered)
-    const revForecast = await stmts.getOrgRevenueForecast.all(uid).catch(() => []);
+    let stats, revCollected, revOutstanding, revByEvent, avgFee, appStats, avgResp, appsByMonth, topVendors, cuisineRaw, repeatVendors, vendorQuality, eventComp, catPerf, reviewDist, reviewAvg, recentReviews;
 
     if (!hasRange) {
       // ── All-time path: use prepared statements (fast) ──
-      [stats, revCollected, revOutstanding, revByEvent, avgFee, appStats, avgResp, appsByMonth, topVendors, cuisineRaw, repeatVendors, vendorQuality, eventComp, catPerf, reviewDist, reviewAvg, recentReviews, velocityBuckets, avgFirstApp, attendanceStats, noShowVendors] = await Promise.all([
+      [stats, revCollected, revOutstanding, revByEvent, avgFee, appStats, avgResp, appsByMonth, topVendors, cuisineRaw, repeatVendors, vendorQuality, eventComp, catPerf, reviewDist, reviewAvg, recentReviews] = await Promise.all([
         stmts.getOrgEventStats.all(uid),
         stmts.getOrgRevenueCollected.get(uid),
         stmts.getOrgRevenueOutstanding.get(uid),
@@ -3630,10 +3627,6 @@ app.get('/api/organiser/analytics', requireAuth, async (req, res) => {
         stmts.getOrgReviewDistribution.all(uid),
         stmts.getOrgReviewAvg.get(uid),
         stmts.getOrgReviews.all(uid),
-        stmts.getOrgAppVelocityBuckets.all(uid).catch(() => []),
-        stmts.getOrgAvgFirstApp.get(uid).catch(() => ({ avg_hours: null })),
-        stmts.getOrgAttendanceStats.get(uid).catch(() => ({ showed: 0, no_show: 0, unmarked: 0 })),
-        stmts.getOrgNoShowVendors.all(uid).catch(() => []),
       ]);
     } else {
       // ── Date-filtered path: dynamic SQL with date conditions ──
@@ -3643,7 +3636,7 @@ app.get('/api/organiser/analytics', requireAuth, async (req, res) => {
       const rD  = `AND or2.created_at >= '${fromQ}' AND or2.created_at < date('${toQ}','+1 day')`;
       const ovrD = `AND created_at >= '${fromQ}' AND created_at < date('${toQ}','+1 day')`;
 
-      [stats, revCollected, revOutstanding, revByEvent, avgFee, appStats, avgResp, appsByMonth, topVendors, cuisineRaw, repeatVendors, vendorQuality, eventComp, catPerf, reviewDist, reviewAvg, recentReviews, velocityBuckets, avgFirstApp, attendanceStats, noShowVendors] = await Promise.all([
+      [stats, revCollected, revOutstanding, revByEvent, avgFee, appStats, avgResp, appsByMonth, topVendors, cuisineRaw, repeatVendors, vendorQuality, eventComp, catPerf, reviewDist, reviewAvg, recentReviews] = await Promise.all([
         // stats (event-date filtered)
         q(`SELECT e.id,e.name,e.date_sort,e.category, COUNT(ea.id) as total_apps, SUM(CASE WHEN ea.status='approved' THEN 1 ELSE 0 END) as approved, SUM(CASE WHEN ea.status='pending' THEN 1 ELSE 0 END) as pending, SUM(CASE WHEN ea.status='rejected' THEN 1 ELSE 0 END) as rejected FROM events e LEFT JOIN event_applications ea ON ea.event_id=e.id WHERE e.organiser_user_id=? ${eD} GROUP BY e.id ORDER BY e.date_sort DESC`).all(uid).catch(() => []),
         // revenue collected (event-date filtered)
@@ -3678,16 +3671,20 @@ app.get('/api/organiser/analytics', requireAuth, async (req, res) => {
         q(`SELECT AVG(rating) as avg, COUNT(*) as total FROM organiser_reviews WHERE organiser_user_id=? ${ovrD.replace(/created_at/g, 'created_at')}`).get(uid).catch(() => ({ avg: null, total: 0 })),
         // recent reviews
         q(`SELECT or2.*,v.trading_name FROM organiser_reviews or2 JOIN vendors v ON v.user_id=or2.vendor_user_id WHERE or2.organiser_user_id=? ${rD} ORDER BY or2.created_at DESC`).all(uid).catch(() => []),
-        // velocity buckets (application-date filtered)
-        q(`SELECT CASE WHEN julianday(ea.created_at)-julianday(e.created_at)<1 THEN 'Day 1' WHEN julianday(ea.created_at)-julianday(e.created_at)<2 THEN 'Day 2' WHEN julianday(ea.created_at)-julianday(e.created_at)<3 THEN 'Day 3' WHEN julianday(ea.created_at)-julianday(e.created_at)<7 THEN 'Days 4–7' ELSE '7+ days' END as bucket, COUNT(*) as count FROM event_applications ea JOIN events e ON ea.event_id=e.id WHERE e.organiser_user_id=? ${eaD} GROUP BY bucket ORDER BY MIN(julianday(ea.created_at)-julianday(e.created_at))`).all(uid).catch(() => []),
-        // avg first app
-        q(`SELECT ROUND(AVG(first_h),1) as avg_hours FROM (SELECT MIN((julianday(ea.created_at)-julianday(e.created_at))*24) as first_h FROM event_applications ea JOIN events e ON ea.event_id=e.id WHERE e.organiser_user_id=? ${eaD} GROUP BY e.id)`).get(uid).catch(() => ({ avg_hours: null })),
-        // attendance stats (event-date filtered, past events only)
-        q(`SELECT COUNT(CASE WHEN ea.attended=1 THEN 1 END) as showed, COUNT(CASE WHEN ea.attended=0 THEN 1 END) as no_show, COUNT(CASE WHEN ea.attended IS NULL AND ea.status='approved' THEN 1 END) as unmarked FROM event_applications ea JOIN events e ON ea.event_id=e.id WHERE e.organiser_user_id=? AND ea.status='approved' AND e.date_sort<date('now') ${eD}`).get(uid).catch(() => ({ showed: 0, no_show: 0, unmarked: 0 })),
-        // no-show vendors
-        q(`SELECT v.trading_name, v.user_id, COUNT(CASE WHEN ea.attended=0 THEN 1 END) as no_shows, COUNT(CASE WHEN ea.attended IS NOT NULL THEN 1 END) as total_marked FROM event_applications ea JOIN events e ON ea.event_id=e.id JOIN vendors v ON v.user_id=ea.vendor_user_id WHERE e.organiser_user_id=? AND ea.status='approved' ${eaD} GROUP BY ea.vendor_user_id HAVING no_shows>0 ORDER BY no_shows DESC LIMIT 5`).all(uid).catch(() => []),
       ]);
     }
+
+    // ── New analytics queries (isolated — failures don't break existing analytics) ──
+    let velocityBuckets = [], avgFirstApp = { avg_hours: null }, attendanceStats = { showed: 0, no_show: 0, unmarked: 0 }, noShowVendors = [], revForecast = [];
+    try {
+      [velocityBuckets, avgFirstApp, attendanceStats, noShowVendors, revForecast] = await Promise.all([
+        stmts.getOrgAppVelocityBuckets.all(uid).catch(() => []),
+        stmts.getOrgAvgFirstApp.get(uid).catch(() => ({ avg_hours: null })),
+        stmts.getOrgAttendanceStats.get(uid).catch(() => ({ showed: 0, no_show: 0, unmarked: 0 })),
+        stmts.getOrgNoShowVendors.all(uid).catch(() => []),
+        stmts.getOrgRevenueForecast.all(uid).catch(() => []),
+      ]);
+    } catch (e) { console.error('[analytics:new-features]', e); }
 
     // Aggregate cuisine tags
     const cuisineCounts = {};
