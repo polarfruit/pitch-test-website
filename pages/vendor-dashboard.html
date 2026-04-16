@@ -782,7 +782,7 @@ body::before {
 .doc-icon svg { width: 20px; height: 20px; }
 .doc-icon.food-safety { background: #E8500A14; color: var(--ember); }
 .doc-icon.pli { background: #2B5BA814; color: #5B8BE8; }
-.doc-icon.council { background: #6B5A4A14; color: var(--text-mid); }
+.doc-icon.council { background: #C9840A14; color: var(--gold); }
 .doc-name { font-size: 13px; font-weight: 700; color: var(--text-hi); margin-bottom: 3px; }
 .doc-optional { font-size: 10px; color: var(--text-lo); }
 .doc-status-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
@@ -798,10 +798,10 @@ body::before {
 .doc-upload-zone:hover .doc-upload-zone-text { color: var(--ember); }
 .doc-upload-zone-hint { font-size: 10px; color: var(--text-lo); margin-top: 4px; }
 .doc-actions { display: flex; gap: 12px; align-items: center; margin-top: auto; padding-top: 8px; }
-.doc-actions label { font-size: 11px; color: var(--ember); cursor: pointer; transition: opacity 0.12s; }
-.doc-actions label:hover { text-decoration: underline; }
-.doc-actions button { background: none; border: none; font-size: 11px; color: var(--terra); cursor: pointer; font-family: inherit; padding: 0; transition: opacity 0.12s; }
-.doc-actions button:hover { opacity: 0.7; }
+.doc-actions label { font-size: 11px; font-weight: 600; color: var(--text-mid); cursor: pointer; transition: color 0.12s; }
+.doc-actions label:hover { color: var(--ember); text-decoration: underline; }
+.doc-actions button { background: none; border: none; font-size: 10px; color: var(--text-lo); cursor: pointer; font-family: inherit; padding: 0; transition: color 0.12s; }
+.doc-actions button:hover { color: var(--terra); }
 .doc-remaining { display: flex; align-items: center; gap: 8px; background: #C9840A0A; border: 1px solid #C9840A18; border-radius: 10px; padding: 10px 16px; font-size: 12px; color: var(--gold); line-height: 1.5; }
 .doc-remaining.complete { background: #2D8B550A; border-color: #2D8B5518; color: var(--herb); }
 .doc-warning {
@@ -1143,14 +1143,14 @@ body::before {
 }
 .earnings-stat.accent-ember { border-left-color: var(--ember); }
 .earnings-stat.accent-herb  { border-left-color: var(--herb); }
-.earnings-stat.accent-slate { border-left-color: #5B8BE8; }
+.earnings-stat.accent-slate { border-left-color: var(--slate); }
 .earnings-stat.accent-gold  { border-left-color: var(--gold); }
 .earnings-stat-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-mid); }
 .earnings-stat-value { font-family: var(--fd); font-size: 28px; font-weight: 900; letter-spacing: -0.03em; color: var(--text-hi); }
 .earnings-stat-value.muted { color: var(--text-mid) !important; }
 .earnings-stat.accent-ember .earnings-stat-value:not(.muted) { color: var(--ember); }
 .earnings-stat.accent-herb  .earnings-stat-value:not(.muted) { color: var(--herb); }
-.earnings-stat.accent-slate .earnings-stat-value:not(.muted) { color: #5B8BE8; }
+.earnings-stat.accent-slate .earnings-stat-value:not(.muted) { color: var(--slate); }
 .earnings-stat.accent-gold  .earnings-stat-value:not(.muted) { color: var(--gold); }
 .earnings-stat-sub { font-size: 12px; color: #8A7A68; }
 .earnings-table-wrap { overflow-x: auto; }
@@ -1724,30 +1724,30 @@ body::before {
 .menu-completeness .mc-msg { line-height:1.5; }
 .menu-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:16px; }
 .menu-item-card {
-  background:var(--char); border:1px solid #ffffff0a; border-radius:16px; overflow:hidden;
+  background:var(--char); border:1px solid #ffffff0a; border-radius:14px; overflow:hidden;
   transition:border-color 0.14s, transform 0.14s;
-  cursor:grab; position:relative;
+  cursor:pointer; position:relative; align-items:center; padding:10px;
 }
 .menu-item-card:hover { border-color:#ffffff18; transform:translateY(-2px); }
 .menu-item-card.is-signature { border-color:#E8500A40; }
 .menu-item-card.dragging { opacity:0.4; cursor:grabbing; }
 .menu-item-card.drag-over { border-color:var(--ember); border-style:dashed; }
-.menu-item-photo { width:100%; height:140px; object-fit:cover; background:var(--ash); display:block; }
-.menu-item-no-photo { width:100%; height:100px; background:var(--ash); display:flex; align-items:center; justify-content:center; font-size:28px; color:var(--smoke); }
-.menu-item-body { padding:12px 14px 14px; }
-.menu-item-top { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:6px; }
-.menu-item-name { font-size:14px; font-weight:700; color:var(--text-hi); line-height:1.3; flex:1; }
+.menu-item-photo { width:80px; height:80px; object-fit:cover; background:var(--coal); display:block; border-radius:10px; flex-shrink:0; }
+.menu-item-no-photo { width:80px; height:80px; background:var(--coal); display:flex; align-items:center; justify-content:center; font-size:24px; color:var(--text-lo); border-radius:10px; flex-shrink:0; }
+.menu-item-body { padding:8px 14px 8px 12px; display:flex; flex-direction:column; justify-content:center; gap:4px; }
+.menu-item-top { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.menu-item-name { font-size:14px; font-weight:700; color:var(--text-hi); line-height:1.3; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .menu-item-price { font-size:13px; font-weight:700; color:var(--ember); flex-shrink:0; }
-.menu-item-desc { font-size:12px; color:var(--text-lo); line-height:1.55; margin-bottom:10px; min-height:16px; }
-.menu-item-tags { display:flex; flex-wrap:wrap; gap:5px; margin-bottom:10px; }
-.menu-tag { font-size:11px; font-weight:600; padding:2px 8px; border-radius:100px; }
+.menu-item-desc { font-size:12px; color:var(--text-lo); line-height:1.4; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.menu-item-tags { display:flex; flex-wrap:wrap; gap:4px; }
+.menu-tag { font-size:10px; font-weight:600; padding:2px 7px; border-radius:100px; }
 .menu-tag.sig { background:#E8500A20; color:var(--ember); }
 .menu-tag.seasonal { background:#2D8B5520; color:var(--herb); }
 .menu-tag.unavail { background:#ffffff0a; color:var(--text-lo); text-decoration:line-through; }
 .menu-tag.cat { background:#ffffff0a; color:var(--text-mid); }
 .menu-tag.diet { background:#2D8B5510; color:var(--herb); border:1px solid #2D8B5520; }
-.menu-item-actions { display:flex; gap:6px; }
-.menu-item-btn { flex:1; border:none; border-radius:9px; font-family:var(--fb); font-size:12px; font-weight:600; padding:7px 0; cursor:pointer; transition:background 0.14s; }
+.menu-item-actions { display:flex; gap:6px; margin-top:2px; }
+.menu-item-btn { border:none; border-radius:8px; font-family:var(--fb); font-size:11px; font-weight:600; padding:5px 12px; cursor:pointer; transition:background 0.14s; }
 .menu-item-btn.edit { background:#ffffff0a; color:var(--text-mid); }
 .menu-item-btn.edit:hover { background:#ffffff14; color:var(--text-hi); }
 .menu-item-btn.del { background:#C0392B18; color:var(--terra); }
@@ -2558,6 +2558,7 @@ body::before {
         Keep your documents up to date to maintain your Verified status on Pitch. Organisers can see your document status on your public profile.
       </p>
 
+      <div id="doc-progress" style="display:none;margin-bottom:18px;"></div>
       <div class="doc-grid" id="doc-grid">
         <!-- Populated by renderDocuments() in JS -->
       </div>
@@ -2598,10 +2599,10 @@ body::before {
           <table class="earnings-table">
             <thead><tr>
               <th style="width:22%">Event</th><th style="width:14%">Date</th><th style="width:16%">Organiser</th>
-              <th style="width:12%">Stall fee</th><th style="width:14%">Platform fee (5%)</th><th style="width:10%">Net</th><th style="width:12%">Status</th>
+              <th style="width:12%">Stall fee</th><th style="width:14%">Platform fee</th><th style="width:10%">Net</th><th style="width:12%">Status</th>
             </tr></thead>
             <tbody id="earnings-tbody">
-              <tr><td colspan="7" style="text-align:center;padding:56px 24px;"><div style="margin-bottom:14px;"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" style="opacity:0.5;"><rect x="3" y="12" width="4" height="9" rx="1" fill="#E8500A40"/><rect x="10" y="8" width="4" height="13" rx="1" fill="#E8500A60"/><rect x="17" y="4" width="4" height="17" rx="1" fill="#E8500A80"/></svg></div><div style="font-size:13px;font-weight:600;color:var(--text-mid);margin-bottom:4px;">No earnings yet</div><div style="font-size:12px;color:var(--text-lo);">Completed events with paid stall fees will appear here.</div></td></tr>
+              <tr><td colspan="7" style="text-align:center;padding:32px 24px;"><div style="margin-bottom:14px;"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" style="opacity:0.5;"><rect x="3" y="12" width="4" height="9" rx="1" fill="#E8500A40"/><rect x="10" y="8" width="4" height="13" rx="1" fill="#E8500A60"/><rect x="17" y="4" width="4" height="17" rx="1" fill="#E8500A80"/></svg></div><div style="font-size:13px;font-weight:600;color:var(--text-mid);margin-bottom:4px;">No earnings yet</div><div style="font-size:12px;color:var(--text-lo);">Completed events with paid stall fees will appear here.</div></td></tr>
             </tbody>
           </table>
         </div>
@@ -2629,14 +2630,19 @@ body::before {
       <!-- Tax summary -->
       <div class="card">
         <div style="font-size:14px; font-weight:700; color:var(--text-hi); margin-bottom:16px;">Tax summary</div>
-        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px;">
-          <div>
-            <div style="font-size:12px; color:var(--text-lo); margin-bottom:4px;" id="earn-fy-label">Total earnings FY 2025–26</div>
-            <div style="font-family:var(--fd); font-size:28px; font-weight:900; color:var(--text-hi);" id="earn-fy-total">$0.00</div>
+        <div>
+          <div style="font-size:12px; color:var(--text-lo); margin-bottom:4px;" id="earn-fy-label">Total earnings FY 2025–26</div>
+          <div style="font-family:var(--fd); font-size:28px; font-weight:900; color:var(--text-hi); margin-bottom:16px;" id="earn-fy-total">$0.00</div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button id="btn-earnings-pdf" onclick="downloadEarningsPDF()" style="font-family:var(--fb);font-size:12px;font-weight:600;color:var(--text-hi);background:#ffffff0a;border:1px solid #ffffff1a;padding:9px 16px;border-radius:8px;cursor:pointer;transition:background .14s,border-color .14s;display:flex;align-items:center;gap:6px;" onmouseover="this.style.background='#ffffff14';this.style.borderColor='#ffffff28'" onmouseout="this.style.background='#ffffff0a';this.style.borderColor='#ffffff1a'">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
+              Download PDF
+            </button>
+            <button onclick="downloadEarningsCSV()" style="font-family:var(--fb);font-size:12px;font-weight:600;color:var(--text-hi);background:#ffffff0a;border:1px solid #ffffff1a;padding:9px 16px;border-radius:8px;cursor:pointer;transition:background .14s,border-color .14s;display:flex;align-items:center;gap:6px;" onmouseover="this.style.background='#ffffff14';this.style.borderColor='#ffffff28'" onmouseout="this.style.background='#ffffff0a';this.style.borderColor='#ffffff1a'">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M2 17l.621 2.485A2 2 0 004.561 21h14.878a2 2 0 001.94-1.515L22 17"/></svg>
+              Export CSV
+            </button>
           </div>
-          <button id="btn-earnings-pdf" onclick="downloadEarningsPDF()" style="font-family:var(--fb);font-size:12px;font-weight:600;color:var(--text-hi);background:#ffffff0a;border:1px solid #ffffff1a;padding:8px 16px;border-radius:8px;cursor:pointer;transition:background .14s,border-color .14s;" onmouseover="this.style.background='#ffffff14';this.style.borderColor='#ffffff28'" onmouseout="this.style.background='#ffffff0a';this.style.borderColor='#ffffff1a'">
-            Download earnings summary PDF
-          </button>
         </div>
         <div style="margin-top:16px; font-size:12px; color:var(--text-lo); line-height:1.7; border-top:1px solid #ffffff07; padding-top:14px;">
           Pitch provides an earnings summary for your own records. This is not a tax invoice. Please consult your accountant or BAS agent for tax advice.
@@ -5916,6 +5922,14 @@ function renderDocuments(uploadingState, uploadingKey) {
   }).join('');
   // Helper hint below cards
   const missing = docs.filter(d => !profile[d.key + '_url']).length;
+  const uploaded = docs.length - missing;
+  // Progress bar above cards
+  const progressEl = document.getElementById('doc-progress');
+  if (progressEl) {
+    const pct = Math.round((uploaded / docs.length) * 100);
+    progressEl.style.display = '';
+    progressEl.innerHTML = '<div style="display:flex;align-items:center;gap:12px;"><span style="font-size:12px;font-weight:600;color:var(--text-mid);flex-shrink:0;">' + uploaded + ' of ' + docs.length + ' uploaded</span><div style="flex:1;height:6px;background:#ffffff0a;border-radius:100px;overflow:hidden;"><div style="height:100%;width:' + pct + '%;border-radius:100px;background:' + (pct === 100 ? 'var(--herb)' : 'var(--ember)') + ';transition:width 0.4s;"></div></div></div>';
+  }
   const hintEl = document.getElementById('doc-hint');
   if (hintEl) {
     if (missing > 0) {
@@ -6944,7 +6958,7 @@ function _renderEarningsHistory(history) {
   const tbody = document.getElementById('earnings-tbody');
   const pdfBtn = document.getElementById('btn-earnings-pdf');
   if (!history || !history.length) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:56px 24px;">
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:32px 24px;">
       <div style="margin-bottom:14px;">
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" style="opacity:0.5;">
           <rect x="3" y="12" width="4" height="9" rx="1" fill="#E8500A40"/>
@@ -7071,6 +7085,30 @@ async function downloadEarningsPDF() {
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = origText; }
   }
+}
+
+function downloadEarningsCSV() {
+  const data = window.__PITCH_EARNINGS__;
+  const rows = data && data.history ? data.history : [];
+  if (!rows.length) { alert('No earnings data to export.'); return; }
+  const headers = ['Event','Date','Organiser','Stall Fee','Platform Fee','Net','Status'];
+  const csvRows = [headers.join(',')];
+  rows.forEach(r => {
+    csvRows.push([
+      '"' + (r.event_name || '').replace(/"/g, '""') + '"',
+      r.event_date || r.paid_at || '',
+      '"' + (r.organiser_name || '').replace(/"/g, '""') + '"',
+      r.amount || 0,
+      r.platform_fee || 0,
+      r.net || 0,
+      r.status || '',
+    ].join(','));
+  });
+  const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'pitch-earnings.csv'; a.click();
+  URL.revokeObjectURL(url);
 }
 
 // ── CALENDAR ────────────────────────────────────────────────────────────────
