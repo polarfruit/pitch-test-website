@@ -4584,8 +4584,8 @@ app.post('/api/vendor/menu', requireAuth, async (req, res) => {
     const { name, description, price_type, price_min, price_max, category, photo_url, available, seasonal, is_signature, dietary_tags } = req.body;
     if (!name || !name.trim()) return res.status(400).json({ error: 'Name required' });
     // if setting signature, clear previous
-    if (is_signature) stmts.clearSignature.run(req.session.userId);
-    const result = stmts.createMenuItem.run({
+    if (is_signature) await stmts.clearSignature.run(req.session.userId);
+    const result = await stmts.createMenuItem.run({
       vendor_user_id: req.session.userId,
       name: name.trim().slice(0, 60),
       description: description ? description.trim().slice(0, 200) : null,
@@ -4599,7 +4599,7 @@ app.post('/api/vendor/menu', requireAuth, async (req, res) => {
       is_signature: is_signature ? 1 : 0,
       dietary_tags: Array.isArray(dietary_tags) ? JSON.stringify(dietary_tags) : null,
     });
-    const item = stmts.getMenuItemById.get(result.lastInsertRowid, req.session.userId);
+    const item = await stmts.getMenuItemById.get(result.lastInsertRowid, req.session.userId);
     res.json(item);
   } catch(e) { console.error('[POST /api/vendor/menu]', e); res.status(500).json({ error: e.message }); }
 });
@@ -4610,8 +4610,8 @@ app.put('/api/vendor/menu/:id', requireAuth, async (req, res) => {
     if (req.session.role !== 'vendor') return res.status(403).json({ error: 'Vendor only' });
     const { name, description, price_type, price_min, price_max, category, photo_url, available, seasonal, is_signature, dietary_tags } = req.body;
     if (!name || !name.trim()) return res.status(400).json({ error: 'Name required' });
-    if (is_signature) stmts.clearSignature.run(req.session.userId);
-    stmts.updateMenuItem.run({
+    if (is_signature) await stmts.clearSignature.run(req.session.userId);
+    await stmts.updateMenuItem.run({
       id: req.params.id,
       vendor_user_id: req.session.userId,
       name: name.trim().slice(0, 60),
@@ -4626,7 +4626,7 @@ app.put('/api/vendor/menu/:id', requireAuth, async (req, res) => {
       is_signature: is_signature ? 1 : 0,
       dietary_tags: Array.isArray(dietary_tags) ? JSON.stringify(dietary_tags) : null,
     });
-    const item = stmts.getMenuItemById.get(req.params.id, req.session.userId);
+    const item = await stmts.getMenuItemById.get(req.params.id, req.session.userId);
     res.json(item);
   } catch(e) { console.error('[PUT /api/vendor/menu]', e); res.status(500).json({ error: e.message }); }
 });
