@@ -1640,6 +1640,10 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
             </div>
           </div>
           <span id="oa-range-label" style="font-size:12px;color:#A89880;margin-left:auto;"></span>
+          <button onclick="exportAnalyticsCSV()" style="font-family:var(--fb);font-size:12px;font-weight:700;color:var(--text-lo);background:#ffffff08;border:1px solid #ffffff10;padding:6px 14px;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:5px;transition:color 0.15s,border-color 0.15s;" onmouseover="this.style.color='var(--text-hi)';this.style.borderColor='#ffffff30'" onmouseout="this.style.color='var(--text-lo)';this.style.borderColor='#ffffff10'">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v7M3 5l3 3 3-3M1.5 9.5h9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Export CSV
+          </button>
         </div>
         <!-- Tab strip -->
         <div class="analytics-tab-strip" id="analytics-tab-strip">
@@ -4627,6 +4631,7 @@ async function loadOrgAnalytics() {
     const r = await pitchFetch(_anaUrl);
     if (!r.ok) return;
     const data = await r.json();
+    window._lastAnalyticsData = data;
     const summaryEl = document.getElementById('analytics-top-summary');
     // Top summary row — 6 key metrics
     const apps = data.applications || {};
