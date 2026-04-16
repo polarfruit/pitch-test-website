@@ -31,7 +31,7 @@ async function analysePli(...args) {
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 app.set('trust proxy', true);   // Vercel/reverse proxy — req.protocol returns 'https'
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // ── TEMPORARY: Bypass auth for AI analysis ──────────────────────────────────
 // Set to false to re-enable login requirements on dashboards.

@@ -109,7 +109,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 
 /* ── SHARED ── */
 .section-title { font-family:var(--fd); font-size:16px; font-weight:900; letter-spacing:-0.02em; color:var(--text-hi); margin-bottom:16px; }
-.card { background:var(--char); border:1px solid #ffffff08; border-radius:16px; padding:24px; }
+.card { background:var(--char); border:1px solid #ffffff0c; border-radius:16px; padding:24px; }
 .stat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:40px; }
 .stat-card { background:var(--char); border:1px solid #ffffff09; border-radius:16px; padding:22px 24px; position:relative; overflow:hidden;
   box-shadow:0 2px 8px rgba(0,0,0,0.18), 0 0 0 1px rgba(255,255,255,0.03); transition:box-shadow 0.2s, transform 0.2s; }
@@ -178,10 +178,10 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .btn-waitlist:hover { background:#C9840A22; }
 
 /* Inbox application cards */
-.inbox-card { background:var(--char); border:1px solid #ffffff06; border-radius:14px; padding:16px 18px; margin-bottom:8px; transition:border-color 0.14s, box-shadow 0.14s; }
+.inbox-card { background:var(--char); border:1px solid #ffffff06; border-radius:14px; padding:14px 18px; margin-bottom:8px; transition:border-color 0.14s, box-shadow 0.14s; }
 .inbox-card:hover { border-color:#ffffff10; box-shadow:0 2px 12px rgba(232,80,10,0.03); }
-.inbox-card-top { display:flex; align-items:flex-start; gap:14px; }
-.inbox-card-avatar { width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:17px; flex-shrink:0; background:linear-gradient(135deg,#1A1612,#2A1A0A); }
+.inbox-card-top { display:flex; align-items:center; gap:14px; }
+.inbox-card-avatar { width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; background:linear-gradient(135deg,#1A1612,#2A1A0A); border:1.5px solid #ffffff14; }
 .inbox-card-body { flex:1; min-width:0; }
 .inbox-card-name-row { display:flex; align-items:center; gap:8px; margin-bottom:3px; flex-wrap:wrap; }
 .inbox-card-name { font-size:15px; font-weight:700; color:var(--text-hi); text-decoration:none; transition:color 0.14s; }
@@ -190,8 +190,8 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .inbox-name-arrow { display:inline-block; font-size:12px; opacity:0; transition:opacity 0.14s, transform 0.14s; margin-left:2px; }
 .inbox-card-meta { font-size:11.5px; color:var(--text-lo); margin-bottom:0; }
 .inbox-card-meta .inbox-inline-tag { display:inline-block; font-size:10px; font-weight:600; padding:1px 7px; border-radius:100px; background:#E8500A12; color:var(--ember); border:1px solid #E8500A20; margin-left:6px; vertical-align:1px; }
-.inbox-card-tags { display:flex; gap:5px; flex-wrap:wrap; margin-top:5px; margin-bottom:0; }
-.inbox-card-detail { display:flex; gap:6px; flex-wrap:wrap; margin-top:7px; }
+.inbox-card-tags { display:flex; gap:5px; flex-wrap:wrap; margin-top:6px; margin-bottom:0; }
+.inbox-card-detail { display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
 .inbox-detail-chip { font-size:10.5px; padding:3px 9px; border-radius:6px; background:#ffffff0a; border:1px solid #ffffff0e; color:var(--text-mid); }
 .inbox-card-right { display:flex; flex-direction:column; align-items:flex-end; gap:8px; flex-shrink:0; padding-top:1px; }
 .inbox-status-badge { font-size:11px; font-weight:700; padding:4px 11px; border-radius:7px; white-space:nowrap; }
@@ -308,16 +308,16 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .step-circle { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center;
   font-size:12px; font-weight:700; border:2px solid transparent; flex-shrink:0; }
 .step-circle.done   { background:#2D8B5520; border-color:#2D8B5540; color:var(--herb); }
-.step-circle.active { background:var(--ember); border-color:var(--ember); color:#fff; }
-.step-circle.pending { background:#ffffff08; border-color:#ffffff14; color:var(--text-lo); }
+.step-circle.active { background:var(--ember); border-color:var(--ember); color:#fff; box-shadow:0 0 0 4px #E8500A20, 0 2px 8px #E8500A30; }
+.step-circle.pending { background:#ffffff08; border-color:#ffffff18; color:var(--text-lo); }
 .step-label { font-size:10px; font-weight:600; color:var(--text-lo); text-align:center; }
 .step-label.active { color:var(--ember); }
-.step-line { flex:1; height:2px; background:#ffffff0a; margin-bottom:22px; }
+.step-line { flex:1; height:2px; background:#ffffff14; margin-bottom:22px; }
 .step-line.done { background:#2D8B5540; }
 
 .step-panel { display:none; max-width:840px; }
 .step-panel.active { display:block; }
-.step-nav { display:flex; align-items:center; justify-content:space-between; margin-top:32px; padding-top:24px; border-top:1px solid #ffffff08; }
+.step-nav { display:flex; align-items:center; justify-content:space-between; margin-top:20px; padding-top:0; border-top:none; }
 .btn-step-back { font-family:var(--fb); font-size:13px; font-weight:600; color:var(--text-mid);
   background:transparent; border:1px solid #ffffff10; padding:11px 22px; border-radius:10px; cursor:pointer; transition:all 0.14s; }
 .btn-step-back:hover { color:var(--text-hi); background:#ffffff08; }
@@ -336,12 +336,13 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .form-input::placeholder { color:var(--text-lo); }
 .form-input:focus { border-color:#E8500A40; }
 .form-select { height:42px; padding:0 14px; padding-right:36px; appearance:none;
-  background:#ffffff08 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23A89880' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 12px center;
+  background:#ffffff08 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9'%3E%3Cpath d='M1 1l6 6 6-6' stroke='%23A89880' stroke-width='1.8' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 14px center;
   border:1px solid #ffffff10; border-radius:10px; font-family:var(--fb); font-size:14px; color:var(--text-hi); cursor:pointer; outline:none; }
 .form-select option { background:#231E19; }
-.form-textarea { width:100%; padding:12px 14px; resize:vertical; min-height:100px; background:#ffffff08; border:1px solid #ffffff14;
+.form-textarea { width:100%; padding:12px 14px; resize:vertical; min-height:100px; background:#ffffff08; border:1px solid #ffffff10;
   border-radius:10px; font-family:var(--fb); font-size:14px; color:var(--text-hi); line-height:1.6; outline:none; transition:border-color 0.14s; }
 .form-textarea:focus { border-color:#E8500A40; }
+.form-textarea::-webkit-resizer { display:none; }
 .form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
 .form-row-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; }
 .toggle-row { display:flex; align-items:center; justify-content:space-between; padding:4px 0; }
@@ -514,7 +515,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .date-sep { font-size:13px; color:var(--text-lo); padding-bottom:9px; }
 .ne-cal-toggle {
   display:inline-flex; align-items:center; justify-content:center;
-  width:40px; height:40px; flex-shrink:0;
+  width:44px; height:40px; flex-shrink:0;
   background:#ffffff08; border:1px solid #ffffff0A;
   border-radius:9px; cursor:pointer; color:var(--text-lo);
   transition:border-color 0.14s, color 0.14s, background 0.14s;
@@ -815,7 +816,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
     <div class="nav-section-label">Account</div>
     <button class="nav-link" onclick="showPanel('messages',this)"><span class="nav-icon">✉️</span>Messages<span class="nav-badge" id="org-msg-badge" style="display:none;">0</span></button>
     <button class="nav-link" onclick="showPanel('settings',this)"><span class="nav-icon">⚙️</span>Settings</button>
-    <a href="/events" class="nav-link" style="margin-top:auto;"><span class="nav-icon">👁</span>View public events</a>
+    <a href="/events" class="nav-link" style="margin-top:auto;" target="_blank"><span class="nav-icon">↗</span>View public events</a>
   </nav>
   <div class="sidebar-footer">
     <button class="sidebar-footer-link logout" id="logout-btn" onclick="pitchLogout()">🚪 Log out</button>
@@ -1022,7 +1023,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
               </div>
               <div class="date-sep" style="padding-bottom:9px;">→</div>
               <div class="date-field">
-                <div class="date-field-label">To <span style="font-weight:400;opacity:0.5;text-transform:none;letter-spacing:0;">— leave blank for one day</span></div>
+                <div class="date-field-label">To</div>
                 <input class="date-text-input" id="ne-enddate-display" placeholder="DD/MM/YYYY" oninput="neCalTypeDate('event','end',this)" onblur="neCalBlurDate('event','end',this)" onclick="neCalOpen('event','ne-event-date-wrap')" />
                 <input type="hidden" id="ne-enddate" />
               </div>
@@ -1058,18 +1059,19 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
                 </div>
               </div>
             </div>
+            <div style="font-size:12px;color:var(--text-lo);margin-top:6px;padding-left:2px;">Leave "To" blank for a single-day event</div>
           </div>
           <div class="form-row" style="grid-template-columns:2fr 1fr;">
             <div class="form-group"><label class="form-label">Suburb</label><input class="form-input" id="ne-suburb" placeholder="e.g. Adelaide CBD" /></div>
             <div class="form-group"><label class="form-label">State</label><select class="form-select" id="ne-state" style="width:100%;"><option>SA</option><option>VIC</option><option>NSW</option><option>QLD</option><option>WA</option><option>TAS</option><option>ACT</option><option>NT</option></select></div>
           </div>
           <div class="form-group"><label class="form-label">Full address / Venue name</label><input class="form-input" id="ne-venue" placeholder="Street address for vendors" /></div>
-          <div style="height:1px;background:#ffffff08;margin:8px 0 20px;"></div>
+          <div style="height:1px;background:#ffffff0c;margin:8px 0 20px;"></div>
           <div class="form-row">
             <div class="form-group"><label class="form-label">Expected attendance</label><input class="form-input" type="number" placeholder="e.g. 5000" /></div>
             <div class="form-group"><label class="form-label">Event website (optional)</label><input class="form-input" type="url" placeholder="https://…" /></div>
           </div>
-          <div class="form-group"><label class="form-label">Public description</label><textarea class="form-textarea" id="ne-description" placeholder="Describe your event to potential vendors — what makes it special, your audience, the vibe…" style="min-height:80px;" maxlength="500" oninput="document.getElementById('ne-desc-count').textContent=this.value.length+'/500'"></textarea><div id="ne-desc-count" style="text-align:right;font-size:11px;color:var(--text-lo);margin-top:4px;">0/500</div></div>
+          <div class="form-group"><label class="form-label">Public description</label><textarea class="form-textarea" id="ne-description" placeholder="Describe your event to potential vendors — what makes it special, your audience, the vibe…" style="min-height:80px;" maxlength="500" oninput="document.getElementById('ne-desc-count').textContent=this.value.length+'/500'"></textarea><div id="ne-desc-count" style="text-align:right;font-size:12px;color:var(--text-mid);margin-top:6px;">0/500</div></div>
           <div id="ne-error" style="display:none;margin-top:12px;padding:11px 14px;background:rgba(192,57,43,0.1);border:1px solid rgba(192,57,43,0.25);border-radius:8px;font-size:13px;color:#C0392B;"></div>
         </div>
         <div class="step-nav"><div></div><button class="btn-step-next" onclick="validateStep1()">Next: Booth specs →</button></div>
@@ -1537,15 +1539,15 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
     <div class="panel" id="panel-inbox">
       <div style="max-width:820px;">
         <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center;">
-          <input id="inbox-search" placeholder="Search vendor, event…" oninput="filterInbox()" style="flex:1;min-width:180px;height:34px;padding:0 13px;background:#ffffff08;border:1px solid #ffffff10;border-radius:9px;font-family:var(--fb);font-size:12.5px;color:var(--text-hi);outline:none;" />
-          <select id="inbox-status-filter" onchange="filterInbox()" style="height:34px;padding:0 11px;background:#ffffff08;border:1px solid #ffffff10;border-radius:9px;font-family:var(--fb);font-size:12.5px;color:var(--text-hi);outline:none;">
+          <input id="inbox-search" placeholder="Search vendor, event…" oninput="filterInbox()" style="flex:1;min-width:180px;height:34px;padding:0 13px;background:#ffffff08;border:1px solid #ffffff1a;border-radius:9px;font-family:var(--fb);font-size:12.5px;color:var(--text-hi);outline:none;" />
+          <select id="inbox-status-filter" onchange="filterInbox()" style="height:34px;padding:0 11px;background:#ffffff08;border:1px solid #ffffff1a;border-radius:9px;font-family:var(--fb);font-size:12.5px;color:var(--text-hi);outline:none;">
             <option value="">All statuses</option>
             <option value="pending">Pending</option>
             <option value="approved">Approved</option>
             <option value="rejected">Declined</option>
             <option value="withdrawn">Withdrawn</option>
           </select>
-          <span id="inbox-count" style="font-size:11px;color:var(--text-lo);margin-left:4px;"></span>
+          <span id="inbox-count" style="font-size:11px;color:var(--text-lo);margin-left:0;"></span>
         </div>
         <div id="inbox-list"><div style="text-align:center;padding:40px;color:var(--text-lo);font-size:13px;">Loading…</div></div>
       </div>
@@ -3951,7 +3953,7 @@ function renderInbox(arr) {
     if (a.stall_w && a.stall_d) setupParts.push(`${a.stall_w}m × ${a.stall_d}m`);
     if (a.power) setupParts.push('⚡ Power');
     if (a.water) setupParts.push('💧 Water');
-    if (a.price_range && a.price_range.length > 1) setupParts.push(a.price_range);
+    const priceText = (a.price_range && a.price_range.length > 1) ? ` · ${a.price_range}` : '';
 
     const actions = a.status === 'pending' ? `
       <div class="inbox-card-actions">
@@ -3977,7 +3979,7 @@ function renderInbox(arr) {
             <a href="/vendors/${a.vendor_user_id}" class="inbox-card-name">${a.trading_name}<span class="inbox-name-arrow">→</span></a>
             <span class="inbox-status-badge" style="background:${statusColor[a.status]}18;color:${statusColor[a.status]};">${statusLabel[a.status] || a.status}</span>
           </div>
-          <div class="inbox-card-meta">${a.event_name} · Applied ${_orgFmtDate(a.created_at)}${location ? ' · 📍 ' + location : ''}${inlineTags}</div>
+          <div class="inbox-card-meta">${a.event_name} · Applied ${_orgFmtDate(a.created_at)}${location ? ' · 📍 ' + location : ''}${priceText}${inlineTags}</div>
           ${tagRow}
           ${setupParts.length ? `<div class="inbox-card-detail">${setupParts.map(p => `<span class="inbox-detail-chip">${p}</span>`).join('')}</div>` : ''}
         </div>
