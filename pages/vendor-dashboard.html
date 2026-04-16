@@ -694,9 +694,9 @@ body::before {
 .upload-icon { font-size: 28px; margin-bottom: 10px; }
 .upload-text { font-size: 13px; color: var(--text-mid); margin-bottom: 4px; }
 .upload-hint { font-size: 11px; color: var(--text-lo); }
-.photo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 14px; }
+.photo-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 14px; }
 .photo-thumb {
-  aspect-ratio: 4/3; border-radius: 12px; overflow: hidden;
+  aspect-ratio: 1/1; border-radius: 10px; overflow: hidden;
   background: #1A1612; display: flex; align-items: center; justify-content: center;
   font-size: 24px; position: relative;
 }
@@ -2348,7 +2348,7 @@ body::before {
 
           <div class="form-group">
             <label class="form-label">Bio <span style="color:var(--text-lo);font-weight:400;letter-spacing:0;text-transform:none;">(max 250 characters)</span></label>
-            <textarea class="form-textarea" id="prof-bio" maxlength="250" oninput="updateBioCounter();updatePreview()"></textarea>
+            <textarea class="form-textarea" id="prof-bio" maxlength="250" placeholder="Tell organisers about your food, your story, and what makes you unique..." oninput="updateBioCounter();updatePreview()"></textarea>
             <div class="char-counter" id="bio-counter">0/250</div>
           </div>
 
@@ -4276,7 +4276,10 @@ function updatePreview() {
   const suburb = (document.getElementById('v-suburb') || {}).value || '';
   const state  = (document.getElementById('v-state')  || {}).value || '';
   const locEl  = document.getElementById('preview-location');
-  if (locEl) locEl.textContent = [suburb, state].filter(Boolean).join(', ') || '—';
+  const locWrap = locEl ? locEl.parentElement : null;
+  const locStr = [suburb, state].filter(Boolean).join(', ');
+  if (locEl) locEl.textContent = locStr || '';
+  if (locWrap) locWrap.style.display = locStr ? '' : 'none';
 
   // Bio
   const bio = (document.getElementById('prof-bio') || {}).value || '';
@@ -5716,7 +5719,7 @@ function renderPhotoGrid() {
   if (!_photos.length) { grid.innerHTML = ''; return; }
   grid.innerHTML = _photos.map((src, i) =>
     `<div class="photo-thumb">
-      <img src="${src}" alt="Vendor photo ${i + 1}" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:12px;" />
+      <img src="${src}" alt="Vendor photo ${i + 1}" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:10px;" />
       <button class="photo-thumb-remove" title="Remove" onclick="removePhoto(${i})">✕</button>
     </div>`
   ).join('');
@@ -9493,9 +9496,14 @@ function _updateSettingsTabs() {
   const tabs = panel.querySelectorAll('.settings-tab');
   if (!tabs.length) return;
   let current = 0;
-  for (let i = sections.length - 1; i >= 0; i--) {
-    const el = document.getElementById('settings-anchor-' + sections[i]);
-    if (el && el.getBoundingClientRect().top <= 200) { current = i; break; }
+  // If scrolled near bottom, activate last section
+  if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 100) {
+    current = sections.length - 1;
+  } else {
+    for (let i = sections.length - 1; i >= 0; i--) {
+      const el = document.getElementById('settings-anchor-' + sections[i]);
+      if (el && el.getBoundingClientRect().top <= 200) { current = i; break; }
+    }
   }
   tabs.forEach((t, i) => t.classList.toggle('active', i === current));
 }

@@ -35,7 +35,7 @@ const PORT = 3000;
 
 // ── TEMPORARY: Bypass auth for AI analysis ──────────────────────────────────
 // Set to false to re-enable login requirements on dashboards.
-const BYPASS_AUTH = true;
+const BYPASS_AUTH = false;
 
 // ── Stripe (lazy-loaded via getStripe()) ──────────────────────────────────
 const STRIPE_PRICES = {
