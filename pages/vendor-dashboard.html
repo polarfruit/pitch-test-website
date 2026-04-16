@@ -1159,7 +1159,9 @@ body::before {
   text-align: left; padding: 12px 16px; color: var(--text-mid);
   font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
   border-bottom: 1px solid #ffffff10;
+  transition: opacity 0.2s;
 }
+.earnings-table.is-empty th { opacity: 0.45; }
 .earnings-table td { padding: 14px 16px; border-bottom: 1px solid #ffffff06; color: var(--text-hi); }
 .earnings-table tr:last-child td { border-bottom: none; }
 .earnings-table tr:hover td { background: #ffffff04; }
@@ -2577,12 +2579,12 @@ body::before {
           <div class="earnings-stat-value muted" id="earn-alltime-val">$0.00</div>
           <div class="earnings-stat-sub" id="earn-alltime-sub">No events completed</div>
         </div>
-        <div class="earnings-stat accent-herb">
+        <div class="earnings-stat accent-slate">
           <div class="earnings-stat-label">This month</div>
           <div class="earnings-stat-value muted" id="earn-month-val">$0.00</div>
           <div class="earnings-stat-sub" id="earn-month-sub">No events this month</div>
         </div>
-        <div class="earnings-stat accent-slate">
+        <div class="earnings-stat accent-herb">
           <div class="earnings-stat-label">Last month</div>
           <div class="earnings-stat-value muted" id="earn-lastmonth-val">$0.00</div>
           <div class="earnings-stat-sub" id="earn-lastmonth-sub">No events last month</div>
@@ -2598,13 +2600,13 @@ body::before {
       <div class="card" style="padding:0; overflow:hidden; margin-bottom:24px;">
         <div style="padding:20px 20px 0; font-size:14px; font-weight:700; color:var(--text-hi); margin-bottom:12px;">Earnings history</div>
         <div class="earnings-table-wrap">
-          <table class="earnings-table">
+          <table class="earnings-table is-empty" id="earnings-table">
             <thead><tr>
               <th style="width:22%">Event</th><th style="width:14%">Date</th><th style="width:16%">Organiser</th>
               <th style="width:12%">Stall fee</th><th style="width:14%">Platform fee</th><th style="width:10%">Net</th><th style="width:12%">Status</th>
             </tr></thead>
             <tbody id="earnings-tbody">
-              <tr><td colspan="7" style="text-align:center;padding:32px 24px;"><div style="margin-bottom:14px;"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" style="opacity:0.5;"><rect x="3" y="12" width="4" height="9" rx="1" fill="#E8500A40"/><rect x="10" y="8" width="4" height="13" rx="1" fill="#E8500A60"/><rect x="17" y="4" width="4" height="17" rx="1" fill="#E8500A80"/></svg></div><div style="font-size:13px;font-weight:600;color:var(--text-mid);margin-bottom:4px;">No earnings yet</div><div style="font-size:12px;color:var(--text-lo);">Completed events with paid stall fees will appear here.</div></td></tr>
+              <tr><td colspan="7" style="text-align:center;padding:32px 24px;"><div style="margin-bottom:14px;"><svg width="56" height="56" viewBox="0 0 24 24" fill="none" style="opacity:0.5;"><rect x="3" y="12" width="4" height="9" rx="1" fill="#E8500A40"/><rect x="10" y="8" width="4" height="13" rx="1" fill="#E8500A60"/><rect x="17" y="4" width="4" height="17" rx="1" fill="#E8500A80"/></svg></div><div style="font-size:13px;font-weight:600;color:var(--text-mid);margin-bottom:4px;">No earnings yet</div><div style="font-size:12px;color:var(--text-lo);">Completed events with paid stall fees will appear here.</div></td></tr>
             </tbody>
           </table>
         </div>
@@ -2614,17 +2616,18 @@ body::before {
       <div class="card" style="margin-bottom:24px;">
         <div style="font-size:14px; font-weight:700; color:var(--text-hi); margin-bottom:16px;">Payout settings</div>
         <div style="border:1px solid #ffffff08; border-radius:12px; padding:18px;">
-          <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px;">
+          <div style="display:flex; align-items:center; gap:12px;">
             <div style="width:40px;height:40px;border-radius:10px;background:#ffffff08;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#A89880" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="10" width="18" height="11" rx="2"/><path d="M12 3L3 10h18L12 3z"/><line x1="7" y1="14" x2="7" y2="17"/><line x1="12" y1="14" x2="12" y2="17"/><line x1="17" y1="14" x2="17" y2="17"/></svg>
             </div>
-            <div>
-              <div style="font-size:13px; font-weight:700; color:var(--text-hi);">Bank account</div>
+            <div style="flex:1;min-width:0;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;">
+                <span style="font-size:13px; font-weight:700; color:var(--text-hi);">Bank account</span>
+                <span style="font-size:10px;font-weight:700;color:var(--gold);background:#C9840A14;border:1px solid #C9840A25;padding:2px 8px;border-radius:100px;text-transform:uppercase;letter-spacing:0.05em;">Coming soon</span>
+              </div>
               <div style="font-size:12px; color:var(--text-lo);">Connect your bank details to receive payouts directly.</div>
             </div>
-          </div>
-          <div style="background:#C9840A0C; border:1px solid #C9840A20; border-radius:8px; padding:10px 14px; font-size:12px; color:var(--gold); line-height:1.5;">
-            Payouts are coming soon. We'll notify you when bank connections are available.
+            <button disabled style="font-family:var(--fb);font-size:12px;font-weight:600;color:var(--text-lo);background:#ffffff06;border:1px solid #ffffff10;padding:8px 16px;border-radius:8px;cursor:not-allowed;opacity:0.5;white-space:nowrap;">Connect</button>
           </div>
         </div>
       </div>
@@ -2634,13 +2637,13 @@ body::before {
         <div style="font-size:14px; font-weight:700; color:var(--text-hi); margin-bottom:16px;">Tax summary</div>
         <div>
           <div style="font-size:12px; color:var(--text-lo); margin-bottom:4px;" id="earn-fy-label">Total earnings FY 2025–26</div>
-          <div style="font-family:var(--fd); font-size:28px; font-weight:900; color:var(--text-hi); margin-bottom:16px;" id="earn-fy-total">$0.00</div>
+          <div style="font-family:var(--fd); font-size:28px; font-weight:900; color:var(--text-hi); margin-bottom:10px;" id="earn-fy-total">$0.00</div>
           <div style="display:flex; gap:10px; flex-wrap:wrap;">
-            <button id="btn-earnings-pdf" onclick="downloadEarningsPDF()" style="font-family:var(--fb);font-size:12px;font-weight:600;color:var(--text-hi);background:#ffffff0a;border:1px solid #ffffff1a;padding:9px 16px;border-radius:8px;cursor:pointer;transition:background .14s,border-color .14s;display:flex;align-items:center;gap:6px;" onmouseover="this.style.background='#ffffff14';this.style.borderColor='#ffffff28'" onmouseout="this.style.background='#ffffff0a';this.style.borderColor='#ffffff1a'">
+            <button id="btn-earnings-pdf" onclick="downloadEarningsPDF()" disabled style="font-family:var(--fb);font-size:12px;font-weight:600;color:var(--text-hi);background:#ffffff0a;border:1px solid #ffffff1a;padding:9px 16px;border-radius:8px;cursor:not-allowed;opacity:0.4;transition:background .14s,border-color .14s;display:flex;align-items:center;gap:6px;" onmouseover="this.style.background='#ffffff14';this.style.borderColor='#ffffff28'" onmouseout="this.style.background='#ffffff0a';this.style.borderColor='#ffffff1a'">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
               Download PDF
             </button>
-            <button id="btn-earnings-csv" onclick="downloadEarningsCSV()" style="font-family:var(--fb);font-size:12px;font-weight:600;color:var(--text-hi);background:#ffffff0a;border:1px solid #ffffff1a;padding:9px 16px;border-radius:8px;cursor:pointer;transition:background .14s,border-color .14s;display:flex;align-items:center;gap:6px;" onmouseover="this.style.background='#ffffff14';this.style.borderColor='#ffffff28'" onmouseout="this.style.background='#ffffff0a';this.style.borderColor='#ffffff1a'">
+            <button id="btn-earnings-csv" onclick="downloadEarningsCSV()" disabled style="font-family:var(--fb);font-size:12px;font-weight:600;color:var(--text-hi);background:#ffffff0a;border:1px solid #ffffff1a;padding:9px 16px;border-radius:8px;cursor:not-allowed;opacity:0.4;transition:background .14s,border-color .14s;display:flex;align-items:center;gap:6px;" onmouseover="this.style.background='#ffffff14';this.style.borderColor='#ffffff28'" onmouseout="this.style.background='#ffffff0a';this.style.borderColor='#ffffff1a'">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M2 17l.621 2.485A2 2 0 004.561 21h14.878a2 2 0 001.94-1.515L22 17"/></svg>
               Export CSV
             </button>
@@ -6959,10 +6962,12 @@ function _renderEarningsSummary(s) {
 function _renderEarningsHistory(history) {
   const tbody = document.getElementById('earnings-tbody');
   const pdfBtn = document.getElementById('btn-earnings-pdf');
+  const tbl = document.getElementById('earnings-table');
   if (!history || !history.length) {
+    if (tbl) tbl.classList.add('is-empty');
     tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:32px 24px;">
       <div style="margin-bottom:14px;">
-        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" style="opacity:0.5;">
+        <svg width="56" height="56" viewBox="0 0 24 24" fill="none" style="opacity:0.5;">
           <rect x="3" y="12" width="4" height="9" rx="1" fill="#E8500A40"/>
           <rect x="10" y="8" width="4" height="13" rx="1" fill="#E8500A60"/>
           <rect x="17" y="4" width="4" height="17" rx="1" fill="#E8500A80"/>
@@ -6976,6 +6981,7 @@ function _renderEarningsHistory(history) {
     if (csvBtn) { csvBtn.disabled = true; csvBtn.style.opacity = '0.4'; csvBtn.style.cursor = 'not-allowed'; csvBtn.title = 'No earnings to export yet'; }
     return;
   }
+  if (tbl) tbl.classList.remove('is-empty');
   if (pdfBtn) { pdfBtn.disabled = false; pdfBtn.style.opacity = ''; pdfBtn.style.cursor = ''; pdfBtn.title = ''; }
   const csvBtn2 = document.getElementById('btn-earnings-csv');
   if (csvBtn2) { csvBtn2.disabled = false; csvBtn2.style.opacity = ''; csvBtn2.style.cursor = ''; csvBtn2.title = ''; }
