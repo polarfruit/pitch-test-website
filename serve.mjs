@@ -6,7 +6,7 @@ import fs from 'fs';
 import bcrypt from 'bcryptjs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import db, { stmts, txSignupVendor, txSignupOrganiser, txSignupFoodie, prepare, safeExec } from './server/db.mjs';
+import db, { stmts, txSignupVendor, txSignupOrganiser, txSignupFoodie, prepare } from './server/db.mjs';
 import { sendVerificationEmail, sendVerificationSMS, sendAdminEmail, buildSuspensionEmailHtml, buildSuspensionNoticeHtml, buildPostEventOrgHtml, buildPostEventVendorHtml } from './server/mailer.mjs';
 
 // Lazy-loaded heavy modules (deferred to first use — saves ~1s cold start)
@@ -4604,7 +4604,8 @@ app.post('/api/vendor/menu', requireAuth, async (req, res) => {
     } catch(insertErr) {
       // Self-heal: if dietary_tags column missing, add it and retry
       if (insertErr.message?.includes('dietary_tags')) {
-        await safeExec('ALTER TABLE menu_items ADD COLUMN dietary_tags TEXT');
+        if (db.execute) await db.execute('ALTER TABLE menu_items ADD COLUMN dietary_tags TEXT');
+        else if (db.exec) db.exec('ALTER TABLE menu_items ADD COLUMN dietary_tags TEXT');
         result = await stmts.createMenuItem.run(params);
       } else throw insertErr;
     }
@@ -4639,7 +4640,8 @@ app.put('/api/vendor/menu/:id', requireAuth, async (req, res) => {
       await stmts.updateMenuItem.run(updateParams);
     } catch(upErr) {
       if (upErr.message?.includes('dietary_tags')) {
-        await safeExec('ALTER TABLE menu_items ADD COLUMN dietary_tags TEXT');
+        if (db.execute) await db.execute('ALTER TABLE menu_items ADD COLUMN dietary_tags TEXT');
+        else if (db.exec) db.exec('ALTER TABLE menu_items ADD COLUMN dietary_tags TEXT');
         await stmts.updateMenuItem.run(updateParams);
       } else throw upErr;
     }

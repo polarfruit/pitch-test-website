@@ -3743,6 +3743,11 @@ window.addEventListener('error', ev => {
   const el = document.getElementById('global-err-toast');
   if (el) { el.textContent = 'JS Error: ' + ev.message + ' (' + (ev.filename||'').split('/').pop() + ':' + ev.lineno + ')'; el.style.display = 'block'; }
 });
+window.addEventListener('unhandledrejection', ev => {
+  console.error('[unhandled rejection]', ev.reason);
+  const el = document.getElementById('global-err-toast');
+  if (el) { el.textContent = 'Async Error: ' + (ev.reason?.message || ev.reason); el.style.display = 'block'; }
+});
 
 (function routeOnLoad() {
   const path = window.location.pathname.replace(/\/$/, '');
@@ -7073,15 +7078,19 @@ var _calApps = [];
 var _calYear, _calMonth;
 
 async function loadCalendar() {
-  if (_calApps.length === 0) {
-    try {
-      const r = await pitchFetch('/api/vendor/calendar');
-      if (r.ok) { const d = await r.json(); _calApps = d.applications || []; }
-    } catch(e) { console.error('[calendar]', e); }
+  try {
+    if (_calApps.length === 0) {
+      try {
+        const r = await pitchFetch('/api/vendor/calendar');
+        if (r.ok) { const d = await r.json(); _calApps = d.applications || []; }
+      } catch(e) { console.error('[calendar fetch]', e); }
+    }
+    const now = new Date();
+    if (_calYear === undefined) { _calYear = now.getFullYear(); _calMonth = now.getMonth(); }
+    renderCalendar();
+  } catch(e) {
+    console.error('[calendar fatal]', e);
   }
-  const now = new Date();
-  if (_calYear === undefined) { _calYear = now.getFullYear(); _calMonth = now.getMonth(); }
-  renderCalendar();
 }
 
 function calNav(delta) {
@@ -7565,7 +7574,29 @@ async function _saveExtendedSettings() {
   });
 }
 
+function _applyConnectedDefaults() {
+  const statusEl = document.getElementById('google-link-status');
+  const badgeEl = document.getElementById('google-link-badge');
+  const emailStatusEl = document.getElementById('email-login-status');
+  const emailBadgeEl = document.getElementById('email-login-badge');
+  if (statusEl) statusEl.textContent = 'Not connected';
+  if (badgeEl) {
+    badgeEl.textContent = 'Link account';
+    badgeEl.style.background = '#ffffff10'; badgeEl.style.color = 'var(--text-hi)'; badgeEl.style.borderColor = '#ffffff25';
+    badgeEl.onmouseenter = function(){ this.style.background='#ffffff18'; this.style.borderColor='#ffffff35'; };
+    badgeEl.onmouseleave = function(){ this.style.background='#ffffff10'; this.style.borderColor='#ffffff25'; };
+    badgeEl.onclick = function(){ window.location.href = '/api/auth/google'; };
+  }
+  if (emailStatusEl) emailStatusEl.textContent = 'Password login enabled';
+  if (emailBadgeEl) {
+    emailBadgeEl.textContent = 'Disable';
+    emailBadgeEl.style.background = '#C0392B10'; emailBadgeEl.style.color = 'var(--terra)'; emailBadgeEl.style.borderColor = '#C0392B30';
+    emailBadgeEl.onmouseenter = function(){ this.style.background='#C0392B1a'; this.style.borderColor='#C0392B45'; };
+    emailBadgeEl.onmouseleave = function(){ this.style.background='#C0392B10'; this.style.borderColor='#C0392B30'; };
+  }
+}
 async function _loadConnectedAccounts() {
+  _applyConnectedDefaults();
   try {
     const r = await pitchFetch('/api/vendor/settings/connected');
     if (!r.ok) return;
@@ -7577,23 +7608,11 @@ async function _loadConnectedAccounts() {
       badgeEl.innerHTML = '&#10003; Connected';
       badgeEl.style.background = '#2D8B5518'; badgeEl.style.color = '#2D8B55'; badgeEl.style.borderColor = '#2D8B5530';
       badgeEl.onclick = null; badgeEl.style.cursor = 'default';
-    } else {
-      statusEl.textContent = 'Not connected';
-      badgeEl.textContent = 'Link account';
-      badgeEl.style.background = '#ffffff10'; badgeEl.style.color = 'var(--text-hi)'; badgeEl.style.borderColor = '#ffffff25';
-      badgeEl.onmouseenter = function(){ this.style.background='#ffffff18'; this.style.borderColor='#ffffff35'; };
-      badgeEl.onmouseleave = function(){ this.style.background='#ffffff10'; this.style.borderColor='#ffffff25'; };
-      badgeEl.onclick = function(){ window.location.href = '/api/auth/google'; };
+      badgeEl.onmouseenter = null; badgeEl.onmouseleave = null;
     }
     const emailStatusEl = document.getElementById('email-login-status');
     const emailBadgeEl = document.getElementById('email-login-badge');
-    if (data.email_login) {
-      emailStatusEl.textContent = 'Password login enabled';
-      emailBadgeEl.textContent = 'Disable';
-      emailBadgeEl.style.background = '#C0392B10'; emailBadgeEl.style.color = 'var(--terra)'; emailBadgeEl.style.borderColor = '#C0392B30';
-      emailBadgeEl.onmouseenter = function(){ this.style.background='#C0392B1a'; this.style.borderColor='#C0392B45'; };
-      emailBadgeEl.onmouseleave = function(){ this.style.background='#C0392B10'; this.style.borderColor='#C0392B30'; };
-    } else {
+    if (!data.email_login) {
       emailStatusEl.textContent = 'Sign in with Google only — no password set';
       emailBadgeEl.textContent = 'Set up';
       emailBadgeEl.style.background = '#ffffff10'; emailBadgeEl.style.color = 'var(--text-hi)'; emailBadgeEl.style.borderColor = '#ffffff25';
