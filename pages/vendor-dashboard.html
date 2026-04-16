@@ -2638,7 +2638,7 @@ body::before {
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
               Download PDF
             </button>
-            <button onclick="downloadEarningsCSV()" style="font-family:var(--fb);font-size:12px;font-weight:600;color:var(--text-hi);background:#ffffff0a;border:1px solid #ffffff1a;padding:9px 16px;border-radius:8px;cursor:pointer;transition:background .14s,border-color .14s;display:flex;align-items:center;gap:6px;" onmouseover="this.style.background='#ffffff14';this.style.borderColor='#ffffff28'" onmouseout="this.style.background='#ffffff0a';this.style.borderColor='#ffffff1a'">
+            <button id="btn-earnings-csv" onclick="downloadEarningsCSV()" style="font-family:var(--fb);font-size:12px;font-weight:600;color:var(--text-hi);background:#ffffff0a;border:1px solid #ffffff1a;padding:9px 16px;border-radius:8px;cursor:pointer;transition:background .14s,border-color .14s;display:flex;align-items:center;gap:6px;" onmouseover="this.style.background='#ffffff14';this.style.borderColor='#ffffff28'" onmouseout="this.style.background='#ffffff0a';this.style.borderColor='#ffffff1a'">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M2 17l.621 2.485A2 2 0 004.561 21h14.878a2 2 0 001.94-1.515L22 17"/></svg>
               Export CSV
             </button>
@@ -2893,8 +2893,8 @@ body::before {
           </div>
           <div id="cal-month-hint" style="display:none;text-align:center;padding:16px 0 4px;font-size:13px;color:var(--text-lo);">No events this month — use the arrows to navigate</div>
           <div class="cal-legend">
-            <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--gold);"></div> Pending</div>
             <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--herb);"></div> Approved</div>
+            <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--gold);"></div> Pending</div>
             <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--terra);"></div> Declined</div>
           </div>
         </div>
@@ -6970,9 +6970,13 @@ function _renderEarningsHistory(history) {
       <div style="font-size:12px;color:var(--text-lo);">Completed events with paid stall fees will appear here.</div>
     </td></tr>`;
     if (pdfBtn) { pdfBtn.disabled = true; pdfBtn.style.opacity = '0.4'; pdfBtn.style.cursor = 'not-allowed'; pdfBtn.title = 'No earnings to export yet'; }
+    const csvBtn = document.getElementById('btn-earnings-csv');
+    if (csvBtn) { csvBtn.disabled = true; csvBtn.style.opacity = '0.4'; csvBtn.style.cursor = 'not-allowed'; csvBtn.title = 'No earnings to export yet'; }
     return;
   }
   if (pdfBtn) { pdfBtn.disabled = false; pdfBtn.style.opacity = ''; pdfBtn.style.cursor = ''; pdfBtn.title = ''; }
+  const csvBtn2 = document.getElementById('btn-earnings-csv');
+  if (csvBtn2) { csvBtn2.disabled = false; csvBtn2.style.opacity = ''; csvBtn2.style.cursor = ''; csvBtn2.title = ''; }
   tbody.innerHTML = history.map(h => {
     const date = h.event_date ? _fmtDate(h.event_date) : (h.paid_at ? _fmtDate(h.paid_at) : '—');
     return `<tr>
@@ -7706,10 +7710,10 @@ function renderMenuGrid() {
   grid.innerHTML = _menuItems.map((item, idx) => {
     const price = formatMenuPrice(item);
     return `<div class="menu-item-card${item.is_signature?' is-signature':''}"
-      data-idx="${idx}"
+      data-idx="${idx}" onclick="editMenuItem(${idx})"
       ondragover="menuDragOver(event)"
       ondrop="menuDrop(event,${idx})" ondragend="menuDragEnd(event)">
-      <div class="menu-drag-handle" draggable="true" ondragstart="menuDragStart(event,${idx})" title="Drag to reorder">
+      <div class="menu-drag-handle" draggable="true" ondragstart="menuDragStart(event,${idx})" onclick="event.stopPropagation()" title="Drag to reorder">
         <svg width="12" height="18" viewBox="0 0 12 18" fill="currentColor"><circle cx="3" cy="3" r="1.5"/><circle cx="9" cy="3" r="1.5"/><circle cx="3" cy="9" r="1.5"/><circle cx="9" cy="9" r="1.5"/><circle cx="3" cy="15" r="1.5"/><circle cx="9" cy="15" r="1.5"/></svg>
       </div>
       ${item.photo_url
@@ -7720,7 +7724,7 @@ function renderMenuGrid() {
           <div class="menu-item-name">${esc(item.name)}</div>
           ${price ? `<div class="menu-item-price">${price}</div>` : ''}
         </div>
-        <div class="menu-item-desc">${esc(item.description||'')}</div>
+        ${item.description ? `<div class="menu-item-desc">${esc(item.description)}</div>` : ''}
         <div class="menu-item-tags">
           ${item.is_signature ? '<span class="menu-tag sig">⭐ Signature</span>' : ''}
           ${item.seasonal     ? '<span class="menu-tag seasonal">🌿 Seasonal</span>' : ''}
@@ -7729,8 +7733,8 @@ function renderMenuGrid() {
           ${(function(){ try { var t = typeof item.dietary_tags === 'string' ? JSON.parse(item.dietary_tags) : (item.dietary_tags || []); return t.map(function(d){ return '<span class="menu-tag diet">' + esc(d) + '</span>'; }).join(''); } catch(e){ return ''; } })()}
         </div>
         <div class="menu-item-actions">
-          <button class="menu-item-btn edit" onclick="editMenuItem(${idx})">Edit</button>
-          <button class="menu-item-btn del"  onclick="deleteMenuItem(${idx})">Delete</button>
+          <button class="menu-item-btn edit" onclick="event.stopPropagation();editMenuItem(${idx})">Edit</button>
+          <button class="menu-item-btn del" onclick="event.stopPropagation();deleteMenuItem(${idx})">Delete</button>
         </div>
       </div>
     </div>`;
