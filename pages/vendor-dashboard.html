@@ -840,8 +840,8 @@ body::before {
 
 /* ── SETTINGS ────────────────────────────────────────────────────────────── */
 .settings-tabs {
-  display: flex; gap: 4px; padding: 10px 0 18px; margin-bottom: 8px;
-  position: sticky; top: 0; z-index: 10; background: var(--coal);
+  display: flex; gap: 4px; padding: 10px 0 14px; margin-bottom: 8px;
+  position: sticky; top: 60px; z-index: 10; background: var(--coal);
   border-bottom: 1px solid #ffffff08;
 }
 .settings-tab {
@@ -8614,7 +8614,7 @@ function _applyAnalyticsData(data) {
       ].filter(s => s.count > 0);
       breakdownEl.style.display = 'block';
       breakdownEl.innerHTML = `
-        <div style="display:flex;border-radius:6px;height:10px;margin-bottom:10px;background:#ffffff08;gap:2px;padding:1px;">
+        <div style="display:flex;border-radius:6px;height:10px;margin-bottom:12px;background:#ffffff08;gap:2px;padding:1px;">
           ${segments.map(s => `<div style="flex:${s.count};background:${s.color};border-radius:3px;" title="${s.label}: ${s.count}"></div>`).join('')}
         </div>
         <div style="display:flex;gap:16px;flex-wrap:wrap;">
@@ -8631,7 +8631,7 @@ function _applyAnalyticsData(data) {
         respEl.style.fontSize = '12px'; respEl.style.color = 'var(--text-mid)'; respEl.style.opacity = '1'; respEl.style.textAlign = 'left';
       } else if (totalApps > 0) {
         respEl.textContent = 'Response time not yet available';
-        respEl.style.fontSize = '11px'; respEl.style.color = 'var(--text-lo)'; respEl.style.opacity = '0.5'; respEl.style.textAlign = 'center';
+        respEl.style.fontSize = '11px'; respEl.style.color = 'var(--text-lo)'; respEl.style.opacity = '0.6'; respEl.style.textAlign = 'center';
       } else {
         respEl.textContent = '';
       }
@@ -9478,7 +9478,10 @@ async function loadPendingVendorReviews() {
 function scrollToSettingsSection(key) {
   const el = document.getElementById('settings-anchor-' + key);
   if (!el) return;
-  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const tabBar = document.querySelector('.settings-tabs');
+  const offset = tabBar ? tabBar.offsetHeight + 12 : 0;
+  const top = el.getBoundingClientRect().top + window.scrollY - offset;
+  window.scrollTo({ top, behavior: 'smooth' });
 }
 (function initSettingsTabs() {
   const panel = document.getElementById('panel-settings');
@@ -9487,18 +9490,28 @@ function scrollToSettingsSection(key) {
   const anchors = sections.map(s => document.getElementById('settings-anchor-' + s)).filter(Boolean);
   const tabs = panel.querySelectorAll('.settings-tab');
   if (!anchors.length || !tabs.length) return;
-  const scrollContainer = panel.closest('.page-content') || panel.parentElement;
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        const id = entry.target.id.replace('settings-anchor-', '');
-        tabs.forEach(t => t.classList.remove('active'));
-        const idx = sections.indexOf(id);
-        if (idx >= 0 && tabs[idx]) tabs[idx].classList.add('active');
-      }
-    });
-  }, { root: scrollContainer, rootMargin: '-20% 0px -70% 0px', threshold: 0 });
-  anchors.forEach(a => observer.observe(a));
+  let _activeIdx = 0;
+  function updateActive() {
+    let current = 0;
+    for (let i = anchors.length - 1; i >= 0; i--) {
+      const rect = anchors[i].getBoundingClientRect();
+      if (rect.top <= 80) { current = i; break; }
+    }
+    if (current !== _activeIdx) {
+      tabs[_activeIdx]?.classList.remove('active');
+      tabs[current]?.classList.add('active');
+      _activeIdx = current;
+    }
+  }
+  window.addEventListener('scroll', updateActive, { passive: true });
+  // Run once on panel show
+  const origShow = window.showPanel;
+  if (origShow) {
+    window.showPanel = function(name) {
+      origShow.apply(this, arguments);
+      if (name === 'settings') requestAnimationFrame(updateActive);
+    };
+  }
 })();
 
 </script>
