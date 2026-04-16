@@ -405,22 +405,23 @@ body::before {
 }
 @keyframes urgencyPulse { 0%,100% { opacity:1; } 50% { opacity:0.7; } }
 .browse-applied-badge {
-  display: inline-flex; align-items: center; gap: 5px;
-  font-size: 11px; font-weight: 700;
-  padding: 6px 14px; border-radius: 8px; white-space: nowrap;
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.03em;
+  padding: 4px 10px; border-radius: 100px; white-space: nowrap;
+  border: none; pointer-events: none;
 }
-.browse-applied-badge.pending  { background: #C9840A1A; color: var(--gold); border: 1px solid #C9840A28; }
-.browse-applied-badge.approved { background: #2D8B551A; color: var(--herb); border: 1px solid #2D8B5528; }
-.browse-applied-badge.rejected { background: #C0392B14; color: #A0392B; border: 1px solid #C0392B1C; }
+.browse-applied-badge.pending  { background: #C9840A22; color: var(--gold); }
+.browse-applied-badge.approved { background: #2D8B5522; color: var(--herb); }
+.browse-applied-badge.rejected { background: #C0392B1A; color: #A0392B; }
 .browse-card.applied { opacity: 0.82; }
 .browse-card.applied:hover { opacity: 1; }
 .browse-card.past-event { opacity: 0.55; filter: grayscale(0.3); }
 .browse-card.past-event:hover { opacity: 0.85; filter: grayscale(0); }
 .browse-past-badge {
-  position: absolute; bottom: 10px; right: 12px; z-index: 1;
-  font-size: 10px; font-weight: 700; letter-spacing: 0.04em;
-  padding: 3px 9px; border-radius: 100px;
-  background: rgba(0,0,0,0.55); color: #A89880; border: 1px solid #ffffff12;
+  position: absolute; bottom: 0; left: 0; right: 0; z-index: 1;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.04em; text-align: center;
+  padding: 5px 0;
+  background: rgba(0,0,0,0.65); color: #A89880;
   backdrop-filter: blur(4px);
 }
 .browse-empty-state {
@@ -437,6 +438,17 @@ body::before {
   padding: 9px 18px; border-radius: 8px; cursor: pointer; transition: background 0.14s, transform 0.14s;
 }
 .btn-view-event:hover { background: var(--ember-glow); }
+.browse-load-more-wrap {
+  grid-column: 1 / -1; display: flex; justify-content: center; padding: 8px 0 4px;
+}
+.browse-load-more-btn {
+  font-family: var(--fb); font-size: 13px; font-weight: 700;
+  color: var(--text-mid); background: #ffffff06; border: 1px solid #ffffff12;
+  border-radius: 10px; padding: 10px 24px; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px;
+  transition: background 0.14s, color 0.14s, border-color 0.14s;
+}
+.browse-load-more-btn:hover { background: #ffffff0d; color: var(--text-hi); border-color: #ffffff20; }
 
 /* ── EVENT DETAIL PANEL ─────────────────────────────────────────────────── */
 .event-detail-back {
@@ -2197,6 +2209,7 @@ body::before {
       <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px;align-items:center;">
         <input id="browse-search" type="text" placeholder="Search events…" oninput="applyBrowseFilters()"
           style="font-family:var(--fb);font-size:13px;background:#ffffff08;border:1px solid #ffffff12;color:var(--text-hi);border-radius:10px;padding:9px 14px;min-width:180px;flex:1;outline:none;" />
+        <span style="width:1px;height:24px;background:#ffffff12;flex-shrink:0;margin:0 2px;"></span>
         <select id="browse-cat" onchange="applyBrowseFilters()"
           style="font-family:var(--fb);font-size:13px;background:#ffffff08;border:1px solid #ffffff12;color:var(--text-hi);border-radius:10px;padding:9px 14px;cursor:pointer;outline:none;">
           <option value="">All categories</option>
@@ -3172,7 +3185,7 @@ body::before {
         </div>
 
         <!-- ── PROFILE ──────────────────────────────────────────────────────── -->
-        <div style="height:1px;background:#ffffff08;margin:28px 0 0;"></div>
+        <div style="height:1px;background:#ffffff08;margin:32px 0 0;"></div>
         <div style="font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-lo);padding:16px 0 4px;" id="settings-anchor-profile">Profile</div>
 
         <!-- Profile visibility -->
@@ -3237,7 +3250,7 @@ body::before {
         </div>
 
         <!-- ── BILLING ──────────────────────────────────────────────────────── -->
-        <div style="height:1px;background:#ffffff08;margin:28px 0 0;"></div>
+        <div style="height:1px;background:#ffffff08;margin:32px 0 0;"></div>
         <div style="font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-lo);padding:16px 0 4px;" id="settings-anchor-billing">Billing</div>
 
         <!-- Subscription -->
@@ -3307,7 +3320,7 @@ body::before {
         </div>
 
         <!-- ── PREFERENCES ──────────────────────────────────────────────────── -->
-        <div style="height:1px;background:#ffffff08;margin:28px 0 0;"></div>
+        <div style="height:1px;background:#ffffff08;margin:32px 0 0;"></div>
         <div style="font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-lo);padding:16px 0 4px;" id="settings-anchor-preferences">Preferences</div>
 
         <!-- Notifications -->
@@ -3418,7 +3431,7 @@ body::before {
         </div>
 
         <!-- ── CONNECTIONS ──────────────────────────────────────────────────── -->
-        <div style="height:1px;background:#ffffff08;margin:28px 0 0;"></div>
+        <div style="height:1px;background:#ffffff08;margin:32px 0 0;"></div>
         <div style="font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-lo);padding:16px 0 4px;" id="settings-anchor-connections">Connections</div>
 
         <!-- Connected accounts -->
@@ -3656,6 +3669,9 @@ function showPanel(name, clickedEl, pushHistory = true) {
   }
 
   document.getElementById('topbar-title').textContent = PANEL_TITLES[name] || name;
+  // Hide topbar "View profile" on messages panel (has its own in convo-header)
+  const topbarProfile = document.getElementById('topbar-profile-link');
+  if (topbarProfile) topbarProfile.style.display = name === 'messages' ? 'none' : '';
 
   if (pushHistory && PANEL_PATHS[name]) {
     history.pushState({ panel: name }, '', PANEL_PATHS[name]);
@@ -3868,7 +3884,11 @@ function _openConvoPane(orgName, eventName) {
   nameEl.onclick = () => { const pl = document.getElementById('convo-header-profile-link'); if (pl && pl.href) window.open(pl.href, '_blank'); };
   document.getElementById('convo-event-line').textContent = eventName ? 'Re: ' + eventName : '';
   const avatarEl = document.getElementById('convo-header-avatar');
-  if (avatarEl) avatarEl.textContent = (orgName || 'O').charAt(0).toUpperCase();
+  if (avatarEl) {
+    const dotSpan = document.getElementById('convo-avatar-dot');
+    avatarEl.childNodes.forEach(n => { if (n.nodeType === 3) n.remove(); });
+    avatarEl.insertBefore(document.createTextNode((orgName || 'O').charAt(0).toUpperCase()), dotSpan);
+  }
   // Update profile link
   const t = _activeThread && _threadCache[_activeThread];
   const profileLink = document.getElementById('convo-header-profile-link');
@@ -3878,12 +3898,33 @@ function _openConvoPane(orgName, eventName) {
   } else if (profileLink) {
     profileLink.style.display = 'none';
   }
-  // Update last-seen status from thread cache
-  const statusEl = document.getElementById('convo-header-status');
-  if (statusEl && t) {
+  // Update last-seen status + online indicators
+  const statusTextEl = document.getElementById('convo-status-text');
+  const statusDotEl = document.getElementById('convo-status-dot');
+  const avatarDotEl = document.getElementById('convo-avatar-dot');
+  if (t) {
     const la = t.otherLastActive;
-    statusEl.textContent = la ? _fmtLastSeen(la) : 'Event Organiser';
+    const statusLabel = la ? _fmtLastSeen(la) : 'Event Organiser';
+    const isOnline = statusLabel === 'Online';
+    const isRecent = statusLabel.startsWith('Active') && !statusLabel.includes('d ago') && !statusLabel.includes('yesterday');
+    if (statusTextEl) { statusTextEl.textContent = statusLabel; statusTextEl.style.color = isOnline ? 'var(--herb)' : ''; }
+    if (statusDotEl) { statusDotEl.style.display = (isOnline || isRecent) ? 'inline-block' : 'none'; statusDotEl.className = 'convo-header-dot ' + (isOnline ? 'online' : 'away'); }
+    if (avatarDotEl) avatarDotEl.style.display = isOnline ? '' : 'none';
+  } else {
+    if (statusTextEl) { statusTextEl.textContent = 'Event Organiser'; statusTextEl.style.color = ''; }
+    if (statusDotEl) statusDotEl.style.display = 'none';
+    if (avatarDotEl) avatarDotEl.style.display = 'none';
   }
+  // Hide typing indicator when switching threads
+  const typingEl = document.getElementById('convo-typing');
+  if (typingEl) typingEl.classList.remove('visible');
+}
+// ── Close conversation (mobile back button) ─────────────────────────────
+function closeConvo() {
+  const layout = document.getElementById('messages-layout');
+  if (layout) layout.classList.remove('convo-open');
+  _activeThread = null;
+  document.querySelectorAll('.thread-item').forEach(t => t.classList.remove('active'));
 }
 function _fmtLastSeen(iso) {
   if (!iso) return 'Event Organiser';
@@ -5073,7 +5114,7 @@ const _categoryConfig = {
   'Twilight Market':  { icon:'🌅', grad:['#1A0D2E','#2D1A44'], accent:'#B07AE8', pillBg:'#2D1A44', pillText:'#B07AE8', pattern:'radial-gradient(circle at 70% 30%,#B07AE812 0%,transparent 50%),radial-gradient(circle at 20% 90%,#6B3FA018 0%,transparent 40%)' },
   'Food Festival':    { icon:'🍽️', grad:['#2A0D0D','#3D1A1A'], accent:'#E87A4A', pillBg:'#3D1A1A', pillText:'#E87A4A', pattern:'radial-gradient(circle at 60% 40%,#E87A4A10 0%,transparent 50%)' },
   'Community Event':  { icon:'🤝', grad:['#0A1F1F','#1A3D3D'], accent:'#4ACAE8', pillBg:'#1A3D3D', pillText:'#4ACAE8', pattern:'radial-gradient(circle at 50% 50%,#4ACAE80C 0%,transparent 60%)' },
-  'Corporate':        { icon:'💼', grad:['#0D1322','#1A2233'], accent:'#7B9BE8', pillBg:'#1A2233', pillText:'#7B9BE8', pattern:'repeating-linear-gradient(135deg,transparent,transparent 24px,#7B9BE806 24px,#7B9BE806 26px)' },
+  'Corporate':        { icon:'🏢', grad:['#0D1322','#1A2844'], accent:'#7B9BE8', pillBg:'#1A2233', pillText:'#7B9BE8', pattern:'radial-gradient(circle at 75% 25%,#7B9BE814 0%,transparent 45%),radial-gradient(circle at 25% 75%,#4A6EA818 0%,transparent 40%),repeating-linear-gradient(135deg,transparent,transparent 24px,#7B9BE806 24px,#7B9BE806 26px)' },
   'Pop-up':           { icon:'⚡', grad:['#2A1A08','#3D2A10'], accent:'#FF6B2B', pillBg:'#3D2A10', pillText:'#FF6B2B', pattern:'radial-gradient(circle at 80% 70%,#FF6B2B10 0%,transparent 40%)' },
 };
 const _defaultCatConfig = { icon:'🎪', grad:['#1A1208','#3D2C10'], accent:'#A89880', pillBg:'rgba(0,0,0,0.45)', pillText:'#fff', pattern:'none' };
@@ -5111,7 +5152,12 @@ function renderBrowseGrid(events) {
     return (a.date_sort || '').localeCompare(b.date_sort || '');
   });
 
-  grid.innerHTML = sorted.map(ev => {
+  // Pagination: show _browsePageSize at a time
+  const pageSize = _browsePageSize;
+  const visible = sorted.slice(0, pageSize);
+  const hasMore = sorted.length > pageSize;
+
+  grid.innerHTML = visible.map(ev => {
     const evEndDate = ev.date_end || ev.date_sort || '';
     const isPastEvent = evEndDate && evEndDate < todayISO;
     const dateStr = ev.date_sort ? _browseFmtDate(ev.date_sort) + (ev.date_end ? ' → ' + _browseFmtDate(ev.date_end) : '') : 'TBC';
@@ -5144,7 +5190,7 @@ function renderBrowseGrid(events) {
       const statusText = ev.appStatus==='approved'?'✓ Approved':ev.appStatus==='rejected'?'✕ Not accepted':'● Applied';
       statusBadge = `<span class="browse-applied-badge ${badgeClass}">${statusText}</span>`;
     } else if (isPastEvent) {
-      statusBadge = `<button class="btn-view-event" style="opacity:0.45;cursor:default;background:#2E2720;border:1px solid #ffffff10;color:var(--text-lo);" onclick="event.stopPropagation();openEventDetail(${ev.id})">Ended</button>`;
+      statusBadge = `<span class="browse-applied-badge" style="background:#2E272066;color:var(--text-lo);">Ended</span>`;
     } else if (atLimit) {
       statusBadge = `<button class="btn-view-event" style="opacity:0.45;cursor:not-allowed;background:#2E2720;border:1px solid #ffffff10;color:var(--text-lo);" onclick="event.stopPropagation();showLimitModal({used:${sub.apps_used},limit:${sub.apps_limit}})">Limit reached</button>`;
     } else {
@@ -5173,7 +5219,7 @@ function renderBrowseGrid(events) {
       <div class="browse-card-header" style="background-image:${cc.pattern},linear-gradient(135deg,${cc.grad[0]},${cc.grad[1]});position:relative;">
         ${ev.cover_image ? `<img src="${ev.cover_image}" alt="${ev.name}" onerror="this.remove()">` : ''}
         <div class="browse-card-header-overlay"></div>
-        ${!ev.cover_image ? `<span style="position:relative;z-index:1;font-size:72px;filter:drop-shadow(0 0 20px ${cc.accent}44);">${cc.icon}</span>` : ''}
+        ${!ev.cover_image ? `<span style="position:relative;z-index:1;font-size:64px;line-height:1;width:80px;height:80px;display:flex;align-items:center;justify-content:center;filter:drop-shadow(0 0 20px ${cc.accent}44);">${cc.icon}</span>` : ''}
         ${ev.category ? `<span class="browse-card-cat" style="background:${cc.pillBg};color:${cc.pillText};${catPillPos}">${ev.category}</span>` : ''}
         ${total > 0 ? `<span class="browse-card-spots-badge" style="background:${spotsBg};color:${spotsCol};border:1px solid ${spotsCol}33;">${spotsTxt}</span>` : ''}
         ${showEarlyAccess ? `<span class="early-access-badge">⚡ Early access</span>` : ''}
@@ -5200,6 +5246,21 @@ function renderBrowseGrid(events) {
       </div>
     </div>`;
   }).join('');
+
+  if (hasMore) {
+    grid.innerHTML += `<div class="browse-load-more-wrap">
+      <button class="browse-load-more-btn" onclick="browseLoadMore()">
+        Show more events (${sorted.length - pageSize} remaining)
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5.5L7 9.5L11 5.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>`;
+  }
+}
+
+let _browsePageSize = 9;
+function browseLoadMore() {
+  _browsePageSize += 9;
+  applyBrowseFilters();
 }
 
 function applyBrowseFilters() {
@@ -5235,6 +5296,7 @@ function clearBrowseFilters() {
   _browseDayPending.clear();
   document.querySelectorAll('.browse-day-opt').forEach(el => el.classList.remove('selected'));
   updateBrowseDayLabel();
+  _browsePageSize = 9;
   renderBrowseGrid(_eventsCache);
 }
 
