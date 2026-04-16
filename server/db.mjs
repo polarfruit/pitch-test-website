@@ -265,6 +265,7 @@ try {
       status         TEXT NOT NULL DEFAULT 'pending'
                      CHECK(status IN ('pending','approved','rejected','withdrawn')),
       message        TEXT,
+      attended       INTEGER,
       created_at     DATETIME DEFAULT (datetime('now')),
       UNIQUE(event_id, vendor_user_id)
     );
@@ -709,24 +710,8 @@ if (_client) {
   } catch(e) { console.error('[db] dietary_tags migration error:', e.message); }
 }
 
-// Force attended column on event_applications — for no-show tracking
-if (_client) {
-  try {
-    const cols = await _client.execute('PRAGMA table_info(event_applications)');
-    if (!cols.rows.some(r => r.name === 'attended')) {
-      await _client.execute('ALTER TABLE event_applications ADD COLUMN attended INTEGER');
-      console.log('[db] Added attended to event_applications');
-    }
-  } catch(e) { console.error('[db] attended migration error:', e.message); }
-} else {
-  try {
-    const cols = _localDb.pragma('table_info(event_applications)');
-    if (!cols.some(r => r.name === 'attended')) {
-      _localDb.exec('ALTER TABLE event_applications ADD COLUMN attended INTEGER');
-      console.log('[db] Added attended to event_applications');
-    }
-  } catch(e) { console.error('[db] attended migration error:', e.message); }
-}
+// Add attended column for no-show tracking
+await _safeExec(`ALTER TABLE event_applications ADD COLUMN attended INTEGER`);
 
 // ── Analytics tracking tables ────────────────────────────────────────────────
 await _safeExec(`CREATE TABLE IF NOT EXISTS vendor_profile_views (
