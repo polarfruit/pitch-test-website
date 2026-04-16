@@ -67,8 +67,8 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .btn-topbar { font-family:var(--fb); font-size:12px; font-weight:700; color:#fff; background:var(--ember);
   border:none; padding:8px 16px; border-radius:9px; cursor:pointer; transition:all 0.14s; text-decoration:none; }
 .btn-topbar:hover { background:var(--ember-glow); }
-.topbar-notif { width:36px; height:36px; border-radius:9px; background:#ffffff07; border:1px solid #ffffff0a;
-  display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:15px; position:relative;
+.topbar-notif { width:38px; height:38px; border-radius:9px; background:#ffffff0a; border:1px solid #ffffff0f;
+  display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:17px; position:relative;
   transition:background 0.14s; }
 .topbar-notif:hover { background:#ffffff10; }
 .topbar-notif.active { background:#E8500A12; border-color:#E8500A30; }
@@ -120,7 +120,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .stat-card.gold::before { background:var(--gold); }
 .stat-card.slate::before { background:var(--slate); }
 .stat-card.zero-state .stat-value { opacity:0.4; }
-.stat-card.zero-state .stat-delta { color:var(--ember); font-weight:600; }
+.stat-card.zero-state .stat-delta { color:var(--text-mid); font-weight:600; }
 .stat-label { font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-lo); margin-bottom:8px; }
 .stat-value { font-family:var(--fd); font-size:36px; font-weight:900; letter-spacing:-0.03em; line-height:1; margin-bottom:6px; }
 .stat-card.ember .stat-value { color:var(--ember); }
@@ -815,7 +815,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
     <div class="nav-section-label">Account</div>
     <button class="nav-link" onclick="showPanel('messages',this)"><span class="nav-icon">✉️</span>Messages<span class="nav-badge" id="org-msg-badge" style="display:none;">0</span></button>
     <button class="nav-link" onclick="showPanel('settings',this)"><span class="nav-icon">⚙️</span>Settings</button>
-    <a href="/events" class="nav-link" style="margin-top:auto;"><span class="nav-icon">↗</span>View public events</a>
+    <a href="/events" class="nav-link" style="margin-top:auto;"><span class="nav-icon">👁</span>View public events</a>
   </nav>
   <div class="sidebar-footer">
     <button class="sidebar-footer-link logout" id="logout-btn" onclick="pitchLogout()">🚪 Log out</button>
@@ -905,7 +905,14 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
             </tr>
           </thead>
           <tbody id="org-events-tbody">
-            <tr id="org-events-empty-row"><td colspan="7" style="text-align:center;padding:40px;color:var(--text-lo);font-size:13px;">No events yet — post your first event above.</td></tr>
+            <tr id="org-events-empty-row"><td colspan="7" style="text-align:center;padding:64px 24px;">
+              <div style="max-width:320px;margin:0 auto;">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-lo)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.5;margin-bottom:16px;"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                <div style="font-size:15px;font-weight:600;color:var(--text-hi);margin-bottom:6px;">No events yet</div>
+                <div style="font-size:13px;color:var(--text-lo);line-height:1.5;margin-bottom:20px;">Post your first event to start attracting vendors and filling stalls.</div>
+                <button onclick="showPanel('new-event',null)" style="display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:8px;border:none;background:var(--ember);color:#fff;font-size:13px;font-weight:600;font-family:var(--fb);cursor:pointer;transition:background 0.15s;">+ Post an Event</button>
+              </div>
+            </td></tr>
           </tbody>
         </table>
       </div>
@@ -2587,7 +2594,7 @@ function renderOrgOverview(d) {
   }
   const fillEl = document.getElementById('stat-fill-rate');
   if (fillEl) {
-    fillEl.textContent = d.fill_rate > 0 ? Math.round(d.fill_rate) + '%' : '—';
+    fillEl.innerHTML = d.fill_rate > 0 ? Math.round(d.fill_rate) + '<span style="font-size:60%;opacity:0.8;">%</span>' : '—';
     const card = fillEl.closest('.stat-card');
     if (card) card.classList.toggle('zero-state', !d.fill_rate || d.fill_rate === 0);
   }
@@ -2702,7 +2709,14 @@ function renderOrgEventsData(events) {
   if (!tbody) return;
 
   if (!events.length) {
-    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--text-lo);">No events yet. <button onclick="showPanel('new-event',null)" style="background:none;border:none;color:var(--ember);cursor:pointer;font-family:inherit;font-size:inherit;">Post your first event →</button></td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:64px 24px;">
+      <div style="max-width:320px;margin:0 auto;">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-lo)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.5;margin-bottom:16px;"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <div style="font-size:15px;font-weight:600;color:var(--text-hi);margin-bottom:6px;">No events yet</div>
+        <div style="font-size:13px;color:var(--text-lo);line-height:1.5;margin-bottom:20px;">Post your first event to start attracting vendors and filling stalls.</div>
+        <button onclick="showPanel('new-event',null)" style="display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:8px;border:none;background:var(--ember);color:#fff;font-size:13px;font-weight:600;font-family:var(--fb);cursor:pointer;transition:background 0.15s;">+ Post an Event</button>
+      </div>
+    </td></tr>`;
     return;
   }
 
@@ -2710,7 +2724,7 @@ function renderOrgEventsData(events) {
     const date = ev.date_sort ? new Date(ev.date_sort).toLocaleDateString('en-AU', {day:'numeric',month:'short',year:'numeric'}) : 'TBC';
     const isPast = ev.date_sort && new Date(ev.date_sort) < new Date();
     const statusBadge = ev.status === 'archived'
-      ? `<span class="badge" style="color:var(--gold);background:#C9840A12;border:1px solid #C9840A30;">● Archived</span>`
+      ? `<span class="badge badge-past">● Archived</span>`
       : isPast
         ? `<span class="badge badge-past">● Past</span>`
         : `<span class="badge badge-live">● Live</span>`;
@@ -2728,7 +2742,7 @@ function renderOrgEventsData(events) {
         <td style="padding-left:24px;"><div class="td-event">${ev.name}</div><div class="td-sub" style="color:var(--text-mid);opacity:0.7;">${ev.category || ''} · ${ev.suburb || ''}${ev.state ? ', ' + ev.state : ''}</div></td>
         <td style="white-space:nowrap;">${date}</td>
         <td><span class="spots-text" id="spots-text-${ev.id}">${spotsText}</span></td>
-        <td><span style="color:${fillColor};font-weight:600;">${fillRate}</span></td>
+        <td><div class="fill-bar-wrap"><div class="fill-bar-track"><div class="fill-bar-fill" style="width:${fillRate === '—' ? '0%' : fillRate};background:${fillColor};"></div></div><span class="fill-bar-label" style="color:${fillColor};">${fillRate}</span></div></td>
         <td>${statusBadge}</td>
         <td>${approvedCount}</td>
         <td style="padding-right:24px;"><div class="action-btns"><button class="btn-action btn-manage" onclick="openEventMgmt(${ev.id},'${ev.name.replace(/'/g,"\\'")}')">Manage</button></div></td>
