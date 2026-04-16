@@ -698,7 +698,7 @@ body::before {
 .upload-hint { font-size: 11px; color: var(--text-lo); }
 .photo-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 14px; }
 .photo-thumb {
-  aspect-ratio: 1/1; border-radius: 10px; overflow: hidden;
+  width: 100%; max-width: 140px; aspect-ratio: 1/1; border-radius: 10px; overflow: hidden;
   background: #1A1612; display: flex; align-items: center; justify-content: center;
   font-size: 24px; position: relative;
 }
@@ -1640,7 +1640,7 @@ body::before {
 /* ── MARKET HISTORY ───────────────────────────────────────────────────────── */
 .stat-card.no-blob::before { display:none; }
 .stat-card.no-blob { border:1px solid #6B5A4A30; }
-.stat-card .stat-value.muted { color:var(--text-mid) !important; font-size:28px; }
+.stat-card .stat-value.muted { color:var(--text-lo) !important; font-size:28px; opacity:0.7; }
 #panel-history .stat-grid { margin-bottom:16px; }
 #panel-history .section-sub { font-size:13px; color:var(--text-mid); line-height:1.5; }
 .history-filters {
@@ -7361,18 +7361,22 @@ function renderHistoryList() {
 
     // Detail row
     const details = [];
-    if (h.organiser_name) details.push(`<span class="history-detail"><span class="history-detail-label">Organiser:</span> ${h.organiser_name}</span>`);
+    if (h.organiser_name) details.push(`<span class="history-detail"><span class="history-detail-label">Organiser:</span> ${h.organiser_user_id ? `<a href="/organisers/${h.organiser_user_id}" style="color:var(--text-mid);text-decoration:none;transition:color 0.12s;" onmouseover="this.style.color='var(--ember)'" onmouseout="this.style.color='var(--text-mid)'">${h.organiser_name}</a>` : h.organiser_name}</span>`);
     const fee = h.stall_fee_min && h.stall_fee_max && h.stall_fee_min !== h.stall_fee_max
       ? `$${h.stall_fee_min}–$${h.stall_fee_max}`
       : h.stall_fee_min ? `$${h.stall_fee_min}` : h.stall_fee_max ? `$${h.stall_fee_max}` : null;
-    if (fee) details.push(`<span class="history-detail"><span class="history-detail-label">Fee:</span> ${fee}</span>`);
-    if (reviewSummary) details.push(reviewSummary);
+    details.push(`<span class="history-detail"><span class="history-detail-label">Fee:</span> ${fee || 'N/A'}</span>`);
+    if (reviewSummary) {
+      details.push(reviewSummary);
+    } else if (isPast) {
+      details.push(`<a href="#" onclick="event.preventDefault();showPanel('reviews',null)" style="font-size:12px;font-weight:600;color:var(--ember);text-decoration:none;transition:opacity 0.12s;" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">Leave a review →</a>`);
+    }
     const detailsHtml = details.length ? `<div class="history-detail-row">${details.join('')}</div>` : '';
 
     return `<div class="history-card">
       <div class="history-header">
         <div>
-          <div class="history-name">${h.event_name}</div>
+          <a href="/events/${h.event_slug||h.event_id}" class="history-name" style="text-decoration:none;transition:color 0.14s;" onmouseover="this.style.color='var(--ember)'" onmouseout="this.style.color='var(--text-hi)'">${h.event_name}</a>
           <div class="history-meta">${catPill}${h.date_sort ? _fmtDate(h.date_sort) : '—'} · ${[h.suburb, h.state].filter(Boolean).join(', ') || '—'}${daysLabel}</div>
         </div>
         <span class="status-badge ${isPast ? 'badge-approved' : 'badge-review'}" style="flex-shrink:0;">${isPast ? 'Attended' : 'Upcoming'}</span>
@@ -7384,7 +7388,7 @@ function renderHistoryList() {
 
   // Subtle hint when few events
   if (filtered.length > 0 && filtered.length <= 3) {
-    list.innerHTML += `<div style="text-align:center;padding:28px 20px 12px;font-size:12px;color:var(--text-lo);line-height:1.6;">Your event history will grow as you attend more markets through Pitch.</div>`;
+    list.innerHTML += `<div style="text-align:center;padding:28px 20px 12px;font-size:12px;color:var(--text-mid);line-height:1.6;">Your event history will grow as you attend more markets through Pitch.</div>`;
   }
 }
 
