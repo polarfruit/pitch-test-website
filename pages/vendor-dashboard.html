@@ -2796,9 +2796,9 @@ body::before {
               <div class="pay-method-title" id="pay-method-title">Secure card payment via Stripe</div>
               <div class="pay-method-desc" id="pay-method-desc">Card details are collected securely when you pay a stall fee. Your card is never stored on our servers.</div>
             </div>
-            <div style="display:flex;align-items:center;gap:6px;opacity:0.5;">
+            <div style="display:flex;align-items:center;gap:6px;opacity:0.7;">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1L2 4v4c0 3.5 2.6 6.4 6 7 3.4-.6 6-3.5 6-7V4L8 1z" stroke="#2D8B55" stroke-width="1.3"/><path d="M5.5 8l2 2 3.5-4" stroke="#2D8B55" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              <span style="font-size:11px;color:var(--text-lo);font-weight:600;">Stripe secured</span>
+              <span style="font-size:11px;color:var(--herb);font-weight:600;">Stripe secured</span>
             </div>
           </div>
         </div>
@@ -2847,7 +2847,7 @@ body::before {
         </div>
 
         <!-- How payments work info -->
-        <div id="pay-info-card" style="margin-top:28px;padding:18px 22px;background:#ffffff04;border:1px solid #ffffff08;border-radius:12px;display:none;">
+        <div id="pay-info-card" style="margin-top:28px;padding:20px 24px;background:var(--char);border:1px solid #ffffff0a;border-radius:14px;display:none;">
           <div style="font-size:12px;font-weight:700;color:var(--text-lo);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px;">How it works</div>
           <div style="font-size:13px;color:var(--text-mid);line-height:1.7;">
             When you're approved for an event, the organiser may set a stall fee. Fees appear in <strong style="color:var(--text-hi);">Outstanding Stall Fees</strong> above. Payment terms are set by each organiser — some collect online, others at the event. Once paid, your receipt appears in <strong style="color:var(--text-hi);">Payment History</strong>.
@@ -6662,23 +6662,23 @@ async function loadStallFees() {
     const uniqueEvents = new Set(fees.map(f => f.event_id || f.event_name)).size;
 
     const _el = id => document.getElementById(id);
-    if (_el('pay-total-paid')) { _el('pay-total-paid').textContent = '$' + totalPaid.toFixed(2); }
-    if (_el('pay-total-paid-sub')) { _el('pay-total-paid-sub').textContent = paidFees.length + ' payment' + (paidFees.length !== 1 ? 's' : ''); }
-    if (_el('pay-outstanding-val')) { _el('pay-outstanding-val').textContent = '$' + totalOutstanding.toFixed(2); }
+    if (_el('pay-total-paid')) { _el('pay-total-paid').textContent = '$' + totalPaid.toFixed(2); _el('pay-total-paid').style.color = totalPaid > 0 ? 'var(--text-hi)' : 'var(--text-lo)'; }
+    if (_el('pay-total-paid-sub')) { _el('pay-total-paid-sub').textContent = paidFees.length ? paidFees.length + ' payment' + (paidFees.length !== 1 ? 's' : '') : 'No payments yet'; }
+    if (_el('pay-outstanding-val')) { _el('pay-outstanding-val').textContent = '$' + totalOutstanding.toFixed(2); _el('pay-outstanding-val').style.color = totalOutstanding > 0 ? '' : 'var(--text-lo)'; }
     const outStat = _el('pay-outstanding-stat');
     if (outStat) {
       outStat.classList.remove('alert', 'warn', 'ok');
       if (totalOutstanding > 0) {
         const hasOverdue = outstandingFees.some(f => f.due_date && new Date(f.due_date) < new Date());
         outStat.classList.add(hasOverdue ? 'alert' : 'warn');
-      } else { outStat.classList.add('ok'); }
+      }
     }
     if (_el('pay-outstanding-sub')) { _el('pay-outstanding-sub').textContent = outstandingFees.length ? outstandingFees.length + ' fee' + (outstandingFees.length !== 1 ? 's' : '') + ' due' : 'No fees due'; }
     const nextDue = outstandingFees.filter(f => f.due_date).sort((a,b) => new Date(a.due_date) - new Date(b.due_date))[0];
-    if (_el('pay-next-due')) { _el('pay-next-due').textContent = nextDue ? _fmtDate(nextDue.due_date) : '\u2014'; _el('pay-next-due').style.fontSize = nextDue ? '18px' : '26px'; }
+    if (_el('pay-next-due')) { _el('pay-next-due').textContent = nextDue ? _fmtDate(nextDue.due_date) : 'None'; _el('pay-next-due').style.fontSize = nextDue ? '18px' : '20px'; _el('pay-next-due').style.color = nextDue ? 'var(--text-hi)' : 'var(--text-lo)'; }
     if (_el('pay-next-due-sub')) { _el('pay-next-due-sub').textContent = nextDue ? nextDue.event_name : 'No upcoming fees'; }
-    if (_el('pay-event-count')) { _el('pay-event-count').textContent = uniqueEvents; }
-    if (_el('pay-event-count-sub')) { _el('pay-event-count-sub').textContent = 'Lifetime'; }
+    if (_el('pay-event-count')) { _el('pay-event-count').textContent = uniqueEvents; _el('pay-event-count').style.color = uniqueEvents > 0 ? 'var(--text-hi)' : 'var(--text-lo)'; }
+    if (_el('pay-event-count-sub')) { _el('pay-event-count-sub').textContent = uniqueEvents > 0 ? uniqueEvents + ' event' + (uniqueEvents !== 1 ? 's' : '') : 'All time'; }
 
     const outstanding = fees.filter(f => f.status === 'unpaid');
     const history = fees.filter(f => f.status !== 'unpaid');
@@ -6687,8 +6687,8 @@ async function loadStallFees() {
     if (!outstanding.length) {
       outEl.innerHTML = `<div class="card" style="text-align:center;padding:40px 24px;">
         <svg width="36" height="36" viewBox="0 0 24 24" fill="none" style="margin:0 auto 12px;display:block;opacity:.35;">
-          <rect x="4" y="2" width="16" height="20" rx="2" stroke="#6B5A4A" stroke-width="1.5"/>
-          <path d="M9 7h6M9 11h6M9 15h3" stroke="#6B5A4A" stroke-width="1.4" stroke-linecap="round"/>
+          <circle cx="12" cy="12" r="9" stroke="#6B5A4A" stroke-width="1.5"/>
+          <path d="M8 12l3 3 5-6" stroke="#6B5A4A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
         <div style="color:var(--text-mid);font-size:13px;font-weight:600;margin-bottom:4px;">No outstanding fees</div>
         <div style="color:var(--text-lo);font-size:12px;">Fees will appear here once you're approved for an upcoming market.</div>
@@ -6715,8 +6715,8 @@ async function loadStallFees() {
       if (exportBtns) exportBtns.style.display = 'none';
       histEl.innerHTML = `<div style="text-align:center;padding:40px 24px;">
         <svg width="36" height="36" viewBox="0 0 24 24" fill="none" style="margin:0 auto 12px;display:block;opacity:.35;">
-          <rect x="4" y="3" width="16" height="18" rx="2" stroke="#6B5A4A" stroke-width="1.5"/>
-          <path d="M9 8h6M9 12h6M9 16h3" stroke="#6B5A4A" stroke-width="1.4" stroke-linecap="round"/>
+          <path d="M4 4a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v16l-3-2-3 2-3-2-3 2-3-2V4z" stroke="#6B5A4A" stroke-width="1.5"/>
+          <path d="M9 8h6M9 12h6" stroke="#6B5A4A" stroke-width="1.4" stroke-linecap="round"/>
         </svg>
         <div style="color:var(--text-mid);font-size:13px;font-weight:600;margin-bottom:4px;">No payment history</div>
         <div style="color:var(--text-lo);font-size:12px;">Completed payments and receipts will show here.</div>
