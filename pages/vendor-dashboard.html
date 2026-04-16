@@ -3764,7 +3764,16 @@ window.addEventListener('unhandledrejection', ev => {
   const path = window.location.pathname.replace(/\/$/, '');
   const match = Object.entries(PANEL_PATHS).find(([, p]) => p === path);
   const panelName = match ? match[0] : 'overview';
+  // Show the panel immediately for visual routing, but defer data loading
+  // to next frame to ensure DOM is fully painted
   showPanel(panelName, null, false);
+  if (panelName === 'calendar') {
+    requestAnimationFrame(() => {
+      const now = new Date();
+      if (_calYear === undefined) { _calYear = now.getFullYear(); _calMonth = now.getMonth(); }
+      renderCalendar();
+    });
+  }
 })();
 
 // Handle browser back/forward
@@ -7153,7 +7162,8 @@ function calNav(delta) {
 
 function renderCalendar() {
   const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  document.getElementById('cal-month-label').textContent = `${months[_calMonth]} ${_calYear}`;
+  const labelEl = document.getElementById('cal-month-label');
+  if (labelEl) labelEl.textContent = `${months[_calMonth]} ${_calYear}`;
 
   // Build a map: date string → array of {name, status}
   const dayMap = {};
@@ -7185,6 +7195,7 @@ function renderCalendar() {
   if (startOffset < 0) startOffset = 6;
 
   const grid = document.getElementById('cal-grid');
+  if (!grid) return; // DOM not ready yet — will retry after fetch
   // Keep day labels (first 7 children), replace rest
   const labels = Array.from(grid.children).slice(0, 7);
   grid.innerHTML = '';
