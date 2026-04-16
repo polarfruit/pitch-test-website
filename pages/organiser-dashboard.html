@@ -376,7 +376,13 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .review-field-label { font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-lo); width:180px; flex-shrink:0; padding-top:2px; }
 .review-field-value { font-size:13px; color:var(--text-hi); flex:1; line-height:1.6; }
 .review-field-value.not-set { color:#4A3C30; font-style:italic; }
+.review-field-value.not-set.critical { color:var(--gold); font-style:italic; }
+.review-field-label.critical-label { color:var(--gold); }
 .review-field-value.long-text { font-size:13px; line-height:1.6; color:var(--text-hi); }
+.review-field-value.long-text-box { font-size:13px; line-height:1.6; color:var(--text-hi); background:#ffffff04; border:1px solid #ffffff0a; border-radius:8px; padding:10px 14px; white-space:pre-wrap; }
+.review-warn-banner { display:flex; align-items:center; gap:10px; padding:12px 16px; background:#C9840A0c; border:1px solid #C9840A25; border-radius:10px; margin-bottom:18px; font-size:12.5px; color:var(--gold); line-height:1.5; }
+.review-warn-banner svg { flex-shrink:0; }
+.review-publish-warn { font-size:11.5px; color:var(--gold); margin-top:6px; display:flex; align-items:center; gap:5px; }
 
 /* ── MESSAGES ── */
 .messages-layout { display:grid; grid-template-columns:280px 1fr; gap:0; height:calc(100vh - 60px - 64px); }
@@ -1228,6 +1234,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
       <div class="step-panel" id="step-5">
         <div class="card">
           <div style="font-size:13px;color:var(--text-mid);margin-bottom:16px;">Review your event listing before publishing. You can edit any section below.</div>
+          <div id="review-warn-banner" style="display:none;"></div>
 
           <div class="review-section">
             <div class="review-section-head"><span class="review-section-title">Basics</span><button class="review-section-edit" onclick="goStep(1)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg> Edit</button></div>
@@ -1258,11 +1265,17 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 
           <div class="review-section">
             <div class="review-section-head"><span class="review-section-title">Terms</span><button class="review-section-edit" onclick="goStep(4)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg> Edit</button></div>
-            <div class="review-field"><div class="review-field-label">Cancellation</div><div class="review-field-value long-text" id="rv-cancel-policy" style="white-space:pre-wrap;">—</div></div>
+            <div class="review-field"><div class="review-field-label">Cancellation</div><div class="review-field-value" id="rv-cancel-policy">—</div></div>
             <div class="review-field"><div class="review-field-label">Payment terms</div><div class="review-field-value" id="rv-payment">—</div></div>
           </div>
         </div>
-        <div class="step-nav"><button class="btn-step-back" onclick="goStep(4)">← Back</button><button class="btn-step-next btn-publish" onclick="publishEvent()">Publish event</button></div>
+        <div class="step-nav">
+          <button class="btn-step-back" onclick="goStep(4)">← Back</button>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;">
+            <button class="btn-step-next btn-publish" onclick="publishEvent()">Publish event</button>
+            <div id="review-publish-warn" class="review-publish-warn" style="display:none;"></div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -2266,11 +2279,33 @@ async function deleteEventConfirm(evId, evName) {
 
 function populateReview() {
   var v = function(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; };
-  function setRv(id, val) {
+  // Critical fields that should warn the organiser if empty
+  var criticalIds = ['rv-category', 'rv-description', 'rv-fee'];
+  var missingCritical = [];
+
+  function setRv(id, val, opts) {
     var el = document.getElementById(id);
     if (!el) return;
-    if (val && val !== '—') { el.textContent = val; el.classList.remove('not-set'); }
-    else { el.textContent = 'Not set'; el.classList.add('not-set'); }
+    var isCritical = criticalIds.includes(id);
+    var labelEl = el.closest('.review-field')?.querySelector('.review-field-label');
+    if (val && val !== '—') {
+      el.textContent = val;
+      el.classList.remove('not-set', 'critical');
+      if (labelEl) labelEl.classList.remove('critical-label');
+      // Apply bordered box for long text (cancellation policy)
+      if (opts?.longText) { el.className = 'review-field-value long-text-box'; }
+    } else {
+      el.textContent = 'Not set';
+      el.classList.add('not-set');
+      if (isCritical) {
+        el.classList.add('critical');
+        if (labelEl) labelEl.classList.add('critical-label');
+        missingCritical.push(labelEl ? labelEl.textContent : id);
+      } else {
+        el.classList.remove('critical');
+        if (labelEl) labelEl.classList.remove('critical-label');
+      }
+    }
   }
 
   // Step 1 — Basics
@@ -2304,7 +2339,7 @@ function populateReview() {
   var cuisineEl = document.getElementById('rv-cuisines');
   if (cuisines.length > 0) {
     cuisineEl.innerHTML = cuisines.map(function(c) { return '<span class="app-tag">' + c + '</span>'; }).join(' ');
-    cuisineEl.classList.remove('not-set');
+    cuisineEl.classList.remove('not-set', 'critical');
   } else {
     cuisineEl.textContent = 'Not set';
     cuisineEl.classList.add('not-set');
@@ -2316,8 +2351,23 @@ function populateReview() {
   setRv('rv-looking-for', v('ne-looking-for'));
 
   // Step 4 — Terms
-  setRv('rv-cancel-policy', v('ne-cancel-policy'));
+  setRv('rv-cancel-policy', v('ne-cancel-policy'), { longText: true });
   setRv('rv-payment', v('ne-payment-terms'));
+
+  // Warning banner for missing critical fields
+  var bannerEl = document.getElementById('review-warn-banner');
+  var publishWarnEl = document.getElementById('review-publish-warn');
+  if (missingCritical.length > 0) {
+    var fieldList = missingCritical.map(function(f) { return '<strong>' + f + '</strong>'; }).join(', ');
+    bannerEl.className = 'review-warn-banner';
+    bannerEl.style.display = '';
+    bannerEl.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M8 4.5v4M8 10.5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><span>Recommended before publishing: ' + fieldList + '. Vendors are less likely to apply without these details.</span>';
+    publishWarnEl.style.display = '';
+    publishWarnEl.innerHTML = '<svg width="12" height="12" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M8 4.5v4M8 10.5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg> ' + missingCritical.length + ' recommended field' + (missingCritical.length > 1 ? 's' : '') + ' missing';
+  } else {
+    bannerEl.style.display = 'none';
+    publishWarnEl.style.display = 'none';
+  }
 }
 
 function goStep(n) {
