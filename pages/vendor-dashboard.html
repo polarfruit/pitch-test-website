@@ -392,7 +392,8 @@ body::before {
 .browse-card-fill-row { display: flex; justify-content: space-between; font-size: 11px; color: #6B5A4A; margin-top: 6px; }
 .browse-card-bar-bg { height: 4px; background: #EDE3CC; border-radius: 2px; margin-top: 4px; }
 .browse-card-bar { height: 4px; border-radius: 2px; transition: width 0.3s; }
-.browse-card-footer { padding: 11px 16px; border-top: 1px solid #EDE3CC; display: flex; align-items: center; justify-content: space-between; background: var(--parchment); }
+.browse-card-footer { padding: 11px 16px; border-top: 1px solid #EDE3CC; display: flex; align-items: center; justify-content: space-between; background: var(--parchment); min-height: 44px; }
+.browse-card-footer:empty { display: none; }
 .browse-card-fee { font-size: 11px; color: #5A4A3A; }
 .browse-card-fee strong { color: #1A1612; }
 .browse-card-dl { font-size: 11px; color: #8B7A6A; }
@@ -844,6 +845,7 @@ body::before {
   display: flex; gap: 4px; padding: 10px 0 14px; margin-bottom: 8px;
   position: sticky; top: 60px; z-index: 10; background: var(--coal);
   border-bottom: 1px solid #ffffff08;
+  box-shadow: 0 6px 16px rgba(26,22,18,0.7);
 }
 .settings-tab {
   font-family: var(--fb); font-size: 11px; font-weight: 600;
@@ -1694,7 +1696,15 @@ body::before {
   padding:10px 22px; border-radius:10px; cursor:pointer; transition:all 0.14s;
 }
 .settings-save-btn:hover { background:var(--ember-glow); }
-.settings-save-msg { font-size:12px; color:var(--herb); margin-left:10px; display:none; }
+.settings-save-msg {
+  font-size:12px; font-weight:600; color:var(--herb); margin-left:10px; display:none;
+  background:#2D8B5514; padding:4px 12px; border-radius:6px; border:1px solid #2D8B5525;
+  animation: saveFadeIn 0.2s ease-out;
+}
+@keyframes saveFadeIn {
+  from { opacity:0; transform:translateY(-4px); }
+  to   { opacity:1; transform:translateY(0); }
+}
 .pause-card { background:var(--char); border:1px solid #ffffff08; border-radius:14px; padding:20px 22px; }
 .pause-title { font-size:14px; font-weight:700; color:var(--text-hi); margin-bottom:6px; }
 .pause-desc { font-size:12px; color:var(--text-lo); margin-bottom:16px; line-height:1.6; }
@@ -3451,14 +3461,14 @@ body::before {
                 <div class="settings-row-label">Google</div>
                 <div class="settings-row-desc" id="google-link-status">Checking…</div>
               </div>
-              <button id="google-link-badge" style="font-family:var(--fb);font-size:11px;font-weight:700;padding:6px 16px;border-radius:100px;border:1px solid transparent;cursor:pointer;transition:background 0.15s,border-color 0.15s;background:none;"></button>
+              <button id="google-link-badge" style="font-family:var(--fb);font-size:11px;font-weight:700;padding:6px 16px;border-radius:100px;border:1px solid transparent;cursor:pointer;transition:background 0.15s,border-color 0.15s;background:none;min-width:100px;text-align:center;"></button>
             </div>
             <div class="settings-row">
               <div class="settings-row-left">
                 <div class="settings-row-label">Email &amp; password</div>
                 <div class="settings-row-desc" id="email-login-status">—</div>
               </div>
-              <button id="email-login-badge" style="font-family:var(--fb);font-size:11px;font-weight:700;padding:6px 16px;border-radius:100px;border:1px solid transparent;cursor:pointer;transition:background 0.15s,border-color 0.15s;background:none;"></button>
+              <button id="email-login-badge" style="font-family:var(--fb);font-size:11px;font-weight:700;padding:6px 16px;border-radius:100px;border:1px solid transparent;cursor:pointer;transition:background 0.15s,border-color 0.15s;background:none;min-width:100px;text-align:center;"></button>
             </div>
           </div>
         </div>
@@ -4517,7 +4527,7 @@ function initDirtyTracking() {
 
 /* ── Delete modal ─────────────────────────────────────────────────────────── */
 // ── Subscription management modal ─────────────────────────────────────────
-let _currentSubPlan = 'free';
+var _currentSubPlan = 'free';
 
 function openSubModal(preselect) {
   const profile = window.__PITCH_PROFILE__ || window.__PITCH_USER__?.vendor;
@@ -5219,18 +5229,20 @@ function renderBrowseGrid(events) {
         ? '<span class="browse-card-urgency" style="background:rgba(201,132,10,0.18);color:#C9840A;border-color:#C9840A33;">⚡ Filling fast</span>'
         : '';
 
-    let statusBadge;
+    // Separate: inline status tag (goes in body) vs footer CTA (goes in footer)
+    let bodyStatusHtml = '';
+    let footerCta = '';
     const isWithdrawn = ev.applied && ev.appStatus === 'withdrawn';
     if (ev.applied && !isWithdrawn) {
       const badgeClass = ev.appStatus==='approved'?'approved':ev.appStatus==='rejected'?'rejected':'pending';
       const statusText = ev.appStatus==='approved'?'✓ Approved':ev.appStatus==='rejected'?'✕ Not accepted':'● Applied';
-      statusBadge = `<span class="browse-applied-badge ${badgeClass}">${statusText}</span>`;
+      bodyStatusHtml = `<span class="browse-applied-badge ${badgeClass}">${statusText}</span>`;
     } else if (isPastEvent) {
-      statusBadge = `<span class="browse-applied-badge" style="background:#2E272066;color:var(--text-lo);">Ended</span>`;
+      bodyStatusHtml = `<span class="browse-applied-badge" style="background:#2E272066;color:#8B7A6A;">Ended</span>`;
     } else if (atLimit) {
-      statusBadge = `<button class="btn-view-event" style="opacity:0.45;cursor:not-allowed;background:#2E2720;border:1px solid #ffffff10;color:var(--text-lo);" onclick="event.stopPropagation();showLimitModal({used:${sub.apps_used},limit:${sub.apps_limit}})">Limit reached</button>`;
+      footerCta = `<button class="btn-view-event" style="opacity:0.45;cursor:not-allowed;background:#2E2720;border:1px solid #ffffff10;color:var(--text-lo);" onclick="event.stopPropagation();showLimitModal({used:${sub.apps_used},limit:${sub.apps_limit}})">Limit reached</button>`;
     } else {
-      statusBadge = `<button class="btn-view-event" onclick="event.stopPropagation();openEventDetail(${ev.id})">View & Apply →</button>`;
+      footerCta = `<button class="btn-view-event" onclick="event.stopPropagation();openEventDetail(${ev.id})">View & Apply →</button>`;
     }
 
     // Late window indicator for Pro/Growth
@@ -5275,10 +5287,11 @@ function renderBrowseGrid(events) {
         </div>
         <div class="browse-card-bar-bg"><div class="browse-card-bar" style="width:${pct}%;background:${fc};"></div></div>` : ''}
         ${lateWindowHtml ? `<div style="margin-top:8px;">${lateWindowHtml}</div>` : ''}
+        ${bodyStatusHtml ? `<div style="margin-top:8px;">${bodyStatusHtml}</div>` : ''}
       </div>
       <div class="browse-card-footer">
         <div style="display:flex;flex-direction:column;gap:2px;">${feeHtml}${dlHtml}</div>
-        ${statusBadge}
+        ${footerCta}
       </div>
     </div>`;
   }).join('');
@@ -5293,7 +5306,7 @@ function renderBrowseGrid(events) {
   }
 }
 
-let _browsePageSize = 9;
+var _browsePageSize = 9;
 function browseLoadMore() {
   _browsePageSize += 9;
   applyBrowseFilters();
@@ -5337,7 +5350,7 @@ function clearBrowseFilters() {
 }
 
 // Cache for events across browse + detail
-let _eventsCache = [];
+var _eventsCache = [];
 
 async function loadBrowseEvents() {
   // If we already have cached events, render immediately then refresh
@@ -5736,7 +5749,7 @@ async function withdrawApp(eventId, btn) {
 }
 
 /* ── Photo upload ────────────────────────────────────────────────────────── */
-let _photos = []; // array of data URLs currently in the grid
+var _photos = []; // array of data URLs currently in the grid
 
 function loadPhotos(profile) {
   try { _photos = JSON.parse((profile && profile.photos) || '[]') || []; } catch { _photos = []; }
@@ -6013,7 +6026,7 @@ function renderPlanCard(profile, subInfo) {
       cta: `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
         <button onclick="directUpgrade('growth', this)" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--gold);background:#C9840A10;border:1px solid #C9840A22;padding:10px 18px;border-radius:9px;cursor:pointer;">Upgrade to Growth — $79/month →</button>
         <button onclick="openSubModal()" style="font-family:var(--fb);font-size:12px;font-weight:600;color:var(--text-lo);background:#ffffff07;border:1px solid #ffffff10;padding:10px 18px;border-radius:9px;cursor:pointer;transition:background 0.14s;" onmouseover="this.style.background='#ffffff12'" onmouseout="this.style.background='#ffffff07'">Manage subscription</button>
-        <button onclick="openStripePortal()" style="font-family:var(--fb);font-size:12px;font-weight:600;color:var(--text-lo);background:#ffffff07;border:1px solid #ffffff10;padding:10px 18px;border-radius:9px;cursor:pointer;transition:background 0.14s;" onmouseover="this.style.background='#ffffff12'" onmouseout="this.style.background='#ffffff07'">Manage billing →</button>
+        <button onclick="openStripePortal()" style="font-family:var(--fb);font-size:12px;font-weight:700;color:var(--text-mid);background:#ffffff0a;border:1px solid #ffffff14;padding:10px 18px;border-radius:9px;cursor:pointer;transition:background 0.14s,color 0.14s;" onmouseover="this.style.background='#ffffff14';this.style.color='var(--text-hi)'" onmouseout="this.style.background='#ffffff0a';this.style.color='var(--text-mid)'">Manage billing →</button>
       </div>
       <div id="upgrade-error" style="display:none;margin-top:10px;padding:10px 14px;background:#C0392B18;border:1px solid #C0392B30;border-radius:9px;font-size:12px;color:#C0392B;"></div>`
     },
@@ -6023,7 +6036,7 @@ function renderPlanCard(profile, subInfo) {
       features: ['Unlimited event applications','Top placement in search','Growth badge on your profile','Up to 20 photos in named galleries','Instant new event alerts','Full analytics + competitor insights'],
       cta: `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
         <button onclick="openSubModal()" style="font-family:var(--fb);font-size:12px;font-weight:600;color:var(--text-lo);background:#ffffff07;border:1px solid #ffffff10;padding:10px 18px;border-radius:9px;cursor:pointer;transition:background 0.14s;" onmouseover="this.style.background='#ffffff12'" onmouseout="this.style.background='#ffffff07'">Manage subscription</button>
-        <button onclick="openStripePortal()" style="font-family:var(--fb);font-size:12px;font-weight:600;color:var(--text-lo);background:#ffffff07;border:1px solid #ffffff10;padding:10px 18px;border-radius:9px;cursor:pointer;transition:background 0.14s;" onmouseover="this.style.background='#ffffff12'" onmouseout="this.style.background='#ffffff07'">Manage billing →</button>
+        <button onclick="openStripePortal()" style="font-family:var(--fb);font-size:12px;font-weight:700;color:var(--text-mid);background:#ffffff0a;border:1px solid #ffffff14;padding:10px 18px;border-radius:9px;cursor:pointer;transition:background 0.14s,color 0.14s;" onmouseover="this.style.background='#ffffff14';this.style.color='var(--text-hi)'" onmouseout="this.style.background='#ffffff0a';this.style.color='var(--text-mid)'">Manage billing →</button>
       </div>`
     }
   };
@@ -6363,7 +6376,7 @@ document.addEventListener('click', function(e) {
 });
 
 // ── NOTIFICATIONS ──────────────────────────────────────────────────────────
-let _notifs = [];
+var _notifs = [];
 
 async function loadNotifications() {
   try {
@@ -6745,9 +6758,9 @@ async function payFee(id, eventName, amount, dueDate, btn) {
 }
 
 // ── STRIPE ELEMENTS PAYMENT FLOW ──────────────────────────────────────────
-let _stripeInstance = null;
-let _stripeElements = null;
-let _stripePayFeeId = null;
+var _stripeInstance = null;
+var _stripeElements = null;
+var _stripePayFeeId = null;
 
 function _loadStripeJs() {
   return new Promise((resolve, reject) => {
@@ -7587,9 +7600,9 @@ async function _loadConnectedAccounts() {
 }
 
 // ── MENU ─────────────────────────────────────────────────────────────────────
-let _menuItems   = [];
-let _menuDragSrc = null;
-let _pendingDeleteIdx = null;
+var _menuItems   = [];
+var _menuDragSrc = null;
+var _pendingDeleteIdx = null;
 
 async function loadMenu() {
   try {
@@ -8284,7 +8297,7 @@ function _renderRoleBreakdown(containerId, roles) {
 }
 
 // ── Vendor analytics date range filter ────────────────────────────────────
-let _vanFrom = null, _vanTo = null;
+var _vanFrom = null, _vanTo = null;
 // Default: All time (null/null means no date filter)
 
 // Cache analytics responses by date range key
@@ -8564,7 +8577,7 @@ document.addEventListener('click', function(e) {
 });
 
 // ── Analytics: data loader ────────────────────────────────────────────────
-let _analyticsLoaded = false;
+var _analyticsLoaded = false;
 function _analyticsReveal() {
   const loader = document.getElementById('analytics-loading');
   const content = document.getElementById('analytics-content');
@@ -9432,7 +9445,7 @@ function sendTeamInvite() {
 }
 
 // ── Review organiser modal ─────────────────────────────────────────────────
-let _reviewOrgRating = 0;
+var _reviewOrgRating = 0;
 
 function setReviewOrgStar(val) {
   _reviewOrgRating = val;
