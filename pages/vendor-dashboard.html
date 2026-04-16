@@ -4330,7 +4330,7 @@ function formatAbnValue(raw) {
   if (d.length <= 8) return d.slice(0,2) + ' ' + d.slice(2,5) + ' ' + d.slice(5);
   return d.slice(0,2) + ' ' + d.slice(2,5) + ' ' + d.slice(5,8) + ' ' + d.slice(8);
 }
-let _abnDebounce = null;
+var _abnDebounce = null;
 function abnAutoVerify(rawVal) {
   clearTimeout(_abnDebounce);
   const el = document.getElementById('v-abn');
