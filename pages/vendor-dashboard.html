@@ -7756,7 +7756,7 @@ async function saveMenuItem() {
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify(body),
     });
-    if (!r.ok) { showMenuToast('Save failed — please try again', false); return; }
+    if (!r.ok) { const err = await r.text().catch(()=>''); console.error('Menu save failed:', r.status, err); showMenuToast('Save failed — ' + (JSON.parse(err||'{}').error || 'please try again'), false); return; }
     closeMenuModal();
     showMenuToast(id ? 'Item updated' : 'Item added', true);
     await loadMenu();
@@ -9495,7 +9495,7 @@ function _updateSettingsTabs() {
   let current = 0;
   for (let i = sections.length - 1; i >= 0; i--) {
     const el = document.getElementById('settings-anchor-' + sections[i]);
-    if (el && el.getBoundingClientRect().top <= 130) { current = i; break; }
+    if (el && el.getBoundingClientRect().top <= 200) { current = i; break; }
   }
   tabs.forEach((t, i) => t.classList.toggle('active', i === current));
 }
