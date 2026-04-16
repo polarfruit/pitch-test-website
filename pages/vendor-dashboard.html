@@ -827,6 +827,20 @@ body::before {
 .tl-line.done { background: #2D8B5540; }
 
 /* ── SETTINGS ────────────────────────────────────────────────────────────── */
+.settings-tabs {
+  display: flex; gap: 4px; padding: 10px 0 18px; margin-bottom: 8px;
+  position: sticky; top: 0; z-index: 10; background: var(--coal);
+  border-bottom: 1px solid #ffffff08;
+}
+.settings-tab {
+  font-family: var(--fb); font-size: 11px; font-weight: 600;
+  padding: 6px 14px; border-radius: 100px; cursor: pointer;
+  border: 1px solid #ffffff10; background: transparent; color: var(--text-lo);
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+.settings-tab:hover { background: #ffffff0a; color: var(--text-mid); border-color: #ffffff18; }
+.settings-tab.active { background: var(--ember); color: #fff; border-color: var(--ember); }
 .settings-section { margin-bottom: 32px; }
 .settings-section-title {
   font-size: 14px; font-weight: 700; color: var(--text-hi); margin-bottom: 16px;
@@ -999,9 +1013,10 @@ body::before {
 .an-stat-label { font-size:11px; font-weight:600; color:var(--text-lo); margin-bottom:6px; }
 .an-chart-eyebrow { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--text-lo); margin-bottom:8px; }
 .empty-chart-msg { font-size:11px; color:var(--text-lo); text-align:center; padding:10px 16px; border:1px dashed #ffffff10; border-radius:8px; margin-top:6px; opacity:0.5; }
-.an-zero { opacity:0.35; }
+.an-zero { opacity:0.45; }
 .analytics-blurred { filter: blur(5px); user-select: none; pointer-events: none; opacity: 0.4; }
-.analytics-locked-wrap { position: relative; min-height: 140px; border-radius: 14px; overflow: hidden; }
+.analytics-locked-wrap { position: relative; min-height: 140px; border-radius: 16px; overflow: hidden; }
+.analytics-section .card { border-color: #ffffff0a; }
 
 /* ── Vendor analytics date filter ── */
 .van-range-btn { background: #1C1814; border: 1px solid #2A2018; color: #A89880; font-size: 12px; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-family: inherit; transition: all 0.15s; }
@@ -1313,6 +1328,7 @@ body::before {
   .convo-panel { display: none; }
   .messages-layout.convo-open .inbox-panel { display: none; }
   .messages-layout.convo-open .convo-panel { display: flex; }
+  .convo-back-btn { display: block; }
   .earnings-summary { grid-template-columns: repeat(2, 1fr); }
 }
 
@@ -2631,10 +2647,13 @@ body::before {
         <div class="convo-panel" id="convo-panel">
           <div class="convo-header" id="convo-header" style="display:none;">
             <div style="display:flex;align-items:center;gap:12px;">
-              <div id="convo-header-avatar" style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#2A1E14,#5C3A1A);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;flex-shrink:0;"></div>
+              <button class="convo-back-btn" onclick="closeConvo()" title="Back to conversations">←</button>
+              <div id="convo-header-avatar" style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#2A1E14,#5C3A1A);display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;flex-shrink:0;position:relative;">
+                <span id="convo-avatar-dot" style="display:none;position:absolute;bottom:-1px;right:-1px;width:10px;height:10px;border-radius:50%;background:var(--herb);border:2px solid var(--char);"></span>
+              </div>
               <div style="flex:1;min-width:0;">
                 <div class="convo-header-name" id="convo-org-name"></div>
-                <div id="convo-header-status" style="font-size:11px;color:var(--text-lo);margin-top:1px;">Event Organiser</div>
+                <div id="convo-header-status" style="font-size:11px;color:var(--text-lo);margin-top:1px;"><span id="convo-status-dot" class="convo-header-dot" style="display:none;"></span><span id="convo-status-text">Event Organiser</span></div>
               </div>
               <a id="convo-header-profile-link" href="#" target="_blank" style="font-family:var(--fb);font-size:11px;font-weight:700;color:var(--text-lo);text-decoration:none;padding:6px 12px;border:1px solid #ffffff10;border-radius:8px;transition:color 0.14s,border-color 0.14s;white-space:nowrap;" onmouseover="this.style.color='var(--ember)';this.style.borderColor='var(--ember)'" onmouseout="this.style.color='var(--text-lo)';this.style.borderColor='#ffffff10'">View profile</a>
             </div>
@@ -2646,6 +2665,7 @@ body::before {
               <div class="convo-empty-text">Select a conversation</div>
             </div>
           </div>
+          <div class="convo-typing" id="convo-typing"><span id="convo-typing-name"></span> is typing<span class="convo-typing-dots"><span></span><span></span><span></span></span></div>
           <div class="convo-input-area" id="convo-input-area" style="display:none;">
             <textarea class="convo-textarea" id="convo-input" placeholder="Write a message… (Enter to send, Shift+Enter for new line)" rows="1" onkeydown="handleMsgKey(event)"></textarea>
             <button class="btn-send" onclick="sendMessage()">Send →</button>
@@ -3072,8 +3092,18 @@ body::before {
     <div class="panel" id="panel-settings">
       <div style="max-width:600px;">
 
+        <!-- Settings anchor tabs -->
+        <div class="settings-tabs" id="settings-tabs">
+          <button class="settings-tab active" onclick="scrollToSettingsSection('account')">Account</button>
+          <button class="settings-tab" onclick="scrollToSettingsSection('profile')">Profile</button>
+          <button class="settings-tab" onclick="scrollToSettingsSection('billing')">Billing</button>
+          <button class="settings-tab" onclick="scrollToSettingsSection('preferences')">Preferences</button>
+          <button class="settings-tab" onclick="scrollToSettingsSection('connections')">Connections</button>
+        </div>
+
+
         <!-- ── ACCOUNT ──────────────────────────────────────────────────────── -->
-        <div style="font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-lo);padding-bottom:4px;">Account</div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-lo);padding-bottom:4px;" id="settings-anchor-account">Account</div>
 
         <!-- Email -->
         <div class="settings-section">
@@ -3143,7 +3173,7 @@ body::before {
 
         <!-- ── PROFILE ──────────────────────────────────────────────────────── -->
         <div style="height:1px;background:#ffffff08;margin:28px 0 0;"></div>
-        <div style="font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-lo);padding:16px 0 4px;">Profile</div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-lo);padding:16px 0 4px;" id="settings-anchor-profile">Profile</div>
 
         <!-- Profile visibility -->
         <div class="settings-section">
@@ -3208,7 +3238,7 @@ body::before {
 
         <!-- ── BILLING ──────────────────────────────────────────────────────── -->
         <div style="height:1px;background:#ffffff08;margin:28px 0 0;"></div>
-        <div style="font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-lo);padding:16px 0 4px;">Billing</div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-lo);padding:16px 0 4px;" id="settings-anchor-billing">Billing</div>
 
         <!-- Subscription -->
         <div class="settings-section">
@@ -3278,7 +3308,7 @@ body::before {
 
         <!-- ── PREFERENCES ──────────────────────────────────────────────────── -->
         <div style="height:1px;background:#ffffff08;margin:28px 0 0;"></div>
-        <div style="font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-lo);padding:16px 0 4px;">Preferences</div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-lo);padding:16px 0 4px;" id="settings-anchor-preferences">Preferences</div>
 
         <!-- Notifications -->
         <div class="settings-section">
@@ -3389,7 +3419,7 @@ body::before {
 
         <!-- ── CONNECTIONS ──────────────────────────────────────────────────── -->
         <div style="height:1px;background:#ffffff08;margin:28px 0 0;"></div>
-        <div style="font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-lo);padding:16px 0 4px;">Connections</div>
+        <div style="font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-lo);padding:16px 0 4px;" id="settings-anchor-connections">Connections</div>
 
         <!-- Connected accounts -->
         <div class="settings-section">
@@ -4981,9 +5011,11 @@ function renderEventsMiniList(events) {
   if (!events.length) { list.innerHTML = '<div style="color:var(--text-lo);font-size:13px;padding:16px 0;">No events available right now.</div>'; return; }
   list.innerHTML = events.slice(0, 4).map(ev => {
     const statusBadge = ev.applied
-      ? `<span class="event-mini-spots" style="color:${ev.appStatus==='approved'?'var(--herb)':ev.appStatus==='rejected'?'var(--terra)':'var(--gold);'}">${ev.appStatus==='approved'?'✓ Approved':ev.appStatus==='rejected'?'✕ Not accepted':'● Applied'}</span>`
+      ? ev.appStatus === 'withdrawn'
+        ? `<span class="event-mini-spots" style="color:var(--text-lo);">↩ Withdrawn</span>`
+        : `<span class="event-mini-spots" style="color:${ev.appStatus==='approved'?'var(--herb)':ev.appStatus==='rejected'?'var(--terra)':'var(--gold);'}">${ev.appStatus==='approved'?'✓ Approved':ev.appStatus==='rejected'?'✕ Not accepted':'● Applied'}</span>`
       : '';
-    const viewBtn = ev.applied
+    const viewBtn = ev.applied && ev.appStatus !== 'withdrawn'
       ? `<button class="btn-apply-mini applied" onclick="event.stopPropagation();openEventDetail(${ev.id})">Details →</button>`
       : `<button class="btn-apply-mini" onclick="event.stopPropagation();openEventDetail(${ev.id})">View →</button>`;
     const cc = _getCatConfig(ev.category);
@@ -5106,7 +5138,8 @@ function renderBrowseGrid(events) {
         : '';
 
     let statusBadge;
-    if (ev.applied) {
+    const isWithdrawn = ev.applied && ev.appStatus === 'withdrawn';
+    if (ev.applied && !isWithdrawn) {
       const badgeClass = ev.appStatus==='approved'?'approved':ev.appStatus==='rejected'?'rejected':'pending';
       const statusText = ev.appStatus==='approved'?'✓ Approved':ev.appStatus==='rejected'?'✕ Not accepted':'● Applied';
       statusBadge = `<span class="browse-applied-badge ${badgeClass}">${statusText}</span>`;
@@ -5130,10 +5163,10 @@ function renderBrowseGrid(events) {
     const dlHtml = ev.deadline
       ? `<span class="browse-card-dl">Apply by ${_browseFmtDeadline(ev.deadline)}</span>`
       : '';
-    const appliedClass = ev.applied ? ' applied' : '';
+    const appliedClass = (ev.applied && !isWithdrawn) ? ' applied' : '';
     const pastClass = isPastEvent ? ' past-event' : '';
-    const statusAccentColor = ev.applied ? (ev.appStatus==='approved'?'var(--herb)':ev.appStatus==='rejected'?'#A0392B':'var(--gold)') : '';
-    const statusBorderStyle = ev.applied ? `box-shadow:inset 3px 0 0 ${statusAccentColor};` : '';
+    const statusAccentColor = (ev.applied && !isWithdrawn) ? (ev.appStatus==='approved'?'var(--herb)':ev.appStatus==='rejected'?'#A0392B':'var(--gold)') : '';
+    const statusBorderStyle = (ev.applied && !isWithdrawn) ? `box-shadow:inset 3px 0 0 ${statusAccentColor};` : '';
     const catPillPos = showEarlyAccess ? 'top:auto;bottom:12px;' : '';
     return `<div class="browse-card${appliedClass}${pastClass}" style="${statusBorderStyle}" onclick="openEventDetail(${ev.id})">
       <div class="browse-card-accent" style="background:${cc.accent};"></div>
@@ -5271,7 +5304,7 @@ function renderEventDetail(ev) {
   }
 
   let applyBar;
-  if (ev.applied) {
+  if (ev.applied && ev.appStatus !== 'withdrawn') {
     const statusColor = ev.appStatus==='approved'?'var(--herb)':ev.appStatus==='rejected'?'var(--terra)':'var(--gold)';
     const statusText  = ev.appStatus==='approved'?'✓ Application approved':ev.appStatus==='rejected'?'✕ Not accepted this time':'● Application submitted';
     const waitlistBadge = isGrowth && ev.appStatus==='pending'
@@ -5328,8 +5361,8 @@ function renderEventDetail(ev) {
     </div>
     <div class="event-detail-apply-bar">
       <div>
-        <div class="event-detail-apply-label">${ev.applied ? 'Your application' : 'Ready to apply?'}</div>
-        <div class="event-detail-apply-sub">${ev.applied ? 'Submitted — the organiser will review your profile.' : 'Submit your application and the organiser will review your profile.'}</div>
+        <div class="event-detail-apply-label">${(ev.applied && ev.appStatus !== 'withdrawn') ? 'Your application' : 'Ready to apply?'}</div>
+        <div class="event-detail-apply-sub">${(ev.applied && ev.appStatus !== 'withdrawn') ? 'Submitted — the organiser will review your profile.' : 'Submit your application and the organiser will review your profile.'}</div>
       </div>
       ${applyBar}
     </div>`;
@@ -7426,21 +7459,29 @@ async function _loadConnectedAccounts() {
       statusEl.textContent = 'Linked to your Google account';
       badgeEl.innerHTML = '&#10003; Connected';
       badgeEl.style.background = '#2D8B5518'; badgeEl.style.color = '#2D8B55'; badgeEl.style.borderColor = '#2D8B5530';
+      badgeEl.onclick = null; badgeEl.style.cursor = 'default';
     } else {
       statusEl.textContent = 'Not connected';
-      badgeEl.textContent = 'Not linked';
-      badgeEl.style.background = '#ffffff08'; badgeEl.style.color = 'var(--text-lo)'; badgeEl.style.borderColor = '#ffffff10';
+      badgeEl.textContent = 'Link account';
+      badgeEl.style.background = '#ffffff10'; badgeEl.style.color = 'var(--text-hi)'; badgeEl.style.borderColor = '#ffffff25';
+      badgeEl.onmouseenter = function(){ this.style.background='#ffffff18'; this.style.borderColor='#ffffff35'; };
+      badgeEl.onmouseleave = function(){ this.style.background='#ffffff10'; this.style.borderColor='#ffffff25'; };
+      badgeEl.onclick = function(){ window.location.href = '/api/auth/google'; };
     }
     const emailStatusEl = document.getElementById('email-login-status');
     const emailBadgeEl = document.getElementById('email-login-badge');
     if (data.email_login) {
       emailStatusEl.textContent = 'Password login enabled';
-      emailBadgeEl.innerHTML = '&#10003; Active';
-      emailBadgeEl.style.background = '#2D8B5518'; emailBadgeEl.style.color = '#2D8B55'; emailBadgeEl.style.borderColor = '#2D8B5530';
+      emailBadgeEl.textContent = 'Disable';
+      emailBadgeEl.style.background = '#C0392B10'; emailBadgeEl.style.color = 'var(--terra)'; emailBadgeEl.style.borderColor = '#C0392B30';
+      emailBadgeEl.onmouseenter = function(){ this.style.background='#C0392B1a'; this.style.borderColor='#C0392B45'; };
+      emailBadgeEl.onmouseleave = function(){ this.style.background='#C0392B10'; this.style.borderColor='#C0392B30'; };
     } else {
       emailStatusEl.textContent = 'Sign in with Google only — no password set';
-      emailBadgeEl.textContent = 'OAuth only';
-      emailBadgeEl.style.background = '#C9840A18'; emailBadgeEl.style.color = '#C9840A'; emailBadgeEl.style.borderColor = '#C9840A30';
+      emailBadgeEl.textContent = 'Set up';
+      emailBadgeEl.style.background = '#ffffff10'; emailBadgeEl.style.color = 'var(--text-hi)'; emailBadgeEl.style.borderColor = '#ffffff25';
+      emailBadgeEl.onmouseenter = function(){ this.style.background='#ffffff18'; this.style.borderColor='#ffffff35'; };
+      emailBadgeEl.onmouseleave = function(){ this.style.background='#ffffff10'; this.style.borderColor='#ffffff25'; };
     }
   } catch(e) { console.error('[connected accounts]', e); }
 }
@@ -8582,7 +8623,7 @@ function _applyAnalyticsData(data) {
       }
       if (starsEl) {
         if (hasRating) { const full = Math.floor(data.reviews.avg_rating); starsEl.textContent = '\u2605'.repeat(full) + '\u2606'.repeat(5 - full); starsEl.style.fontSize = '11px'; starsEl.style.color = 'var(--gold)'; }
-        else { starsEl.textContent = '\u2606\u2606\u2606\u2606\u2606'; starsEl.style.fontSize = '18px'; starsEl.style.color = '#A89880'; starsEl.style.opacity = '0.55'; }
+        else { starsEl.textContent = '\u2606\u2606\u2606\u2606\u2606'; starsEl.style.fontSize = '18px'; starsEl.style.color = '#A89880'; starsEl.style.opacity = '0.65'; }
       }
       if (cntEl) cntEl.textContent = data.reviews.total_reviews + ' review' + (data.reviews.total_reviews !== 1 ? 's' : '');
       const _rvc = document.getElementById('analytics-review-canvas');
@@ -9364,6 +9405,33 @@ async function loadPendingVendorReviews() {
     }
   } catch (e) { console.error('[pending-reviews]', e); }
 }
+// ── Settings anchor tabs ────────────────────────────────────────
+function scrollToSettingsSection(key) {
+  const el = document.getElementById('settings-anchor-' + key);
+  if (!el) return;
+  el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+(function initSettingsTabs() {
+  const panel = document.getElementById('panel-settings');
+  if (!panel) return;
+  const sections = ['account','profile','billing','preferences','connections'];
+  const anchors = sections.map(s => document.getElementById('settings-anchor-' + s)).filter(Boolean);
+  const tabs = panel.querySelectorAll('.settings-tab');
+  if (!anchors.length || !tabs.length) return;
+  const scrollContainer = panel.closest('.page-content') || panel.parentElement;
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id.replace('settings-anchor-', '');
+        tabs.forEach(t => t.classList.remove('active'));
+        const idx = sections.indexOf(id);
+        if (idx >= 0 && tabs[idx]) tabs[idx].classList.add('active');
+      }
+    });
+  }, { root: scrollContainer, rootMargin: '-20% 0px -70% 0px', threshold: 0 });
+  anchors.forEach(a => observer.observe(a));
+})();
+
 </script>
 </body>
 </html>
