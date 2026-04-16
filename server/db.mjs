@@ -689,7 +689,13 @@ await _safeExec(`
   )
 `);
 await _safeExec(`CREATE INDEX IF NOT EXISTS idx_menu_vendor ON menu_items(vendor_user_id, sort_order)`);
-try { await _safeExec(`ALTER TABLE menu_items ADD COLUMN dietary_tags TEXT`); } catch(e) { console.error('[db] menu_items dietary_tags migration:', e.message); }
+// Force dietary_tags column — use raw client on Turso to bypass _safeExec caching
+if (_client) {
+  try { await _client.execute('ALTER TABLE menu_items ADD COLUMN dietary_tags TEXT'); console.log('[db] Added dietary_tags to menu_items'); }
+  catch(e) { if (!e.message?.includes('duplicate column')) console.error('[db] dietary_tags migration:', e.message); }
+} else {
+  await _safeExec(`ALTER TABLE menu_items ADD COLUMN dietary_tags TEXT`);
+}
 
 // ── Analytics tracking tables ────────────────────────────────────────────────
 await _safeExec(`CREATE TABLE IF NOT EXISTS vendor_profile_views (
