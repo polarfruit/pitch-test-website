@@ -70,3 +70,1247 @@
 - Do not use `transition-all`
 - Do not use default Tailwind blue/indigo as primary color
 - Do not create UI elements without backend logic — no cosmetic-only features
+
+# ENGINEERING STANDARDS
+
+═══════════════════════════════════════════════
+PHILOSOPHY — READ THIS FIRST
+═══════════════════════════════════════════════
+
+Before any syntax. Before any patterns. Before
+any rules. Understand this completely, because
+everything that follows flows from it.
+
+There is one metric that matters in this
+codebase above all others:
+
+How long does it take a developer with zero
+prior context to understand what a piece of
+code does, why it exists, and how to safely
+change it?
+
+Not how clever it is.
+Not how fast it runs.
+Not how few lines it takes.
+Not how many patterns it implements.
+
+Time-to-comprehension. That is the metric.
+
+Every rule in this document exists to reduce
+time-to-comprehension. When you truly
+understand that, you stop needing rules.
+You start making the right decisions
+instinctively because you feel the difference
+between code that respects the next reader
+and code that burdens them.
+
+This codebase is worked on across many
+sessions with no persistent memory between
+them. The code itself is the only
+documentation that survives from one session
+to the next. If the code is unclear, every
+session wastes time re-establishing context
+that should never have been lost. If the
+code is clear, every session is immediately
+productive from the first line read.
+
+Beyond sessions: this codebase will be read
+by investors conducting technical due
+diligence, by potential technical co-founders
+deciding whether to join, by developers
+hired to extend it, and by the person who
+built it returning after months away. The
+codebase they encounter is a direct
+reflection of the rigour and professionalism
+of the entire operation. A codebase that
+reads like a professional engineered it
+signals that the business is run with that
+same level of care. A codebase that reads
+like it was hacked together signals the
+opposite — regardless of how polished the
+product looks on the surface.
+
+Write every line knowing it will be read by
+someone who has never seen it before, under
+time pressure, trying to make a decision
+about whether to trust this platform.
+
+───────────────────────────────────────────────
+THE ENGINEERING HIERARCHY
+───────────────────────────────────────────────
+
+When any two concerns conflict, resolve them
+in this exact order. Do not deviate.
+
+1. CORRECTNESS
+   Does it do exactly what it is supposed to
+   do in every case — including edge cases,
+   empty inputs, failed network requests,
+   unexpected data shapes, and concurrent
+   operations? Correctness is non-negotiable.
+   A clever solution that fails in edge cases
+   is not a solution. It is a future incident.
+
+2. CLARITY
+   Can someone who has never seen this code
+   understand it immediately by reading it
+   once? Not after studying it. Not after
+   running it. After reading it once. If the
+   answer is no, rewrite it until it is yes.
+
+3. SIMPLICITY
+   Is this as simple as it can possibly be
+   while still being correct and clear?
+   Complexity is not sophistication.
+   Complexity is the enemy. Every additional
+   abstraction, every clever pattern, every
+   extra indirection must justify its
+   existence by making the surrounding code
+   simpler — not the pattern itself more
+   interesting. If removing an abstraction
+   makes the code easier to understand,
+   remove it.
+
+4. PERFORMANCE
+   Is it fast enough for the use case?
+   Not as fast as possible. Fast enough.
+   Premature optimisation is the act of
+   making code harder to understand in
+   exchange for performance gains that have
+   not been measured and may not matter.
+   Optimise when profiling proves it is
+   necessary. Not before.
+
+5. ELEGANCE
+   Is it beautiful? This matters last. An
+   elegant solution that is incorrect,
+   unclear, complex, or unnecessarily slow
+   is not elegant — it is decorative.
+   Elegance is the byproduct of getting
+   everything above right. It is never
+   the goal.
+
+Most engineers get this hierarchy backwards.
+They chase elegance and sacrifice correctness.
+The result is code that wins internal praise
+and fails in production. Correctness first.
+Always. Without exception.
+
+═══════════════════════════════════════════════
+THE LAWS
+═══════════════════════════════════════════════
+
+These are not guidelines. They are laws. They
+apply to every file, every function, every
+variable, every commit in this entire codebase.
+There are no partial applications. There are
+no exceptions without explicit written
+justification in a comment at the exact point
+of violation — not in a chat message, not in
+a PR description, in the code itself,
+immediately adjacent to the violation,
+explaining why the law was broken and what
+would need to change for it to be followed.
+
+───────────────────────────────────────────────
+LAW 1 — NAMES ARE CONTRACTS
+───────────────────────────────────────────────
+
+A name is a contract between the person who
+wrote the code and every person who will ever
+read it. The name promises what something is,
+what it contains, and what it does. A name
+that breaks that promise — that is vague,
+abbreviated, or misleading — is a form of
+debt that compounds silently over time. Every
+developer who reads a poorly named identifier
+pays a tax in the form of time spent opening
+implementations that should never have needed
+to be opened.
+
+The test for any name is simple and brutal:
+cover the implementation with your hand.
+Read only the name. Does the name tell you
+exactly what to expect without any additional
+context? If the answer is anything other than
+an immediate and unambiguous yes — the name
+is wrong. Rename it. Do this before moving on.
+
+VARIABLES must name exactly what they contain.
+Not approximately. Not generally. Exactly.
+
+  The following names are lies because they
+  force every future reader to open the
+  implementation to understand the code:
+
+  const d = fetchData()
+  const result = vendors.filter(v => v.s)
+  const temp = calculateRate(a, b)
+  const x = events[0]
+
+  The following names are contracts because
+  they tell the complete truth without
+  requiring the implementation to be opened:
+
+  const approvedVendorApplications =
+    fetchApprovedVendorApplications()
+  const vendorsWithExpiredDocuments =
+    vendors.filter(
+      vendor => vendor.hasExpiredDocuments
+    )
+  const currentEventFillRatePercent =
+    calculateFillRate(filledSpots, totalSpots)
+  const mostRecentlyPublishedEvent = events[0]
+
+BOOLEANS must always read as statements that
+are either true or false. When you read a
+boolean name, you should be able to complete
+the sentence "this is true when..."
+immediately and without ambiguity.
+
+  The following boolean names fail this test:
+
+  const modal = true
+  const vendor = false
+  const loading = true
+  const check = isValid()
+  const flag = true
+
+  The following boolean names pass it
+  immediately:
+
+  const isApplicationModalOpen = true
+  const isVendorProfileComplete = false
+  const isVendorDataLoading = true
+  const hasVendorPassedAllDocumentChecks =
+    isValid()
+  const isEventFullyBooked = true
+
+FUNCTIONS must be named for exactly what they
+do — not for what they are, not for what they
+relate to, not for the domain they belong to.
+A reader who sees a function name should know
+exactly what will happen when that function
+is called, what it will return, and what side
+effects if any it will produce. They should
+not need to read the implementation to know
+any of these things.
+
+  The following function names describe
+  existence, not behaviour. They force every
+  reader to open the implementation:
+
+  const vendorData = () => {}
+  const modal = () => {}
+  const handler = () => {}
+  const update = () => {}
+  const process = () => {}
+
+  The following function names describe
+  behaviour completely. The implementation
+  never needs to be opened to understand
+  what calling them will do:
+
+  const fetchApprovedVendorsBySuburb =
+    async (suburb) => {}
+  const openVendorApplicationModal = () => {}
+  const handleApplicationSubmitButtonClick =
+    (event) => {}
+  const updateVendorDocumentVerificationStatus =
+    async (vendorId, documentType, status) => {}
+  const calculateEventFillRateAsPercent =
+    (filledSpots, totalSpots) => {}
+
+Event handlers without exception always begin
+with the word handle followed by the element
+that triggered the event and the event that
+occurred:
+
+  handleApplyButtonClick
+  handleSearchFormSubmit
+  handleDocumentUploadSuccess
+  handleApplicationStatusChange
+  handleCardRotationComplete
+  handleVendorProfileSaveButtonClick
+
+Collections are always named in the plural.
+Individual items drawn from a collection are
+always named in the singular. This is not
+stylistic preference — it is a readability
+requirement that prevents the most common
+class of naming confusion in JavaScript:
+
+  vendors     contains multiple vendor objects
+  events      contains multiple event objects
+  applications contains multiple application objects
+
+  A single item from vendors is: vendor
+  A single item from events is: event
+  A single item from applications is: application
+
+  vendors.map(vendor => vendor.name)
+  events.filter(event => event.isThisWeekend)
+  applications.find(
+    application => application.status === 'approved'
+  )
+
+If you ever write vendors.map(vendors => )
+or events.filter(events => ) the naming is
+wrong and must be corrected before proceeding.
+
+───────────────────────────────────────────────
+LAW 2 — ONE THING. COMPLETELY.
+───────────────────────────────────────────────
+
+Every unit of code in this codebase — every
+function, every component, every hook, every
+file, every module — does exactly one thing.
+Not primarily one thing. Not mostly one thing.
+Exactly one thing. Completely.
+
+This is the most consequential structural law
+in software engineering. Every other quality
+property — testability, changeability,
+readability, debuggability — depends on it.
+Systems that violate it become progressively
+harder to understand and change regardless
+of how well every other rule is followed.
+Systems built on it remain comprehensible
+and changeable as they grow.
+
+The test is immediate and unambiguous.
+Describe what this unit of code does in
+one sentence. Read that sentence. Does it
+contain the word "and"? If yes — it does
+too much. Find the seam where the two
+responsibilities separate and split them
+into two units. Apply the test again.
+Repeat until every unit passes.
+
+This is what single responsibility looks
+like in practice for every type of code
+unit in this codebase:
+
+PAGE FILES orchestrate the page and nothing
+else. They import components. They fetch
+data and pass it as props to those components.
+They define the order in which components
+appear on the page. That is the complete
+list of what they do. They do not contain
+conditional rendering logic beyond the
+top-level loading and error states. They do
+not contain styling of any kind. They do not
+contain raw HTML elements. They do not make
+decisions about how data should be
+transformed or presented. Those decisions
+belong to the components they import. A page
+file that is longer than 80 lines is almost
+certainly violating this law.
+
+COMPONENTS render a specific piece of UI
+and handle the user interactions within that
+UI. They receive everything they need as
+props from their parent. They return JSX
+that represents their portion of the screen.
+They dispatch events upward when user
+interactions occur. That is the complete
+list of what they do. They do not fetch
+data from APIs. They do not transform or
+reformat the data they receive. They do not
+contain business logic that belongs to the
+application layer. They do not know about
+routing unless navigation is their explicit
+and sole purpose. A component that fetches
+its own data is a component that cannot be
+tested without a network. A component that
+contains business logic is a component that
+breaks when the business rules change.
+Neither is acceptable.
+
+DATA FUNCTIONS fetch data from one source
+and return it. They make exactly one network
+request. They return the raw result of that
+request. They handle the failure case by
+logging the error with full context and
+returning a typed safe fallback value.
+That is the complete list of what they do.
+They do not transform or format the data
+they receive. They do not filter or sort
+the data. They do not combine the results
+of multiple requests into a single return
+value. Those responsibilities belong to
+separate functions. A data function that
+does more than fetch and return is a
+function that breaks when either the
+fetching or the transformation logic
+needs to change.
+
+UTILITY FUNCTIONS transform data. They
+accept input values as arguments and return
+transformed output values. They have zero
+side effects — calling them changes nothing
+outside of their own scope. They do not
+fetch anything from any network. They do
+not render any UI. They do not import from
+React. They do not know that the application
+exists. They are pure mathematical functions
+in the strictest sense: given the same
+inputs, they always return the same outputs,
+always, without exception.
+
+HOOKS manage a specific piece of state and
+its associated side effects. They use
+React's built-in hooks internally. They
+return the state values and the functions
+that modify those values. They do not
+render any UI whatsoever — not a single
+JSX element. A hook that returns JSX is
+not a hook. It is a component that has
+been incorrectly categorised. Rename it,
+move it to the components directory, and
+extract the state management into a
+properly scoped hook.
+
+CONSTANTS FILES define named values. They
+export those named values. They contain
+no logic of any kind. No conditionals.
+No functions. No computations. No imports
+from anywhere. They are the simplest
+possible files in the codebase and must
+remain so.
+
+The size limit is a consequence of this
+law, not a separate rule. A file that does
+exactly one thing is almost never longer
+than 200 lines. When a file exceeds 200
+lines, treat it as evidence that it is
+violating this law. Find what it is doing
+that it should not be doing. Extract that
+responsibility into a new file. Apply the
+test again.
+
+───────────────────────────────────────────────
+LAW 3 — ALL FOUR STATES. ALWAYS.
+───────────────────────────────────────────────
+
+The universe of any component that depends
+on external data contains exactly four
+possible states. All four of these states
+exist whether the code handles them or not.
+When the code does not handle them, the
+unhandled states do not disappear — they
+manifest as bugs, blank screens, crashed
+pages, and confused users in production at
+the worst possible times.
+
+There is no partial implementation of this
+law. Handling three of the four states is
+not good enough. All four must be
+explicitly handled in every component that
+depends on external data. Every time.
+Without exception.
+
+STATE ONE — LOADING
+
+Data has been requested and has not yet
+arrived. Something is happening. The user
+must know that something is happening,
+what form the result will take when it
+arrives, and approximately where on the
+screen it will appear.
+
+The correct implementation is a skeleton
+component that mirrors the exact shape,
+size, and layout of the actual content
+that will replace it. Not a spinner. Not
+a loading text. A skeleton. The difference
+between a skeleton and a spinner is the
+difference between a user who understands
+what is loading and a user who is staring
+at an animated circle wondering what is
+about to happen.
+
+A skeleton for a vendor card looks like a
+vendor card with its content replaced by
+animated grey rectangles in the same
+positions where the actual content will
+appear. A skeleton for a list of events
+looks like a list of event cards with
+their content replaced in the same way.
+The user never experiences a jarring layout
+shift between the loading state and the
+populated state because the skeleton
+occupies exactly the same space.
+
+  Incorrect — the user sees nothing and
+  has no information:
+  if (isLoading) return null
+
+  Incorrect — a spinner provides no
+  information about what is loading or
+  where it will appear:
+  if (isLoading) return <Spinner />
+
+  Correct — the user sees the shape of
+  what is coming:
+  if (isVendorDataLoading) {
+    return <VendorCardSkeleton />
+  }
+
+STATE TWO — ERROR
+
+A request was made and it failed. The user
+needs to know something went wrong, what
+they can do about it, and that the failure
+is not their fault. The engineer needs to
+know exactly what failed, where it failed,
+why it failed, and when it failed. These
+are two completely different audiences with
+two completely different needs. Handle them
+separately. Always.
+
+For the user: a friendly, human message
+that describes what is unavailable and
+offers a concrete recovery action. No
+technical language. No HTTP status codes.
+No stack traces. No error object properties.
+Nothing that was written for a machine
+rather than a person.
+
+For the engineer: a console.error call with
+the function name in square brackets, the
+complete URL that was called, the HTTP
+status code if one was received, the error
+message, and an ISO timestamp. Everything
+required to diagnose the problem in under
+thirty seconds. Logged at the point of
+failure, not somewhere further up the
+call stack where the context has been lost.
+
+  The error is caught at the data layer:
+  } catch (error) {
+    console.error('[fetchFeaturedVendors]', {
+      message: error.message,
+      endpoint: `${API_BASE}/api/featured-vendors`,
+      status: error.status ?? 'network_failure',
+      timestamp: new Date().toISOString(),
+    })
+    return []
+  }
+
+  The component shows the user something
+  meaningful:
+  if (vendorFetchError) {
+    return (
+      <SectionError
+        heading="Vendors unavailable"
+        message="We could not load vendor
+                 information. Refresh the
+                 page to try again."
+      />
+    )
+  }
+
+STATE THREE — EMPTY
+
+The request completed successfully. The
+server returned a valid response. That
+response contained no data. This is not
+an error state. It is a valid and
+important state with its own distinct UI
+that must be purposefully designed.
+
+Empty states are among the highest-leverage
+user experience moments in any product.
+A user who encounters an empty screen with
+no context does not know whether the
+absence of content is expected or broken.
+They have no path forward. They bounce.
+A user who encounters an empty state with
+a clear explanation and a concrete call to
+action knows exactly where they stand and
+exactly what to do next.
+
+Never show nothing. Never show a container
+with no content inside it. Never show the
+word undefined or null. Never allow a
+component to render an empty shell that
+the user cannot distinguish from a
+broken page.
+
+  Incorrect — the user sees nothing and
+  does not know if the page is broken:
+  if (!vendors.length) return null
+
+  Incorrect — the user sees a container
+  with no content:
+  if (!vendors.length) return <div />
+
+  Correct — the user understands the
+  situation and has a path forward:
+  if (!vendors || vendors.length === 0) {
+    return (
+      <EmptyState
+        heading="No vendors in your area yet"
+        body="Pitch is growing across South
+              Australia. Check back soon or
+              browse all vendors on the
+              platform."
+        action={{
+          label: "Browse all vendors",
+          href: ROUTES.VENDORS,
+        }}
+      />
+    )
+  }
+
+STATE FOUR — SUCCESS
+
+The request completed. Data was returned.
+There is something to show. Render it.
+This is the state most engineers implement
+first. It must be implemented last — after
+loading, error, and empty are handled
+completely. The success state is where the
+component earns its name. Everything above
+it exists to protect the user's experience
+on the way to getting here.
+
+The complete pattern applied every time:
+
+  if (isVendorDataLoading) {
+    return <VendorListSkeleton />
+  }
+
+  if (vendorFetchError) {
+    return (
+      <SectionError
+        message="Unable to load vendors."
+      />
+    )
+  }
+
+  if (!vendors || vendors.length === 0) {
+    return (
+      <EmptyState
+        heading="No vendors yet"
+        action={{
+          label: "Be the first",
+          href: ROUTES.SIGNUP_VENDOR
+        }}
+      />
+    )
+  }
+
+  return (
+    <VendorList vendors={vendors} />
+  )
+
+───────────────────────────────────────────────
+LAW 4 — CONSTANTS ARE THE SINGLE TRUTH
+───────────────────────────────────────────────
+
+A magic number is a value that appears in
+code without a name. Magic numbers are
+dishonest. They tell the reader a value
+but reveal nothing about what the value
+means, where it came from, what business
+decision it encodes, or whether changing
+it in one place requires changing it
+elsewhere. They are the most common source
+of silent bugs in production systems.
+
+The difference between 3500 and
+CARD_ROTATION_INTERVAL_MS is not cosmetic.
+It is functional. When the product team
+decides to change the rotation speed, a
+search for 3500 will find some of its
+usages and miss others depending on how
+the number was typed, whether it appears
+in comments, and whether other features
+happen to use the same value for different
+reasons. A search for CARD_ROTATION_INTERVAL_MS
+finds every usage in the entire codebase
+instantly, unambiguously, and completely.
+
+The rule has no grey area:
+
+Any value that appears more than once —
+name it in constants.
+
+Any value that encodes a business decision
+— name it in constants with a comment
+explaining the decision.
+
+Any value that might ever change — name
+it in constants.
+
+Any value whose meaning is not immediately
+obvious from its raw form — name it in
+constants.
+
+Constants are organised by domain in
+separate files. Each file has one domain.
+All values are named in SCREAMING_SNAKE_CASE.
+All exports are named exports — never
+default exports from constants files.
+Business-rule values have comments
+explaining the reasoning behind the
+specific value chosen:
+
+  constants/timing.js
+  constants/limits.js
+  constants/thresholds.js
+  constants/routes.js
+  constants/ui.js
+  constants/api.js
+
+Values with non-obvious business reasoning
+must include an explanatory comment:
+
+  // 60 days chosen based on the SA Food Safety
+  // certificate renewal process. Vendors need
+  // a minimum of 8 weeks notice to renew without
+  // disrupting their active trading schedule.
+  export const DOCUMENT_EXPIRY_WARNING_DAYS = 60
+
+  // 70% threshold not 75% — organiser research
+  // showed vendor application rates drop sharply
+  // when fill rate displays above 75%. The 70%
+  // threshold creates urgency without deterring
+  // otherwise-qualified applicants.
+  export const FILL_RATE_URGENCY_THRESHOLD = 0.70
+
+───────────────────────────────────────────────
+LAW 5 — ERRORS ARE DATA. TREAT THEM AS SUCH.
+───────────────────────────────────────────────
+
+An error is not an exception to be suppressed
+or hidden. An error is data about what the
+system encountered that it did not expect.
+It is information. It must be captured,
+logged with complete context, and used to
+return a safe result to the calling code.
+
+There are two catastrophic failure modes
+that are both equally unacceptable:
+
+FAILURE MODE ONE — Silent swallowing
+
+  try {
+    const vendors = await fetchVendors()
+    setVendors(vendors)
+  } catch (error) {
+    // nothing
+  }
+
+This is the most dangerous error handling
+pattern in existence. The network call
+failed. The data was never set. The
+component renders its empty state or,
+worse, its previous state with stale data.
+The user is confused. The engineer has no
+record that anything went wrong. The bug
+is invisible in logs, invisible in
+monitoring, and invisible to everyone
+except the user experiencing it. This
+pattern is banned completely.
+
+FAILURE MODE TWO — Uncontrolled propagation
+
+  const vendors = await fetchVendors()
+  // No try/catch. If this throws, the error
+  // propagates up the call stack, crosses the
+  // component boundary, and crashes the entire
+  // page with a white screen or a React error
+  // boundary that shows the user nothing useful.
+  setVendors(vendors)
+
+A single failed network request should not
+take down an entire page. A vendor section
+that cannot load its data should show an
+error state for that section. The rest of
+the page should continue functioning
+normally. Uncontrolled propagation violates
+this principle completely.
+
+THE REQUIRED PATTERN for every API call
+without exception:
+
+  export async function fetchFeaturedVendors() {
+    try {
+      const response = await fetch(
+        `${API_BASE}/api/featured-vendors`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      )
+
+      // res.ok must be checked explicitly.
+      // A 404 or 500 response does NOT throw
+      // automatically. Without this check, a
+      // failed request returns silently with
+      // an empty or malformed body.
+      if (!response.ok) {
+        throw new Error(
+          `[fetchFeaturedVendors] Request failed:
+          ${response.status} ${response.statusText}`
+        )
+      }
+
+      return await response.json()
+
+    } catch (error) {
+      // Complete context for the engineer.
+      // Function name in brackets so it is
+      // instantly findable in log output.
+      console.error('[fetchFeaturedVendors]', {
+        message: error.message,
+        endpoint: `${API_BASE}/api/featured-vendors`,
+        timestamp: new Date().toISOString(),
+      })
+
+      // Typed safe fallback so the caller
+      // always receives a value it can use.
+      // Lists return []. Singles return null.
+      // Counts return 0. Booleans return false.
+      return []
+    }
+  }
+
+Every API call. Every time. No exceptions.
+
+───────────────────────────────────────────────
+LAW 6 — ABSTRACTIONS MUST JUSTIFY THEMSELVES
+───────────────────────────────────────────────
+
+An abstraction is justified when it makes the
+code that uses it simpler than the code would
+be without it. An abstraction is not justified
+because it looks cleaner, because it follows a
+pattern that was read about, because it might
+be reused someday, or because it makes the
+engineer who created it feel sophisticated.
+
+Premature abstraction is as harmful as
+duplication. An abstraction created before
+it is genuinely needed introduces complexity
+without paying the debt. Complexity that does
+not earn its existence makes the codebase
+harder to understand and change.
+
+The rule of three:
+
+First occurrence: write the logic inline.
+Do not abstract it. This is the first data
+point. One data point is not a pattern.
+
+Second occurrence: write it inline again.
+Note the duplication with a comment. Two
+data points suggest a pattern but do not
+confirm it. The correct shape of the
+abstraction is not yet clear.
+
+Third occurrence: the pattern is confirmed.
+Extract it into a named abstraction — a
+function, a hook, a component, or a utility
+— with a name that describes exactly what
+it does. Remove all three inline
+implementations and replace them with
+calls to the abstraction.
+
+The question to ask before creating any
+abstraction: does this make the code that
+calls it simpler than it would be without
+it? If the answer is yes — create it.
+If the answer is no — leave it inline.
+
+───────────────────────────────────────────────
+LAW 7 — COMMENTS EXPLAIN WHY. CODE SHOWS WHAT.
+───────────────────────────────────────────────
+
+A comment is an admission that the code
+requires additional explanation beyond what
+it can express on its own. Treat every
+comment you write as a slight failure —
+as evidence that the code is not yet clear
+enough. Let that feeling motivate you to
+try to eliminate the comment by making the
+code itself clearer. Only write the comment
+when no amount of renaming, restructuring,
+or simplification can make the code
+self-explanatory.
+
+Comments that describe what the code does
+are categorically unacceptable. The code
+shows what it does. A comment restating
+what the code shows is noise that will
+drift out of sync with the implementation
+over time and eventually become actively
+misleading — telling future readers that
+the code does something it no longer does.
+
+  These comments describe what. Delete them:
+
+  // increment the counter
+  count++
+
+  // filter for active vendors
+  const activeVendors = vendors.filter(
+    vendor => vendor.status === 'active'
+  )
+
+  // return the sorted array
+  return sortedVendors
+
+  These comments explain why. Keep them:
+
+  // Supabase storage URLs include a signed token
+  // that expires after 3600 seconds. Revalidating
+  // at 55 minutes ensures users never receive an
+  // expired URL mid-session, with 5 minutes of
+  // buffer for clock skew between services.
+  export const STORAGE_URL_REVALIDATE_SECONDS = 55 * 60
+
+  // The Express session cookie is set with
+  // httpOnly which prevents JavaScript from
+  // reading it directly. Auth state is proxied
+  // through /api/me rather than read from the
+  // cookie to work around this constraint.
+  const currentUser = await fetchCurrentUser()
+
+  // DO NOT remove this delay. The browser does
+  // not make the session cookie available
+  // synchronously after a redirect. 100ms is
+  // the empirically tested minimum required for
+  // the cookie to be readable by the auth check.
+  await delay(100)
+  const authState = await checkAuthState()
+
+The categories of comments that are required:
+
+Architectural decisions — when a specific
+approach was chosen over obvious alternatives
+and the reasoning is not evident from the code.
+
+Known limitations — when code intentionally
+works around a limitation of an external
+system or library and a future developer
+might be tempted to "fix" it.
+
+Business rules — when a specific value or
+behaviour is driven by a product decision
+that is not evident from the implementation.
+
+Danger warnings — when code that looks wrong
+is actually correct and must not be changed
+without understanding the full context.
+
+───────────────────────────────────────────────
+LAW 8 — SECURITY IS FOUNDATIONAL
+───────────────────────────────────────────────
+
+Security is not a feature that gets added
+after the product is built. Security is a
+property of the architecture that must be
+present from the first line of code.
+Retrofitting security into a codebase that
+was not designed with it is orders of
+magnitude more expensive than building it
+in from the start.
+
+CREDENTIALS NEVER TOUCH VERSION CONTROL
+
+No API key, no database password, no secret
+key of any kind ever appears in any file
+that is tracked by Git. Not in source files.
+Not in configuration files. Not in comments.
+Not in commit messages. Not anywhere.
+
+Credentials live in environment files that
+are listed in .gitignore and never committed.
+Verify that .gitignore is correct before the
+very first commit in any new environment.
+If a credential is accidentally committed
+to Git — rotate it immediately. Deleting
+the commit is not sufficient because the
+credential has already been in a state
+where it could have been observed. Rotation
+is the only safe response.
+
+ENVIRONMENT CONFIGURATION IS TYPED
+
+Never access process.env directly scattered
+throughout the codebase. Create a single
+configuration module that reads all
+environment variables, validates that
+required ones are present, and exports a
+typed configuration object. Every other
+file imports from this module. This means
+that missing environment variables cause
+an immediate startup failure with a clear
+error message rather than a silent
+undefined value somewhere deep in the
+request handling that causes a cryptic
+error much later.
+
+SERVER-ONLY SECRETS NEVER REACH THE CLIENT
+
+In Next.js, environment variables without
+the NEXT_PUBLIC_ prefix are server-only.
+They must never be imported in client
+components. Next.js does not automatically
+prevent this — it is the developer's
+responsibility to ensure that server-only
+configuration is never imported in any
+file that runs in the browser.
+
+ALL USER INPUT IS VALIDATED TWICE
+
+Client-side validation exists for user
+experience — it provides immediate feedback
+without a network round trip. It is not
+a security boundary. Any value that arrives
+from the client must be validated again on
+the server before it touches the database,
+before it is used in a query, and before
+it is sent to any external service. Client
+validation and server validation are not
+alternatives. They are both required.
+
+───────────────────────────────────────────────
+LAW 9 — COMMITS ARE PERMANENT DOCUMENTATION
+───────────────────────────────────────────────
+
+A commit is not a save point. It is a
+permanent, immutable record of a decision
+made at a specific point in time. Six months
+from now, the git log is the only remaining
+record of why the codebase looks the way it
+does. There will be no chat history. There
+will be no memory of the conversation that
+led to the decision. There will be only the
+commits.
+
+Write every commit message as if the person
+reading it in six months — which may well be
+you — has no prior context whatsoever and is
+trying to understand what changed, why it
+changed, and whether reverting it is safe.
+
+The format:
+type(scope): imperative description
+
+The description completes the sentence:
+"If applied, this commit will..."
+
+Types:
+  feat     new capability that did not exist
+  fix      behaviour that was wrong is now right
+  refactor structure changed, behaviour unchanged
+  style    visual changes only, no logic changed
+  chore    config, dependencies, constants, tooling
+  docs     documentation only, no code changed
+  perf     measurably faster, no behaviour change
+
+Examples of commit messages that provide
+complete information:
+
+  feat(hero): implement rotating event card
+    preview with 3.5s auto-advance and
+    progress bar using useCardRotation hook
+
+  fix(data): correct API base URL port from
+    3001 to 3000 in all three data layer files
+
+  refactor(vendors): extract VendorCard into
+    standalone memoized component and remove
+    inline definition from TopVendors
+
+  chore(constants): create timing limits
+    thresholds routes and ui constant files
+    with full domain organisation
+
+  style(trust): reduce bottom section padding
+    from 150px to 48px to match brand specification
+
+  fix(nav): add explicit rewrites for all
+    Express routes in next.config.mjs including
+    admin dashboard and auth flows
+
+Banned commit messages — these are
+indistinguishable from each other and
+provide zero information to any future reader:
+
+  fix
+  update
+  changes
+  final
+  wip
+  misc
+  stuff
+  testing
+  small fix
+  various changes
+
+These messages are not acceptable. They will
+never be acceptable. If you cannot describe
+what changed and why in one specific sentence,
+the commit is not ready.
+
+═══════════════════════════════════════════════
+THE PRE-SUBMISSION CHECKLIST
+═══════════════════════════════════════════════
+
+Run every item in this checklist before
+marking any task complete. Every checkbox.
+Every time. No partial checks.
+
+NAMES
+□ Every variable name completely describes
+  what it contains without requiring the
+  implementation to be read
+□ Every boolean name reads as a true or false
+  statement — starts with is, has, can, should,
+  does, will, or similar
+□ Every function name describes exactly what
+  calling it will do including what it returns
+□ Every event handler name begins with handle
+  followed by the element and the event
+□ All collections are plural
+□ All individual items are singular
+□ No single-letter variable names outside of
+  index variables in traditional for loops
+□ No unexplained abbreviations that are not
+  universally understood
+
+RESPONSIBILITY
+□ Every function description contains no
+  instance of the word and
+□ Every file is under 200 lines
+□ Every page file is under 80 lines
+□ No component fetches its own data
+□ No page file contains any styling
+□ No page file contains any business logic
+□ No data function transforms data
+□ No utility function has side effects
+□ No hook renders any JSX
+
+STATES
+□ Loading state exists and renders a skeleton
+  that matches the shape of the actual content
+□ Error state exists and shows a human message
+  to the user and logs technical detail for
+  the engineer with function name endpoint
+  status and timestamp
+□ Empty state exists and shows an explanation
+  and a recovery action — never nothing
+□ Success state renders the actual content
+□ All major page sections are wrapped in an
+  ErrorBoundary with a meaningful fallback
+
+CONSTANTS
+□ No numeric value that has business meaning
+  appears hardcoded more than once
+□ No string value that has business meaning
+  appears hardcoded more than once
+□ Non-obvious values have comments explaining
+  the business reasoning behind them
+□ All timing values live in constants/timing.js
+□ All size and count limits live in
+  constants/limits.js
+□ All routes use the ROUTES object from
+  constants/routes.js
+
+ERROR HANDLING
+□ Every fetch call is wrapped in try/catch
+□ Every fetch call checks response.ok explicitly
+  after the await — not just catching throws
+□ Every catch block logs with the function name
+  in brackets, the endpoint URL, and a timestamp
+□ Every catch block returns a typed safe fallback
+  value appropriate to what the caller expects
+□ No error silently swallowed without logging
+□ No error propagates uncaught to the page level
+
+SECURITY
+□ No credential of any kind appears in any
+  tracked file
+□ Environment variables are accessed through
+  the config module, not process.env directly
+□ No server-only environment variable is
+  imported in any client component
+□ User input that reaches the server is
+  validated on the server regardless of
+  client-side validation
+
+COMMITS
+□ Message follows type(scope): format exactly
+□ Description is in imperative mood
+□ Description is specific enough that someone
+  with no context could understand what changed
+□ None of the banned generic messages were used
+
+═══════════════════════════════════════════════
+THE STANDARD
+═══════════════════════════════════════════════
+
+Before writing a single character of code,
+ask this question and answer it honestly:
+
+Would a senior engineer at Stripe, at Linear,
+at Vercel — someone who has seen thousands of
+codebases and knows immediately upon opening
+a file whether it was written by someone who
+cares about their craft — look at this and
+feel proud to have written it?
+
+Not: does it work. Working code is the
+absolute minimum. A broken clock is right
+twice a day. Working code that is unclear,
+inconsistent, and unmaintainable is
+technical debt that compounds daily and
+eventually costs more to fix than to
+rewrite from scratch.
+
+Not: is it clever. Cleverness in code is
+a liability. Clever code impresses the
+person who wrote it and confuses everyone
+else who ever reads it. The goal is clarity.
+Clarity is harder than cleverness. Clarity
+requires knowing a domain well enough to
+explain it simply. Cleverness requires
+only knowing enough tricks to obscure it.
+
+Not: is it fast. Code that is fast but
+unreadable will be rewritten by the first
+developer who needs to change it and does
+not understand it. Correctness and clarity
+first. Optimise when profiling proves it
+is necessary and not a moment before.
+
+The question is: is this clear, correct,
+honest, secure, and maintainable by any
+competent developer who picks it up six
+months from now with no prior context and
+no one to ask?
+
+If yes — it is ready.
+If no — it is not ready. Fix it first.
+There is no third option.
+
+This is not perfectionism. Perfectionism
+delays shipping indefinitely in pursuit of
+an impossible standard. This is
+professionalism. Professionalism ships
+code that is genuinely good — clear,
+correct, and maintainable — and moves on.
+The distinction is that professionalism
+has a definition of done. These laws and
+this checklist are that definition.
+
+Every file in this codebase is a permanent
+record of the craft and care that went into
+building this platform. Write it accordingly.
