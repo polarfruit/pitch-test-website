@@ -317,7 +317,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 
 .step-panel { display:none; max-width:840px; }
 .step-panel.active { display:block; }
-.step-nav { display:flex; align-items:center; justify-content:space-between; margin-top:20px; padding-top:0; border-top:none; }
+.step-nav { display:flex; align-items:center; justify-content:space-between; margin-top:20px; padding-top:0; border-top:none; margin-bottom:4px; }
 .btn-step-back { font-family:var(--fb); font-size:13px; font-weight:600; color:var(--text-mid);
   background:transparent; border:1px solid #ffffff18; padding:11px 22px; border-radius:10px; cursor:pointer; transition:all 0.14s; }
 .btn-step-back:hover { color:var(--text-hi); background:#ffffff08; }
@@ -325,7 +325,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
   background:var(--ember); border:none; padding:12px 28px; border-radius:10px; cursor:pointer;
   box-shadow:0 4px 16px #E8500A2E; transition:all 0.14s; }
 .btn-step-next:hover { background:var(--ember-glow); transform:translateY(-1px); }
-.btn-publish { background:var(--herb); box-shadow:0 4px 16px #2D8B5530; }
+.btn-publish { background:var(--herb); box-shadow:0 4px 20px #2D8B5540; }
 .btn-publish:hover { background:#3DA86A; }
 
 /* Form fields (shared) */
@@ -367,16 +367,16 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 /* Review step */
 .review-section { margin-bottom:0; }
 .review-section + .review-section { margin-top:20px; }
-.review-section-head { display:flex; align-items:center; justify-content:space-between; padding:10px 0 6px; margin-bottom:4px; border-bottom:1px solid #ffffff0a; }
-.review-section-title { font-family:var(--fd); font-size:13px; font-weight:800; color:var(--text-mid); letter-spacing:-0.01em; }
+.review-section-head { display:flex; align-items:center; justify-content:space-between; padding:10px 0 6px; margin-bottom:4px; border-bottom:1px solid #ffffff0c; }
+.review-section-title { font-family:var(--fd); font-size:14px; font-weight:800; color:var(--text-mid); letter-spacing:-0.01em; }
 .review-section-edit { font-size:11px; font-weight:700; color:var(--ember); background:none; border:none; cursor:pointer; font-family:var(--fb); padding:3px 8px; border-radius:6px; transition:all 0.12s; display:flex; align-items:center; gap:4px; }
 .review-section-edit:hover { background:#E8500A12; }
-.review-field { display:flex; gap:16px; padding:12px 0; border-bottom:1px solid #ffffff07; }
+.review-field { display:flex; gap:16px; padding:12px 0; border-bottom:1px solid #ffffff0c; }
 .review-field:last-child { border-bottom:none; }
 .review-field-label { font-size:11px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-lo); width:180px; flex-shrink:0; padding-top:2px; }
 .review-field-value { font-size:13px; color:var(--text-hi); flex:1; line-height:1.6; }
-.review-field-value.not-set { color:var(--text-lo); font-style:italic; }
-.review-field-value.long-text { font-size:12px; line-height:1.5; color:var(--text-mid); }
+.review-field-value.not-set { color:#4A3C30; font-style:italic; }
+.review-field-value.long-text { font-size:13px; line-height:1.6; color:var(--text-hi); }
 
 /* ── MESSAGES ── */
 .messages-layout { display:grid; grid-template-columns:280px 1fr; gap:0; height:calc(100vh - 60px - 64px); }
@@ -1230,7 +1230,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
           <div style="font-size:13px;color:var(--text-mid);margin-bottom:16px;">Review your event listing before publishing. You can edit any section below.</div>
 
           <div class="review-section">
-            <div class="review-section-head"><span class="review-section-title">Basics</span><button class="review-section-edit" onclick="goStep(1)">✎ Edit</button></div>
+            <div class="review-section-head"><span class="review-section-title">Basics</span><button class="review-section-edit" onclick="goStep(1)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg> Edit</button></div>
             <div class="review-field"><div class="review-field-label">Event name</div><div class="review-field-value" id="rv-name">—</div></div>
             <div class="review-field"><div class="review-field-label">Category</div><div class="review-field-value" id="rv-category">—</div></div>
             <div class="review-field"><div class="review-field-label">Date</div><div class="review-field-value" id="rv-date">—</div></div>
@@ -1240,7 +1240,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
           </div>
 
           <div class="review-section">
-            <div class="review-section-head"><span class="review-section-title">Booth specs</span><button class="review-section-edit" onclick="goStep(2)">✎ Edit</button></div>
+            <div class="review-section-head"><span class="review-section-title">Booth specs</span><button class="review-section-edit" onclick="goStep(2)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg> Edit</button></div>
             <div class="review-field"><div class="review-field-label">Total spots</div><div class="review-field-value" id="rv-spots">—</div></div>
             <div class="review-field"><div class="review-field-label">Booth size</div><div class="review-field-value" id="rv-booth-size">—</div></div>
             <div class="review-field"><div class="review-field-label">Booth fee</div><div class="review-field-value" id="rv-fee">—</div></div>
@@ -1249,7 +1249,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
           </div>
 
           <div class="review-section">
-            <div class="review-section-head"><span class="review-section-title">Requirements</span><button class="review-section-edit" onclick="goStep(3)">✎ Edit</button></div>
+            <div class="review-section-head"><span class="review-section-title">Requirements</span><button class="review-section-edit" onclick="goStep(3)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg> Edit</button></div>
             <div class="review-field"><div class="review-field-label">App. deadline</div><div class="review-field-value" id="rv-deadline">—</div></div>
             <div class="review-field"><div class="review-field-label">Cuisines wanted</div><div class="review-field-value" id="rv-cuisines">—</div></div>
             <div class="review-field"><div class="review-field-label">What we're looking for</div><div class="review-field-value" id="rv-looking-for" style="white-space:pre-wrap;">—</div></div>
@@ -1257,7 +1257,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
           </div>
 
           <div class="review-section">
-            <div class="review-section-head"><span class="review-section-title">Terms</span><button class="review-section-edit" onclick="goStep(4)">✎ Edit</button></div>
+            <div class="review-section-head"><span class="review-section-title">Terms</span><button class="review-section-edit" onclick="goStep(4)"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg> Edit</button></div>
             <div class="review-field"><div class="review-field-label">Cancellation</div><div class="review-field-value long-text" id="rv-cancel-policy" style="white-space:pre-wrap;">—</div></div>
             <div class="review-field"><div class="review-field-label">Payment terms</div><div class="review-field-value" id="rv-payment">—</div></div>
           </div>
@@ -1660,7 +1660,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
             </div>
           </div>
           <span id="oa-range-label" style="font-size:12px;color:#A89880;margin-left:auto;"></span>
-          <button onclick="exportAnalyticsCSV()" style="font-family:var(--fb);font-size:12px;font-weight:700;color:var(--text-lo);background:#ffffff08;border:1px solid #ffffff10;padding:6px 14px;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:5px;transition:color 0.15s,border-color 0.15s;" onmouseover="this.style.color='var(--text-hi)';this.style.borderColor='#ffffff30'" onmouseout="this.style.color='var(--text-lo)';this.style.borderColor='#ffffff10'">
+          <button id="ana-export-btn" onclick="exportAnalyticsCSV()" disabled style="font-family:var(--fb);font-size:12px;font-weight:700;color:var(--text-lo);background:#ffffff08;border:1px solid #ffffff10;padding:6px 14px;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:5px;transition:color 0.15s,border-color 0.15s,opacity 0.15s;opacity:0.35;" onmouseover="if(!this.disabled){this.style.color='var(--text-hi)';this.style.borderColor='#ffffff30'}" onmouseout="this.style.color='var(--text-lo)';this.style.borderColor='#ffffff10'">
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v7M3 5l3 3 3-3M1.5 9.5h9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Export CSV
           </button>
@@ -4485,8 +4485,9 @@ function _anaTab(name, btn) {
   btn?.classList.add('active');
 }
 
-function _anaEmpty(icon, title, sub) {
-  return `<div class="analytics-empty"><div class="analytics-empty-icon">${icon}</div><div class="analytics-empty-title">${title}</div><div class="analytics-empty-sub">${sub}</div></div>`;
+function _anaEmpty(icon, title, sub, cta) {
+  const ctaHtml = cta ? `<a href="${cta.href || '#'}"${cta.onclick ? ` onclick="${cta.onclick};return false"` : ''} style="font-family:var(--fb);font-size:12px;font-weight:700;color:var(--ember);text-decoration:none;display:inline-flex;align-items:center;gap:4px;padding:8px 16px;border:1px solid var(--ember);border-radius:8px;transition:background 0.15s,color 0.15s;" onmouseover="this.style.background='var(--ember)';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='var(--ember)'">${cta.label} →</a>` : '';
+  return `<div class="analytics-empty"><div class="analytics-empty-icon">${icon}</div><div class="analytics-empty-title">${title}</div><div class="analytics-empty-sub">${sub}</div>${ctaHtml}</div>`;
 }
 
 function _anaFmtMoney(n) { return '$' + Number(n || 0).toLocaleString('en-AU'); }
@@ -4497,7 +4498,7 @@ function _anaMonthLabel(ym) { const [y, m] = ym.split('-'); const names = ['Jan'
 function _renderRevenue(d) {
   const el = document.getElementById('ana-revenue');
   if (!d || (d.collected === 0 && d.outstanding === 0 && !d.by_event?.length)) {
-    el.innerHTML = _anaEmpty('💰', 'No revenue data yet', 'Stall fee data will appear here once you start invoicing vendors.');
+    el.innerHTML = _anaEmpty('💰', 'No revenue data yet', 'Stall fee data will appear here once you start invoicing vendors.', { href: '#', onclick: "showPanel('events')", label: 'View my events' });
     return;
   }
   let html = `<div class="analytics-summary" style="margin-bottom:24px;">
@@ -4549,7 +4550,7 @@ function _renderRevenue(d) {
 function _renderApplications(d) {
   const el = document.getElementById('ana-applications');
   if (!d || d.total === 0) {
-    el.innerHTML = _anaEmpty('📋', 'No applications yet', 'Application analytics will appear once vendors start applying to your events.');
+    el.innerHTML = _anaEmpty('📋', 'No applications yet', 'Application analytics will appear once vendors start applying to your events.', { href: '#', onclick: "showPanel('new-event')", label: 'Post an event' });
     return;
   }
   const decided = d.approved + d.rejected;
@@ -4602,7 +4603,7 @@ function _renderApplications(d) {
 function _renderVendors(d) {
   const el = document.getElementById('ana-vendors');
   if (!d || d.total_unique === 0) {
-    el.innerHTML = _anaEmpty('👥', 'No vendor data yet', 'Vendor insights will appear once you approve vendors to your events.');
+    el.innerHTML = _anaEmpty('👥', 'No vendor data yet', 'Vendor insights will appear once you approve vendors to your events.', { href: '#', onclick: "showPanel('events')", label: 'View my events' });
     return;
   }
   let html = `<div class="analytics-summary" style="margin-bottom:24px;">
@@ -4676,7 +4677,7 @@ function _renderVendors(d) {
 function _renderEvents(d) {
   const el = document.getElementById('ana-events');
   if (!d?.events?.length) {
-    el.innerHTML = _anaEmpty('📅', 'No events yet', 'Event comparison data will appear once you create events.');
+    el.innerHTML = _anaEmpty('📅', 'No events yet', 'Event comparison data will appear once you create events.', { href: '#', onclick: "showPanel('new-event')", label: 'Post an event' });
     return;
   }
   let html = `<div class="analytics-section-title">Event Performance</div>
@@ -4710,7 +4711,7 @@ function _renderEvents(d) {
 function _renderReputation(d) {
   const el = document.getElementById('ana-reputation');
   if (!d || d.total_reviews === 0) {
-    el.innerHTML = _anaEmpty('⭐', 'No reviews yet', 'Your reputation score will appear once vendors leave reviews about your events.');
+    el.innerHTML = _anaEmpty('⭐', 'No reviews yet', 'Your reputation score will appear once vendors leave reviews about your events.', { href: '#', onclick: "showPanel('events')", label: 'View my events' });
     return;
   }
   const ratingColor = d.avg_rating >= 4 ? 'var(--herb)' : d.avg_rating >= 3 ? 'var(--gold)' : 'var(--terra)';
@@ -4769,10 +4770,12 @@ async function loadOrgAnalytics() {
     const _respColor = _respVal === '—' ? 'var(--text-lo)' : 'var(--text-hi)';
     const _ratVal = rep.avg_rating || '—';
     const _ratColor = _ratVal === '—' ? 'var(--text-lo)' : (rep.avg_rating >= 4 ? 'var(--herb)' : rep.avg_rating >= 3 ? 'var(--gold)' : 'var(--text-mid)');
+    const _decided = (apps.approved || 0) + (apps.rejected || 0);
+    const _approvalColor = _decided >= 5 ? 'var(--herb)' : 'var(--text-hi)';
     summaryEl.innerHTML = `
       <div class="analytics-stat-card"><div class="analytics-stat-value" style="color:${_revColor};">${_anaFmtMoney(rev.collected)}</div><div class="analytics-stat-label">Revenue</div></div>
       <div class="analytics-stat-card"><div class="analytics-stat-value">${apps.total || 0}</div><div class="analytics-stat-label">Applications</div></div>
-      <div class="analytics-stat-card"><div class="analytics-stat-value" style="color:var(--herb);">${apps.approval_rate || 0}%</div><div class="analytics-stat-label">Approval Rate</div></div>
+      <div class="analytics-stat-card"><div class="analytics-stat-value" style="color:${_approvalColor};">${apps.approval_rate || 0}%</div><div class="analytics-stat-label">Approval Rate</div></div>
       <div class="analytics-stat-card"><div class="analytics-stat-value" style="color:${_respColor};">${_respVal}</div><div class="analytics-stat-label">Response Time</div></div>
       <div class="analytics-stat-card"><div class="analytics-stat-value">${vend.total_unique || 0}</div><div class="analytics-stat-label">Vendors</div></div>
       <div class="analytics-stat-card"><div class="analytics-stat-value" style="color:${_ratColor};">${_ratVal}</div><div class="analytics-stat-label">Rating</div></div>
@@ -4783,6 +4786,12 @@ async function loadOrgAnalytics() {
     _renderVendors(data.vendors);
     _renderEvents(data.events_comparison);
     _renderReputation(data.reputation);
+    // Enable Export CSV only when there's meaningful data
+    const exportBtn = document.getElementById('ana-export-btn');
+    const hasData = (apps.total || 0) > 0 || Number(rev.collected) > 0 || (vend.total_unique || 0) > 0 || (rep.total_reviews || 0) > 0;
+    exportBtn.disabled = !hasData;
+    exportBtn.style.opacity = hasData ? '1' : '0.35';
+    exportBtn.style.cursor = hasData ? 'pointer' : 'default';
   } catch(e) { console.error('[analytics]', e); }
 }
 
