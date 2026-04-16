@@ -14,8 +14,8 @@
 
     .card {
       width: 100%; max-width: 420px;
-      background: #231E19; border: 1px solid #2A2018; border-radius: 18px; padding: 40px;
-      box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+      background: #231E19; border: 1px solid #ffffff0c; border-radius: 18px; padding: 40px;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03);
     }
 
     .logo { display: flex; align-items: center; gap: 9px; margin-bottom: 32px; }
@@ -30,7 +30,7 @@
     .field-input {
       width: 100%; background: #1A1612; border: 1.5px solid #2A2018; border-radius: 10px;
       color: #FDF4E7; font-family: 'Instrument Sans', sans-serif; font-size: 15px;
-      padding: 12px 16px; outline: none; transition: border-color 0.2s;
+      padding: 14px 16px; outline: none; transition: border-color 0.2s;
     }
     .field-input:focus { border-color: #E8500A; }
     .field-input::placeholder { color: #4A3C30; }
@@ -39,9 +39,9 @@
     .pw-toggle {
       position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
       background: none; border: none; cursor: pointer; color: #6B5A4A; font-size: 13px;
-      font-family: inherit; font-weight: 600;
+      font-family: inherit; font-weight: 600; transition: color 0.14s;
     }
-    .pw-toggle:hover { color: #A89880; }
+    .pw-toggle:hover { color: #E8500A; text-decoration: underline; }
 
     .forgot { display: block; text-align: right; font-size: 12px; color: #6B5A4A; text-decoration: none; margin-top: 6px; }
     .forgot:hover { color: #E8500A; }
@@ -68,6 +68,7 @@
     .divider span { font-size: 12px; color: #6B5A4A; white-space: nowrap; }
 
     .sso-btns { display: flex; justify-content: center; }
+    .sso-btns iframe { border-radius: 24px !important; }
     .sso-btn {
       display: flex; align-items: center; justify-content: center; gap: 7px;
       background: #1A1612; border: 1.5px solid #2A2018; border-radius: 10px;
@@ -119,9 +120,9 @@
   <div class="footer-links" style="margin-top:20px;">
     Don't have an account?<br>
     <a href="/signup/vendor" id="signup-link">Vendor</a>
-    &nbsp;·&nbsp;
+    <span style="color:#4A3C30;margin:0 6px;">·</span>
     <a href="/signup/organiser">Organiser</a>
-    &nbsp;·&nbsp;
+    <span style="color:#4A3C30;margin:0 6px;">·</span>
     <a href="/signup/foodie">Foodie</a>
   </div>
 
