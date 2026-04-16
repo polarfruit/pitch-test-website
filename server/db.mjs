@@ -689,12 +689,24 @@ await _safeExec(`
   )
 `);
 await _safeExec(`CREATE INDEX IF NOT EXISTS idx_menu_vendor ON menu_items(vendor_user_id, sort_order)`);
-// Force dietary_tags column — use raw client on Turso to bypass _safeExec caching
+// Force dietary_tags column — check existence first, then ALTER if missing
 if (_client) {
-  try { await _client.execute('ALTER TABLE menu_items ADD COLUMN dietary_tags TEXT'); console.log('[db] Added dietary_tags to menu_items'); }
-  catch(e) { if (!e.message?.includes('duplicate column')) console.error('[db] dietary_tags migration:', e.message); }
+  try {
+    const cols = await _client.execute(`PRAGMA table_info(menu_items)`);
+    const hasDietary = cols.rows.some(r => r.name === 'dietary_tags');
+    if (!hasDietary) {
+      await _client.execute('ALTER TABLE menu_items ADD COLUMN dietary_tags TEXT');
+      console.log('[db] Added dietary_tags to menu_items');
+    }
+  } catch(e) { console.error('[db] dietary_tags migration error:', e.message); }
 } else {
-  await _safeExec(`ALTER TABLE menu_items ADD COLUMN dietary_tags TEXT`);
+  try {
+    const cols = _localDb.pragma('table_info(menu_items)');
+    if (!cols.some(r => r.name === 'dietary_tags')) {
+      _localDb.exec('ALTER TABLE menu_items ADD COLUMN dietary_tags TEXT');
+      console.log('[db] Added dietary_tags to menu_items');
+    }
+  } catch(e) { console.error('[db] dietary_tags migration error:', e.message); }
 }
 
 // ── Analytics tracking tables ────────────────────────────────────────────────
