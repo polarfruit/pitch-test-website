@@ -698,6 +698,15 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .analytics-demand-low { background:#C0392B20; color:var(--terra); }
 .analytics-fill-pct { font-size:24px; font-family:var(--fd); font-weight:900; letter-spacing:-0.02em; line-height:1; }
 
+/* Skeleton shimmer for analytics loading */
+@keyframes anaShimmer { 0% { background-position: -400px 0; } 100% { background-position: 400px 0; } }
+.ana-skel { border-radius:8px; background: linear-gradient(90deg, #ffffff06 25%, #ffffff10 50%, #ffffff06 75%); background-size:400px 100%; animation: anaShimmer 1.4s ease-in-out infinite; }
+.ana-skel-card { background:var(--char); border:1px solid #ffffff0a; border-radius:12px; padding:16px 18px; text-align:center; }
+.ana-skel-card .ana-skel-val { height:28px; width:60%; margin:0 auto 8px; }
+.ana-skel-card .ana-skel-lbl { height:10px; width:50%; margin:0 auto; }
+.ana-skel-bar { height:18px; margin-bottom:8px; }
+.ana-skel-tab { height:36px; width:80px; border-radius:8px; }
+
 /* Organiser analytics date range filter */
 .oa-range-btn { background: #1C1814; border: 1px solid #2A2018; color: #A89880; font-size: 12px; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-family: inherit; transition: border-color 0.15s, color 0.15s, background 0.15s; }
 .oa-range-btn:hover { border-color: #E8500A44; color: #FDF4E7; }
@@ -1592,8 +1601,15 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
         <div style="margin-bottom:20px;">
           <div style="font-size:13px;color:var(--text-lo);">Real-time insights across revenue, applications, vendors, and events.</div>
         </div>
-        <!-- Top-level summary -->
-        <div class="analytics-summary" id="analytics-top-summary" style="display:none;"></div>
+        <!-- Top-level summary (skeleton shown while loading) -->
+        <div class="analytics-summary" id="analytics-top-summary">
+          <div class="ana-skel-card"><div class="ana-skel ana-skel-val"></div><div class="ana-skel ana-skel-lbl"></div></div>
+          <div class="ana-skel-card"><div class="ana-skel ana-skel-val"></div><div class="ana-skel ana-skel-lbl"></div></div>
+          <div class="ana-skel-card"><div class="ana-skel ana-skel-val"></div><div class="ana-skel ana-skel-lbl"></div></div>
+          <div class="ana-skel-card"><div class="ana-skel ana-skel-val"></div><div class="ana-skel ana-skel-lbl"></div></div>
+          <div class="ana-skel-card"><div class="ana-skel ana-skel-val"></div><div class="ana-skel ana-skel-lbl"></div></div>
+          <div class="ana-skel-card"><div class="ana-skel ana-skel-val"></div><div class="ana-skel ana-skel-lbl"></div></div>
+        </div>
         <!-- Date range filter -->
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap;" id="oa-date-bar">
           <button class="oa-range-btn active" data-range="all" onclick="setOaRange('all',this)">All time</button>
@@ -1658,7 +1674,18 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
           <button class="analytics-tab" onclick="_anaTab('reputation',this)">Reputation</button>
         </div>
         <!-- Sections -->
-        <div class="analytics-section active" id="ana-revenue"><div style="text-align:center;padding:40px;color:var(--text-lo);font-size:13px;">Loading…</div></div>
+        <div class="analytics-section active" id="ana-revenue">
+          <div class="analytics-summary" style="margin-bottom:24px;">
+            <div class="ana-skel-card"><div class="ana-skel ana-skel-val"></div><div class="ana-skel ana-skel-lbl"></div></div>
+            <div class="ana-skel-card"><div class="ana-skel ana-skel-val"></div><div class="ana-skel ana-skel-lbl"></div></div>
+            <div class="ana-skel-card"><div class="ana-skel ana-skel-val"></div><div class="ana-skel ana-skel-lbl"></div></div>
+            <div class="ana-skel-card"><div class="ana-skel ana-skel-val"></div><div class="ana-skel ana-skel-lbl"></div></div>
+          </div>
+          <div class="ana-skel ana-skel-bar" style="width:40%;margin-bottom:16px;height:12px;"></div>
+          <div class="ana-skel ana-skel-bar" style="width:100%;"></div>
+          <div class="ana-skel ana-skel-bar" style="width:85%;"></div>
+          <div class="ana-skel ana-skel-bar" style="width:65%;"></div>
+        </div>
         <div class="analytics-section" id="ana-applications"></div>
         <div class="analytics-section" id="ana-vendors"></div>
         <div class="analytics-section" id="ana-events"></div>
@@ -4463,7 +4490,7 @@ function _anaEmpty(icon, title, sub) {
 }
 
 function _anaFmtMoney(n) { return '$' + Number(n || 0).toLocaleString('en-AU'); }
-function _anaFmtHours(h) { if (!h || h <= 0) return 'N/A'; if (h < 24) return Math.round(h) + 'h'; const d = Math.floor(h / 24); const rem = Math.round(h % 24); return d + 'd' + (rem > 0 ? ' ' + rem + 'h' : ''); }
+function _anaFmtHours(h) { if (!h || h <= 0) return '—'; if (h < 24) return Math.round(h) + 'h'; const d = Math.floor(h / 24); const rem = Math.round(h % 24); return d + 'd' + (rem > 0 ? ' ' + rem + 'h' : ''); }
 function _anaStars(n) { const f = Math.round(n || 0); return '<span class="analytics-stars"><span class="star-filled">' + '★'.repeat(f) + '</span>' + '☆'.repeat(5 - f) + '</span>'; }
 function _anaMonthLabel(ym) { const [y, m] = ym.split('-'); const names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']; return (names[parseInt(m)-1] || m) + ' ' + y.slice(2); }
 
@@ -4716,28 +4743,32 @@ function _renderReputation(d) {
 }
 
 async function loadOrgAnalytics() {
+  const summaryEl = document.getElementById('analytics-top-summary');
+  const skelCard = '<div class="ana-skel-card"><div class="ana-skel ana-skel-val"></div><div class="ana-skel ana-skel-lbl"></div></div>';
+  // Show skeleton shimmer while loading
+  summaryEl.innerHTML = skelCard.repeat(6);
+  document.getElementById('ana-revenue').innerHTML = `<div class="analytics-summary" style="margin-bottom:24px;">${skelCard.repeat(4)}</div><div class="ana-skel ana-skel-bar" style="width:40%;margin-bottom:16px;height:12px;"></div><div class="ana-skel ana-skel-bar" style="width:100%;"></div><div class="ana-skel ana-skel-bar" style="width:85%;"></div><div class="ana-skel ana-skel-bar" style="width:65%;"></div>`;
   try {
     let _anaUrl = '/api/organiser/analytics';
     if (_oaFrom && _oaTo) _anaUrl += '?from=' + _oaFrom + '&to=' + _oaTo;
     const r = await pitchFetch(_anaUrl);
     if (!r.ok) {
+      summaryEl.innerHTML = '';
       document.getElementById('ana-revenue').innerHTML = `<div style="text-align:center;padding:40px;color:var(--terra);font-size:13px;">Failed to load analytics. Try refreshing.</div>`;
       return;
     }
     const data = await r.json();
     window._lastAnalyticsData = data;
-    const summaryEl = document.getElementById('analytics-top-summary');
     // Top summary row — 6 key metrics
     const apps = data.applications || {};
     const rev = data.revenue || {};
     const vend = data.vendors || {};
     const rep = data.reputation || {};
-    summaryEl.style.display = '';
     const _revColor = Number(rev.collected) > 0 ? 'var(--herb)' : 'var(--text-lo)';
     const _respVal = _anaFmtHours(apps.avg_response_hours);
-    const _respColor = _respVal === 'N/A' ? 'var(--text-lo)' : 'var(--text-hi)';
-    const _ratVal = rep.avg_rating || 'N/A';
-    const _ratColor = _ratVal === 'N/A' ? 'var(--text-lo)' : (rep.avg_rating >= 4 ? 'var(--herb)' : rep.avg_rating >= 3 ? 'var(--gold)' : 'var(--text-mid)');
+    const _respColor = _respVal === '—' ? 'var(--text-lo)' : 'var(--text-hi)';
+    const _ratVal = rep.avg_rating || '—';
+    const _ratColor = _ratVal === '—' ? 'var(--text-lo)' : (rep.avg_rating >= 4 ? 'var(--herb)' : rep.avg_rating >= 3 ? 'var(--gold)' : 'var(--text-mid)');
     summaryEl.innerHTML = `
       <div class="analytics-stat-card"><div class="analytics-stat-value" style="color:${_revColor};">${_anaFmtMoney(rev.collected)}</div><div class="analytics-stat-label">Revenue</div></div>
       <div class="analytics-stat-card"><div class="analytics-stat-value">${apps.total || 0}</div><div class="analytics-stat-label">Applications</div></div>

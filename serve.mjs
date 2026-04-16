@@ -3606,10 +3606,11 @@ app.get('/api/organiser/analytics', requireAuth, async (req, res) => {
   const hasRange = fromQ && toQ && /^\d{4}-\d{2}-\d{2}$/.test(fromQ) && /^\d{4}-\d{2}-\d{2}$/.test(toQ);
   try {
     let stats, revCollected, revOutstanding, revByEvent, avgFee, appStats, avgResp, appsByMonth, topVendors, cuisineRaw, repeatVendors, vendorQuality, eventComp, catPerf, reviewDist, reviewAvg, recentReviews;
+    let velocityBuckets, avgFirstApp, attendanceStats, noShowVendors, revForecast;
 
     if (!hasRange) {
-      // ── All-time path: use prepared statements (fast) ──
-      [stats, revCollected, revOutstanding, revByEvent, avgFee, appStats, avgResp, appsByMonth, topVendors, cuisineRaw, repeatVendors, vendorQuality, eventComp, catPerf, reviewDist, reviewAvg, recentReviews] = await Promise.all([
+      // ── All-time path: use prepared statements (fast) — single batch ──
+      [stats, revCollected, revOutstanding, revByEvent, avgFee, appStats, avgResp, appsByMonth, topVendors, cuisineRaw, repeatVendors, vendorQuality, eventComp, catPerf, reviewDist, reviewAvg, recentReviews, velocityBuckets, avgFirstApp, attendanceStats, noShowVendors, revForecast] = await Promise.all([
         stmts.getOrgEventStats.all(uid),
         stmts.getOrgRevenueCollected.get(uid),
         stmts.getOrgRevenueOutstanding.get(uid),
@@ -3627,16 +3628,21 @@ app.get('/api/organiser/analytics', requireAuth, async (req, res) => {
         stmts.getOrgReviewDistribution.all(uid),
         stmts.getOrgReviewAvg.get(uid),
         stmts.getOrgReviews.all(uid),
+        stmts.getOrgAppVelocityBuckets.all(uid).catch(() => []),
+        stmts.getOrgAvgFirstApp.get(uid).catch(() => ({ avg_hours: null })),
+        stmts.getOrgAttendanceStats.get(uid).catch(() => ({ showed: 0, no_show: 0, unmarked: 0 })),
+        stmts.getOrgNoShowVendors.all(uid).catch(() => []),
+        stmts.getOrgRevenueForecast.all(uid).catch(() => []),
       ]);
     } else {
-      // ── Date-filtered path: dynamic SQL with date conditions ──
+      // ── Date-filtered path: dynamic SQL with date conditions — single batch ──
       const q = (sql) => prepare(sql);
       const eD  = `AND e.date_sort >= '${fromQ}' AND e.date_sort <= '${toQ}'`;
       const eaD = `AND ea.created_at >= '${fromQ}' AND ea.created_at < date('${toQ}','+1 day')`;
       const rD  = `AND or2.created_at >= '${fromQ}' AND or2.created_at < date('${toQ}','+1 day')`;
       const ovrD = `AND created_at >= '${fromQ}' AND created_at < date('${toQ}','+1 day')`;
 
-      [stats, revCollected, revOutstanding, revByEvent, avgFee, appStats, avgResp, appsByMonth, topVendors, cuisineRaw, repeatVendors, vendorQuality, eventComp, catPerf, reviewDist, reviewAvg, recentReviews] = await Promise.all([
+      [stats, revCollected, revOutstanding, revByEvent, avgFee, appStats, avgResp, appsByMonth, topVendors, cuisineRaw, repeatVendors, vendorQuality, eventComp, catPerf, reviewDist, reviewAvg, recentReviews, velocityBuckets, avgFirstApp, attendanceStats, noShowVendors, revForecast] = await Promise.all([
         // stats (event-date filtered)
         q(`SELECT e.id,e.name,e.date_sort,e.category, COUNT(ea.id) as total_apps, SUM(CASE WHEN ea.status='approved' THEN 1 ELSE 0 END) as approved, SUM(CASE WHEN ea.status='pending' THEN 1 ELSE 0 END) as pending, SUM(CASE WHEN ea.status='rejected' THEN 1 ELSE 0 END) as rejected FROM events e LEFT JOIN event_applications ea ON ea.event_id=e.id WHERE e.organiser_user_id=? ${eD} GROUP BY e.id ORDER BY e.date_sort DESC`).all(uid).catch(() => []),
         // revenue collected (event-date filtered)
@@ -3671,20 +3677,14 @@ app.get('/api/organiser/analytics', requireAuth, async (req, res) => {
         q(`SELECT AVG(rating) as avg, COUNT(*) as total FROM organiser_reviews WHERE organiser_user_id=? ${ovrD.replace(/created_at/g, 'created_at')}`).get(uid).catch(() => ({ avg: null, total: 0 })),
         // recent reviews
         q(`SELECT or2.*,v.trading_name FROM organiser_reviews or2 JOIN vendors v ON v.user_id=or2.vendor_user_id WHERE or2.organiser_user_id=? ${rD} ORDER BY or2.created_at DESC`).all(uid).catch(() => []),
-      ]);
-    }
-
-    // ── New analytics queries (isolated — failures don't break existing analytics) ──
-    let velocityBuckets = [], avgFirstApp = { avg_hours: null }, attendanceStats = { showed: 0, no_show: 0, unmarked: 0 }, noShowVendors = [], revForecast = [];
-    try {
-      [velocityBuckets, avgFirstApp, attendanceStats, noShowVendors, revForecast] = await Promise.all([
+        // velocity + attendance + forecast (with catch fallbacks)
         stmts.getOrgAppVelocityBuckets.all(uid).catch(() => []),
         stmts.getOrgAvgFirstApp.get(uid).catch(() => ({ avg_hours: null })),
         stmts.getOrgAttendanceStats.get(uid).catch(() => ({ showed: 0, no_show: 0, unmarked: 0 })),
         stmts.getOrgNoShowVendors.all(uid).catch(() => []),
         stmts.getOrgRevenueForecast.all(uid).catch(() => []),
       ]);
-    } catch (e) { console.error('[analytics:new-features]', e); }
+    }
 
     // Aggregate cuisine tags
     const cuisineCounts = {};
