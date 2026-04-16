@@ -555,8 +555,8 @@ body::before {
 .app-table colgroup .col-action { width: 20%; }
 .app-table thead th {
   font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
-  color: var(--text-lo); padding: 0 16px 12px; text-align: left; white-space: nowrap;
-  border-bottom: 1px solid #ffffff08;
+  color: var(--text-mid); padding: 0 16px 12px; text-align: left; white-space: nowrap;
+  border-bottom: 1px solid #ffffff0d;
 }
 .app-table tbody tr {
   border-bottom: 1px solid #ffffff06; transition: background 0.1s; cursor: default;
@@ -624,10 +624,11 @@ body::before {
 .form-input:focus { border-color: #E8500A40; }
 .form-textarea {
   width: 100%; padding: 12px 14px; resize: vertical; min-height: 100px;
-  background: #ffffff08; border: 1px solid #ffffff14; border-radius: 10px;
+  background: #ffffff08; border: 1px solid #ffffff10; border-radius: 10px;
   font-family: var(--fb); font-size: 14px; color: var(--text-hi); line-height: 1.6;
   outline: none; transition: border-color 0.14s;
 }
+.form-textarea::placeholder { color: var(--text-lo); }
 .form-textarea:focus { border-color: #E8500A40; }
 .char-counter { font-size: 11px; color: var(--text-lo); margin-top: 5px; text-align: right; }
 .char-counter.warn { color: var(--gold); }
@@ -2154,9 +2155,12 @@ body::before {
     <div class="panel" id="panel-applications">
 
       <!-- Acceptance rate (Pro/Growth only) -->
-      <div id="acceptance-rate-bar" style="display:none;margin-bottom:20px;padding:12px 16px;background:var(--char);border:1px solid #ffffff08;border-radius:12px;display:none;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
-        <div style="font-size:13px;color:var(--text-mid);">Acceptance rate: <strong id="acceptance-rate-value" style="color:var(--herb);font-family:var(--fd);font-size:17px;">—</strong></div>
-        <a href="#" onclick="showPanel('analytics',null);return false;" style="font-size:12px;font-weight:600;color:var(--ember);text-decoration:none;" id="acceptance-breakdown-link">See breakdown →</a>
+      <div id="acceptance-rate-bar" style="display:none;margin-bottom:20px;padding:14px 18px;background:var(--char);border:1px solid #ffffff08;border-radius:12px;align-items:center;gap:12px;flex-wrap:wrap;">
+        <div style="font-size:13px;color:var(--text-mid);flex-shrink:0;">Acceptance rate: <strong id="acceptance-rate-value" style="color:var(--herb);font-family:var(--fd);font-size:17px;">—</strong></div>
+        <div style="flex:1;min-width:120px;height:8px;background:#ffffff0a;border-radius:100px;overflow:hidden;">
+          <div id="acceptance-rate-fill" style="height:100%;width:0%;border-radius:100px;background:linear-gradient(90deg,var(--herb),#3DA86A);transition:width 0.6s ease;"></div>
+        </div>
+        <a href="#" onclick="showPanel('analytics',null);return false;" style="font-size:12px;font-weight:600;color:var(--ember);text-decoration:none;flex-shrink:0;" id="acceptance-breakdown-link">See breakdown →</a>
       </div>
 
       <!-- Status filter -->
@@ -2210,33 +2214,33 @@ body::before {
       <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px;align-items:center;">
         <input id="browse-search" type="text" placeholder="Search events…" oninput="applyBrowseFilters()"
           style="font-family:var(--fb);font-size:13px;background:#ffffff08;border:1px solid #ffffff12;color:var(--text-hi);border-radius:10px;padding:9px 14px;min-width:180px;flex:1;outline:none;" />
-        <span style="width:1px;height:24px;background:#ffffff12;flex-shrink:0;margin:0 2px;"></span>
-        <select id="browse-cat" onchange="applyBrowseFilters()"
-          style="font-family:var(--fb);font-size:13px;background:#ffffff08;border:1px solid #ffffff12;color:var(--text-hi);border-radius:10px;padding:9px 14px;cursor:pointer;outline:none;">
-          <option value="">All categories</option>
-          <option>Night Market</option><option>Festival</option><option>Markets</option>
-          <option>Twilight Market</option><option>Food Festival</option><option>Community Event</option>
-        </select>
-        <select id="browse-status" onchange="applyBrowseFilters()"
-          style="font-family:var(--fb);font-size:13px;background:#ffffff08;border:1px solid #ffffff12;color:var(--text-hi);border-radius:10px;padding:9px 14px;cursor:pointer;outline:none;">
-          <option value="">All events</option>
-          <option value="not-applied">Not applied</option>
-          <option value="applied">Applied</option>
-          <option value="approved">Approved</option>
-        </select>
-
-        <!-- Day of week filter button -->
-        <button class="browse-day-toggle-btn" id="browse-day-btn" onclick="browseDayToggle(event)">
-          <svg width="13" height="13" viewBox="0 0 13 13" fill="none" style="flex-shrink:0;">
-            <rect x="1" y="2" width="11" height="10" rx="2" stroke="currentColor" stroke-width="1.3"/>
-            <path d="M1 5h11M4 1v2.5M9 1v2.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
-            <circle cx="4.5" cy="8" r="1" fill="currentColor"/><circle cx="6.5" cy="8" r="1" fill="currentColor"/><circle cx="8.5" cy="8" r="1" fill="currentColor"/>
-          </svg>
-          <span id="browse-day-btn-label">Day</span>
-          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style="flex-shrink:0;opacity:.5;">
-            <path d="M2.5 3.5L5 6.5L7.5 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-          </svg>
-        </button>
+        <div style="display:flex;gap:6px;align-items:center;background:#ffffff06;border:1px solid #ffffff0a;border-radius:12px;padding:4px;">
+          <select id="browse-cat" onchange="applyBrowseFilters()"
+            style="font-family:var(--fb);font-size:13px;background:#ffffff08;border:1px solid #ffffff10;color:var(--text-hi);border-radius:8px;padding:7px 12px;cursor:pointer;outline:none;">
+            <option value="">All categories</option>
+            <option>Night Market</option><option>Festival</option><option>Markets</option>
+            <option>Twilight Market</option><option>Food Festival</option><option>Community Event</option>
+          </select>
+          <select id="browse-status" onchange="applyBrowseFilters()"
+            style="font-family:var(--fb);font-size:13px;background:#ffffff08;border:1px solid #ffffff10;color:var(--text-hi);border-radius:8px;padding:7px 12px;cursor:pointer;outline:none;">
+            <option value="">All events</option>
+            <option value="not-applied">Not applied</option>
+            <option value="applied">Applied</option>
+            <option value="approved">Approved</option>
+          </select>
+          <!-- Day of week filter button -->
+          <button class="browse-day-toggle-btn" id="browse-day-btn" onclick="browseDayToggle(event)">
+            <svg width="13" height="13" viewBox="0 0 13 13" fill="none" style="flex-shrink:0;">
+              <rect x="1" y="2" width="11" height="10" rx="2" stroke="currentColor" stroke-width="1.3"/>
+              <path d="M1 5h11M4 1v2.5M9 1v2.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+              <circle cx="4.5" cy="8" r="1" fill="currentColor"/><circle cx="6.5" cy="8" r="1" fill="currentColor"/><circle cx="8.5" cy="8" r="1" fill="currentColor"/>
+            </svg>
+            <span id="browse-day-btn-label">Day</span>
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style="flex-shrink:0;opacity:.5;">
+              <path d="M2.5 3.5L5 6.5L7.5 3.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
 
         <!-- Day picker popup -->
         <div class="browse-day-popup" id="browse-day-popup">
@@ -2365,6 +2369,9 @@ body::before {
               <button class="tag-option" onclick="toggleTag(this)">Burgers</button>
               <button class="tag-option" onclick="toggleTag(this)">Seafood</button>
               <button class="tag-option" onclick="toggleTag(this)">Other</button>
+            </div>
+            <div id="cuisine-other-wrap" style="display:none;margin-top:10px;">
+              <input class="form-input" id="cuisine-other-input" type="text" placeholder="Enter your cuisine type..." maxlength="40" oninput="updatePreview()" style="height:38px;font-size:13px;" />
             </div>
             <div id="cuisine-hint" style="font-size:11px;color:var(--text-lo);margin-top:8px;">Select at least one cuisine type.</div>
           </div>
@@ -4251,6 +4258,14 @@ function toggleTag(btn) {
     const selected = document.querySelectorAll('#cuisine-selector .tag-option.selected').length;
     hint.style.display = selected > 0 ? 'none' : '';
   }
+  // Show/hide custom input when "Other" is toggled
+  if (btn.textContent.trim() === 'Other') {
+    const otherWrap = document.getElementById('cuisine-other-wrap');
+    if (otherWrap) {
+      otherWrap.style.display = btn.classList.contains('selected') ? 'block' : 'none';
+      if (btn.classList.contains('selected')) document.getElementById('cuisine-other-input').focus();
+    }
+  }
   updatePreview();
 }
 
@@ -4267,10 +4282,14 @@ function updatePreview() {
   const name = document.getElementById('prof-name').value || 'Your Business';
   document.getElementById('preview-name').textContent = name;
 
-  const selected = [...document.querySelectorAll('.tag-option.selected')].map(el => el.textContent);
+  const selected = [...document.querySelectorAll('.tag-option.selected')].map(el => el.textContent.trim());
+  // Replace "Other" with the custom cuisine value if provided
+  const otherInput = document.getElementById('cuisine-other-input');
+  const otherVal = otherInput ? otherInput.value.trim() : '';
+  const cuisines = selected.map(s => s === 'Other' && otherVal ? otherVal : s);
   const setup = document.querySelector('input[name="setup"]:checked');
   const setupVal = setup ? setup.value : '';
-  const tags = [...selected, setupVal].filter(Boolean);
+  const tags = [...cuisines, setupVal].filter(Boolean);
   document.getElementById('preview-tags').innerHTML = tags.slice(0, 4).map(t => `<span class="preview-tag">${t}</span>`).join('');
 
   const suburb = (document.getElementById('v-suburb') || {}).value || '';
@@ -4419,7 +4438,9 @@ async function vendorVerifyAbn() {
 async function saveProfile(btn) {
   btn.textContent = 'Saving…'; btn.disabled = true; btn.style.background = '';
 
-  const cuisine_tags = [...document.querySelectorAll('.tag-option.selected')].map(b => b.textContent.trim());
+  const _rawTags = [...document.querySelectorAll('.tag-option.selected')].map(b => b.textContent.trim());
+  const _otherCustom = (document.getElementById('cuisine-other-input') || {}).value || '';
+  const cuisine_tags = _rawTags.map(t => t === 'Other' && _otherCustom.trim() ? _otherCustom.trim() : t);
   const setup = document.querySelector('input[name="setup"]:checked');
   const activePrice = document.querySelector('.price-btn.active');
   const abnVal = (document.getElementById('v-abn') || {}).value || '';
@@ -4926,9 +4947,16 @@ async function initDashboard() {
     {
       let tags = [];
       try { tags = Array.isArray(v.cuisine_tags) ? v.cuisine_tags : JSON.parse(v.cuisine_tags || '[]'); } catch {}
+      const knownTags = [...document.querySelectorAll('.tag-option')].map(b => b.textContent.trim());
+      const customTag = tags.find(t => !knownTags.includes(t));
       document.querySelectorAll('.tag-option').forEach(b => {
-        b.classList.toggle('selected', tags.includes(b.textContent.trim()));
+        const label = b.textContent.trim();
+        b.classList.toggle('selected', tags.includes(label) || (label === 'Other' && !!customTag));
       });
+      // If there's a custom tag, populate the Other input
+      const otherWrap = document.getElementById('cuisine-other-wrap');
+      const otherInput = document.getElementById('cuisine-other-input');
+      if (customTag && otherWrap && otherInput) { otherWrap.style.display = 'block'; otherInput.value = customTag; }
       const hint = document.getElementById('cuisine-hint');
       if (hint) hint.style.display = tags.length > 0 ? 'none' : '';
     }
@@ -5600,6 +5628,8 @@ function renderApplicationsData(applications) {
     const decided = applications.filter(a => a.status === 'approved' || a.status === 'rejected').length;
     const acc = decided > 0 ? Math.round((counts.approved / decided) * 100) : null;
     rateEl.textContent = acc !== null ? acc + '%' : '—';
+    const fillEl = document.getElementById('acceptance-rate-fill');
+    if (fillEl) fillEl.style.width = acc !== null ? acc + '%' : '0%';
   }
   // Also update analytics panel if visible
   const analyticsRate = document.getElementById('analytics-acc-rate');
@@ -5635,7 +5665,7 @@ function renderApplicationsData(applications) {
       <td style="padding-right:24px;">
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
           ${a.status === 'pending'
-            ? `<button onclick="withdrawApp(${a.event_id}, this)" style="background:none;border:none;color:var(--text-lo);cursor:pointer;font-size:12px;font-family:inherit;text-decoration:underline;">Withdraw</button>`
+            ? `<a class="action-link" href="/events/${a.event_slug||a.event_id}" target="_blank" rel="noopener">View event →</a><button onclick="withdrawApp(${a.event_id}, this)" style="background:none;border:none;color:var(--text-mid);cursor:pointer;font-size:12px;font-family:inherit;text-decoration:underline;transition:color 0.12s;" onmouseover="this.style.color='var(--ember)'" onmouseout="this.style.color='var(--text-mid)'">Withdraw</button>`
             : a.status === 'withdrawn'
             ? `<a class="action-link" href="/events/${a.event_slug||a.event_id}" target="_blank" rel="noopener" style="color:var(--text-mid);">View event →</a>`
             : `<a class="action-link" href="/events/${a.event_slug||a.event_id}" target="_blank" rel="noopener">View event →</a>`
@@ -7026,8 +7056,8 @@ async function downloadEarningsPDF() {
 }
 
 // ── CALENDAR ────────────────────────────────────────────────────────────────
-let _calApps = [];
-let _calYear, _calMonth;
+var _calApps = [];
+var _calYear, _calMonth;
 
 async function loadCalendar() {
   if (_calApps.length === 0) {
