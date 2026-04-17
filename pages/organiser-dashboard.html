@@ -16,11 +16,11 @@
   --parchment:#FDF4E7; --cream:#F5EDD8; --linen:#EDE3CC;
   --herb:#2D8B55; --gold:#C9840A; --terra:#C0392B; --slate:#2B5BA8;
   --text-hi:#FDF4E7; --text-mid:#A89880; --text-lo:#6B5A4A;
-  --fd:'Fraunces',Georgia,serif; --fb:'Instrument Sans','Helvetica Neue',sans-serif;
+  --font-display:'Fraunces',Georgia,serif; --font-body:'Instrument Sans','Helvetica Neue',sans-serif;
   --sidebar-w:260px;
 }
 html,body { height:100%; }
-body { background:var(--coal); color:var(--text-hi); font-family:var(--fb); line-height:1.5; overflow-x:hidden; display:flex; }
+body { background:var(--coal); color:var(--text-hi); font-family:var(--font-body); line-height:1.5; overflow-x:hidden; display:flex; }
 body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index:0; opacity:0.35;
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E"); }
 
@@ -28,7 +28,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .sidebar { width:var(--sidebar-w); flex-shrink:0; height:100vh; position:fixed; top:0; left:0;
   background:var(--char); border-right:1px solid #ffffff08; display:flex; flex-direction:column; z-index:100; overflow-y:auto; }
 .sidebar-logo { padding:24px 24px 20px; border-bottom:1px solid #ffffff07; }
-.logo-mark { font-family:var(--fd); font-size:22px; font-weight:900; letter-spacing:-0.04em; color:var(--text-hi); text-decoration:none; display:block; margin-bottom:16px; }
+.logo-mark { font-family:var(--font-display); font-size:22px; font-weight:900; letter-spacing:-0.04em; color:var(--text-hi); text-decoration:none; display:block; margin-bottom:16px; }
 .logo-mark .dot { color:var(--ember); }
 .org-card { display:flex; align-items:center; gap:10px; background:#ffffff09; border:1px solid #ffffff0e; border-radius:12px; padding:10px 12px; box-shadow:0 2px 6px rgba(0,0,0,0.15); }
 .org-avatar { width:36px; height:36px; border-radius:10px; background:linear-gradient(135deg,#0A1A2D,#0A3060); display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; overflow:hidden; }
@@ -40,7 +40,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .nav-section-label:first-child { padding-top:4px; }
 .nav-link { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; cursor:pointer;
   font-size:13.5px; font-weight:600; color:var(--text-mid); transition:background 0.14s, color 0.14s; user-select:none;
-  border:1px solid transparent; background:transparent; width:100%; text-align:left; text-decoration:none; font-family:var(--fb); }
+  border:1px solid transparent; background:transparent; width:100%; text-align:left; text-decoration:none; font-family:var(--font-body); }
 .nav-link:hover { background:#ffffff08; color:var(--text-hi); }
 .nav-link:focus-visible { outline:2px solid var(--ember); outline-offset:-2px; border-radius:10px; }
 .nav-link.active { background:var(--ember-bg); color:var(--ember); border-color:#E8500A18; }
@@ -51,7 +51,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 @keyframes badge-pulse { 0%,100%{ box-shadow:0 0 0 0 rgba(232,80,10,0.35); } 50%{ box-shadow:0 0 0 4px rgba(232,80,10,0); } }
 .sidebar-footer { padding:12px 14px 16px; border-top:1px solid #ffffff0e; margin-top:8px; display:flex; flex-direction:column; gap:2px; }
 .sidebar-footer-link { display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:8px; cursor:pointer;
-  font-size:12.5px; font-weight:600; color:var(--text-lo); transition:background 0.14s, color 0.14s; text-decoration:none; border:none; background:transparent; width:100%; font-family:var(--fb); }
+  font-size:12.5px; font-weight:600; color:var(--text-lo); transition:background 0.14s, color 0.14s; text-decoration:none; border:none; background:transparent; width:100%; font-family:var(--font-body); }
 .sidebar-footer-link:hover { color:var(--text-mid); background:#ffffff08; }
 .sidebar-footer-link.logout { color:#8B4A3A; }
 .sidebar-footer-link.logout:hover { color:var(--terra); background:#C0392B0a; }
@@ -61,10 +61,10 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .topbar { position:sticky; top:0; z-index:50; height:60px; display:flex; align-items:center; justify-content:space-between;
   padding:0 40px; background:rgba(26,22,18,0.88); backdrop-filter:blur(16px); border-bottom:1px solid #ffffff07; }
 .topbar-left { display:flex; align-items:center; gap:12px; }
-.topbar-title { font-family:var(--fd); font-size:18px; font-weight:900; letter-spacing:-0.02em; color:var(--text-hi); }
+.topbar-title { font-family:var(--font-display); font-size:18px; font-weight:900; letter-spacing:-0.02em; color:var(--text-hi); }
 .topbar-subtitle { font-size:12px; color:var(--text-lo); }
 .topbar-actions { display:flex; align-items:center; gap:10px; }
-.btn-topbar { font-family:var(--fb); font-size:12px; font-weight:700; color:#fff; background:var(--ember);
+.btn-topbar { font-family:var(--font-body); font-size:12px; font-weight:700; color:#fff; background:var(--ember);
   border:none; padding:8px 16px; border-radius:9px; cursor:pointer; transition:all 0.14s; text-decoration:none; }
 .btn-topbar:hover { background:var(--ember-glow); }
 .topbar-notif { width:38px; height:38px; border-radius:9px; background:#ffffff0a; border:1px solid #ffffff0f;
@@ -79,8 +79,8 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .notif-popup.open { display:block; }
 .notif-popup-head { display:flex; align-items:center; justify-content:space-between;
   padding:14px 16px 10px; border-bottom:1px solid #ffffff0A; }
-.notif-popup-title { font-family:var(--fd); font-size:14px; font-weight:800; color:var(--text-hi); letter-spacing:-0.01em; }
-.notif-mark-read { font-family:var(--fb); font-size:11px; font-weight:600; color:var(--ember);
+.notif-popup-title { font-family:var(--font-display); font-size:14px; font-weight:800; color:var(--text-hi); letter-spacing:-0.01em; }
+.notif-mark-read { font-family:var(--font-body); font-size:11px; font-weight:600; color:var(--ember);
   background:none; border:none; cursor:pointer; padding:0; transition:opacity 0.12s; }
 .notif-mark-read:hover { opacity:0.7; }
 .notif-list { max-height:380px; overflow-y:auto; }
@@ -108,7 +108,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .panel.active { display:block; }
 
 /* ── SHARED ── */
-.section-title { font-family:var(--fd); font-size:16px; font-weight:900; letter-spacing:-0.02em; color:var(--text-hi); margin-bottom:16px; }
+.section-title { font-family:var(--font-display); font-size:16px; font-weight:900; letter-spacing:-0.02em; color:var(--text-hi); margin-bottom:16px; }
 .card { background:var(--char); border:1px solid #ffffff0c; border-radius:16px; padding:24px; }
 .stat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:40px; }
 .stat-card { background:var(--char); border:1px solid #ffffff09; border-radius:16px; padding:22px 24px; position:relative; overflow:hidden;
@@ -122,7 +122,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .stat-card.zero-state .stat-value { opacity:0.4; }
 .stat-card.zero-state .stat-delta { color:var(--text-mid); }
 .stat-label { font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-lo); margin-bottom:8px; }
-.stat-value { font-family:var(--fd); font-size:36px; font-weight:900; letter-spacing:-0.03em; line-height:1; margin-bottom:6px; }
+.stat-value { font-family:var(--font-display); font-size:36px; font-weight:900; letter-spacing:-0.03em; line-height:1; margin-bottom:6px; }
 .stat-card.ember .stat-value { color:var(--ember); }
 .stat-card.herb  .stat-value { color:var(--herb); }
 .stat-card.gold  .stat-value { color:#D9981A; }
@@ -172,9 +172,9 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .app-vendor-name:hover { color:var(--ember); }
 .app-event-name { font-size:11px; color:var(--text-lo); }
 .app-quick-actions { display:flex; gap:8px; flex-shrink:0; }
-.btn-approve { font-family:var(--fb); font-size:11px; font-weight:700; color:var(--herb); background:#2D8B5514; border:1px solid #2D8B5528; padding:6px 12px; border-radius:7px; cursor:pointer; transition:background 0.12s; }
+.btn-approve { font-family:var(--font-body); font-size:11px; font-weight:700; color:var(--herb); background:#2D8B5514; border:1px solid #2D8B5528; padding:6px 12px; border-radius:7px; cursor:pointer; transition:background 0.12s; }
 .btn-approve:hover { background:#2D8B5524; }
-.btn-waitlist { font-family:var(--fb); font-size:11px; font-weight:700; color:var(--gold); background:#C9840A12; border:1px solid #C9840A24; padding:6px 12px; border-radius:7px; cursor:pointer; transition:background 0.12s; }
+.btn-waitlist { font-family:var(--font-body); font-size:11px; font-weight:700; color:var(--gold); background:#C9840A12; border:1px solid #C9840A24; padding:6px 12px; border-radius:7px; cursor:pointer; transition:background 0.12s; }
 .btn-waitlist:hover { background:#C9840A22; }
 
 /* Inbox application cards */
@@ -196,7 +196,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .inbox-card-right { display:flex; flex-direction:column; align-items:flex-end; gap:8px; flex-shrink:0; padding-top:1px; }
 .inbox-status-badge { font-size:11px; font-weight:700; padding:4px 11px; border-radius:7px; white-space:nowrap; }
 .inbox-card-actions { display:flex; gap:6px; }
-.inbox-btn { font-family:var(--fb); font-size:11px; font-weight:700; padding:6px 13px; border-radius:8px; cursor:pointer; border:1px solid transparent; transition:background 0.12s; }
+.inbox-btn { font-family:var(--font-body); font-size:11px; font-weight:700; padding:6px 13px; border-radius:8px; cursor:pointer; border:1px solid transparent; transition:background 0.12s; }
 .inbox-btn-approve { color:var(--herb); background:#2D8B5518; border-color:#2D8B5538; }
 .inbox-btn-approve:hover { background:#2D8B5528; }
 .inbox-btn-decline { color:var(--terra); background:#C0392B12; border-color:#C0392B28; }
@@ -219,7 +219,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .td-sub { font-size:11px; color:var(--text-lo); margin-top:2px; }
 .spots-text { font-size:12px; color:var(--text-mid); white-space:nowrap; }
 .action-btns { display:flex; gap:6px; }
-.btn-action { font-family:var(--fb); font-size:11px; font-weight:600; padding:5px 10px; border-radius:7px; cursor:pointer; transition:all 0.12s; border:1px solid transparent; }
+.btn-action { font-family:var(--font-body); font-size:11px; font-weight:600; padding:5px 10px; border-radius:7px; cursor:pointer; transition:all 0.12s; border:1px solid transparent; }
 .btn-manage { color:var(--ember); background:var(--ember-bg); border-color:#E8500A22; }
 .btn-manage:hover { background:#E8500A20; }
 .btn-edit { color:var(--text-mid); background:#ffffff08; border-color:#ffffff10; }
@@ -229,11 +229,11 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 
 /* ── EVENT MANAGEMENT TABS ── */
 .mgmt-header { margin-bottom:24px; }
-.mgmt-event-name { font-family:var(--fd); font-size:24px; font-weight:900; letter-spacing:-0.03em; color:var(--text-hi); margin-bottom:6px; }
+.mgmt-event-name { font-family:var(--font-display); font-size:24px; font-weight:900; letter-spacing:-0.03em; color:var(--text-hi); margin-bottom:6px; }
 .mgmt-meta { display:flex; align-items:center; gap:12px; flex-wrap:wrap; font-size:12px; color:var(--text-lo); }
 .mgmt-meta-item { display:flex; align-items:center; gap:4px; }
 .tab-bar { display:flex; gap:4px; border-bottom:1px solid #ffffff08; margin-bottom:24px; }
-.tab-btn { font-family:var(--fb); font-size:13px; font-weight:600; padding:10px 16px; background:transparent; border:none; cursor:pointer;
+.tab-btn { font-family:var(--font-body); font-size:13px; font-weight:600; padding:10px 16px; background:transparent; border:none; cursor:pointer;
   color:var(--text-lo); border-bottom:2px solid transparent; margin-bottom:-1px; transition:all 0.14s; }
 .tab-btn:hover { color:var(--text-hi); }
 .tab-btn.active { color:var(--ember); border-bottom-color:var(--ember); }
@@ -246,7 +246,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 
 /* Application filter row */
 .app-filter-row { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; }
-.app-filter-btn { font-family:var(--fb); font-size:12px; font-weight:600; padding:6px 14px; border-radius:100px;
+.app-filter-btn { font-family:var(--font-body); font-size:12px; font-weight:600; padding:6px 14px; border-radius:100px;
   cursor:pointer; border:1px solid #ffffff10; background:transparent; color:var(--text-mid); transition:all 0.12s; }
 .app-filter-btn:hover { background:#ffffff09; color:var(--text-hi); }
 .app-filter-btn.active { background:var(--ember); border-color:var(--ember); color:#fff; }
@@ -271,11 +271,11 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .app-card-footer { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; }
 .app-card-meta { font-size:11px; color:var(--text-lo); }
 .app-actions { display:flex; gap:8px; align-items:center; position:relative; }
-.btn-act-approve { font-family:var(--fb); font-size:12px; font-weight:700; color:var(--herb); background:#2D8B5514; border:1px solid #2D8B5528; padding:7px 14px; border-radius:8px; cursor:pointer; transition:all 0.12s; }
+.btn-act-approve { font-family:var(--font-body); font-size:12px; font-weight:700; color:var(--herb); background:#2D8B5514; border:1px solid #2D8B5528; padding:7px 14px; border-radius:8px; cursor:pointer; transition:all 0.12s; }
 .btn-act-approve:hover { background:#2D8B5522; }
-.btn-act-waitlist { font-family:var(--fb); font-size:12px; font-weight:700; color:var(--gold); background:#C9840A12; border:1px solid #C9840A24; padding:7px 14px; border-radius:8px; cursor:pointer; transition:all 0.12s; }
+.btn-act-waitlist { font-family:var(--font-body); font-size:12px; font-weight:700; color:var(--gold); background:#C9840A12; border:1px solid #C9840A24; padding:7px 14px; border-radius:8px; cursor:pointer; transition:all 0.12s; }
 .btn-act-waitlist:hover { background:#C9840A20; }
-.btn-act-reject { font-family:var(--fb); font-size:12px; font-weight:700; color:#D9534F; background:#C0392B0e; border:1px solid #C0392B24; padding:7px 14px; border-radius:8px; cursor:pointer; transition:all 0.12s; }
+.btn-act-reject { font-family:var(--font-body); font-size:12px; font-weight:700; color:#D9534F; background:#C0392B0e; border:1px solid #C0392B24; padding:7px 14px; border-radius:8px; cursor:pointer; transition:all 0.12s; }
 .btn-act-reject:hover { background:#C0392B1a; }
 .reject-dropdown { display:none; position:absolute; bottom:calc(100% + 6px); right:0; width:260px;
   background:var(--char); border:1px solid #ffffff12; border-radius:12px; overflow:hidden;
@@ -283,12 +283,12 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .reject-dropdown.open { display:block; }
 .reject-dropdown-header { padding:10px 14px 6px; font-size:10px; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:var(--text-lo); }
 .reject-option { display:block; width:100%; padding:10px 14px; text-align:left; background:transparent;
-  border:none; font-family:var(--fb); font-size:12px; color:var(--text-mid); cursor:pointer; transition:background 0.1s; }
+  border:none; font-family:var(--font-body); font-size:12px; color:var(--text-mid); cursor:pointer; transition:background 0.1s; }
 .reject-option:hover { background:#ffffff08; color:var(--text-hi); }
 
 /* Lineup tab */
 .lineup-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
-.btn-broadcast { font-family:var(--fb); font-size:12px; font-weight:700; color:var(--ember);
+.btn-broadcast { font-family:var(--font-body); font-size:12px; font-weight:700; color:var(--ember);
   background:var(--ember-bg); border:1px solid #E8500A22; padding:8px 16px; border-radius:9px; cursor:pointer; transition:all 0.12s; }
 .btn-broadcast:hover { background:#E8500A20; }
 .lineup-table { width:100%; border-collapse:collapse; }
@@ -297,7 +297,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .lineup-table tbody tr:last-child { border-bottom:none; }
 .lineup-table td { padding:12px; font-size:13px; color:var(--text-mid); vertical-align:middle; }
 .spot-input { background:#ffffff08; border:1px solid #ffffff10; border-radius:7px; padding:5px 10px;
-  font-family:var(--fb); font-size:12px; color:var(--text-hi); width:80px; outline:none; text-align:center; }
+  font-family:var(--font-body); font-size:12px; color:var(--text-hi); width:80px; outline:none; text-align:center; }
 .spot-input:focus { border-color:#E8500A40; }
 .check-icon { color:var(--herb); font-size:13px; }
 .cross-icon { color:var(--text-lo); font-size:13px; }
@@ -318,10 +318,10 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .step-panel { display:none; max-width:840px; }
 .step-panel.active { display:block; }
 .step-nav { display:flex; align-items:center; justify-content:space-between; margin-top:20px; padding-top:0; border-top:none; margin-bottom:4px; }
-.btn-step-back { font-family:var(--fb); font-size:13px; font-weight:600; color:var(--text-mid);
+.btn-step-back { font-family:var(--font-body); font-size:13px; font-weight:600; color:var(--text-mid);
   background:transparent; border:1px solid #ffffff18; padding:11px 22px; border-radius:10px; cursor:pointer; transition:all 0.14s; }
 .btn-step-back:hover { color:var(--text-hi); background:#ffffff08; }
-.btn-step-next { font-family:var(--fb); font-size:13px; font-weight:700; color:#fff;
+.btn-step-next { font-family:var(--font-body); font-size:13px; font-weight:700; color:#fff;
   background:var(--ember); border:none; padding:12px 28px; border-radius:10px; cursor:pointer;
   box-shadow:0 4px 16px #E8500A2E; transition:all 0.14s; }
 .btn-step-next:hover { background:var(--ember-glow); transform:translateY(-1px); }
@@ -332,15 +332,15 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .form-group { margin-bottom:20px; }
 .form-label { display:block; font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-lo); margin-bottom:8px; }
 .form-input { width:100%; height:42px; padding:0 14px; background:#ffffff08; border:1px solid #ffffff10; border-radius:10px;
-  font-family:var(--fb); font-size:14px; color:var(--text-hi); outline:none; transition:border-color 0.14s; }
+  font-family:var(--font-body); font-size:14px; color:var(--text-hi); outline:none; transition:border-color 0.14s; }
 .form-input::placeholder { color:var(--text-lo); }
 .form-input:focus { border-color:#E8500A40; }
 .form-select { height:42px; padding:0 14px; padding-right:36px; appearance:none;
   background:#ffffff08 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9'%3E%3Cpath d='M1 1l6 6 6-6' stroke='%23A89880' stroke-width='1.8' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 14px center;
-  border:1px solid #ffffff10; border-radius:10px; font-family:var(--fb); font-size:14px; color:var(--text-hi); cursor:pointer; outline:none; }
+  border:1px solid #ffffff10; border-radius:10px; font-family:var(--font-body); font-size:14px; color:var(--text-hi); cursor:pointer; outline:none; }
 .form-select option { background:#231E19; }
 .form-textarea { width:100%; padding:12px 14px; resize:vertical; min-height:100px; background:#ffffff08; border:1px solid #ffffff10;
-  border-radius:10px; font-family:var(--fb); font-size:14px; color:var(--text-hi); line-height:1.6; outline:none; transition:border-color 0.14s; }
+  border-radius:10px; font-family:var(--font-body); font-size:14px; color:var(--text-hi); line-height:1.6; outline:none; transition:border-color 0.14s; }
 .form-textarea:focus { border-color:#E8500A40; }
 .form-textarea::-webkit-resizer { display:none; }
 .form-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
@@ -355,12 +355,12 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .toggle-switch input:checked ~ .toggle-thumb { transform:translateX(18px); }
 .tag-selector { display:flex; flex-wrap:wrap; gap:7px; }
 .tag-opt { font-size:12px; font-weight:600; padding:6px 14px; border-radius:100px; cursor:pointer;
-  border:1px solid #ffffff10; background:transparent; color:var(--text-mid); transition:all 0.12s; user-select:none; font-family:var(--fb); }
+  border:1px solid #ffffff10; background:transparent; color:var(--text-mid); transition:all 0.12s; user-select:none; font-family:var(--font-body); }
 .tag-opt:hover { border-color:#E8500A30; color:var(--text-hi); }
 .tag-opt.sel { background:var(--ember-bg); border-color:#E8500A30; color:var(--ember); }
 .fee-range-row { display:flex; align-items:center; gap:10px; }
 .fee-input { flex:1; max-width:180px; height:42px; padding:0 14px; background:#ffffff08; border:1px solid #ffffff10;
-  border-radius:10px; font-family:var(--fb); font-size:14px; color:var(--text-hi); outline:none; transition:border-color 0.14s; }
+  border-radius:10px; font-family:var(--font-body); font-size:14px; color:var(--text-hi); outline:none; transition:border-color 0.14s; }
 .fee-input:focus { border-color:#E8500A40; }
 .fee-sep { color:var(--text-lo); font-size:14px; flex-shrink:0; }
 
@@ -368,8 +368,8 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .review-section { margin-bottom:0; }
 .review-section + .review-section { margin-top:20px; }
 .review-section-head { display:flex; align-items:center; justify-content:space-between; padding:10px 0 6px; margin-bottom:4px; border-bottom:1px solid #ffffff0c; }
-.review-section-title { font-family:var(--fd); font-size:14px; font-weight:800; color:var(--text-mid); letter-spacing:-0.01em; }
-.review-section-edit { font-size:11px; font-weight:700; color:var(--ember); background:none; border:none; cursor:pointer; font-family:var(--fb); padding:3px 8px; border-radius:6px; transition:all 0.12s; display:flex; align-items:center; gap:4px; }
+.review-section-title { font-family:var(--font-display); font-size:14px; font-weight:800; color:var(--text-mid); letter-spacing:-0.01em; }
+.review-section-edit { font-size:11px; font-weight:700; color:var(--ember); background:none; border:none; cursor:pointer; font-family:var(--font-body); padding:3px 8px; border-radius:6px; transition:all 0.12s; display:flex; align-items:center; gap:4px; }
 .review-section-edit:hover { background:#E8500A12; }
 .review-field { display:flex; gap:16px; padding:12px 0; border-bottom:1px solid #ffffff0c; }
 .review-field:last-child { border-bottom:none; }
@@ -418,10 +418,10 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .msg-timestamp { font-size:10px; color:var(--text-lo); margin-top:5px; padding:0 4px; }
 .msg-compose { padding:16px 24px; border-top:1px solid #ffffff08; display:flex; gap:10px; }
 .msg-input { flex:1; padding:11px 16px; background:#ffffff08; border:1px solid #ffffff10; border-radius:12px;
-  font-family:var(--fb); font-size:13px; color:var(--text-hi); outline:none; transition:border-color 0.14s; }
+  font-family:var(--font-body); font-size:13px; color:var(--text-hi); outline:none; transition:border-color 0.14s; }
 .msg-input::placeholder { color:var(--text-lo); }
 .msg-input:focus { border-color:#E8500A40; }
-.btn-send { font-family:var(--fb); font-size:13px; font-weight:700; color:#fff; background:var(--ember);
+.btn-send { font-family:var(--font-body); font-size:13px; font-weight:700; color:#fff; background:var(--ember);
   border:none; padding:11px 20px; border-radius:12px; cursor:pointer; transition:all 0.14s; }
 .btn-send:hover { background:var(--ember-glow); }
 
@@ -452,7 +452,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .kpi-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 .kpi-item { background:#ffffff06; border-radius:10px; padding:14px 16px; }
 .kpi-label { font-size:10px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-lo); margin-bottom:6px; }
-.kpi-val { font-family:var(--fd); font-size:24px; font-weight:900; letter-spacing:-0.02em; color:var(--text-hi); }
+.kpi-val { font-family:var(--font-display); font-size:24px; font-weight:900; letter-spacing:-0.02em; color:var(--text-hi); }
 
 /* ── BROADCAST MODAL ── */
 .modal-overlay { position:fixed; inset:0; z-index:500; display:flex; align-items:center; justify-content:center;
@@ -461,10 +461,10 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .modal-box { background:var(--char); border:1px solid #ffffff0d; border-radius:20px; padding:32px; width:500px; max-width:90vw;
   transform:translateY(12px); transition:transform 0.2s; }
 .modal-overlay.open .modal-box { transform:translateY(0); }
-.modal-title { font-family:var(--fd); font-size:20px; font-weight:900; letter-spacing:-0.02em; color:var(--text-hi); margin-bottom:8px; }
+.modal-title { font-family:var(--font-display); font-size:20px; font-weight:900; letter-spacing:-0.02em; color:var(--text-hi); margin-bottom:8px; }
 .modal-desc { font-size:13px; color:var(--text-mid); margin-bottom:20px; }
-.btn-modal-cancel { font-family:var(--fb); font-size:13px; font-weight:600; color:var(--text-mid); background:#ffffff08; border:1px solid #ffffff0d; padding:11px 22px; border-radius:10px; cursor:pointer; transition:all 0.14s; }
-.btn-modal-send { font-family:var(--fb); font-size:13px; font-weight:700; color:#fff; background:var(--ember); border:none; padding:12px 24px; border-radius:10px; cursor:pointer; transition:all 0.14s; }
+.btn-modal-cancel { font-family:var(--font-body); font-size:13px; font-weight:600; color:var(--text-mid); background:#ffffff08; border:1px solid #ffffff0d; padding:11px 22px; border-radius:10px; cursor:pointer; transition:all 0.14s; }
+.btn-modal-send { font-family:var(--font-body); font-size:13px; font-weight:700; color:#fff; background:var(--ember); border:none; padding:12px 24px; border-radius:10px; cursor:pointer; transition:all 0.14s; }
 .btn-modal-send:hover { background:var(--ember-glow); }
 
 .org-convo-back-btn {
@@ -512,7 +512,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
   width:128px; height:40px;
   background:#ffffff08; border:1px solid #ffffff0A;
   border-radius:9px; padding:0 10px;
-  font-family:var(--fb); font-size:13px; color:var(--text-hi); outline:none; cursor:pointer;
+  font-family:var(--font-body); font-size:13px; color:var(--text-hi); outline:none; cursor:pointer;
   transition:border-color 0.14s, box-shadow 0.14s;
 }
 .date-text-input:focus, .date-text-input:hover { border-color:#E8500A40; }
@@ -539,7 +539,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .ne-cal-inner { display:flex; gap:24px; }
 .ne-cal-month { flex:1; min-width:240px; }
 .ne-cal-month-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
-.ne-cal-month-name { font-family:var(--fd); font-size:14px; font-weight:800; color:var(--text-hi); letter-spacing:-0.01em; }
+.ne-cal-month-name { font-family:var(--font-display); font-size:14px; font-weight:800; color:var(--text-hi); letter-spacing:-0.01em; }
 .ne-cal-nav { background:none; border:none; cursor:pointer; color:var(--text-lo); padding:4px 8px; border-radius:6px; font-size:16px; line-height:1; transition:color 0.12s, background 0.12s; }
 .ne-cal-nav:hover { color:var(--text-hi); background:#ffffff0A; }
 .ne-cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; }
@@ -549,7 +549,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
   font-size:12px; font-weight:500; color:var(--text-mid);
   border-radius:8px; cursor:pointer;
   transition:background 0.1s, color 0.1s;
-  border:none; background:none; font-family:var(--fb);
+  border:none; background:none; font-family:var(--font-body);
 }
 .ne-cal-day:hover:not(.empty) { background:#ffffff12; color:var(--text-hi); }
 .ne-cal-day.empty { cursor:default; color:var(--text-lo); opacity:0.35; pointer-events:none; }
@@ -566,9 +566,9 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .ne-cal-label { font-size:12px; color:var(--text-lo); }
 .ne-cal-label strong { color:var(--text-mid); }
 .ne-cal-footer-actions { display:flex; gap:8px; }
-.ne-cal-btn-clear { font-family:var(--fb); font-size:12px; font-weight:600; background:none; border:1px solid #ffffff12; border-radius:8px; color:var(--text-lo); padding:7px 14px; cursor:pointer; transition:color 0.12s, border-color 0.12s; }
+.ne-cal-btn-clear { font-family:var(--font-body); font-size:12px; font-weight:600; background:none; border:1px solid #ffffff12; border-radius:8px; color:var(--text-lo); padding:7px 14px; cursor:pointer; transition:color 0.12s, border-color 0.12s; }
 .ne-cal-btn-clear:hover { color:var(--text-hi); border-color:#ffffff25; }
-.ne-cal-btn-apply { font-family:var(--fb); font-size:12px; font-weight:700; background:var(--ember); border:none; border-radius:8px; color:#fff; padding:7px 18px; cursor:pointer; transition:background 0.12s; }
+.ne-cal-btn-apply { font-family:var(--font-body); font-size:12px; font-weight:700; background:var(--ember); border:none; border-radius:8px; color:#fff; padding:7px 18px; cursor:pointer; transition:background 0.12s; }
 .ne-cal-btn-apply:hover { background:var(--ember-glow); }
 @media (max-width:700px) {
   .ne-cal-popup { min-width:calc(100vw - 48px); right:0; left:auto; }
@@ -578,7 +578,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 
 /* ── ORGANISER NEW PANELS CSS ─────────────────────────────────────────────── */
 .org-rating-hero { display:flex; align-items:center; gap:32px; background:var(--char); border:1px solid #ffffff08; border-radius:16px; padding:24px 28px; margin-bottom:24px; }
-.org-rating-big { font-family:var(--fd); font-size:56px; font-weight:900; letter-spacing:-0.04em; color:var(--text-hi); line-height:1; }
+.org-rating-big { font-family:var(--font-display); font-size:56px; font-weight:900; letter-spacing:-0.04em; color:var(--text-hi); line-height:1; }
 .org-rating-stars { font-size:22px; letter-spacing:2px; margin-bottom:4px; color:var(--text-lo); }
 .org-rating-stars .star-filled { color:#C9840A; }
 .org-rating-count { font-size:13px; color:var(--text-lo); }
@@ -595,12 +595,12 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .vendor-rating-scores { display:flex; gap:16px; flex-wrap:wrap; }
 .vendor-rating-score { font-size:12px; color:var(--text-mid); }
 .vendor-rating-score span { color:var(--text-hi); font-weight:700; }
-.btn-rate-vendor { background:var(--ember); color:#fff; border:none; font-family:var(--fb); font-size:12px; font-weight:700; padding:7px 14px; border-radius:9px; cursor:pointer; white-space:nowrap; transition:all 0.12s; }
+.btn-rate-vendor { background:var(--ember); color:#fff; border:none; font-family:var(--font-body); font-size:12px; font-weight:700; padding:7px 14px; border-radius:9px; cursor:pointer; white-space:nowrap; transition:all 0.12s; }
 .btn-rate-vendor:hover { background:var(--ember-glow); }
 
 /* Org calendar */
 .org-cal-nav { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
-.org-cal-month { font-family:var(--fd); font-size:20px; font-weight:900; letter-spacing:-0.02em; color:var(--text-hi); }
+.org-cal-month { font-family:var(--font-display); font-size:20px; font-weight:900; letter-spacing:-0.02em; color:var(--text-hi); }
 .org-cal-nav-btn { background:#ffffff08; border:1px solid #ffffff10; color:var(--text-mid); width:38px; height:38px; border-radius:10px; cursor:pointer; font-size:18px; font-weight:700; display:flex; align-items:center; justify-content:center; transition:background 0.12s, color 0.12s, border-color 0.12s; }
 .org-cal-nav-btn:hover { background:#ffffff14; color:var(--text-hi); border-color:#ffffff18; }
 .org-cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; }
@@ -623,11 +623,11 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 /* Calendar subscription modal */
 .cal-feed-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:1000; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
 .cal-feed-modal { background:var(--char); border:1px solid #ffffff12; border-radius:18px; padding:28px 32px; max-width:480px; width:90%; box-shadow:0 24px 64px rgba(0,0,0,0.5); position:relative; }
-.cal-feed-modal h3 { font-family:var(--fd); font-size:20px; font-weight:900; color:var(--text-hi); margin-bottom:6px; }
+.cal-feed-modal h3 { font-family:var(--font-display); font-size:20px; font-weight:900; color:var(--text-hi); margin-bottom:6px; }
 .cal-feed-modal p { font-size:13px; color:var(--text-mid); line-height:1.5; margin-bottom:16px; }
 .cal-feed-url { display:flex; gap:8px; margin-bottom:16px; }
-.cal-feed-url input { flex:1; font-family:var(--fb); font-size:12px; background:#ffffff08; border:1px solid #ffffff12; color:var(--text-hi); padding:10px 12px; border-radius:8px; outline:none; }
-.cal-feed-url button { font-family:var(--fb); font-size:12px; font-weight:700; color:#fff; background:var(--ember); border:none; padding:10px 16px; border-radius:8px; cursor:pointer; white-space:nowrap; transition:background 0.14s; }
+.cal-feed-url input { flex:1; font-family:var(--font-body); font-size:12px; background:#ffffff08; border:1px solid #ffffff12; color:var(--text-hi); padding:10px 12px; border-radius:8px; outline:none; }
+.cal-feed-url button { font-family:var(--font-body); font-size:12px; font-weight:700; color:#fff; background:var(--ember); border:none; padding:10px 16px; border-radius:8px; cursor:pointer; white-space:nowrap; transition:background 0.14s; }
 .cal-feed-url button:hover { background:var(--ember-glow); }
 .cal-feed-links { display:flex; flex-direction:column; gap:10px; margin-bottom:16px; }
 .cal-feed-links a { display:flex; align-items:center; gap:10px; font-size:13px; font-weight:600; color:var(--text-hi); text-decoration:none; padding:10px 14px; background:#ffffff06; border:1px solid #ffffff0a; border-radius:10px; transition:background 0.14s; }
@@ -640,7 +640,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 /* Analytics */
 .analytics-summary { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:12px; margin-bottom:28px; }
 .analytics-stat-card { background:var(--char); border:1px solid #ffffff0a; border-radius:12px; padding:16px 18px; text-align:center; }
-.analytics-stat-value { font-size:28px; font-family:var(--fd); font-weight:900; color:var(--text-hi); letter-spacing:-0.02em; line-height:1.1; }
+.analytics-stat-value { font-size:28px; font-family:var(--font-display); font-weight:900; color:var(--text-hi); letter-spacing:-0.02em; line-height:1.1; }
 .analytics-stat-label { font-size:11px; color:var(--text-lo); text-transform:uppercase; letter-spacing:0.06em; margin-top:6px; }
 .analytics-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:16px; margin-bottom:24px; }
 .analytics-event-card { background:var(--char); border:1px solid #ffffff12; border-radius:14px; padding:18px 20px; cursor:pointer; transition:border-color 0.18s, transform 0.18s; }
@@ -662,7 +662,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .analytics-section { display:none; }
 .analytics-section.active { display:block; }
 .analytics-tab-strip { display:flex; gap:6px; margin-bottom:24px; flex-wrap:wrap; }
-.analytics-tab { font-size:12px; font-weight:700; color:var(--text-lo); background:#ffffff08; border:1px solid #ffffff10; border-radius:8px; padding:8px 16px; cursor:pointer; transition:border-color 0.14s, color 0.14s; font-family:var(--fb); }
+.analytics-tab { font-size:12px; font-weight:700; color:var(--text-lo); background:#ffffff08; border:1px solid #ffffff10; border-radius:8px; padding:8px 16px; cursor:pointer; transition:border-color 0.14s, color 0.14s; font-family:var(--font-body); }
 .analytics-tab:hover { color:var(--text-hi); background:#ffffff0c; border-color:#ffffff20; }
 .analytics-tab.active { color:#fff; background:var(--ember); border-color:var(--ember); }
 .analytics-section-title { font-size:13px; font-weight:700; color:var(--text-mid); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:14px; margin-top:4px; }
@@ -671,7 +671,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .analytics-table td { padding:10px 12px; border-bottom:1px solid #ffffff06; color:var(--text-mid); }
 .analytics-table tr:hover td { background:#ffffff04; }
 .analytics-cuisine-pill { display:inline-block; font-size:10px; font-weight:700; padding:3px 8px; border-radius:6px; background:#ffffff10; color:var(--text-mid); margin:2px 2px 2px 0; }
-.analytics-big-number { font-size:48px; font-family:var(--fd); font-weight:900; letter-spacing:-0.03em; line-height:1; }
+.analytics-big-number { font-size:48px; font-family:var(--font-display); font-weight:900; letter-spacing:-0.03em; line-height:1; }
 .analytics-review-card { background:#ffffff06; border:1px solid #ffffff08; border-radius:10px; padding:14px 16px; margin-bottom:10px; }
 .analytics-review-card:last-child { margin-bottom:0; }
 .analytics-stars { color:var(--text-lo); letter-spacing:1px; }
@@ -702,7 +702,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .analytics-demand-high { background:#2D8B5520; color:var(--herb); }
 .analytics-demand-mod { background:#C9840A20; color:var(--gold); }
 .analytics-demand-low { background:#C0392B20; color:var(--terra); }
-.analytics-fill-pct { font-size:24px; font-family:var(--fd); font-weight:900; letter-spacing:-0.02em; line-height:1; }
+.analytics-fill-pct { font-size:24px; font-family:var(--font-display); font-weight:900; letter-spacing:-0.02em; line-height:1; }
 
 /* Skeleton shimmer for analytics loading */
 @keyframes anaShimmer { 0% { background-position: -400px 0; } 100% { background-position: 400px 0; } }
@@ -755,11 +755,11 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 @media (max-width: 680px) { .oa-cal-popup { min-width: calc(100vw - 48px); right: 0; left: auto; } .oa-cal-inner { flex-direction: column; } .oa-cal-divider { height: 1px; width: 100%; } }
 
 /* Org settings expansion */
-.org-settings-input { width:100%; height:42px; padding:0 14px; background:#ffffff08; border:1px solid #ffffff10; border-radius:10px; font-family:var(--fb); font-size:14px; color:var(--text-hi); outline:none; transition:border-color 0.14s; }
+.org-settings-input { width:100%; height:42px; padding:0 14px; background:#ffffff08; border:1px solid #ffffff10; border-radius:10px; font-family:var(--font-body); font-size:14px; color:var(--text-hi); outline:none; transition:border-color 0.14s; }
 .org-settings-input:focus { border-color:#E8500A50; }
 .org-settings-label { font-size:13px; font-weight:600; color:var(--text-mid); margin-bottom:6px; display:block; }
 .org-settings-field { margin-bottom:14px; }
-.org-settings-save { background:var(--ember); color:#fff; border:none; font-family:var(--fb); font-size:13px; font-weight:700; padding:10px 22px; border-radius:10px; cursor:pointer; transition:all 0.14s; }
+.org-settings-save { background:var(--ember); color:#fff; border:none; font-family:var(--font-body); font-size:13px; font-weight:700; padding:10px 22px; border-radius:10px; cursor:pointer; transition:all 0.14s; }
 .org-settings-save:hover { background:var(--ember-glow); }
 .org-save-msg { font-size:12px; color:var(--herb); margin-left:10px; display:none; }
 .org-save-err { font-size:12px; color:var(--terra); margin-left:10px; display:none; }
@@ -769,7 +769,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
 .rate-modal-overlay.open { opacity:1; pointer-events:all; }
 .rate-modal-box { background:var(--char); border:1px solid #ffffff0d; border-radius:20px; padding:32px; width:480px; max-width:92vw; transform:translateY(12px); transition:transform 0.2s; }
 .rate-modal-overlay.open .rate-modal-box { transform:translateY(0); }
-.rate-modal-title { font-family:var(--fd); font-size:20px; font-weight:900; color:var(--text-hi); margin-bottom:4px; }
+.rate-modal-title { font-family:var(--font-display); font-size:20px; font-weight:900; color:var(--text-hi); margin-bottom:4px; }
 .rate-modal-sub { font-size:13px; color:var(--text-lo); margin-bottom:20px; }
 .rate-field { margin-bottom:16px; }
 .rate-field-label { font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; color:var(--text-lo); margin-bottom:8px; }
@@ -926,7 +926,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-lo)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.5;margin-bottom:16px;"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                 <div style="font-size:15px;font-weight:600;color:var(--text-hi);margin-bottom:6px;">No events yet</div>
                 <div style="font-size:13px;color:var(--text-lo);line-height:1.5;margin-bottom:20px;">Post your first event to start attracting vendors and filling stalls.</div>
-                <button onclick="showPanel('new-event',null)" style="display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:8px;border:none;background:var(--ember);color:#fff;font-size:13px;font-weight:600;font-family:var(--fb);cursor:pointer;transition:background 0.15s;">+ Post an Event</button>
+                <button onclick="showPanel('new-event',null)" style="display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:8px;border:none;background:var(--ember);color:#fff;font-size:13px;font-weight:600;font-family:var(--font-body);cursor:pointer;transition:background 0.15s;">+ Post an Event</button>
               </div>
             </td></tr>
           </tbody>
@@ -938,7 +938,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
     <div class="panel" id="panel-event-mgmt">
       <div class="mgmt-header">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-          <button onclick="showPanel('events',null)" style="background:transparent;border:none;color:var(--text-lo);cursor:pointer;font-size:12px;font-family:var(--fb);">← My Events</button>
+          <button onclick="showPanel('events',null)" style="background:transparent;border:none;color:var(--text-lo);cursor:pointer;font-size:12px;font-family:var(--font-body);">← My Events</button>
           <span style="color:var(--text-lo);font-size:12px;">/</span>
           <span style="font-size:12px;color:var(--text-mid);" id="mgmt-breadcrumb"></span>
         </div>
@@ -1328,7 +1328,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
             <div id="avatar-preview-large" style="width:80px;height:80px;border-radius:16px;background:linear-gradient(135deg,#0A1A2D,#0A3060);display:flex;align-items:center;justify-content:center;font-size:36px;overflow:hidden;flex-shrink:0;">🏛️</div>
             <div style="flex:1;">
               <div style="font-size:13px;color:var(--text-mid);margin-bottom:10px;line-height:1.5;">Upload a photo to show on your profile, event listings, and messages.</div>
-              <label style="display:inline-flex;align-items:center;gap:8px;background:var(--ember);color:#fff;font-size:13px;font-weight:700;padding:9px 16px;border-radius:10px;cursor:pointer;font-family:var(--fb);">
+              <label style="display:inline-flex;align-items:center;gap:8px;background:var(--ember);color:#fff;font-size:13px;font-weight:700;padding:9px 16px;border-radius:10px;cursor:pointer;font-family:var(--font-body);">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                 Choose photo
                 <input type="file" accept="image/jpeg,image/png,image/webp" style="display:none;" onchange="previewAndUploadAvatar(this)">
@@ -1340,7 +1340,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
             <div style="font-size:13px;font-weight:700;color:var(--text-hi);margin-bottom:6px;">Banner image</div>
             <div style="font-size:12px;color:var(--text-lo);margin-bottom:10px;">Displayed at the top of your public organiser profile.</div>
             <div id="banner-preview" style="width:100%;height:80px;border-radius:10px;background:linear-gradient(135deg,#231E19,#1A1612);border:1.5px dashed #ffffff15;margin-bottom:10px;overflow:hidden;display:flex;align-items:center;justify-content:center;"><span id="banner-placeholder" style="font-size:11px;color:var(--text-lo);opacity:0.6;">No banner uploaded</span></div>
-            <label style="display:inline-flex;align-items:center;gap:8px;background:#ffffff08;color:var(--text-mid);font-size:12px;font-weight:700;padding:8px 14px;border-radius:8px;cursor:pointer;border:1px solid #ffffff10;font-family:var(--fb);">
+            <label style="display:inline-flex;align-items:center;gap:8px;background:#ffffff08;color:var(--text-mid);font-size:12px;font-weight:700;padding:8px 14px;border-radius:8px;cursor:pointer;border:1px solid #ffffff10;font-family:var(--font-body);">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
               Upload banner
               <input type="file" accept="image/jpeg,image/png,image/webp" style="display:none;" onchange="uploadOrgBanner(this)">
@@ -1369,7 +1369,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
             <div style="display:flex;flex-direction:column;gap:6px;width:240px;">
               <div style="display:flex;gap:8px;align-items:center;">
                 <input class="form-input" id="settings-abn" value="" style="flex:1;font-family:monospace;letter-spacing:0.5px;" placeholder="XX XXX XXX XXX" maxlength="14" oninput="this.value=this.value.replace(/[^\d\s]/g,''); _orgAbnAutoTrigger(this.value);" />
-                <button type="button" id="settings-abn-btn" onclick="orgVerifyAbn()" style="flex-shrink:0;background:var(--ember);color:#fff;border:none;border-radius:10px;padding:9px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--fb);white-space:nowrap;">Verify</button>
+                <button type="button" id="settings-abn-btn" onclick="orgVerifyAbn()" style="flex-shrink:0;background:var(--ember);color:#fff;border:none;border-radius:10px;padding:9px 16px;font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font-body);white-space:nowrap;">Verify</button>
               </div>
               <div id="settings-abn-result" style="font-size:12px;line-height:1.5;"></div>
             </div>
@@ -1380,10 +1380,10 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
           </div>
           <div class="settings-row">
             <div><div class="settings-row-label">Public profile</div><div class="settings-row-desc">View how vendors see your organiser page.</div></div>
-            <a id="org-public-profile-link" href="#" target="_blank" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--ember);text-decoration:none;">View profile →</a>
+            <a id="org-public-profile-link" href="#" target="_blank" style="font-family:var(--font-body);font-size:13px;font-weight:700;color:var(--ember);text-decoration:none;">View profile →</a>
           </div>
           <div style="display:flex;justify-content:flex-end;margin-top:12px;">
-            <button id="btn-save-settings" onclick="saveOrgSettings()" style="font-family:var(--fb);font-size:13px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:10px 22px;border-radius:10px;cursor:pointer;">Save profile</button>
+            <button id="btn-save-settings" onclick="saveOrgSettings()" style="font-family:var(--font-body);font-size:13px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:10px 22px;border-radius:10px;cursor:pointer;">Save profile</button>
             <span class="org-save-msg" id="profile-save-msg">Saved!</span>
           </div>
         </div>
@@ -1424,7 +1424,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
               <label style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:var(--text-lo);margin-bottom:4px;display:block;">Role</label>
               <select class="form-select" id="org-team-role" style="width:100%;"><option value="editor">Editor</option><option value="viewer">Viewer</option></select>
             </div>
-            <button onclick="inviteTeamMember()" style="font-family:var(--fb);font-size:13px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:10px 18px;border-radius:10px;cursor:pointer;white-space:nowrap;">Invite</button>
+            <button onclick="inviteTeamMember()" style="font-family:var(--font-body);font-size:13px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:10px 18px;border-radius:10px;cursor:pointer;white-space:nowrap;">Invite</button>
           </div>
           <span class="org-save-err" id="org-team-err-msg" style="display:none;margin-top:8px;"></span>
         </div>
@@ -1458,7 +1458,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
             <label class="toggle-switch"><input type="checkbox" id="org-def-water" /><div class="toggle-track"></div><div class="toggle-thumb"></div></label>
           </div>
           <div style="display:flex;justify-content:flex-end;margin-top:12px;">
-            <button onclick="saveOrgDefaults()" style="font-family:var(--fb);font-size:13px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:10px 22px;border-radius:10px;cursor:pointer;">Save defaults</button>
+            <button onclick="saveOrgDefaults()" style="font-family:var(--font-body);font-size:13px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:10px 22px;border-radius:10px;cursor:pointer;">Save defaults</button>
             <span class="org-save-msg" id="org-defaults-save-msg">Saved!</span>
           </div>
         </div>
@@ -1473,7 +1473,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
             <span id="org-auto-response-count" style="font-size:11px;color:var(--text-lo);">0/500</span>
           </div>
           <div style="display:flex;justify-content:flex-end;margin-top:12px;">
-            <button onclick="saveOrgAutoResponse()" style="font-family:var(--fb);font-size:13px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:10px 22px;border-radius:10px;cursor:pointer;">Save template</button>
+            <button onclick="saveOrgAutoResponse()" style="font-family:var(--font-body);font-size:13px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:10px 22px;border-radius:10px;cursor:pointer;">Save template</button>
             <span class="org-save-msg" id="org-auto-response-save-msg">Saved!</span>
           </div>
         </div>
@@ -1513,8 +1513,8 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
               <div class="settings-row-desc">Choose how times appear in messages.</div>
             </div>
             <div style="display:flex;gap:6px;">
-              <button id="org-btn-time-12" onclick="setOrgTimeFormat('12')" style="font-family:var(--fb);font-size:12px;font-weight:700;padding:7px 16px;border-radius:8px;cursor:pointer;transition:background 0.15s,color 0.15s;">12h</button>
-              <button id="org-btn-time-24" onclick="setOrgTimeFormat('24')" style="font-family:var(--fb);font-size:12px;font-weight:700;padding:7px 16px;border-radius:8px;cursor:pointer;transition:background 0.15s,color 0.15s;">24h</button>
+              <button id="org-btn-time-12" onclick="setOrgTimeFormat('12')" style="font-family:var(--font-body);font-size:12px;font-weight:700;padding:7px 16px;border-radius:8px;cursor:pointer;transition:background 0.15s,color 0.15s;">12h</button>
+              <button id="org-btn-time-24" onclick="setOrgTimeFormat('24')" style="font-family:var(--font-body);font-size:12px;font-weight:700;padding:7px 16px;border-radius:8px;cursor:pointer;transition:background 0.15s,color 0.15s;">24h</button>
             </div>
           </div>
         </div>
@@ -1524,11 +1524,11 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
           <div class="settings-section-title">Data export</div>
           <div style="font-size:13px;color:var(--text-lo);margin-bottom:20px;line-height:1.5;">Download your data as CSV files for reporting or backup.</div>
           <div style="display:flex;gap:12px;flex-wrap:wrap;">
-            <button onclick="window.location='/api/organiser/export/events'" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--text-hi);background:#ffffff08;border:1.5px solid #ffffff12;padding:10px 20px;border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:8px;">
+            <button onclick="window.location='/api/organiser/export/events'" style="font-family:var(--font-body);font-size:13px;font-weight:700;color:var(--text-hi);background:#ffffff08;border:1.5px solid #ffffff12;padding:10px 20px;border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:8px;">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               Export events
             </button>
-            <button onclick="window.location='/api/organiser/export/applications'" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--text-hi);background:#ffffff08;border:1.5px solid #ffffff12;padding:10px 20px;border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:8px;">
+            <button onclick="window.location='/api/organiser/export/applications'" style="font-family:var(--font-body);font-size:13px;font-weight:700;color:var(--text-hi);background:#ffffff08;border:1.5px solid #ffffff12;padding:10px 20px;border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:8px;">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               Export applications
             </button>
@@ -1553,7 +1553,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
           <div style="background:#C0392B06;border:1px solid #C0392B22;border-radius:12px;padding:18px 20px;">
             <div style="font-size:13px;font-weight:700;color:var(--terra);margin-bottom:6px;">⚠️ Delete organisation account</div>
             <div style="font-size:13px;color:var(--text-lo);margin-bottom:14px;line-height:1.6;">Permanently deletes your account and all event listings. Active vendor applications will be cancelled.</div>
-            <button onclick="showDeleteOrgModal()" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--terra);background:#C0392B10;border:1.5px solid #C0392B30;padding:10px 20px;border-radius:10px;cursor:pointer;">Delete account</button>
+            <button onclick="showDeleteOrgModal()" style="font-family:var(--font-body);font-size:13px;font-weight:700;color:var(--terra);background:#C0392B10;border:1.5px solid #C0392B30;padding:10px 20px;border-radius:10px;cursor:pointer;">Delete account</button>
           </div>
         </div>
       </div>
@@ -1563,9 +1563,9 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
     <div class="panel" id="panel-inbox">
       <div style="max-width:820px;">
         <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center;">
-          <input id="inbox-search" placeholder="Search vendor, event…" oninput="filterInbox()" style="flex:1;min-width:180px;height:34px;padding:0 13px;background:#ffffff08;border:1px solid #ffffff22;border-radius:9px;font-family:var(--fb);font-size:12.5px;color:var(--text-hi);outline:none;" />
+          <input id="inbox-search" placeholder="Search vendor, event…" oninput="filterInbox()" style="flex:1;min-width:180px;height:34px;padding:0 13px;background:#ffffff08;border:1px solid #ffffff22;border-radius:9px;font-family:var(--font-body);font-size:12.5px;color:var(--text-hi);outline:none;" />
           <div style="display:flex;align-items:center;gap:6px;">
-            <select id="inbox-status-filter" onchange="filterInbox()" style="height:34px;padding:0 11px;background:#ffffff08;border:1px solid #ffffff22;border-radius:9px;font-family:var(--fb);font-size:12.5px;color:var(--text-hi);outline:none;">
+            <select id="inbox-status-filter" onchange="filterInbox()" style="height:34px;padding:0 11px;background:#ffffff08;border:1px solid #ffffff22;border-radius:9px;font-family:var(--font-body);font-size:12.5px;color:var(--text-hi);outline:none;">
               <option value="">All statuses</option>
               <option value="pending">Pending</option>
               <option value="approved">Approved</option>
@@ -1588,7 +1588,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
             <div class="org-cal-month" id="org-cal-month-label">—</div>
             <button class="org-cal-nav-btn" onclick="orgCalNav(1)">›</button>
           </div>
-          <button id="org-ical-export-btn" onclick="exportICal()" style="font-family:var(--fb);font-size:12px;font-weight:600;color:var(--text-mid);background:#ffffff08;border:1px solid #ffffff12;padding:8px 16px;border-radius:9px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .14s;">
+          <button id="org-ical-export-btn" onclick="exportICal()" style="font-family:var(--font-body);font-size:12px;font-weight:600;color:var(--text-mid);background:#ffffff08;border:1px solid #ffffff12;padding:8px 16px;border-radius:9px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .14s;">
             <span>📅</span> Export to calendar
           </button>
         </div>
@@ -1673,7 +1673,7 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
             </div>
           </div>
           <span id="oa-range-label" style="font-size:12px;color:#A89880;margin-left:auto;"></span>
-          <button id="ana-export-btn" onclick="exportAnalyticsCSV()" disabled style="font-family:var(--fb);font-size:12px;font-weight:700;color:var(--text-lo);background:#ffffff08;border:1px solid #ffffff10;padding:6px 14px;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:5px;transition:color 0.15s,border-color 0.15s,opacity 0.15s;opacity:0.35;" onmouseover="if(!this.disabled){this.style.color='var(--text-hi)';this.style.borderColor='#ffffff30'}" onmouseout="this.style.color='var(--text-lo)';this.style.borderColor='#ffffff10'">
+          <button id="ana-export-btn" onclick="exportAnalyticsCSV()" disabled style="font-family:var(--font-body);font-size:12px;font-weight:700;color:var(--text-lo);background:#ffffff08;border:1px solid #ffffff10;padding:6px 14px;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:5px;transition:color 0.15s,border-color 0.15s,opacity 0.15s;opacity:0.35;" onmouseover="if(!this.disabled){this.style.color='var(--text-hi)';this.style.borderColor='#ffffff30'}" onmouseout="this.style.color='var(--text-lo)';this.style.borderColor='#ffffff10'">
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v7M3 5l3 3 3-3M1.5 9.5h9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Export CSV
           </button>
@@ -1767,17 +1767,17 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
     <div class="rate-field">
       <div class="rate-field-label">Would you invite them back?</div>
       <div style="display:flex;gap:10px;margin-top:6px;">
-        <button id="rebook-yes" onclick="setRebook(true)" style="flex:1;padding:9px;border-radius:9px;border:1.5px solid #ffffff20;background:#ffffff08;color:var(--text-mid);font-family:var(--fb);font-size:13px;font-weight:700;cursor:pointer;">👍 Yes</button>
-        <button id="rebook-no" onclick="setRebook(false)" style="flex:1;padding:9px;border-radius:9px;border:1.5px solid #ffffff20;background:#ffffff08;color:var(--text-mid);font-family:var(--fb);font-size:13px;font-weight:700;cursor:pointer;">👎 No</button>
+        <button id="rebook-yes" onclick="setRebook(true)" style="flex:1;padding:9px;border-radius:9px;border:1.5px solid #ffffff20;background:#ffffff08;color:var(--text-mid);font-family:var(--font-body);font-size:13px;font-weight:700;cursor:pointer;">👍 Yes</button>
+        <button id="rebook-no" onclick="setRebook(false)" style="flex:1;padding:9px;border-radius:9px;border:1.5px solid #ffffff20;background:#ffffff08;color:var(--text-mid);font-family:var(--font-body);font-size:13px;font-weight:700;cursor:pointer;">👎 No</button>
       </div>
     </div>
     <div class="rate-field">
       <div class="rate-field-label">Private notes (optional)</div>
-      <textarea id="rate-notes" style="width:100%;min-height:70px;padding:10px 14px;background:#ffffff08;border:1px solid #ffffff10;border-radius:10px;font-family:var(--fb);font-size:13px;color:var(--text-hi);outline:none;resize:vertical;" placeholder="Add a private note for your own reference…"></textarea>
+      <textarea id="rate-notes" style="width:100%;min-height:70px;padding:10px 14px;background:#ffffff08;border:1px solid #ffffff10;border-radius:10px;font-family:var(--font-body);font-size:13px;color:var(--text-hi);outline:none;resize:vertical;" placeholder="Add a private note for your own reference…"></textarea>
     </div>
     <div style="display:flex;gap:10px;margin-top:20px;">
-      <button onclick="closeRateModal()" style="flex:1;padding:12px;border-radius:10px;background:#ffffff08;border:1px solid #ffffff12;color:var(--text-mid);font-family:var(--fb);font-size:13px;font-weight:700;cursor:pointer;">Cancel</button>
-      <button onclick="submitVendorRating()" style="flex:1;padding:12px;border-radius:10px;background:var(--ember);border:none;color:#fff;font-family:var(--fb);font-size:13px;font-weight:700;cursor:pointer;">Save rating</button>
+      <button onclick="closeRateModal()" style="flex:1;padding:12px;border-radius:10px;background:#ffffff08;border:1px solid #ffffff12;color:var(--text-mid);font-family:var(--font-body);font-size:13px;font-weight:700;cursor:pointer;">Cancel</button>
+      <button onclick="submitVendorRating()" style="flex:1;padding:12px;border-radius:10px;background:var(--ember);border:none;color:#fff;font-family:var(--font-body);font-size:13px;font-weight:700;cursor:pointer;">Save rating</button>
     </div>
   </div>
 </div>
@@ -1791,8 +1791,8 @@ body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index
     <input class="form-input" id="delete-org-confirm-input" placeholder="Type DELETE" style="width:100%;margin-bottom:16px;" oninput="const b=document.getElementById('btn-confirm-delete-org');b.disabled=this.value!=='DELETE';b.style.opacity=this.value==='DELETE'?'1':'0.5';" />
     <div id="delete-org-error" style="font-size:12px;color:var(--terra);margin-bottom:12px;display:none;"></div>
     <div style="display:flex;gap:10px;">
-      <button onclick="closeDeleteOrgModal()" style="flex:1;padding:12px;border-radius:10px;background:#ffffff08;border:1px solid #ffffff12;color:var(--text-mid);font-family:var(--fb);font-size:13px;font-weight:700;cursor:pointer;">Cancel</button>
-      <button id="btn-confirm-delete-org" onclick="confirmDeleteOrgAccount()" disabled style="flex:1;padding:12px;border-radius:10px;background:var(--terra);border:none;color:#fff;font-family:var(--fb);font-size:13px;font-weight:700;cursor:pointer;opacity:0.5;">Delete permanently</button>
+      <button onclick="closeDeleteOrgModal()" style="flex:1;padding:12px;border-radius:10px;background:#ffffff08;border:1px solid #ffffff12;color:var(--text-mid);font-family:var(--font-body);font-size:13px;font-weight:700;cursor:pointer;">Cancel</button>
+      <button id="btn-confirm-delete-org" onclick="confirmDeleteOrgAccount()" disabled style="flex:1;padding:12px;border-radius:10px;background:var(--terra);border:none;color:#fff;font-family:var(--font-body);font-size:13px;font-weight:700;cursor:pointer;opacity:0.5;">Delete permanently</button>
     </div>
   </div>
 </div>
@@ -1945,8 +1945,8 @@ async function openEventMgmt(id, name) {
               const isShowed = a.attended === 1;
               const isNoShow = a.attended === 0;
               attCell = `<td style="white-space:nowrap;">
-                <button onclick="markAttendance(${a.id},${ev.id},1,this)" style="font-size:11px;padding:3px 8px;border-radius:4px;border:1px solid ${isShowed ? 'var(--herb)' : '#ffffff10'};background:${isShowed ? 'var(--herb)22' : '#ffffff06'};color:${isShowed ? 'var(--herb)' : 'var(--text-lo)'};cursor:pointer;font-family:var(--fb);font-weight:700;" title="Showed up">✓</button>
-                <button onclick="markAttendance(${a.id},${ev.id},0,this)" style="font-size:11px;padding:3px 8px;border-radius:4px;border:1px solid ${isNoShow ? 'var(--terra)' : '#ffffff10'};background:${isNoShow ? 'var(--terra)22' : '#ffffff06'};color:${isNoShow ? 'var(--terra)' : 'var(--text-lo)'};cursor:pointer;font-family:var(--fb);font-weight:700;margin-left:4px;" title="No-show">✗</button>
+                <button onclick="markAttendance(${a.id},${ev.id},1,this)" style="font-size:11px;padding:3px 8px;border-radius:4px;border:1px solid ${isShowed ? 'var(--herb)' : '#ffffff10'};background:${isShowed ? 'var(--herb)22' : '#ffffff06'};color:${isShowed ? 'var(--herb)' : 'var(--text-lo)'};cursor:pointer;font-family:var(--font-body);font-weight:700;" title="Showed up">✓</button>
+                <button onclick="markAttendance(${a.id},${ev.id},0,this)" style="font-size:11px;padding:3px 8px;border-radius:4px;border:1px solid ${isNoShow ? 'var(--terra)' : '#ffffff10'};background:${isNoShow ? 'var(--terra)22' : '#ffffff06'};color:${isNoShow ? 'var(--terra)' : 'var(--text-lo)'};cursor:pointer;font-family:var(--font-body);font-weight:700;margin-left:4px;" title="No-show">✗</button>
               </td>`;
             } else {
               attCell = `<td style="color:var(--text-lo);font-size:11px;">—</td>`;
@@ -1960,7 +1960,7 @@ async function openEventMgmt(id, name) {
               <td>${a.water ? '<span class="check-icon">✓</span>' : '<span class="cross-icon">—</span>'}</td>
               <td style="font-weight:700;color:var(--herb);">${a.spot_number ? '#' + a.spot_number : '—'}</td>
               ${attCell}
-              <td style="padding-right:20px;"><button onclick="startChat(${a.vendor_user_id},'${vName}')" style="font-family:var(--fb);font-size:11px;font-weight:700;color:var(--text-lo);background:#ffffff08;border:1px solid #ffffff10;padding:4px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;" onmouseover="this.style.color='var(--text-hi)'" onmouseout="this.style.color='var(--text-lo)'">💬 Message</button></td>
+              <td style="padding-right:20px;"><button onclick="startChat(${a.vendor_user_id},'${vName}')" style="font-family:var(--font-body);font-size:11px;font-weight:700;color:var(--text-lo);background:#ffffff08;border:1px solid #ffffff10;padding:4px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;" onmouseover="this.style.color='var(--text-hi)'" onmouseout="this.style.color='var(--text-lo)'">💬 Message</button></td>
             </tr>`;
           }).join('');
         }
@@ -1997,8 +1997,8 @@ async function openEventMgmt(id, name) {
             <div class="form-group"><label class="form-label">Public description</label><textarea class="form-textarea" id="ed-description" style="min-height:100px;">${ev.description||''}</textarea></div>
             <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;">
               <button class="btn-step-next" onclick="saveEventDetails(${ev.id})" style="flex:1;min-width:140px;">Save changes</button>
-              <button onclick="toggleArchiveEvent(${ev.id},'${isArchived?'published':'archived'}')" style="flex:1;min-width:140px;padding:10px 18px;border-radius:8px;border:1px solid ${isArchived?'var(--herb)':'var(--gold)'};background:transparent;color:${isArchived?'var(--herb)':'var(--gold)'};font-size:13px;font-family:var(--fb);cursor:pointer;">${isArchived?'↑ Restore event':'Archive event'}</button>
-              <button onclick="deleteEventConfirm(${ev.id},'${(ev.name||'').replace(/'/g,"\\'")}') " style="flex:0;padding:10px 18px;border-radius:8px;border:1px solid var(--terra);background:transparent;color:var(--terra);font-size:13px;font-family:var(--fb);cursor:pointer;">Delete</button>
+              <button onclick="toggleArchiveEvent(${ev.id},'${isArchived?'published':'archived'}')" style="flex:1;min-width:140px;padding:10px 18px;border-radius:8px;border:1px solid ${isArchived?'var(--herb)':'var(--gold)'};background:transparent;color:${isArchived?'var(--herb)':'var(--gold)'};font-size:13px;font-family:var(--font-body);cursor:pointer;">${isArchived?'↑ Restore event':'Archive event'}</button>
+              <button onclick="deleteEventConfirm(${ev.id},'${(ev.name||'').replace(/'/g,"\\'")}') " style="flex:0;padding:10px 18px;border-radius:8px;border:1px solid var(--terra);background:transparent;color:var(--terra);font-size:13px;font-family:var(--font-body);cursor:pointer;">Delete</button>
             </div>
             <div id="ed-msg" style="display:none;margin-top:12px;font-size:13px;"></div>
           </div>`;
@@ -2079,8 +2079,8 @@ async function openEventMgmt(id, name) {
             ${location ? `<div style="font-size:11px;color:var(--text-lo);margin-top:3px;">📍 ${location}</div>` : ''}
           </div>
           <div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0;">
-            <a href="/vendors/${a.vendor_user_id}" target="_blank" rel="noopener" style="font-family:var(--fb);font-size:11px;font-weight:700;color:var(--text-lo);background:#ffffff08;border:1px solid #ffffff10;padding:5px 11px;border-radius:7px;text-decoration:none;white-space:nowrap;text-align:center;" onmouseover="this.style.color='var(--text-hi)'" onmouseout="this.style.color='var(--text-lo)'">View profile ↗</a>
-            <button onclick="startChat(${a.vendor_user_id},'${(a.trading_name||'').replace(/'/g,"\\'")}')" style="font-family:var(--fb);font-size:11px;font-weight:700;color:var(--ember);background:var(--ember-bg);border:1px solid #E8500A22;padding:5px 11px;border-radius:7px;cursor:pointer;white-space:nowrap;">💬 Message</button>
+            <a href="/vendors/${a.vendor_user_id}" target="_blank" rel="noopener" style="font-family:var(--font-body);font-size:11px;font-weight:700;color:var(--text-lo);background:#ffffff08;border:1px solid #ffffff10;padding:5px 11px;border-radius:7px;text-decoration:none;white-space:nowrap;text-align:center;" onmouseover="this.style.color='var(--text-hi)'" onmouseout="this.style.color='var(--text-lo)'">View profile ↗</a>
+            <button onclick="startChat(${a.vendor_user_id},'${(a.trading_name||'').replace(/'/g,"\\'")}')" style="font-family:var(--font-body);font-size:11px;font-weight:700;color:var(--ember);background:var(--ember-bg);border:1px solid #E8500A22;padding:5px 11px;border-radius:7px;cursor:pointer;white-space:nowrap;">💬 Message</button>
           </div>
         </div>
         ${a.bio ? `<div class="app-card-note">"${a.bio}"</div>` : ''}
@@ -2165,7 +2165,7 @@ async function reviewApp(appId, status, btn) {
           <td>${hasPower ? '<span class="check-icon">✓</span>' : '<span class="cross-icon">—</span>'}</td>
           <td>${hasWater ? '<span class="check-icon">✓</span>' : '<span class="cross-icon">—</span>'}</td>
           <td style="font-weight:700;color:var(--herb);">${spotNumber ? '#' + spotNumber : '—'}</td>
-          <td style="padding-right:20px;"><button onclick="startChat(${vendorId},'${vNameEsc}')" style="font-family:var(--fb);font-size:11px;font-weight:700;color:var(--text-lo);background:#ffffff08;border:1px solid #ffffff10;padding:4px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;" onmouseover="this.style.color='var(--text-hi)'" onmouseout="this.style.color='var(--text-lo)'">💬 Message</button></td>`;
+          <td style="padding-right:20px;"><button onclick="startChat(${vendorId},'${vNameEsc}')" style="font-family:var(--font-body);font-size:11px;font-weight:700;color:var(--text-lo);background:#ffffff08;border:1px solid #ffffff10;padding:4px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;" onmouseover="this.style.color='var(--text-hi)'" onmouseout="this.style.color='var(--text-lo)'">💬 Message</button></td>`;
         tbody.appendChild(row);
         const summaryEl = document.getElementById('lineup-summary');
         if (summaryEl) {
@@ -2718,7 +2718,7 @@ function renderOrgOverview(d) {
         <div style="font-size:36px;margin-bottom:12px;opacity:0.7;">📅</div>
         <div style="font-size:14px;font-weight:700;color:var(--text-hi);margin-bottom:6px;">No upcoming events</div>
         <div style="font-size:12px;color:var(--text-lo);margin-bottom:16px;">Create your first event and start receiving vendor applications</div>
-        <button onclick="showPanel('new-event',null)" style="font-family:var(--fb);font-size:12px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:9px 20px;border-radius:9px;cursor:pointer;transition:background 0.14s;" onmouseover="this.style.background='var(--ember-glow)'" onmouseout="this.style.background='var(--ember)'">+ Post an Event</button>
+        <button onclick="showPanel('new-event',null)" style="font-family:var(--font-body);font-size:12px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:9px 20px;border-radius:9px;cursor:pointer;transition:background 0.14s;" onmouseover="this.style.background='var(--ember-glow)'" onmouseout="this.style.background='var(--ember)'">+ Post an Event</button>
       </div>`;
     } else {
       upcomingEl.innerHTML = d.upcoming.map((ev, i) => {
@@ -2819,7 +2819,7 @@ function renderOrgEventsData(events) {
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--text-lo)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.5;margin-bottom:16px;"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
         <div style="font-size:15px;font-weight:600;color:var(--text-hi);margin-bottom:6px;">No events yet</div>
         <div style="font-size:13px;color:var(--text-lo);line-height:1.5;margin-bottom:20px;">Post your first event to start attracting vendors and filling stalls.</div>
-        <button onclick="showPanel('new-event',null)" style="display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:8px;border:none;background:var(--ember);color:#fff;font-size:13px;font-weight:600;font-family:var(--fb);cursor:pointer;transition:background 0.15s;">+ Post an Event</button>
+        <button onclick="showPanel('new-event',null)" style="display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border-radius:8px;border:none;background:var(--ember);color:#fff;font-size:13px;font-weight:600;font-family:var(--font-body);cursor:pointer;transition:background 0.15s;">+ Post an Event</button>
       </div>
     </td></tr>`;
     return;
@@ -4536,7 +4536,7 @@ function _anaTab(name, btn) {
 }
 
 function _anaEmpty(icon, title, sub, cta) {
-  const ctaHtml = cta ? `<a href="${cta.href || '#'}"${cta.onclick ? ` onclick="${cta.onclick};return false"` : ''} style="font-family:var(--fb);font-size:12px;font-weight:700;color:var(--ember);text-decoration:none;display:inline-flex;align-items:center;gap:4px;padding:8px 16px;border:1px solid var(--ember);border-radius:8px;transition:background 0.15s,color 0.15s;" onmouseover="this.style.background='var(--ember)';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='var(--ember)'">${cta.label} →</a>` : '';
+  const ctaHtml = cta ? `<a href="${cta.href || '#'}"${cta.onclick ? ` onclick="${cta.onclick};return false"` : ''} style="font-family:var(--font-body);font-size:12px;font-weight:700;color:var(--ember);text-decoration:none;display:inline-flex;align-items:center;gap:4px;padding:8px 16px;border:1px solid var(--ember);border-radius:8px;transition:background 0.15s,color 0.15s;" onmouseover="this.style.background='var(--ember)';this.style.color='#fff'" onmouseout="this.style.background='transparent';this.style.color='var(--ember)'">${cta.label} →</a>` : '';
   return `<div class="analytics-empty"><div class="analytics-empty-icon">${icon}</div><div class="analytics-empty-title">${title}</div><div class="analytics-empty-sub">${sub}</div>${ctaHtml}</div>`;
 }
 
@@ -5019,7 +5019,7 @@ function renderPendingRatingsData(pending) {
             <div style="font-size:12px;color:var(--text-lo);margin-top:2px;">Rate ${ev.vendors.length} vendor${ev.vendors.length === 1 ? '' : 's'} who attended</div>
           </div>
         </div>
-        <button onclick="showPanel('ratings',null)" style="padding:8px 18px;border-radius:9px;border:none;background:var(--ember);color:#fff;font-family:var(--fb);font-size:12.5px;font-weight:700;cursor:pointer;">Rate now</button>
+        <button onclick="showPanel('ratings',null)" style="padding:8px 18px;border-radius:9px;border:none;background:var(--ember);color:#fff;font-family:var(--font-body);font-size:12.5px;font-weight:700;cursor:pointer;">Rate now</button>
       </div>`).join('');
   }
   const section = document.getElementById('pending-ratings-section');
@@ -5034,7 +5034,7 @@ function renderPendingRatingsData(pending) {
             <div>
               <div style="font-size:13.5px;font-weight:700;color:var(--text-hi);">${v.trading_name}</div>
             </div>
-            <button onclick="openRateModal(${v.vendor_user_id},'${v.trading_name.replace(/'/g,"\\'")}',${ev.event_id})" style="padding:7px 16px;border-radius:8px;border:none;background:var(--ember);color:#fff;font-family:var(--fb);font-size:12px;font-weight:700;cursor:pointer;">Rate</button>
+            <button onclick="openRateModal(${v.vendor_user_id},'${v.trading_name.replace(/'/g,"\\'")}',${ev.event_id})" style="padding:7px 16px;border-radius:8px;border:none;background:var(--ember);color:#fff;font-family:var(--font-body);font-size:12px;font-weight:700;cursor:pointer;">Rate</button>
           </div>`;
       }
     }

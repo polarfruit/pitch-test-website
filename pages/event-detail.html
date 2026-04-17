@@ -29,12 +29,12 @@
   --text-hi:    #FDF4E7;
   --text-mid:   #A89880;
   --text-lo:    #6B5A4A;
-  --fd:         'Fraunces', Georgia, serif;
-  --fb:         'Instrument Sans', 'Helvetica Neue', sans-serif;
+  --font-display:         'Fraunces', Georgia, serif;
+  --font-body:         'Instrument Sans', 'Helvetica Neue', sans-serif;
 }
 
 html { scroll-behavior: smooth; }
-body { background: var(--coal); color: var(--text-hi); font-family: var(--fb); line-height: 1.5; overflow-x: hidden; }
+body { background: var(--coal); color: var(--text-hi); font-family: var(--font-body); line-height: 1.5; overflow-x: hidden; }
 body::before {
   content: ''; position: fixed; inset: 0;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
@@ -43,15 +43,15 @@ body::before {
 
 /* ── NAV ────────────────────────────────────────────────────────────────── */
 .navbar { position: fixed; top: 0; left: 0; right: 0; z-index: 200; height: 66px; display: flex; align-items: center; justify-content: space-between; padding: 0 52px; background: rgba(26,22,18,0.92); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-bottom: 1px solid #ffffff07; }
-.nav-logo { font-family: var(--fd); font-size: 26px; font-weight: 900; letter-spacing: -0.04em; color: var(--text-hi); text-decoration: none; }
+.nav-logo { font-family: var(--font-display); font-size: 26px; font-weight: 900; letter-spacing: -0.04em; color: var(--text-hi); text-decoration: none; }
 .nav-logo .dot { color: var(--ember); }
 .nav-links { display: flex; align-items: center; gap: 32px; list-style: none; }
 .nav-links a { font-size: 14px; font-weight: 500; color: var(--text-mid); text-decoration: none; transition: color 0.14s; }
 .nav-links a:hover { color: var(--text-hi); }
 .nav-actions { display: flex; align-items: center; gap: 10px; }
-.btn-login { font-family: var(--fb); font-size: 13px; font-weight: 600; color: var(--text-mid); background: transparent; border: none; padding: 9px 16px; border-radius: 8px; cursor: pointer; transition: color 0.14s, background 0.14s; text-decoration: none; }
+.btn-login { font-family: var(--font-body); font-size: 13px; font-weight: 600; color: var(--text-mid); background: transparent; border: none; padding: 9px 16px; border-radius: 8px; cursor: pointer; transition: color 0.14s, background 0.14s; text-decoration: none; }
 .btn-login:hover { color: var(--text-hi); background: #ffffff09; }
-.btn-get-started { font-family: var(--fb); font-size: 13px; font-weight: 700; color: #fff; background: var(--ember); border: none; padding: 10px 22px; border-radius: 9px; cursor: pointer; box-shadow: 0 4px 16px #E8500A2E; transition: background 0.14s, transform 0.14s; text-decoration: none; }
+.btn-get-started { font-family: var(--font-body); font-size: 13px; font-weight: 700; color: #fff; background: var(--ember); border: none; padding: 10px 22px; border-radius: 9px; cursor: pointer; box-shadow: 0 4px 16px #E8500A2E; transition: background 0.14s, transform 0.14s; text-decoration: none; }
 .btn-get-started:hover { background: var(--ember-glow); transform: translateY(-1px); }
 .nav-hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 8px; border: none; background: transparent; }
 .nav-hamburger span { display: block; width: 22px; height: 2px; background: var(--text-mid); border-radius: 2px; }
@@ -94,7 +94,7 @@ body::before {
 .detail-hero-badge {
   position: absolute; top: 20px; left: 20px;
   font-size: 11px; font-weight: 700; padding: 5px 14px;
-  border-radius: 100px; font-family: var(--fb); letter-spacing: 0.07em;
+  border-radius: 100px; font-family: var(--font-body); letter-spacing: 0.07em;
   background: #2B5BA818; color: #2B5BA8; border: 1px solid #2B5BA828;
   backdrop-filter: blur(8px);
 }
@@ -110,7 +110,7 @@ body::before {
 
 /* Event name */
 .detail-event-name {
-  font-family: var(--fd);
+  font-family: var(--font-display);
   font-size: clamp(32px, 4vw, 52px);
   font-weight: 800; letter-spacing: -0.03em;
   color: var(--text-hi); line-height: 1.02;
@@ -134,7 +134,7 @@ body::before {
 
 /* Section heading */
 .subsec-title {
-  font-family: var(--fd); font-size: 20px; font-weight: 800;
+  font-family: var(--font-display); font-size: 20px; font-weight: 800;
   color: var(--text-hi); margin-bottom: 14px;
 }
 
@@ -163,7 +163,7 @@ body::before {
   padding: 22px 24px; display: flex; align-items: center; justify-content: space-between;
 }
 .fee-label { font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-lo); font-weight: 700; margin-bottom: 4px; }
-.fee-range { font-family: var(--fd); font-size: 32px; font-weight: 900; color: var(--ember); letter-spacing: -0.02em; }
+.fee-range { font-family: var(--font-display); font-size: 32px; font-weight: 900; color: var(--ember); letter-spacing: -0.02em; }
 .fee-note { font-size: 12px; color: var(--text-lo); margin-top: 2px; }
 .fee-inc-items { display: flex; flex-direction: column; gap: 4px; }
 .fee-inc-item { font-size: 12px; color: var(--text-mid); display: flex; align-items: center; gap: 6px; }
@@ -199,11 +199,11 @@ body::before {
 .vm-avatar {
   width: 44px; height: 44px; border-radius: 12px;
   display: flex; align-items: center; justify-content: center;
-  font-family: var(--fd); font-size: 16px; font-weight: 900; flex-shrink: 0;
+  font-family: var(--font-display); font-size: 16px; font-weight: 900; flex-shrink: 0;
   overflow: hidden;
 }
 .vm-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
-.vm-name { font-family: var(--fd); font-size: 13px; font-weight: 800; color: var(--coal); margin-bottom: 2px; }
+.vm-name { font-family: var(--font-display); font-size: 13px; font-weight: 800; color: var(--coal); margin-bottom: 2px; }
 .vm-type { font-size: 11px; color: #9A8870; }
 .lineup-empty {
   font-size: 14px; color: var(--text-lo); font-style: italic;
@@ -223,14 +223,14 @@ body::before {
 .fill-ring-svg { overflow: visible; }
 .fill-ring-track { fill: none; stroke: var(--ash); stroke-width: 10; }
 .fill-ring-fill  { fill: none; stroke-width: 10; stroke-linecap: round; transition: stroke-dasharray 0.8s ease; transform-origin: center; transform: rotate(-90deg); }
-.fill-ring-label { font-family: var(--fd); font-size: 22px; font-weight: 900; fill: var(--text-hi); }
-.fill-ring-sub   { font-size: 11px; fill: var(--text-lo); font-family: var(--fb); }
+.fill-ring-label { font-family: var(--font-display); font-size: 22px; font-weight: 900; fill: var(--text-hi); }
+.fill-ring-sub   { font-size: 11px; fill: var(--text-lo); font-family: var(--font-body); }
 .fill-ring-caption { font-size: 13px; color: var(--text-mid); margin-top: 10px; text-align: center; }
 
 /* Deadline */
 .deadline-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-top: 1px solid #ffffff08; }
 .deadline-label { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-lo); font-weight: 700; }
-.deadline-val { font-family: var(--fd); font-size: 16px; font-weight: 800; color: var(--text-hi); }
+.deadline-val { font-family: var(--font-display); font-size: 16px; font-weight: 800; color: var(--text-hi); }
 .countdown-badge {
   display: inline-flex; align-items: center; gap: 5px;
   background: #C9840A14; border: 1px solid #C9840A22;
@@ -247,14 +247,14 @@ body::before {
   width: 44px; height: 44px; border-radius: 12px;
   background: #2B5BA818; color: var(--slate);
   display: flex; align-items: center; justify-content: center;
-  font-family: var(--fd); font-size: 16px; font-weight: 900; flex-shrink: 0;
+  font-family: var(--font-display); font-size: 16px; font-weight: 900; flex-shrink: 0;
 }
-.org-name { font-family: var(--fd); font-size: 14px; font-weight: 800; color: var(--text-hi); margin-bottom: 2px; }
+.org-name { font-family: var(--font-display); font-size: 14px; font-weight: 800; color: var(--text-hi); margin-bottom: 2px; }
 .org-meta { font-size: 11px; color: var(--text-lo); }
 
 /* CTA buttons */
 .btn-apply {
-  width: 100%; font-family: var(--fb); font-size: 15px; font-weight: 700;
+  width: 100%; font-family: var(--font-body); font-size: 15px; font-weight: 700;
   color: #fff; background: var(--ember); border: none; border-radius: 12px;
   padding: 16px; cursor: pointer; margin-bottom: 10px;
   box-shadow: 0 6px 24px #E8500A28;
@@ -266,7 +266,7 @@ body::before {
 .btn-apply.submitted:hover { transform: none; }
 
 .btn-share {
-  width: 100%; font-family: var(--fb); font-size: 13px; font-weight: 600;
+  width: 100%; font-family: var(--font-body); font-size: 13px; font-weight: 600;
   color: var(--text-mid); background: transparent; border: 1px solid #ffffff10;
   border-radius: 10px; padding: 11px; cursor: pointer; margin-bottom: 14px;
   transition: all 0.14s; display: flex; align-items: center; justify-content: center; gap: 6px;
@@ -315,7 +315,7 @@ body::before {
   display: flex; align-items: center; justify-content: space-between;
   padding: 24px 28px 0;
 }
-.modal-title { font-family: var(--fd); font-size: 22px; font-weight: 900; color: var(--text-hi); }
+.modal-title { font-family: var(--font-display); font-size: 22px; font-weight: 900; color: var(--text-hi); }
 .modal-close {
   width: 36px; height: 36px; border-radius: 50%; background: var(--ash);
   border: none; cursor: pointer; font-size: 18px; color: var(--text-lo);
@@ -336,7 +336,7 @@ body::before {
 .si-dot {
   width: 32px; height: 32px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-family: var(--fd); font-size: 13px; font-weight: 900;
+  font-family: var(--font-display); font-size: 13px; font-weight: 900;
   background: var(--ash); color: var(--text-lo);
   border: 2px solid var(--ash);
   transition: all 0.2s;
@@ -367,7 +367,7 @@ body::before {
 .field-input, .field-select, .field-textarea {
   width: 100%; background: var(--ash); border: 1px solid #ffffff0A;
   border-radius: 10px; padding: 11px 14px;
-  font-family: var(--fb); font-size: 14px; color: var(--text-hi);
+  font-family: var(--font-body); font-size: 14px; color: var(--text-hi);
   outline: none; transition: border-color 0.14s, box-shadow 0.14s;
 }
 .field-input:focus, .field-select:focus, .field-textarea:focus { border-color: #E8500A40; box-shadow: 0 0 0 3px #E8500A12; }
@@ -400,13 +400,13 @@ body::before {
   padding: 20px 28px 28px;
 }
 .modal-back {
-  font-family: var(--fb); font-size: 13px; font-weight: 600; color: var(--text-lo);
+  font-family: var(--font-body); font-size: 13px; font-weight: 600; color: var(--text-lo);
   background: none; border: none; cursor: pointer; padding: 10px;
   transition: color 0.14s;
 }
 .modal-back:hover { color: var(--text-mid); }
 .modal-next {
-  font-family: var(--fb); font-size: 14px; font-weight: 700;
+  font-family: var(--font-body); font-size: 14px; font-weight: 700;
   color: #fff; background: var(--ember); border: none;
   padding: 12px 28px; border-radius: 10px; cursor: pointer;
   box-shadow: 0 4px 16px #E8500A28;
@@ -418,13 +418,13 @@ body::before {
 /* Success state */
 .modal-success { text-align: center; padding: 20px 0 10px; }
 .success-icon { font-size: 52px; margin-bottom: 16px; }
-.success-title { font-family: var(--fd); font-size: 24px; font-weight: 900; color: var(--text-hi); margin-bottom: 10px; }
+.success-title { font-family: var(--font-display); font-size: 24px; font-weight: 900; color: var(--text-hi); margin-bottom: 10px; }
 .success-desc { font-size: 14px; color: var(--text-mid); line-height: 1.7; }
 
 /* ── FOOTER ──────────────────────────────────────────────────────────────── */
 footer { background: var(--char); border-top: 1px solid #ffffff07; position: relative; z-index: 1; }
 .footer-main { max-width: 1320px; margin: 0 auto; padding: 56px 52px 36px; display: grid; grid-template-columns: 1.8fr 1fr 1fr 1fr; gap: 48px; }
-.footer-logo { font-family: var(--fd); font-size: 24px; font-weight: 900; letter-spacing: -0.04em; color: var(--text-hi); margin-bottom: 10px; text-decoration: none; display: inline-block; }
+.footer-logo { font-family: var(--font-display); font-size: 24px; font-weight: 900; letter-spacing: -0.04em; color: var(--text-hi); margin-bottom: 10px; text-decoration: none; display: inline-block; }
 .footer-logo .dot { color: var(--ember); }
 .footer-desc { font-size: 13px; color: var(--text-lo); line-height: 1.8; max-width: 220px; margin-bottom: 20px; }
 .footer-socials { display: flex; gap: 8px; }
@@ -436,7 +436,7 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
 .footer-links a:hover { color: var(--text-hi); }
 .footer-bottom { max-width: 1320px; margin: 0 auto; padding: 18px 52px 24px; border-top: 1px solid #ffffff06; display: flex; justify-content: space-between; align-items: center; }
 .footer-copy { font-size: 12px; color: var(--text-lo); }
-.footer-bl { font-family: var(--fd); font-size: 18px; font-weight: 900; letter-spacing: -0.04em; color: var(--text-mid); text-decoration: none; }
+.footer-bl { font-family: var(--font-display); font-size: 18px; font-weight: 900; letter-spacing: -0.04em; color: var(--text-mid); text-decoration: none; }
 .footer-bl .dot { color: var(--ember); }
 
 ::-webkit-scrollbar { width: 5px; }
@@ -463,7 +463,7 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
 
 /* ── SAVE BUTTON ─────────────────────────────────────────────────────────── */
 .btn-save {
-  width: 100%; font-family: var(--fb); font-size: 13px; font-weight: 600;
+  width: 100%; font-family: var(--font-body); font-size: 13px; font-weight: 600;
   color: var(--text-mid); background: transparent; border: 1px solid #ffffff10;
   border-radius: 10px; padding: 11px; cursor: pointer; margin-bottom: 10px;
   transition: all 0.14s; display: flex; align-items: center; justify-content: center; gap: 6px;
@@ -503,7 +503,7 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
 }
 .similar-card:hover { transform: translateY(-2px); border-color: #E8500A22; }
 .similar-hero { height: 72px; border-radius: 10px; margin-bottom: 10px; background: linear-gradient(135deg, #2E2720, #1A1612); }
-.similar-name { font-family: var(--fd); font-size: 13px; font-weight: 800; color: var(--text-hi); line-height: 1.3; }
+.similar-name { font-family: var(--font-display); font-size: 13px; font-weight: 800; color: var(--text-hi); line-height: 1.3; }
 .similar-meta { font-size: 11px; color: var(--text-lo); }
 .similar-badge {
   display: inline-flex; width: fit-content; font-size: 10px; font-weight: 700;
@@ -546,7 +546,7 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
     <a href="/signup" class="btn-get-started">Get Started</a>
   </div>
   <div id="nav-loggedin" style="display:none;align-items:center;gap:8px;position:relative;">
-    <a href="/dashboard/vendor" id="nav-dashboard-link" style="font-family:var(--fb);font-size:13px;font-weight:600;color:var(--text-mid);text-decoration:none;padding:9px 16px;border-radius:8px;transition:color 0.14s;"><span id="nav-user-label">Account</span> ▾</a>
+    <a href="/dashboard/vendor" id="nav-dashboard-link" style="font-family:var(--font-body);font-size:13px;font-weight:600;color:var(--text-mid);text-decoration:none;padding:9px 16px;border-radius:8px;transition:color 0.14s;"><span id="nav-user-label">Account</span> ▾</a>
   </div>
   <button class="nav-hamburger" aria-label="Menu">
     <span></span><span></span><span></span>
@@ -804,7 +804,7 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
       Apply for a pitch →
     </button>
 
-    <button class="btn-msg-org" id="msg-org-btn" onclick="messageOrganiser()" style="display:none;width:100%;font-family:var(--fb);font-size:14px;font-weight:700;color:var(--ember);background:var(--ember-bg);border:1px solid #E8500A33;border-radius:12px;padding:14px;cursor:pointer;margin-bottom:10px;transition:background 0.14s,transform 0.14s;">
+    <button class="btn-msg-org" id="msg-org-btn" onclick="messageOrganiser()" style="display:none;width:100%;font-family:var(--font-body);font-size:14px;font-weight:700;color:var(--ember);background:var(--ember-bg);border:1px solid #E8500A33;border-radius:12px;padding:14px;cursor:pointer;margin-bottom:10px;transition:background 0.14s,transform 0.14s;">
       💬 Message organiser
     </button>
 

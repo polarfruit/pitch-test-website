@@ -15,12 +15,12 @@
   --coal: #1A1612; --char: #231E19; --ash: #2E2720;
   --parchment: #FDF4E7; --herb: #2D8B55;
   --text-hi: #FDF4E7; --text-mid: #A89880; --text-lo: #6B5A4A;
-  --fd: 'Fraunces', Georgia, serif; --fb: 'Instrument Sans', 'Helvetica Neue', sans-serif;
+  --font-display: 'Fraunces', Georgia, serif; --font-body: 'Instrument Sans', 'Helvetica Neue', sans-serif;
 }
 
 body {
   background: var(--coal); color: var(--text-hi);
-  font-family: var(--fb); min-height: 100vh;
+  font-family: var(--font-body); min-height: 100vh;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   overflow-x: hidden; padding: 24px;
 }
@@ -41,7 +41,7 @@ body::after {
 .wrap { position: relative; z-index: 1; width: 100%; max-width: 440px; }
 
 .logo {
-  font-family: var(--fd); font-size: 28px; font-weight: 900;
+  font-family: var(--font-display); font-size: 28px; font-weight: 900;
   letter-spacing: -0.04em; color: var(--text-hi);
   text-decoration: none; display: inline-block; margin-bottom: 36px;
 }
@@ -55,7 +55,7 @@ body::after {
 
 .card-header { margin-bottom: 32px; }
 .card-emoji { font-size: 40px; margin-bottom: 12px; }
-h1 { font-family: var(--fd); font-size: 26px; font-weight: 900; letter-spacing: -0.02em; color: var(--text-hi); margin-bottom: 6px; }
+h1 { font-family: var(--font-display); font-size: 26px; font-weight: 900; letter-spacing: -0.02em; color: var(--text-hi); margin-bottom: 6px; }
 .card-sub { font-size: 14px; color: var(--text-mid); line-height: 1.6; }
 
 /* Social auth buttons */
@@ -63,7 +63,7 @@ h1 { font-family: var(--fd); font-size: 26px; font-weight: 900; letter-spacing: 
 .social-btn {
   display: flex; align-items: center; justify-content: center; gap: 10px;
   width: 100%; padding: 12px 16px; border-radius: 11px;
-  font-family: var(--fb); font-size: 14px; font-weight: 600;
+  font-family: var(--font-body); font-size: 14px; font-weight: 600;
   cursor: pointer; transition: background 0.14s, border-color 0.14s;
   border: 1.5px solid #ffffff10; background: #ffffff06; color: var(--text-hi);
   text-decoration: none;
@@ -87,7 +87,7 @@ h1 { font-family: var(--fd); font-size: 26px; font-weight: 900; letter-spacing: 
 .field-input {
   width: 100%; background: #1A1612; border: 1.5px solid #2A2018;
   border-radius: 10px; color: var(--text-hi);
-  font-family: var(--fb); font-size: 15px;
+  font-family: var(--font-body); font-size: 15px;
   padding: 12px 16px; outline: none; transition: border-color 0.2s;
 }
 .field-input:focus { border-color: var(--ember); }
@@ -98,7 +98,7 @@ h1 { font-family: var(--fd); font-size: 26px; font-weight: 900; letter-spacing: 
 .pw-toggle {
   position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
   background: none; border: none; cursor: pointer; color: var(--text-lo);
-  font-size: 12px; font-weight: 600; font-family: var(--fb);
+  font-size: 12px; font-weight: 600; font-family: var(--font-body);
   transition: color 0.14s; padding: 4px;
 }
 .pw-toggle:hover { color: var(--text-mid); }
@@ -112,7 +112,7 @@ h1 { font-family: var(--fd); font-size: 26px; font-weight: 900; letter-spacing: 
 
 .btn-submit {
   width: 100%; background: var(--ember); color: #fff; border: none;
-  border-radius: 11px; font-family: var(--fb); font-size: 15px; font-weight: 700;
+  border-radius: 11px; font-family: var(--font-body); font-size: 15px; font-weight: 700;
   padding: 14px; cursor: pointer; margin-top: 6px;
   transition: background 0.18s, transform 0.12s;
   box-shadow: 0 4px 20px #E8500A28;

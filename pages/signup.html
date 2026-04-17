@@ -23,14 +23,14 @@
   --text-hi:    #FDF4E7;
   --text-mid:   #A89880;
   --text-lo:    #6B5A4A;
-  --fd:         'Fraunces', Georgia, serif;
-  --fb:         'Instrument Sans', 'Helvetica Neue', sans-serif;
+  --font-display:         'Fraunces', Georgia, serif;
+  --font-body:         'Instrument Sans', 'Helvetica Neue', sans-serif;
 }
 
 body {
   background: var(--coal);
   color: var(--text-hi);
-  font-family: var(--fb);
+  font-family: var(--font-body);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -62,14 +62,14 @@ body::after {
 }
 
 .logo {
-  font-family: var(--fd); font-size: 30px; font-weight: 900;
+  font-family: var(--font-display); font-size: 30px; font-weight: 900;
   letter-spacing: -0.04em; color: var(--text-hi);
   text-decoration: none; display: inline-block; margin-bottom: 48px;
 }
 .logo .dot { color: var(--ember); }
 
 h1 {
-  font-family: var(--fd); font-size: clamp(28px, 4vw, 42px);
+  font-family: var(--font-display); font-size: clamp(28px, 4vw, 42px);
   font-weight: 900; letter-spacing: -0.03em;
   color: var(--text-hi); line-height: 1.1; margin-bottom: 10px;
 }
@@ -122,7 +122,7 @@ h1 {
 }
 
 .rc-label {
-  font-family: var(--fd); font-size: 22px; font-weight: 900;
+  font-family: var(--font-display); font-size: 22px; font-weight: 900;
   letter-spacing: -0.02em; color: var(--text-hi);
 }
 

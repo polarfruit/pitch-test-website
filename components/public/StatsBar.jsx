@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import styles from './StatsBar.module.css'
 
 const SIGNALS = [
@@ -7,17 +8,19 @@ const SIGNALS = [
   'Free to join',
 ]
 
-export default function StatsBar() {
+function StatsBar() {
   return (
     <div className={styles.bar}>
       <div className={styles.inner}>
-        {SIGNALS.map((text, i) => (
-          <div key={i} className={styles.item}>
+        {SIGNALS.map((signalText) => (
+          <div key={signalText} className={styles.item}>
             <span className={styles.icon} />
-            <span className={styles.sig}>{text}</span>
+            <span className={styles.sig}>{signalText}</span>
           </div>
         ))}
       </div>
     </div>
   )
 }
+
+export default memo(StatsBar)

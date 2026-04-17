@@ -8,59 +8,62 @@ const nextConfig = {
   },
 
   async rewrites() {
-    const express = process.env.EXPRESS_URL || 'http://localhost:3000'
+    // next.config.mjs runs at build time before module aliases resolve,
+    // so @/lib/config cannot be imported here. This is the only file
+    // that reads process.env.EXPRESS_URL directly.
+    const expressBaseUrl = process.env.EXPRESS_URL || 'http://localhost:3000'
 
     return {
       beforeFiles: [
-        { source: '/fonts/:path*', destination: `${express}/fonts/:path*` },
-        { source: '/brand_assets/:path*', destination: `${express}/brand_assets/:path*` },
-        { source: '/data.js', destination: `${express}/data.js` },
-        { source: '/suburbs.js', destination: `${express}/suburbs.js` },
-        { source: '/location-autocomplete.js', destination: `${express}/location-autocomplete.js` },
-        { source: '/favicon.ico', destination: `${express}/favicon.ico` },
-        { source: '/favicon.png', destination: `${express}/favicon.png` },
-        { source: '/apple-touch-icon.png', destination: `${express}/apple-touch-icon.png` },
+        { source: '/fonts/:path*', destination: `${expressBaseUrl}/fonts/:path*` },
+        { source: '/brand_assets/:path*', destination: `${expressBaseUrl}/brand_assets/:path*` },
+        { source: '/data.js', destination: `${expressBaseUrl}/data.js` },
+        { source: '/suburbs.js', destination: `${expressBaseUrl}/suburbs.js` },
+        { source: '/location-autocomplete.js', destination: `${expressBaseUrl}/location-autocomplete.js` },
+        { source: '/favicon.ico', destination: `${expressBaseUrl}/favicon.ico` },
+        { source: '/favicon.png', destination: `${expressBaseUrl}/favicon.png` },
+        { source: '/apple-touch-icon.png', destination: `${expressBaseUrl}/apple-touch-icon.png` },
       ],
       afterFiles: [
         // API
-        { source: '/api/:path*', destination: `${express}/api/:path*` },
+        { source: '/api/:path*', destination: `${expressBaseUrl}/api/:path*` },
 
         // Pages — browsing
-        { source: '/events', destination: `${express}/events` },
-        { source: '/events/:path*', destination: `${express}/events/:path*` },
-        { source: '/vendors', destination: `${express}/vendors` },
-        { source: '/vendors/:path*', destination: `${express}/vendors/:path*` },
-        { source: '/organisers/:path*', destination: `${express}/organisers/:path*` },
-        { source: '/discover', destination: `${express}/discover` },
+        { source: '/events', destination: `${expressBaseUrl}/events` },
+        { source: '/events/:path*', destination: `${expressBaseUrl}/events/:path*` },
+        { source: '/vendors', destination: `${expressBaseUrl}/vendors` },
+        { source: '/vendors/:path*', destination: `${expressBaseUrl}/vendors/:path*` },
+        { source: '/organisers/:path*', destination: `${expressBaseUrl}/organisers/:path*` },
+        { source: '/discover', destination: `${expressBaseUrl}/discover` },
 
         // Pages — dashboards
-        { source: '/dashboard/:path*', destination: `${express}/dashboard/:path*` },
-        { source: '/admin', destination: `${express}/admin` },
-        { source: '/admin/:path*', destination: `${express}/admin/:path*` },
+        { source: '/dashboard/:path*', destination: `${expressBaseUrl}/dashboard/:path*` },
+        { source: '/admin', destination: `${expressBaseUrl}/admin` },
+        { source: '/admin/:path*', destination: `${expressBaseUrl}/admin/:path*` },
 
         // Pages — auth
-        { source: '/login', destination: `${express}/login` },
-        { source: '/signup', destination: `${express}/signup` },
-        { source: '/signup/:path*', destination: `${express}/signup/:path*` },
-        { source: '/forgot-password', destination: `${express}/forgot-password` },
-        { source: '/verify/:path*', destination: `${express}/verify/:path*` },
-        { source: '/logout', destination: `${express}/logout` },
+        { source: '/login', destination: `${expressBaseUrl}/login` },
+        { source: '/signup', destination: `${expressBaseUrl}/signup` },
+        { source: '/signup/:path*', destination: `${expressBaseUrl}/signup/:path*` },
+        { source: '/forgot-password', destination: `${expressBaseUrl}/forgot-password` },
+        { source: '/verify/:path*', destination: `${expressBaseUrl}/verify/:path*` },
+        { source: '/logout', destination: `${expressBaseUrl}/logout` },
 
         // Pages — info
-        { source: '/pricing', destination: `${express}/pricing` },
-        { source: '/how-it-works', destination: `${express}/how-it-works` },
-        { source: '/about', destination: `${express}/about` },
-        { source: '/contact', destination: `${express}/contact` },
-        { source: '/terms', destination: `${express}/terms` },
-        { source: '/privacy', destination: `${express}/privacy` },
+        { source: '/pricing', destination: `${expressBaseUrl}/pricing` },
+        { source: '/how-it-works', destination: `${expressBaseUrl}/how-it-works` },
+        { source: '/about', destination: `${expressBaseUrl}/about` },
+        { source: '/contact', destination: `${expressBaseUrl}/contact` },
+        { source: '/terms', destination: `${expressBaseUrl}/terms` },
+        { source: '/privacy', destination: `${expressBaseUrl}/privacy` },
 
         // Misc
-        { source: '/cal/:path*', destination: `${express}/cal/:path*` },
-        { source: '/robots.txt', destination: `${express}/robots.txt` },
-        { source: '/sitemap.xml', destination: `${express}/sitemap.xml` },
+        { source: '/cal/:path*', destination: `${expressBaseUrl}/cal/:path*` },
+        { source: '/robots.txt', destination: `${expressBaseUrl}/robots.txt` },
+        { source: '/sitemap.xml', destination: `${expressBaseUrl}/sitemap.xml` },
       ],
       fallback: [
-        { source: '/:path*', destination: `${express}/:path*` },
+        { source: '/:path*', destination: `${expressBaseUrl}/:path*` },
       ],
     }
   },

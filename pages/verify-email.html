@@ -20,11 +20,11 @@
   --text-hi:    #FDF4E7;
   --text-mid:   #A89880;
   --text-lo:    #6B5A4A;
-  --fd:         'Fraunces', Georgia, serif;
-  --fb:         'Instrument Sans', 'Helvetica Neue', sans-serif;
+  --font-display:         'Fraunces', Georgia, serif;
+  --font-body:         'Instrument Sans', 'Helvetica Neue', sans-serif;
 }
 body {
-  background: var(--coal); color: var(--text-hi); font-family: var(--fb);
+  background: var(--coal); color: var(--text-hi); font-family: var(--font-body);
   min-height: 100vh; display: flex; flex-direction: column; align-items: center;
   justify-content: center; overflow-x: hidden;
 }
@@ -49,7 +49,7 @@ body::after {
 }
 
 .logo {
-  font-family: var(--fd); font-size: 28px; font-weight: 900;
+  font-family: var(--font-display); font-size: 28px; font-weight: 900;
   letter-spacing: -0.04em; color: var(--text-hi);
   text-decoration: none; display: inline-block; margin-bottom: 40px;
 }
@@ -62,7 +62,7 @@ body::after {
 }
 
 h1 {
-  font-family: var(--fd); font-size: 28px; font-weight: 900;
+  font-family: var(--font-display); font-size: 28px; font-weight: 900;
   letter-spacing: -0.03em; color: var(--text-hi); margin-bottom: 8px;
 }
 
@@ -85,7 +85,7 @@ h1 {
   width: 48px; height: 56px;
   background: var(--ash); border: 1.5px solid #ffffff12;
   border-radius: 12px; text-align: center;
-  font-family: var(--fd); font-size: 24px; font-weight: 900;
+  font-family: var(--font-display); font-size: 24px; font-weight: 900;
   color: var(--text-hi); outline: none;
   transition: border-color 0.14s, box-shadow 0.14s;
 }
@@ -97,7 +97,7 @@ h1 {
 .btn-verify {
   width: 100%; padding: 13px; border-radius: 11px;
   background: var(--ember); color: #fff; border: none;
-  font-family: var(--fb); font-size: 15px; font-weight: 700;
+  font-family: var(--font-body); font-size: 15px; font-weight: 700;
   cursor: pointer; transition: background 0.14s, transform 0.12s;
   margin-bottom: 16px;
 }
@@ -109,7 +109,7 @@ h1 {
 }
 .resend-link {
   color: var(--ember); font-weight: 600; cursor: pointer; background: none; border: none;
-  font-family: var(--fb); font-size: 13px; padding: 0;
+  font-family: var(--font-body); font-size: 13px; padding: 0;
   text-decoration: underline; text-decoration-color: transparent;
   transition: text-decoration-color 0.14s;
 }

@@ -447,14 +447,14 @@
     }
     .feat-add-overlay.open .feat-add-box { transform: translateY(0); }
     .feat-add-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 22px 0; }
-    .feat-add-title { font-family: var(--fd); font-size: 18px; font-weight: 900; color: #FDF4E7; }
+    .feat-add-title { font-family: var(--font-display); font-size: 18px; font-weight: 900; color: #FDF4E7; }
     .feat-add-close { width: 30px; height: 30px; border-radius: 50%; background: #2A2018; border: none; cursor: pointer; font-size: 15px; color: #6B5A4A; display: flex; align-items: center; justify-content: center; transition: all 0.12s; }
     .feat-add-close:hover { background: #3A2E26; color: #FDF4E7; }
     .feat-add-body { padding: 16px 22px 22px; }
     .feat-add-input {
       width: 100%; background: #2A2018; border: 1px solid #3A2E26;
       border-radius: 10px; padding: 11px 38px 11px 14px;
-      font-family: var(--fb); font-size: 14px; color: #FDF4E7; outline: none;
+      font-family: var(--font-body); font-size: 14px; color: #FDF4E7; outline: none;
       transition: border-color 0.14s;
     }
     .feat-add-input:focus { border-color: #E8500A55; }
@@ -477,7 +477,7 @@
     .feat-sugg-empty { padding: 20px; text-align: center; font-size: 13px; color: #4A3C30; }
     .feat-add-confirm {
       width: 100%; margin-top: 14px; padding: 12px; border-radius: 10px;
-      background: #E8500A; border: none; font-family: var(--fb); font-size: 14px; font-weight: 700; color: #fff;
+      background: #E8500A; border: none; font-family: var(--font-body); font-size: 14px; font-weight: 700; color: #fff;
       cursor: pointer; transition: background 0.14s; display: none;
     }
     .feat-add-confirm:hover { background: #FF6B2B; }
@@ -642,7 +642,7 @@
         <span>Super admin</span>
       </div>
     </div>
-    <button onclick="adminLogout()" style="width:100%;margin-top:10px;padding:9px 12px;background:transparent;border:1px solid #ffffff12;border-radius:8px;font-family:var(--fb);font-size:12px;font-weight:600;color:var(--text-lo);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:all 0.14s;" onmouseover="this.style.background='#ffffff08';this.style.color='#FDF4E7'" onmouseout="this.style.background='transparent';this.style.color='var(--text-lo)'">
+    <button onclick="adminLogout()" style="width:100%;margin-top:10px;padding:9px 12px;background:transparent;border:1px solid #ffffff12;border-radius:8px;font-family:var(--font-body);font-size:12px;font-weight:600;color:var(--text-lo);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:all 0.14s;" onmouseover="this.style.background='#ffffff08';this.style.color='#FDF4E7'" onmouseout="this.style.background='transparent';this.style.color='var(--text-lo)'">
       <span>🚪</span> Log out
     </button>
   </div>

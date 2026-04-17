@@ -1,8 +1,11 @@
 'use client'
 
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, memo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { CARD_ROTATION_INTERVAL_MS, CARD_SWAP_ANIMATION_DELAY_MS } from '@/constants/timing'
+import { MAX_HERO_CARD_POOL_SIZE, VISIBLE_CARD_COUNT } from '@/constants/limits'
+import { ROUTES } from '@/constants/routes'
 import styles from './HeroSection.module.css'
 
 const WHEN_OPTIONS = [
@@ -38,43 +41,43 @@ const STATIC_EVENTS = [
   { slug:'prospect-farmers-market',    name:'Prospect Farmers Market',   category:'Farmers Market',  suburb:'Prospect',      state:'SA', date_sort:'2026-04-19', spots_left:5,  fee_min:150, fee_max:220, deadline:'2026-04-12' },
 ]
 
-function fmtDate(d) {
-  if (!d) return ''
-  const dt = new Date(d + 'T00:00:00')
-  return dt.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
+function formatEventDate(dateString) {
+  if (!dateString) return ''
+  const parsedDate = new Date(dateString + 'T00:00:00')
+  return parsedDate.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
-function feeStr(min, max) {
-  if (min && max) return `$${min}\u2013$${max}`
-  if (min) return `$${min}+`
+function formatBoothFeeRange(minimumFee, maximumFee) {
+  if (minimumFee && maximumFee) return `$${minimumFee}\u2013$${maximumFee}`
+  if (minimumFee) return `$${minimumFee}+`
   return '\u2014'
 }
 
-function dlDate(d) {
-  if (!d) return '\u2014'
-  return new Date(d + 'T00:00:00').toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })
+function formatDeadlineDate(dateString) {
+  if (!dateString) return '\u2014'
+  return new Date(dateString + 'T00:00:00').toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })
 }
 
-function Dropdown({ label, options, value, onChange }) {
-  const [open, setOpen] = useState(false)
-  const selected = options.find((o) => o.value === value) || options[0]
+function HeroSearchDropdown({ label, options, value, onChange }) {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false)
+  const selectedOption = options.find((option) => option.value === value) || options[0]
   return (
-    <div className={`${styles.seg} ${styles.segSel}`} onClick={() => setOpen(!open)}>
+    <div className={`${styles.seg} ${styles.segSel}`} onClick={() => setIsDropdownOpen(!isDropdownOpen)}>
       <span className={styles.label}>{label}</span>
       <div className={styles.csel}>
         <span className={`${styles.cselVal} ${!value ? styles.placeholder : ''}`}>
-          {selected.label}
+          {selectedOption.label}
         </span>
         <span className={styles.selArrow}>&#9662;</span>
-        {open && (
+        {isDropdownOpen && (
           <div className={styles.cselDrop}>
-            {options.map((opt) => (
+            {options.map((option) => (
               <div
-                key={opt.value}
-                className={`${styles.cselOpt} ${opt.value === value ? styles.selected : ''}`}
-                onClick={(e) => { e.stopPropagation(); onChange(opt.value); setOpen(false) }}
+                key={option.value}
+                className={`${styles.cselOpt} ${option.value === value ? styles.selected : ''}`}
+                onClick={(clickEvent) => { clickEvent.stopPropagation(); onChange(option.value); setIsDropdownOpen(false) }}
               >
-                {opt.label}
+                {option.label}
               </div>
             ))}
           </div>
@@ -84,108 +87,116 @@ function Dropdown({ label, options, value, onChange }) {
   )
 }
 
-function CardStack({ events }) {
+function CardStack({ events, isLoading = false, error = null }) {
   const router = useRouter()
   const [cards, setCards] = useState([])
-  const poolRef = useRef([])
-  const nextIdxRef = useRef(3)
-  const progressRef = useRef(null)
+  const eventPoolRef = useRef([])
+  const nextEventIndexRef = useRef(VISIBLE_CARD_COUNT)
+  const progressBarRef = useRef(null)
 
   useEffect(() => {
-    const pool = [...events]
-    for (const s of STATIC_EVENTS) {
-      if (pool.length >= 6) break
-      if (!pool.find(e => e.name === s.name)) pool.push(s)
+    const eventPool = [...events]
+    for (const staticEvent of STATIC_EVENTS) {
+      if (eventPool.length >= MAX_HERO_CARD_POOL_SIZE) break
+      if (!eventPool.find(existingEvent => existingEvent.name === staticEvent.name)) eventPool.push(staticEvent)
     }
-    poolRef.current = pool
-    if (pool.length === 0) return
+    eventPoolRef.current = eventPool
+    if (eventPool.length === 0) return
 
-    const count = Math.min(pool.length, 6)
-    const initial = []
-    for (let i = 0; i < count; i++) {
-      initial.push({ ...pool[i], pos: i < 3 ? i : -1 })
+    const visibleCardCount = Math.min(eventPool.length, MAX_HERO_CARD_POOL_SIZE)
+    const initialCards = []
+    for (let i = 0; i < visibleCardCount; i++) {
+      initialCards.push({ ...eventPool[i], pos: i < VISIBLE_CARD_COUNT ? i : -1 })
     }
-    if (pool.length === 1) initial[0].pos = 2
-    else if (pool.length === 2) { initial[0].pos = 1; initial[1].pos = 2 }
+    if (eventPool.length === 1) initialCards[0].pos = 2
+    else if (eventPool.length === 2) { initialCards[0].pos = 1; initialCards[1].pos = 2 }
 
-    setCards(initial)
-    nextIdxRef.current = 3 % count
+    setCards(initialCards)
+    nextEventIndexRef.current = VISIBLE_CARD_COUNT % visibleCardCount
   }, [events])
 
-  const startProgress = useCallback(() => {
-    const bar = progressRef.current
-    if (!bar) return
-    bar.classList.remove(styles.hcProgressAnimating)
-    void bar.offsetWidth
-    bar.classList.add(styles.hcProgressAnimating)
+  const startProgressAnimation = useCallback(() => {
+    const progressBarElement = progressBarRef.current
+    if (!progressBarElement) return
+    progressBarElement.classList.remove(styles.hcProgressAnimating)
+    void progressBarElement.offsetWidth
+    progressBarElement.classList.add(styles.hcProgressAnimating)
   }, [])
 
   useEffect(() => {
-    if (cards.length < 3) return
-    startProgress()
+    if (cards.length < VISIBLE_CARD_COUNT) return
+    startProgressAnimation()
 
-    const timer = setInterval(() => {
-      setCards(prev => {
-        const next = prev.map(c => {
-          if (c.pos >= 0) return { ...c, pos: (c.pos + 1) % 3 }
-          return c
+    const rotationTimer = setInterval(() => {
+      setCards(previousCards => {
+        const rotatedCards = previousCards.map(card => {
+          if (card.pos >= 0) return { ...card, pos: (card.pos + 1) % VISIBLE_CARD_COUNT }
+          return card
         })
 
         setTimeout(() => {
-          setCards(curr => {
-            const pool = poolRef.current
-            const idx = nextIdxRef.current
-            const updated = curr.map(c => {
-              if (c.pos === 0) {
-                nextIdxRef.current = (idx + 1) % pool.length
-                return { ...pool[idx], pos: 0 }
+          setCards(currentCards => {
+            const eventPool = eventPoolRef.current
+            const nextEventIndex = nextEventIndexRef.current
+            const updatedCards = currentCards.map(card => {
+              if (card.pos === 0) {
+                nextEventIndexRef.current = (nextEventIndex + 1) % eventPool.length
+                return { ...eventPool[nextEventIndex], pos: 0 }
               }
-              return c
+              return card
             })
-            return updated
+            return updatedCards
           })
-        }, 380)
+        }, CARD_SWAP_ANIMATION_DELAY_MS)
 
-        return next
+        return rotatedCards
       })
-      startProgress()
-    }, 3500)
+      startProgressAnimation()
+    }, CARD_ROTATION_INTERVAL_MS)
 
-    return () => clearInterval(timer)
-  }, [cards.length, startProgress])
+    return () => clearInterval(rotationTimer)
+  }, [cards.length, startProgressAnimation])
+
+  if (isLoading) {
+    return <div className={styles.cardEmpty}>Loading events\u2026</div>
+  }
+
+  if (error) {
+    return <div className={styles.cardEmpty}>Unable to load events</div>
+  }
 
   if (cards.length === 0) {
     return <div className={styles.cardEmpty}>Events coming soon</div>
   }
 
-  const frontCard = cards.find(c => c.pos === 2)
+  const frontCard = cards.find(card => card.pos === 2)
 
   return (
     <div
       className={styles.cardStack}
       onClick={() => {
         const slug = frontCard?.slug || frontCard?.id
-        router.push(slug ? `/events/${slug}` : '/events')
+        router.push(slug ? `/events/${slug}` : ROUTES.EVENTS)
       }}
     >
-      {cards.map((ev, i) => {
-        const badge = BADGE_CLASS[ev.category] || 'hcBadgeEmber'
-        const loc = [ev.suburb, ev.state].filter(Boolean).join(', ')
-        const spots = ev.spots_left != null ? ev.spots_left : '\u2014'
-        const isFront = ev.pos === 2
+      {cards.map((card, cardIndex) => {
+        const badgeClassName = BADGE_CLASS[card.category] || 'hcBadgeEmber'
+        const locationLabel = [card.suburb, card.state].filter(Boolean).join(', ')
+        const spotsLeftDisplay = card.spots_left != null ? card.spots_left : '\u2014'
+        const isFrontCard = card.pos === 2
 
         return (
-          <div key={i} className={styles.hc} data-pos={ev.pos}>
-            <span className={`${styles.hcBadge} ${styles[badge]}`}>{ev.category || 'Market'}</span>
-            <div className={styles.hcTitle}>{ev.name}</div>
-            <div className={styles.hcMeta}>{'\uD83D\uDCCD'} {loc} &nbsp;&middot;&nbsp; {'\uD83D\uDCC5'} {fmtDate(ev.date_sort)}</div>
-            <div className={styles.hcAttend}>{'\uD83E\uDE91'} {spots} spots left</div>
+          <div key={cardIndex} className={styles.hc} data-pos={card.pos}>
+            <span className={`${styles.hcBadge} ${styles[badgeClassName]}`}>{card.category || 'Market'}</span>
+            <div className={styles.hcTitle}>{card.name}</div>
+            <div className={styles.hcMeta}>{'\uD83D\uDCCD'} {locationLabel} &nbsp;&middot;&nbsp; {'\uD83D\uDCC5'} {formatEventDate(card.date_sort)}</div>
+            <div className={styles.hcAttend}>{'\uD83E\uDE91'} {spotsLeftDisplay} spots left</div>
             <div className={styles.hcFooter}>
-              <span>Booth: <strong>{feeStr(ev.fee_min, ev.fee_max)}</strong></span>
-              <span>Deadline: {dlDate(ev.deadline)}</span>
+              <span>Booth: <strong>{formatBoothFeeRange(card.fee_min, card.fee_max)}</strong></span>
+              <span>Deadline: {formatDeadlineDate(card.deadline)}</span>
             </div>
             <div
-              ref={isFront ? progressRef : undefined}
+              ref={isFrontCard ? progressBarRef : undefined}
               className={styles.hcProgress}
             />
           </div>
@@ -195,20 +206,20 @@ function CardStack({ events }) {
   )
 }
 
-export default function HeroSection({ events = [] }) {
+function HeroSection({ events = [], isLoading = false, error = null }) {
   const router = useRouter()
-  const [location, setLocation] = useState('')
-  const [when, setWhen] = useState('')
-  const [type, setType] = useState('')
+  const [searchLocation, setSearchLocation] = useState('')
+  const [searchWhenFilter, setSearchWhenFilter] = useState('')
+  const [searchTypeFilter, setSearchTypeFilter] = useState('')
 
-  function handleSearch(e) {
-    e.preventDefault()
-    const params = new URLSearchParams()
-    if (location) params.set('location', location)
-    if (when) params.set('when', when)
-    if (type) params.set('category', type)
-    router.push(`/events?${params.toString()}`)
-  }
+  const handleSearchFormSubmit = useCallback((submitEvent) => {
+    submitEvent.preventDefault()
+    const searchParameters = new URLSearchParams()
+    if (searchLocation) searchParameters.set('location', searchLocation)
+    if (searchWhenFilter) searchParameters.set('when', searchWhenFilter)
+    if (searchTypeFilter) searchParameters.set('category', searchTypeFilter)
+    router.push(`${ROUTES.EVENTS}?${searchParameters.toString()}`)
+  }, [searchLocation, searchWhenFilter, searchTypeFilter, router])
 
   return (
     <>
@@ -229,41 +240,43 @@ export default function HeroSection({ events = [] }) {
           </p>
 
           <div className={styles.ctaRow}>
-            <Link href="/signup/vendor" className={styles.ghostBtn}>Find your next pitch &rarr;</Link>
-            <Link href="/signup/organiser" className={styles.ghostBtn}>List your market &rarr;</Link>
+            <Link href={ROUTES.SIGNUP_VENDOR} className={styles.ghostBtn}>Find your next pitch &rarr;</Link>
+            <Link href={ROUTES.SIGNUP_ORGANISER} className={styles.ghostBtn}>List your market &rarr;</Link>
           </div>
 
           <p className={styles.searchLabel}>or browse upcoming markets near you</p>
 
-          <form className={styles.search} onSubmit={handleSearch}>
+          <form className={styles.search} onSubmit={handleSearchFormSubmit}>
             <div className={`${styles.seg} ${styles.segLoc}`}>
               <span className={styles.label}>Location</span>
               <input
                 className={styles.input}
                 type="text"
                 placeholder="Suburb or postcode"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
+                value={searchLocation}
+                onChange={(inputEvent) => setSearchLocation(inputEvent.target.value)}
                 autoComplete="off"
               />
             </div>
 
             <div className={styles.div} />
 
-            <Dropdown label="When" options={WHEN_OPTIONS} value={when} onChange={setWhen} />
+            <HeroSearchDropdown label="When" options={WHEN_OPTIONS} value={searchWhenFilter} onChange={setSearchWhenFilter} />
 
             <div className={styles.div} />
 
-            <Dropdown label="Market type" options={TYPE_OPTIONS} value={type} onChange={setType} />
+            <HeroSearchDropdown label="Market type" options={TYPE_OPTIONS} value={searchTypeFilter} onChange={setSearchTypeFilter} />
 
             <button type="submit" className={styles.btn}>Search</button>
           </form>
         </div>
 
         <div className={styles.right}>
-          <CardStack events={events} />
+          <CardStack events={events} isLoading={isLoading} error={error} />
         </div>
       </section>
     </>
   )
 }
+
+export default memo(HeroSection)

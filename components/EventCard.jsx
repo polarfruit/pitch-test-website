@@ -1,7 +1,11 @@
+import { memo } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
+import { FILL_RATE_CRITICAL_THRESHOLD, FILL_RATE_WARNING_THRESHOLD } from '@/constants/thresholds'
+import { CATEGORY_BADGE_COLORS } from '@/constants/ui'
 import styles from './EventCard.module.css'
 
-const CAT_IMG_CLASS = {
+const CATEGORY_IMAGE_CLASS = {
   'Night Market':    styles.imgNight,
   'Farmers Market':  styles.imgFarm,
   'Festival':        styles.imgFest,
@@ -10,52 +14,50 @@ const CAT_IMG_CLASS = {
   'Corporate':       styles.imgBarossa,
 }
 
-const CAT_COLORS = {
-  'Night Market':    { bg: 'rgba(43,91,168,0.07)', clr: '#2B5BA8' },
-  'Farmers Market':  { bg: 'rgba(45,139,85,0.07)', clr: '#2D8B55' },
-  'Festival':        { bg: 'rgba(232,80,10,0.07)', clr: '#E8500A' },
-  'Twilight Market': { bg: 'rgba(43,91,168,0.07)', clr: '#2B5BA8' },
-  'Pop-up':          { bg: 'rgba(107,90,74,0.08)', clr: '#A89880' },
-  'Corporate':       { bg: 'rgba(201,132,10,0.07)', clr: '#C9840A' },
-}
+const CRITICAL_PERCENT = FILL_RATE_CRITICAL_THRESHOLD * 100
+const WARNING_PERCENT = FILL_RATE_WARNING_THRESHOLD * 100
 
-function fillColor(pct) {
-  if (pct >= 90) return '#C0392B'
-  if (pct >= 70) return '#C9840A'
+function getFillBarColor(fillPercent) {
+  if (fillPercent >= CRITICAL_PERCENT) return '#C0392B'
+  if (fillPercent >= WARNING_PERCENT) return '#C9840A'
   return '#2D8B55'
 }
 
-function spotsStyle(pct) {
-  if (pct >= 90) return { background: 'rgba(192,57,43,0.08)', color: '#C0392B', border: '1px solid rgba(192,57,43,0.16)' }
-  if (pct >= 70) return { background: 'rgba(201,132,10,0.08)', color: '#C9840A', border: '1px solid rgba(201,132,10,0.16)' }
+function getSpotsBadgeStyle(fillPercent) {
+  if (fillPercent >= CRITICAL_PERCENT) return { background: 'rgba(192,57,43,0.08)', color: '#C0392B', border: '1px solid rgba(192,57,43,0.16)' }
+  if (fillPercent >= WARNING_PERCENT) return { background: 'rgba(201,132,10,0.08)', color: '#C9840A', border: '1px solid rgba(201,132,10,0.16)' }
   return { background: 'rgba(45,139,85,0.08)', color: '#2D8B55', border: '1px solid rgba(45,139,85,0.16)' }
 }
 
-export default function EventCard({ event }) {
+const CATEGORY_BADGE_FALLBACK = { background: 'rgba(107,90,74,0.08)', color: '#6B5A4A' }
+
+function EventCard({ event }) {
+  if (!event) return null
+
   const { id, name, category, suburb, state, dateLabel, filled, total, feeMin, feeMax, deadlineLabel, photo, spots_left, spots_total } = event
-  const t = total ?? spots_total ?? 0
-  const f = filled ?? (t - (spots_left ?? t)) ?? 0
-  const pct = t > 0 ? Math.round((f / t) * 100) : 0
-  const spots = spots_left ?? (t - f)
-  const minFee = feeMin ?? event.fee_min
-  const maxFee = feeMax ?? event.fee_max
-  const catColor = CAT_COLORS[category] || { bg: 'rgba(107,90,74,0.08)', clr: '#6B5A4A' }
-  const imgClass = CAT_IMG_CLASS[category] || styles.imgNight
-  const fc = fillColor(pct)
-  const sc = spotsStyle(pct)
+  const totalSpots = total ?? spots_total ?? 0
+  const filledSpots = filled ?? (totalSpots - (spots_left ?? totalSpots))
+  const fillPercent = totalSpots > 0 ? Math.round((filledSpots / totalSpots) * 100) : 0
+  const spotsRemaining = spots_left ?? (totalSpots - filledSpots)
+  const minimumFee = feeMin ?? event.fee_min
+  const maximumFee = feeMax ?? event.fee_max
+  const categoryColor = CATEGORY_BADGE_COLORS[category] || CATEGORY_BADGE_FALLBACK
+  const categoryImageClass = CATEGORY_IMAGE_CLASS[category] || styles.imgNight
+  const fillBarColor = getFillBarColor(fillPercent)
+  const spotsBadgeStyle = getSpotsBadgeStyle(fillPercent)
 
   return (
     <Link href={`/events/${id}`} className={styles.card}>
-      <div className={`${styles.img} ${imgClass}`}>
+      <div className={`${styles.img} ${categoryImageClass}`}>
         {photo && (
-          <img src={photo} alt={category} className={styles.photo} loading="lazy" />
+          <Image src={photo} alt={category} className={styles.photo} fill sizes="(max-width: 640px) 100vw, 288px" />
         )}
         <div className={styles.overlay} />
-        <span className={styles.catBadge} style={{ background: catColor.bg, color: catColor.clr }}>
+        <span className={styles.catBadge} style={{ background: categoryColor.background, color: categoryColor.color }}>
           {category}
         </span>
-        <span className={styles.spotsBadge} style={sc}>
-          {spots} spot{spots === 1 ? '' : 's'} left
+        <span className={styles.spotsBadge} style={spotsBadgeStyle}>
+          {spotsRemaining} spot{spotsRemaining === 1 ? '' : 's'} left
         </span>
       </div>
       <div className={styles.body}>
@@ -63,17 +65,19 @@ export default function EventCard({ event }) {
         <div className={styles.meta}>{'\u{1F4CD}'} {suburb}, {state}</div>
         <div className={styles.meta}>{'\u{1F4C5}'} {dateLabel}</div>
         <div className={styles.fillLabel}>
-          <span>{filled}/{total} spots filled</span>
-          <span style={{ color: fc, fontWeight: 700 }}>{pct}%</span>
+          <span>{filledSpots}/{totalSpots} spots filled</span>
+          <span style={{ color: fillBarColor, fontWeight: 700 }}>{fillPercent}%</span>
         </div>
         <div className={styles.fillBg}>
-          <div className={styles.fillInner} style={{ width: `${pct}%`, background: fc }} />
+          <div className={styles.fillInner} style={{ width: `${fillPercent}%`, background: fillBarColor }} />
         </div>
         <div className={styles.footerRow}>
-          <div className={styles.price}>Booth: <strong>${minFee}&ndash;${maxFee}</strong></div>
+          <div className={styles.price}>Booth: <strong>${minimumFee}&ndash;${maximumFee}</strong></div>
           <div className={styles.deadline}>Deadline: {deadlineLabel}</div>
         </div>
       </div>
     </Link>
   )
 }
+
+export default memo(EventCard)

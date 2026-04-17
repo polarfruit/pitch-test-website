@@ -1,8 +1,8 @@
 .navbar {
   position: fixed; top: 0; left: 0; right: 0; z-index: 200;
-  height: 66px;
+  height: 64px;
   display: flex; align-items: center; justify-content: space-between;
-  padding: 0 52px;
+  padding: 0 48px;
   background: transparent;
   backdrop-filter: blur(0px);
   -webkit-backdrop-filter: blur(0px);
@@ -10,6 +10,7 @@
   transition: background 0.28s ease, backdrop-filter 0.28s ease, -webkit-backdrop-filter 0.28s ease, border-color 0.28s ease;
 }
 
+/* rgba required — coal with opacity for scrolled glass effect */
 .scrolled {
   background: rgba(26,22,18,0.92);
   backdrop-filter: blur(18px);
@@ -18,7 +19,7 @@
 }
 
 .logo {
-  font-family: var(--fd);
+  font-family: var(--font-display);
   font-size: 26px; font-weight: 900;
   letter-spacing: -0.04em;
   color: var(--text-hi);
@@ -43,22 +44,24 @@
 
 .links a:hover { color: var(--text-hi); }
 
-.actions { display: flex; align-items: center; gap: 10px; }
+.actions { display: flex; align-items: center; gap: 12px; }
 
+/* rgba required — white with opacity for login hover background */
 .btnLogin {
-  font-family: var(--fb); font-size: 13px; font-weight: 600;
+  font-family: var(--font-body); font-size: 13px; font-weight: 600;
   color: var(--text-mid); background: transparent; border: none;
-  padding: 9px 16px; border-radius: 8px; cursor: pointer;
+  padding: 8px 16px; border-radius: 8px; cursor: pointer;
   transition: color 0.14s, background 0.14s;
   text-decoration: none;
 }
 
 .btnLogin:hover { color: var(--text-hi); background: rgba(255,255,255,0.035); }
 
+/* rgba required — ember with opacity for CTA button shadow */
 .btnCta {
-  font-family: var(--fb); font-size: 13px; font-weight: 700;
-  color: #fff; background: var(--ember); border: none;
-  padding: 10px 22px; border-radius: 9px; cursor: pointer;
+  font-family: var(--font-body); font-size: 13px; font-weight: 700;
+  color: var(--white); background: var(--ember); border: none;
+  padding: 12px 24px; border-radius: 9px; cursor: pointer;
   box-shadow: 0 4px 16px rgba(232,80,10,0.18);
   transition: background 0.14s, box-shadow 0.14s, transform 0.14s;
   text-decoration: none;
@@ -73,10 +76,11 @@
 /* Auth — logged in */
 .navUser { display: flex; align-items: center; gap: 8px; position: relative; }
 
+/* rgba required — white with opacity for user menu hover backgrounds */
 .userName {
-  font-family: var(--fb);
+  font-family: var(--font-body);
   font-size: 13px; font-weight: 600; color: var(--text-hi); cursor: pointer;
-  display: flex; align-items: center; gap: 5px;
+  display: flex; align-items: center; gap: 4px;
   padding: 8px 12px; border-radius: 8px;
   border: none; background: transparent;
   transition: background 0.14s;
@@ -86,15 +90,16 @@
 
 .chevron { font-size: 10px; color: var(--text-lo); }
 
+/* rgba required — white/black with opacity for dropdown borders and shadow */
 .dropdown {
   position: absolute; top: calc(100% + 8px); right: 0;
   background: var(--char); border: 1px solid rgba(255,255,255,0.047);
-  border-radius: 12px; padding: 6px; min-width: 160px;
+  border-radius: 12px; padding: 8px; min-width: 160px;
   box-shadow: 0 16px 40px rgba(0,0,0,0.25);
 }
 
 .dropdown a {
-  display: block; padding: 9px 14px; border-radius: 8px;
+  display: block; padding: 8px 12px; border-radius: 8px;
   font-size: 13px; color: var(--text-mid); text-decoration: none;
   transition: background 0.12s, color 0.12s;
 }
@@ -103,25 +108,27 @@
 
 .divider { height: 1px; background: rgba(255,255,255,0.03); margin: 4px 0; }
 
-.danger { color: var(--terra) !important; }
+/* rgba required — terracotta with opacity for danger hover state */
+.danger { color: var(--terracotta) !important; }
 .danger:hover { background: rgba(192,57,43,0.06) !important; }
 
 /* Hamburger */
 .hamburger {
-  display: none; flex-direction: column; gap: 5px;
+  display: none; flex-direction: column; gap: 4px;
   cursor: pointer; padding: 8px; border: none; background: transparent;
 }
 
 .hamburger span {
-  display: block; width: 22px; height: 2px;
+  display: block; width: 20px; height: 2px;
   background: var(--text-mid); border-radius: 2px;
   transition: transform 0.2s, opacity 0.2s;
 }
 
 /* Mobile menu */
+/* rgba required — coal with opacity for mobile overlay background */
 .mobileMenu {
   display: none; position: fixed;
-  top: 66px; left: 0; right: 0; bottom: 0;
+  top: 64px; left: 0; right: 0; bottom: 0;
   background: rgba(26,22,18,0.98);
   z-index: 199; flex-direction: column;
   align-items: center; justify-content: center; gap: 28px;
@@ -130,7 +137,7 @@
 .mobileMenuOpen { display: flex; }
 
 .mobileMenu a {
-  font-family: var(--fd); font-size: 32px; font-weight: 900;
+  font-family: var(--font-display); font-size: 32px; font-weight: 900;
   letter-spacing: -0.03em; color: var(--text-hi); text-decoration: none;
   transition: color 0.14s;
 }

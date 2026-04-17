@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import Link from 'next/link'
 import styles from './CategoryBrowse.module.css'
 
@@ -10,12 +11,7 @@ const CATEGORIES = [
   { emoji: '\uD83C\uDF05', name: 'Twilight Markets', key: 'Twilight Market' },
 ]
 
-const FALLBACK_COUNTS = {
-  'Night Market': 12, 'Festival': 8, 'Farmers Market': 15,
-  'Corporate': 6, 'Pop-up': 22, 'Twilight Market': 9,
-}
-
-export default function CategoryBrowse({ categories = {} }) {
+function CategoryBrowse({ categories = {} }) {
   return (
     <div className={styles.wrap}>
       <div className={styles.section}>
@@ -26,18 +22,18 @@ export default function CategoryBrowse({ categories = {} }) {
         </p>
 
         <div className={styles.grid}>
-          {CATEGORIES.map((cat) => {
-            const count = categories[cat.key] || FALLBACK_COUNTS[cat.key] || 0
+          {CATEGORIES.map((category) => {
+            const activeEventCount = categories[category.key] || 0
             return (
               <Link
-                key={cat.key}
-                href={`/events?category=${encodeURIComponent(cat.key)}`}
+                key={category.key}
+                href={`/events?category=${encodeURIComponent(category.key)}`}
                 className={styles.tile}
               >
-                <div className={styles.emoji}>{cat.emoji}</div>
-                <div className={styles.catName}>{cat.name}</div>
+                <div className={styles.emoji}>{category.emoji}</div>
+                <div className={styles.catName}>{category.name}</div>
                 <div className={styles.count}>
-                  {count} active event{count === 1 ? '' : 's'}
+                  {activeEventCount} active event{activeEventCount === 1 ? '' : 's'}
                 </div>
               </Link>
             )
@@ -47,3 +43,5 @@ export default function CategoryBrowse({ categories = {} }) {
     </div>
   )
 }
+
+export default memo(CategoryBrowse)

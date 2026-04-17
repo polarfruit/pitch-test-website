@@ -13,13 +13,13 @@
 :root {
   --ember:#E8500A;--ember-glow:#FF6B2B;--coal:#1A1612;--char:#231E19;
   --parchment:#FDF4E7;--text-hi:#FDF4E7;--text-mid:#A89880;--text-lo:#6B5A4A;
-  --fd:'Fraunces',Georgia,serif;--fb:'Instrument Sans','Helvetica Neue',sans-serif;
+  --font-display:'Fraunces',Georgia,serif;--font-body:'Instrument Sans','Helvetica Neue',sans-serif;
 }
 html { height: 100%; }
 body {
   background: var(--coal);
   color: var(--text-hi);
-  font-family: var(--fb);
+  font-family: var(--font-body);
   line-height: 1.5;
   min-height: 100vh;
   display: flex;
@@ -45,7 +45,7 @@ body::before {
 }
 .wrap { position: relative; z-index: 1; max-width: 520px; }
 .logo {
-  font-family: var(--fd);
+  font-family: var(--font-display);
   font-weight: 900;
   font-size: 28px;
   color: var(--text-hi);
@@ -56,7 +56,7 @@ body::before {
 }
 .logo .dot { color: var(--ember); }
 .code {
-  font-family: var(--fd);
+  font-family: var(--font-display);
   font-weight: 900;
   font-size: clamp(80px, 15vw, 140px);
   line-height: 1;
@@ -68,7 +68,7 @@ body::before {
   margin-bottom: 16px;
 }
 h1 {
-  font-family: var(--fd);
+  font-family: var(--font-display);
   font-weight: 900;
   font-size: clamp(22px, 4vw, 32px);
   letter-spacing: -0.03em;
@@ -95,7 +95,7 @@ h1 {
   border-radius: 10px;
   font-size: 14px;
   font-weight: 600;
-  font-family: var(--fb);
+  font-family: var(--font-body);
   text-decoration: none;
   transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), opacity 0.2s;
 }
@@ -134,7 +134,7 @@ h1 {
   </div>
 </div>
 <footer class="site-footer">
-  <a href="/" style="font-family:var(--fd);font-size:22px;font-weight:900;color:var(--text-hi);text-decoration:none;letter-spacing:-0.04em;">Pitch<span style="color:var(--ember);">.</span></a>
+  <a href="/" style="font-family:var(--font-display);font-size:22px;font-weight:900;color:var(--text-hi);text-decoration:none;letter-spacing:-0.04em;">Pitch<span style="color:var(--ember);">.</span></a>
   <div style="display:flex;gap:24px;flex-wrap:wrap;">
     <a href="/about" class="foot-link">About</a>
     <a href="/pricing" class="foot-link">Pricing</a>

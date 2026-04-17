@@ -1,4 +1,6 @@
+import { memo } from 'react'
 import Link from 'next/link'
+import { ROUTES } from '@/constants/routes'
 import styles from './HowItWorks.module.css'
 
 const VENDOR_STEPS = [
@@ -18,7 +20,7 @@ function StepColumn({ label, steps }) {
     <div>
       <div className={styles.colHead}>{label}</div>
       <div className={styles.steps}>
-        {steps.map((step, i) => (
+        {steps.map((step, stepIndex) => (
           <div key={step.num}>
             <div className={styles.step}>
               <div className={styles.num}>{step.num}</div>
@@ -27,7 +29,7 @@ function StepColumn({ label, steps }) {
                 <div className={styles.stepDesc}>{step.desc}</div>
               </div>
             </div>
-            {i < steps.length - 1 && <div className={styles.connector} />}
+            {stepIndex < steps.length - 1 && <div className={styles.connector} />}
           </div>
         ))}
       </div>
@@ -35,7 +37,7 @@ function StepColumn({ label, steps }) {
   )
 }
 
-export default function HowItWorks() {
+function HowItWorks() {
   return (
     <div className={styles.wrap}>
       <div className={styles.section}>
@@ -52,7 +54,7 @@ export default function HowItWorks() {
         </div>
 
         <div className={styles.ctaWrap}>
-          <Link href="/how-it-works" className={styles.cta}>
+          <Link href={ROUTES.HOW_IT_WORKS} className={styles.cta}>
             See the full breakdown <span>&rarr;</span>
           </Link>
         </div>
@@ -60,3 +62,5 @@ export default function HowItWorks() {
     </div>
   )
 }
+
+export default memo(HowItWorks)

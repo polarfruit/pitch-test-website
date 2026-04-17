@@ -1,24 +1,28 @@
+import { memo } from 'react'
 import Link from 'next/link'
+import { MAX_STAR_RATING } from '@/constants/limits'
 import styles from './VendorCard.module.css'
 
-const PLAN_CLASS = {
+const PLAN_BADGE_CLASS = {
   pro: styles.bdgPro,
   growth: styles.bdgGrowth,
   starter: styles.bdgBasic,
   basic: styles.bdgBasic,
 }
 
-export default function VendorCard({ vendor }) {
+function VendorCard({ vendor }) {
+  if (!vendor) return null
+
   const {
-    slug, emoji, avatarGradient, name, verified, subtitle,
+    slug, emoji, avatarGradient, name, verified: isVendorVerified, subtitle,
     plan, planLabel, rating, reviewCount, eventsCompleted, tags,
   } = vendor
 
-  const stars = '\u2605'.repeat(Math.floor(rating || 0))
+  const starRatingDisplay = '\u2605'.repeat(Math.floor(rating || 0))
     + (rating % 1 >= 0.5 ? '\u2606' : '')
-    + '\u2606'.repeat(5 - Math.ceil(rating || 0))
+    + '\u2606'.repeat(MAX_STAR_RATING - Math.ceil(rating || 0))
 
-  const planCls = PLAN_CLASS[plan?.toLowerCase()] || styles.bdgBasic
+  const planBadgeClass = PLAN_BADGE_CLASS[plan?.toLowerCase()] || styles.bdgBasic
 
   return (
     <Link href={`/vendors/${slug}`} className={styles.card}>
@@ -29,17 +33,17 @@ export default function VendorCard({ vendor }) {
         <div className={styles.info}>
           <div className={styles.name}>
             {name}
-            {verified && <span className={styles.verified}>{'\u2713'}</span>}
+            {isVendorVerified && <span className={styles.verified}>{'\u2713'}</span>}
           </div>
           <div className={styles.sub}>{subtitle}</div>
         </div>
-        <span className={`${styles.planBadge} ${planCls}`}>
+        <span className={`${styles.planBadge} ${planBadgeClass}`}>
           {planLabel || plan}
         </span>
       </div>
 
       <div className={styles.stars}>
-        {stars} <span>{rating} &middot; {reviewCount} reviews</span>
+        {starRatingDisplay} <span>{rating} &middot; {reviewCount} reviews</span>
       </div>
       <div className={styles.events}>{eventsCompleted} events completed</div>
 
@@ -53,3 +57,5 @@ export default function VendorCard({ vendor }) {
     </Link>
   )
 }
+
+export default memo(VendorCard)

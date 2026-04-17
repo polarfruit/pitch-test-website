@@ -16,7 +16,7 @@
 }
 
 .tag {
-  display: inline-flex; align-items: center; gap: 9px;
+  display: inline-flex; align-items: center; gap: 8px;
   font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase;
   color: var(--ember); font-weight: 700; margin-bottom: 12px;
 }
@@ -26,7 +26,7 @@
 }
 
 .title {
-  font-family: var(--fd);
+  font-family: var(--font-display);
   font-size: clamp(30px, 3.5vw, 48px);
   font-weight: 900; letter-spacing: -0.03em;
   color: var(--text-hi); line-height: 1.02;
@@ -37,7 +37,7 @@
 .link {
   font-size: 13px; font-weight: 700; color: var(--ember);
   text-decoration: none; display: inline-flex;
-  align-items: center; gap: 5px; flex-shrink: 0;
+  align-items: center; gap: 4px; flex-shrink: 0;
   transition: gap 0.14s; margin-bottom: 4px;
 }
 .link:hover { gap: 8px; }
@@ -57,7 +57,7 @@
 }
 
 .marqueeTrack {
-  display: flex; gap: 18px;
+  display: flex; gap: 16px;
   animation: marqueeScroll 36s linear infinite;
   width: max-content;
 }

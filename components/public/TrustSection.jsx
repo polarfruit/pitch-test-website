@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import styles from './TrustSection.module.css'
 
 const PILLARS = [
@@ -18,7 +19,7 @@ const PILLARS = [
   },
 ]
 
-export default function TrustSection() {
+function TrustSection() {
   return (
     <div className={styles.section}>
       <div className={styles.inner}>
@@ -30,11 +31,11 @@ export default function TrustSection() {
         </p>
 
         <div className={styles.cols}>
-          {PILLARS.map((p) => (
-            <div key={p.title} className={styles.card}>
-              <div className={styles.iconWrap}>{p.icon}</div>
-              <div className={styles.cardTitle}>{p.title}</div>
-              <div className={styles.cardDesc}>{p.desc}</div>
+          {PILLARS.map((pillar) => (
+            <div key={pillar.title} className={styles.card}>
+              <div className={styles.iconWrap}>{pillar.icon}</div>
+              <div className={styles.cardTitle}>{pillar.title}</div>
+              <div className={styles.cardDesc}>{pillar.desc}</div>
             </div>
           ))}
         </div>
@@ -42,3 +43,5 @@ export default function TrustSection() {
     </div>
   )
 }
+
+export default memo(TrustSection)

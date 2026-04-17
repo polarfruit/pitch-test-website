@@ -9,24 +9,22 @@ import HowItWorks from '@/components/public/HowItWorks'
 import TrustSection from '@/components/public/TrustSection'
 import Footer from '@/components/Footer'
 
-import { getFeaturedEvents, getThisWeekendEvents, getCategoryCounts } from '@/lib/data/events'
-import { getFeaturedVendors } from '@/lib/data/vendors'
-import { getPlatformStats } from '@/lib/data/stats'
+import { fetchFeaturedEvents, fetchThisWeekendEvents, fetchCategoryCounts } from '@/lib/data/events'
+import { fetchFeaturedVendors } from '@/lib/data/vendors'
 
 export default async function HomePage() {
-  const [featuredEvents, weekendEvents, categories, vendors, stats] = await Promise.all([
-    getFeaturedEvents(),
-    getThisWeekendEvents(),
-    getCategoryCounts(),
-    getFeaturedVendors(),
-    getPlatformStats(),
+  const [featuredEvents, weekendEvents, categories, vendors] = await Promise.all([
+    fetchFeaturedEvents(),
+    fetchThisWeekendEvents(),
+    fetchCategoryCounts(),
+    fetchFeaturedVendors(),
   ])
 
   return (
-    <main style={{ position: 'relative', zIndex: 1 }}>
+    <main className="page-main">
       <Navbar />
       <HeroSection events={featuredEvents} />
-      <StatsBar stats={stats} />
+      <StatsBar />
       <ThisWeekend events={weekendEvents} />
       <EventsNearYou events={featuredEvents} />
       <TopVendors vendors={vendors} />

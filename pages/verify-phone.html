@@ -20,11 +20,11 @@
   --text-hi:    #FDF4E7;
   --text-mid:   #A89880;
   --text-lo:    #6B5A4A;
-  --fd:         'Fraunces', Georgia, serif;
-  --fb:         'Instrument Sans', 'Helvetica Neue', sans-serif;
+  --font-display:         'Fraunces', Georgia, serif;
+  --font-body:         'Instrument Sans', 'Helvetica Neue', sans-serif;
 }
 body {
-  background: var(--coal); color: var(--text-hi); font-family: var(--fb);
+  background: var(--coal); color: var(--text-hi); font-family: var(--font-body);
   min-height: 100vh; display: flex; flex-direction: column; align-items: center;
   justify-content: center; overflow-x: hidden;
 }
@@ -48,7 +48,7 @@ body::after {
 }
 
 .logo {
-  font-family: var(--fd); font-size: 28px; font-weight: 900;
+  font-family: var(--font-display); font-size: 28px; font-weight: 900;
   letter-spacing: -0.04em; color: var(--text-hi);
   text-decoration: none; display: inline-block; margin-bottom: 40px;
 }
@@ -61,7 +61,7 @@ body::after {
 }
 
 h1 {
-  font-family: var(--fd); font-size: 28px; font-weight: 900;
+  font-family: var(--font-display); font-size: 28px; font-weight: 900;
   letter-spacing: -0.03em; color: var(--text-hi); margin-bottom: 8px;
 }
 
@@ -82,7 +82,7 @@ h1 {
 .phone-input {
   flex: 1; background: var(--ash); border: 1.5px solid #ffffff12;
   border-radius: 11px; padding: 11px 14px;
-  font-family: var(--fb); font-size: 14px; color: var(--text-hi); outline: none;
+  font-family: var(--font-body); font-size: 14px; color: var(--text-hi); outline: none;
   transition: border-color 0.14s, box-shadow 0.14s;
 }
 .phone-input:focus { border-color: #2D8B5540; box-shadow: 0 0 0 3px #2D8B5514; }
@@ -90,7 +90,7 @@ h1 {
 .btn-send-sms {
   padding: 11px 18px; border-radius: 11px;
   background: #2D8B55; color: #fff; border: none;
-  font-family: var(--fb); font-size: 13px; font-weight: 700;
+  font-family: var(--font-body); font-size: 13px; font-weight: 700;
   cursor: pointer; white-space: nowrap;
   transition: background 0.14s;
 }
@@ -107,7 +107,7 @@ h1 {
   width: 48px; height: 56px;
   background: var(--ash); border: 1.5px solid #ffffff12;
   border-radius: 12px; text-align: center;
-  font-family: var(--fd); font-size: 24px; font-weight: 900;
+  font-family: var(--font-display); font-size: 24px; font-weight: 900;
   color: var(--text-hi); outline: none;
   transition: border-color 0.14s, box-shadow 0.14s;
 }
@@ -116,7 +116,7 @@ h1 {
 .btn-verify {
   width: 100%; padding: 13px; border-radius: 11px;
   background: #2D8B55; color: #fff; border: none;
-  font-family: var(--fb); font-size: 15px; font-weight: 700;
+  font-family: var(--font-body); font-size: 15px; font-weight: 700;
   cursor: pointer; transition: background 0.14s, transform 0.12s;
   margin-bottom: 16px;
 }
@@ -125,14 +125,14 @@ h1 {
 
 .skip-link {
   display: block; font-size: 13px; color: var(--text-lo); text-align: center;
-  cursor: pointer; background: none; border: none; font-family: var(--fb); width: 100%;
+  cursor: pointer; background: none; border: none; font-family: var(--font-body); width: 100%;
 }
 .skip-link:hover { color: var(--text-mid); }
 
 .resend-wrap { font-size: 13px; color: var(--text-lo); margin-bottom: 14px; }
 .resend-link {
   color: #2D8B55; font-weight: 600; cursor: pointer; background: none; border: none;
-  font-family: var(--fb); font-size: 13px; padding: 0;
+  font-family: var(--font-body); font-size: 13px; padding: 0;
 }
 .resend-link:disabled { color: var(--text-lo); cursor: not-allowed; }
 

@@ -38,15 +38,15 @@
   --text-hi:    #FDF4E7;
   --text-mid:   #A89880;
   --text-lo:    #6B5A4A;
-  --fd:         'Fraunces', Georgia, serif;
-  --fb:         'Instrument Sans', 'Helvetica Neue', sans-serif;
+  --font-display:         'Fraunces', Georgia, serif;
+  --font-body:         'Instrument Sans', 'Helvetica Neue', sans-serif;
 }
 
 html { scroll-behavior: smooth; }
 body {
   background: var(--coal);
   color: var(--text-hi);
-  font-family: var(--fb);
+  font-family: var(--font-body);
   line-height: 1.5;
   overflow-x: hidden;
 }
@@ -71,7 +71,7 @@ body::before {
   border-bottom: 1px solid #ffffff07;
 }
 .nav-logo {
-  font-family: var(--fd); font-size: 26px; font-weight: 900;
+  font-family: var(--font-display); font-size: 26px; font-weight: 900;
   letter-spacing: -0.04em; color: var(--text-hi); text-decoration: none; flex-shrink: 0;
 }
 .nav-logo .dot { color: var(--ember); }
@@ -84,14 +84,14 @@ body::before {
 .nav-links a.active { color: var(--text-hi); }
 .nav-actions { display: flex; align-items: center; gap: 10px; }
 .btn-login {
-  font-family: var(--fb); font-size: 13px; font-weight: 600;
+  font-family: var(--font-body); font-size: 13px; font-weight: 600;
   color: var(--text-mid); background: transparent; border: none;
   padding: 9px 16px; border-radius: 8px; cursor: pointer;
   transition: color 0.14s, background 0.14s; text-decoration: none;
 }
 .btn-login:hover { color: var(--text-hi); background: #ffffff09; }
 .btn-get-started {
-  font-family: var(--fb); font-size: 13px; font-weight: 700;
+  font-family: var(--font-body); font-size: 13px; font-weight: 700;
   color: #fff; background: var(--ember); border: none;
   padding: 10px 22px; border-radius: 9px; cursor: pointer;
   text-decoration: none; transition: background 0.14s, transform 0.1s;
@@ -115,7 +115,7 @@ body::before {
   padding: 6px 14px; margin-bottom: 24px;
 }
 .hiw-hero-title {
-  font-family: var(--fd); font-size: clamp(36px, 5vw, 64px);
+  font-family: var(--font-display); font-size: clamp(36px, 5vw, 64px);
   font-weight: 900; letter-spacing: -0.03em;
   color: var(--text-hi); line-height: 1.08;
   margin-bottom: 20px;
@@ -131,7 +131,7 @@ body::before {
   border-radius: 12px; padding: 6px;
 }
 .hiw-tab {
-  font-family: var(--fb); font-size: 13px; font-weight: 600;
+  font-family: var(--font-body); font-size: 13px; font-weight: 600;
   color: var(--text-mid); background: transparent; border: none;
   padding: 9px 22px; border-radius: 8px; cursor: pointer;
   transition: background 0.14s, color 0.14s; text-decoration: none;
@@ -156,7 +156,7 @@ body::before {
 }
 .hiw-section-label::before { content: ''; width: 16px; height: 2px; background: var(--ember); border-radius: 1px; }
 .hiw-section-title {
-  font-family: var(--fd); font-size: clamp(26px, 3vw, 40px);
+  font-family: var(--font-display); font-size: clamp(26px, 3vw, 40px);
   font-weight: 900; letter-spacing: -0.03em;
   color: var(--text-hi); margin-bottom: 12px; line-height: 1.1;
   text-align: center;
@@ -181,7 +181,7 @@ body::before {
 .hiw-step-card::before {
   content: attr(data-num);
   position: absolute; top: 20px; right: 24px;
-  font-family: var(--fd); font-size: 72px; font-weight: 900;
+  font-family: var(--font-display); font-size: 72px; font-weight: 900;
   color: #ffffff08; line-height: 1; pointer-events: none;
   letter-spacing: -0.04em;
 }
@@ -192,12 +192,12 @@ body::before {
   font-size: 20px; margin-bottom: 18px;
 }
 .hiw-step-card-num {
-  font-family: var(--fd); font-size: 11px; font-weight: 900;
+  font-family: var(--font-display); font-size: 11px; font-weight: 900;
   letter-spacing: 0.12em; text-transform: uppercase;
   color: var(--ember); margin-bottom: 8px;
 }
 .hiw-step-card-title {
-  font-family: var(--fd); font-size: 20px; font-weight: 800;
+  font-family: var(--font-display); font-size: 20px; font-weight: 800;
   color: var(--text-hi); margin-bottom: 8px; letter-spacing: -0.01em;
 }
 .hiw-step-card-desc {
@@ -224,7 +224,7 @@ body::before {
   font-size: 22px; margin: 0 auto 16px;
 }
 .hiw-trust-title {
-  font-family: var(--fd); font-size: 17px; font-weight: 800;
+  font-family: var(--font-display); font-size: 17px; font-weight: 800;
   color: var(--text-hi); margin-bottom: 8px;
 }
 .hiw-trust-desc { font-size: 13px; color: var(--text-mid); line-height: 1.65; }
@@ -240,7 +240,7 @@ body::before {
   width: 100%; background: none; border: none; cursor: pointer;
   display: flex; align-items: center; justify-content: space-between;
   padding: 20px 4px; gap: 16px;
-  font-family: var(--fb); font-size: 15px; font-weight: 600;
+  font-family: var(--font-body); font-size: 15px; font-weight: 600;
   color: var(--text-hi); text-align: left;
   transition: color 0.14s;
 }
@@ -273,7 +273,7 @@ body::before {
   text-align: center;
 }
 .hiw-cta-title {
-  font-family: var(--fd); font-size: clamp(28px, 4vw, 50px);
+  font-family: var(--font-display); font-size: clamp(28px, 4vw, 50px);
   font-weight: 900; letter-spacing: -0.03em;
   color: var(--text-hi); margin-bottom: 14px;
 }
@@ -284,7 +284,7 @@ body::before {
 }
 .hiw-cta-btns { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
 .btn-cta-primary {
-  font-family: var(--fb); font-size: 15px; font-weight: 700;
+  font-family: var(--font-body); font-size: 15px; font-weight: 700;
   color: #fff; background: var(--ember);
   padding: 14px 32px; border-radius: 11px; text-decoration: none;
   box-shadow: 0 4px 20px rgba(232,80,10,0.4);
@@ -293,7 +293,7 @@ body::before {
 .btn-cta-primary:hover { background: var(--ember-glow); }
 .btn-cta-primary:active { transform: scale(0.97); }
 .btn-cta-secondary {
-  font-family: var(--fb); font-size: 15px; font-weight: 600;
+  font-family: var(--font-body); font-size: 15px; font-weight: 600;
   color: var(--text-mid); background: transparent;
   border: 1px solid #ffffff14; border-radius: 11px;
   padding: 14px 32px; text-decoration: none;
@@ -304,7 +304,7 @@ body::before {
 /* ── FOOTER ── */
 footer { background: var(--char); border-top: 1px solid #ffffff07; position: relative; z-index: 1; }
 .footer-main { max-width: 1320px; margin: 0 auto; padding: 56px 52px 36px; display: grid; grid-template-columns: 1.8fr 1fr 1fr 1fr; gap: 48px; }
-.footer-logo { font-family: var(--fd); font-size: 24px; font-weight: 900; letter-spacing: -0.04em; color: var(--text-hi); margin-bottom: 10px; text-decoration: none; display: inline-block; }
+.footer-logo { font-family: var(--font-display); font-size: 24px; font-weight: 900; letter-spacing: -0.04em; color: var(--text-hi); margin-bottom: 10px; text-decoration: none; display: inline-block; }
 .footer-logo .dot { color: var(--ember); }
 .footer-desc { font-size: 13px; color: var(--text-lo); line-height: 1.8; max-width: 220px; margin-bottom: 20px; }
 .footer-socials { display: flex; gap: 8px; }
@@ -316,7 +316,7 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
 .footer-links a:hover { color: var(--text-hi); }
 .footer-bottom { max-width: 1320px; margin: 0 auto; padding: 18px 52px 24px; border-top: 1px solid #ffffff06; display: flex; justify-content: space-between; align-items: center; }
 .footer-copy { font-size: 12px; color: var(--text-lo); }
-.footer-bl { font-family: var(--fd); font-size: 18px; font-weight: 900; letter-spacing: -0.04em; color: var(--text-mid); text-decoration: none; }
+.footer-bl { font-family: var(--font-display); font-size: 18px; font-weight: 900; letter-spacing: -0.04em; color: var(--text-mid); text-decoration: none; }
 .footer-bl .dot { color: var(--ember); }
 
 /* Hamburger */
@@ -340,7 +340,7 @@ footer { background: var(--char); border-top: 1px solid #ffffff07; position: rel
 }
 .mobile-menu.open { display: flex; }
 .mobile-menu a {
-  font-family: var(--fd); font-size: 32px; font-weight: 900;
+  font-family: var(--font-display); font-size: 32px; font-weight: 900;
   letter-spacing: -0.03em; color: var(--text-hi); text-decoration: none;
   transition: color 0.14s;
 }

@@ -1,12 +1,13 @@
 .card {
   background: var(--parchment);
   border: 1px solid var(--linen);
-  border-radius: 18px; padding: 22px;
+  border-radius: 18px; padding: 24px;
   color: var(--coal);
   transition: transform 0.2s, box-shadow 0.2s;
   cursor: pointer; text-decoration: none; display: block;
 }
 
+/* rgba required — black with opacity for hover shadow */
 .card:hover { transform: translateY(-3px); box-shadow: 0 18px 48px rgba(0,0,0,0.12); }
 
 .head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
@@ -21,25 +22,27 @@
 .info { flex: 1; min-width: 0; overflow: hidden; }
 
 .name {
-  font-family: var(--fd); font-size: 15px; font-weight: 800;
-  color: var(--coal); display: flex; align-items: center; gap: 6px;
+  font-family: var(--font-display); font-size: 15px; font-weight: 800;
+  color: var(--coal); display: flex; align-items: center; gap: 8px;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
+/* rgba required — slate with opacity for verified badge background */
 .verified {
-  font-size: 9px; font-weight: 700; color: #2B5BA8;
-  background: rgba(43,91,168,0.06); padding: 2px 7px;
+  font-size: 9px; font-weight: 700; color: var(--slate);
+  background: rgba(43,91,168,0.06); padding: 4px 8px;
   border-radius: 100px; flex-shrink: 0;
 }
 
-.sub { font-size: 11px; color: #9A8870; margin-top: 1px; }
+.sub { font-size: 11px; color: var(--text-card-muted); }
 
 .planBadge {
-  font-size: 9px; font-weight: 700; padding: 3px 10px; border-radius: 100px;
-  letter-spacing: 0.08em; text-transform: uppercase; font-family: var(--fb);
+  font-size: 9px; font-weight: 700; padding: 4px 12px; border-radius: 100px;
+  letter-spacing: 0.08em; text-transform: uppercase; font-family: var(--font-body);
   flex-shrink: 0; align-self: flex-start;
 }
 
+/* rgba required — ember with opacity for plan badge styling */
 .bdgPro {
   background: rgba(232,80,10,0.07); color: var(--ember);
   border: 1px solid rgba(232,80,10,0.13);
@@ -50,20 +53,21 @@
   border: 1px solid rgba(232,80,10,0.25);
 }
 
+/* rgba required — slate with opacity for basic badge styling */
 .bdgBasic {
   background: rgba(43,91,168,0.07); color: var(--slate);
   border: 1px solid rgba(43,91,168,0.13);
 }
 
-.stars { color: var(--ember); font-size: 12px; margin-bottom: 2px; }
-.stars span { color: #9A8870; font-size: 11px; font-family: var(--fb); margin-left: 4px; }
+.stars { color: var(--ember); font-size: 12px; margin-bottom: 4px; }
+.stars span { color: var(--text-card-muted); font-size: 11px; font-family: var(--font-body); margin-left: 4px; }
 
-.events { font-size: 11px; color: #9A8870; margin-bottom: 10px; }
+.events { font-size: 11px; color: var(--text-card-muted); margin-bottom: 12px; }
 
-.tags { display: flex; gap: 5px; flex-wrap: wrap; }
+.tags { display: flex; gap: 4px; flex-wrap: wrap; }
 
 .tag {
-  font-size: 10px; font-weight: 600; padding: 3px 9px;
+  font-size: 10px; font-weight: 600; padding: 4px 8px;
   border-radius: 100px; background: var(--cream);
-  color: #6B5A4A; font-family: var(--fb);
+  color: var(--text-lo); font-family: var(--font-body);
 }

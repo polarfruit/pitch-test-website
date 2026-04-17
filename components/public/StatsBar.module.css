@@ -27,7 +27,7 @@
 
 .sig {
   font-size: 13px; font-weight: 600; color: var(--coal);
-  font-family: var(--fb); letter-spacing: 0.01em; white-space: nowrap;
+  font-family: var(--font-body); letter-spacing: 0.01em; white-space: nowrap;
 }
 
 @media (max-width: 1024px) {

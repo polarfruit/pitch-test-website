@@ -24,21 +24,54 @@
   --parchment:  #FDF4E7;
   --cream:      #F5EDD8;
   --linen:      #EDE3CC;
+  --white:      #FFFFFF;
 
   /* Semantic */
   --herb:       #2D8B55;
   --gold:       #C9840A;
-  --terra:      #C0392B;
+  --terracotta: #C0392B;
   --slate:      #2B5BA8;
 
-  /* Text hierarchy */
+  /* Text hierarchy — dark surfaces */
   --text-hi:    #FDF4E7;
   --text-mid:   #A89880;
   --text-lo:    #6B5A4A;
 
-  /* Typography — applied via next/font/local in layout.jsx */
-  /* --fd: Fraunces (display/serif)  */
-  /* --fb: Instrument Sans (body)    */
+  /* Text hierarchy — light (card) surfaces */
+  --text-card-muted: #9A8870;
+
+  /* Decorative */
+  --fill-track: #C5B090;
+
+  /* Event card themed gradient stops */
+  --grad-night:      #2E1A0E;
+  --grad-farm-a:     #162216;
+  --grad-farm-b:     #2D3A1A;
+  --grad-fest-a:     #16101A;
+  --grad-fest-b:     #2B1A38;
+  --grad-barossa-a:  #1A1010;
+  --grad-barossa-b:  #3A2010;
+  --grad-twilight-a: #101620;
+  --grad-twilight-b: #1A2C3A;
+  --grad-port-a:     #121218;
+  --grad-port-b:     #1A2030;
+
+  /* Badge and semantic colour extensions */
+  --text-search:      #9B8878;
+  --text-placeholder: #B8A898;
+  --herb-bg:          #C8E8D4;
+  --slate-bg:         #D6E6F7;
+  --ember-badge-bg:   #FAD9C8;
+  --ember-dark:       #C94000;
+  --herb-dark:        #1F6B3C;
+  --gold-bg:          #F5E3C0;
+  --gold-dark:        #A06B00;
+  --purple-bg:        #E6D4F5;
+  --purple:           #6A2D9A;
+
+  /* Typography — overridden at runtime by next/font/local in layout.jsx */
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-body:    'Instrument Sans', sans-serif;
 
   /* Spacing base unit */
   --space: 4px;
@@ -57,7 +90,7 @@ html {
 body {
   background: var(--coal);
   color: var(--text-hi);
-  font-family: var(--fb);
+  font-family: var(--font-body);
   line-height: 1.5;
   overflow-x: hidden;
 }
@@ -75,7 +108,7 @@ body::before {
 
 /* ── SCROLLBAR ─────────────────────────────────────────────────────────────── */
 ::-webkit-scrollbar {
-  width: 5px;
+  width: 4px;
 }
 
 ::-webkit-scrollbar-track {
@@ -85,6 +118,12 @@ body::before {
 ::-webkit-scrollbar-thumb {
   background: var(--ash);
   border-radius: 3px;
+}
+
+/* ── PAGE WRAPPER ─────────────────────────────────────────────────────────── */
+.page-main {
+  position: relative;
+  z-index: 1;
 }
 
 /* ── LINKS ─────────────────────────────────────────────────────────────────── */

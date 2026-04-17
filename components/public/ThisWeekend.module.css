@@ -1,23 +1,23 @@
 .section { position: relative; z-index: 1; padding: 56px 0 0; }
 .inner { max-width: 1320px; margin: 0 auto; padding: 0 52px; }
 
-.header { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+.header { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; }
 
 .liveDot {
   width: 8px; height: 8px; border-radius: 50%;
   background: var(--ember);
-  box-shadow: 0 0 0 0 rgba(232,80,10,0.25);
+  box-shadow: 0 0 0 0 rgba(232,80,10,0.25); /* --ember */
   animation: twPulse 2s ease-out infinite;
   flex-shrink: 0;
 }
 @keyframes twPulse {
-  0%   { box-shadow: 0 0 0 0 rgba(232,80,10,0.38); }
+  0%   { box-shadow: 0 0 0 0 rgba(232,80,10,0.38); } /* --ember */
   70%  { box-shadow: 0 0 0 8px transparent; }
   100% { box-shadow: 0 0 0 0 transparent; }
 }
 
 .title {
-  font-family: var(--fd);
+  font-family: var(--font-display);
   font-size: clamp(30px, 3.5vw, 48px);
   font-weight: 900; letter-spacing: -0.03em;
   color: var(--text-hi); line-height: 1.02;
@@ -49,12 +49,12 @@
 
 .cardDay {
   font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
-  text-transform: uppercase; color: var(--ember); margin-bottom: 6px;
+  text-transform: uppercase; color: var(--ember); margin-bottom: 8px;
 }
 
 .cardName {
-  font-family: var(--fd); font-size: 16px; font-weight: 800;
-  color: var(--text-hi); line-height: 1.25; margin-bottom: 5px;
+  font-family: var(--font-display); font-size: 16px; font-weight: 800;
+  color: var(--text-hi); line-height: 1.25; margin-bottom: 4px;
 }
 
 .cardWhere { font-size: 11px; color: var(--text-lo); margin-bottom: 8px; }
@@ -68,13 +68,13 @@
 
 .apply {
   font-size: 11px; font-weight: 700;
-  color: var(--ember); border: 1px solid rgba(232,80,10,0.33);
-  padding: 5px 12px; border-radius: 6px;
+  color: var(--ember); border: 1px solid rgba(232,80,10,0.33); /* --ember */
+  padding: 4px 12px; border-radius: 6px;
   background: transparent;
   transition: background 0.12s, color 0.12s, border-color 0.12s;
   display: inline-block;
 }
-.card:hover .apply { background: var(--ember); color: #fff; border-color: var(--ember); }
+.card:hover .apply { background: var(--ember); color: var(--white); border-color: var(--ember); }
 
 @media (max-width: 1024px) {
   .inner { padding: 0 28px; }

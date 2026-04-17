@@ -29,15 +29,15 @@
   --text-hi:    #FDF4E7;
   --text-mid:   #A89880;
   --text-lo:    #6B5A4A;
-  --fd:         'Fraunces', Georgia, serif;
-  --fb:         'Instrument Sans', 'Helvetica Neue', sans-serif;
+  --font-display:         'Fraunces', Georgia, serif;
+  --font-body:         'Instrument Sans', 'Helvetica Neue', sans-serif;
   --sidebar-w:  260px;
 }
 
 html, body { height: 100%; }
 body {
   background: var(--coal); color: var(--text-hi);
-  font-family: var(--fb); line-height: 1.5; overflow-x: hidden;
+  font-family: var(--font-body); line-height: 1.5; overflow-x: hidden;
   display: flex;
 }
 
@@ -61,7 +61,7 @@ body::before {
   border-bottom: 1px solid #ffffff07;
 }
 .logo-mark {
-  font-family: var(--fd); font-size: 22px; font-weight: 900;
+  font-family: var(--font-display); font-size: 22px; font-weight: 900;
   letter-spacing: -0.04em; color: var(--text-hi); text-decoration: none;
   display: block; margin-bottom: 16px;
 }
@@ -106,7 +106,7 @@ body::before {
   padding: 10px 12px; border-radius: 10px; cursor: pointer;
   font-size: 13.5px; font-weight: 600; color: var(--text-mid);
   transition: background 0.14s, color 0.14s; user-select: none;
-  border: 1px solid transparent; background: transparent; width: 100%; text-align: left; text-decoration: none; font-family: var(--fb);
+  border: 1px solid transparent; background: transparent; width: 100%; text-align: left; text-decoration: none; font-family: var(--font-body);
 }
 .nav-link:hover { background: #ffffff08; color: var(--text-hi); }
 .nav-link:focus-visible { outline: 2px solid var(--ember); outline-offset: -2px; border-radius: 10px; }
@@ -140,7 +140,7 @@ body::before {
   display: flex; align-items: center; gap: 10px;
   padding: 9px 12px; border-radius: 8px; cursor: pointer;
   font-size: 12.5px; font-weight: 600; color: var(--text-lo);
-  transition: background 0.14s, color 0.14s; text-decoration: none; border: none; background: transparent; width: 100%; font-family: var(--fb);
+  transition: background 0.14s, color 0.14s; text-decoration: none; border: none; background: transparent; width: 100%; font-family: var(--font-body);
 }
 .sidebar-footer-link:hover { color: var(--text-mid); background: #ffffff08; }
 .sidebar-footer-link.logout { color: #8B4A3A; }
@@ -159,7 +159,7 @@ body::before {
   background: rgba(26,22,18,0.88); backdrop-filter: blur(16px);
   border-bottom: 1px solid #ffffff07;
 }
-.topbar-title { font-family: var(--fd); font-size: 18px; font-weight: 900; letter-spacing: -0.02em; color: var(--text-hi); }
+.topbar-title { font-family: var(--font-display); font-size: 18px; font-weight: 900; letter-spacing: -0.02em; color: var(--text-hi); }
 .topbar-actions { display: flex; align-items: center; gap: 12px; }
 .topbar-notif {
   width: 36px; height: 36px; border-radius: 9px;
@@ -197,11 +197,11 @@ body::before {
   border-bottom: 1px solid #ffffff0A;
 }
 .notif-popup-title {
-  font-family: var(--fd); font-size: 14px; font-weight: 800;
+  font-family: var(--font-display); font-size: 14px; font-weight: 800;
   color: var(--text-hi); letter-spacing: -0.01em;
 }
 .notif-mark-read {
-  font-family: var(--fb); font-size: 11px; font-weight: 600;
+  font-family: var(--font-body); font-size: 11px; font-weight: 600;
   color: var(--ember); background: none; border: none;
   cursor: pointer; padding: 0; transition: opacity 0.12s;
 }
@@ -246,7 +246,7 @@ body::before {
   font-size: 13px; color: var(--text-lo);
 }
 .topbar-view-profile {
-  font-family: var(--fb); font-size: 12px; font-weight: 600;
+  font-family: var(--font-body); font-size: 12px; font-weight: 600;
   color: var(--text-mid); background: transparent; border: 1px solid #ffffff18;
   padding: 7px 14px; border-radius: 8px; cursor: pointer; text-decoration: none;
   transition: background 0.14s, color 0.14s, border-color 0.14s;
@@ -261,7 +261,7 @@ body::before {
 
 /* ── SHARED COMPONENTS ──────────────────────────────────────────────────── */
 .section-title {
-  font-family: var(--fd); font-size: 18px; font-weight: 900;
+  font-family: var(--font-display); font-size: 18px; font-weight: 900;
   letter-spacing: -0.02em; color: var(--text-hi); margin-bottom: 16px;
 }
 #panel-overview .section-title {
@@ -294,7 +294,7 @@ body::before {
 .stat-card.slate::before { background: var(--slate); }
 
 .stat-label { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-lo); margin-bottom: 8px; }
-.stat-value { font-family: var(--fd); font-size: 36px; font-weight: 900; letter-spacing: -0.03em; line-height: 1; margin-bottom: 6px; }
+.stat-value { font-family: var(--font-display); font-size: 36px; font-weight: 900; letter-spacing: -0.03em; line-height: 1; margin-bottom: 6px; }
 .stat-card.ember .stat-value { color: var(--ember); }
 .stat-card.herb  .stat-value { color: var(--herb); }
 .stat-card.gold  .stat-value { color: var(--gold); }
@@ -339,7 +339,7 @@ body::before {
 .event-mini-fee { font-size: 12px; font-weight: 700; color: var(--text-hi); }
 .event-mini-spots { font-size: 11px; color: var(--text-lo); }
 .btn-apply-mini {
-  font-family: var(--fb); font-size: 11px; font-weight: 700;
+  font-family: var(--font-body); font-size: 11px; font-weight: 700;
   color: var(--ember); background: var(--ember-bg); border: 1px solid #E8500A22;
   padding: 5px 12px; border-radius: 7px; cursor: pointer; transition: all 0.14s;
 }
@@ -386,7 +386,7 @@ body::before {
   padding: 4px 9px; border-radius: 6px;
 }
 .browse-card-body { padding: 16px; flex: 1; display: flex; flex-direction: column; gap: 5px; background: var(--parchment); }
-.browse-card-name { font-family: var(--fd); font-size: 16px; font-weight: 900; letter-spacing: -0.02em; color: #1A1612; line-height: 1.25; }
+.browse-card-name { font-family: var(--font-display); font-size: 16px; font-weight: 900; letter-spacing: -0.02em; color: #1A1612; line-height: 1.25; }
 .browse-card-meta { font-size: 12px; color: #6B5A4A; display: flex; flex-wrap: wrap; gap: 8px; margin-top: 2px; }
 .browse-card-meta span { display: flex; align-items: center; gap: 4px; }
 .browse-card-fill-row { display: flex; justify-content: space-between; font-size: 11px; color: #6B5A4A; margin-top: 6px; }
@@ -431,10 +431,10 @@ body::before {
 }
 .browse-empty-state svg { opacity: 0.3; }
 .browse-empty-state p { color: #6B5A4A; font-size: 14px; max-width: 300px; line-height: 1.6; }
-.browse-empty-state button { font-family: var(--fb); font-size: 13px; font-weight: 700; color: var(--ember); background: none; border: 1px solid var(--ember); border-radius: 8px; padding: 8px 18px; cursor: pointer; transition: background 0.14s, color 0.14s; }
+.browse-empty-state button { font-family: var(--font-body); font-size: 13px; font-weight: 700; color: var(--ember); background: none; border: 1px solid var(--ember); border-radius: 8px; padding: 8px 18px; cursor: pointer; transition: background 0.14s, color 0.14s; }
 .browse-empty-state button:hover { background: var(--ember); color: #fff; }
 .btn-view-event {
-  font-family: var(--fb); font-size: 12px; font-weight: 700;
+  font-family: var(--font-body); font-size: 12px; font-weight: 700;
   color: #fff; background: var(--ember); border: none;
   padding: 9px 18px; border-radius: 8px; cursor: pointer; transition: background 0.14s, transform 0.14s;
 }
@@ -443,7 +443,7 @@ body::before {
   grid-column: 1 / -1; display: flex; justify-content: center; padding: 8px 0 4px;
 }
 .browse-load-more-btn {
-  font-family: var(--fb); font-size: 13px; font-weight: 700;
+  font-family: var(--font-body); font-size: 13px; font-weight: 700;
   color: var(--text-mid); background: #ffffff06; border: 1px solid #ffffff12;
   border-radius: 10px; padding: 10px 24px; cursor: pointer;
   display: inline-flex; align-items: center; gap: 6px;
@@ -457,7 +457,7 @@ body::before {
 }
 .event-detail-back button {
   background: transparent; border: none; color: var(--text-lo); cursor: pointer;
-  font-size: 12px; font-family: var(--fb); padding: 0;
+  font-size: 12px; font-family: var(--font-body); padding: 0;
 }
 .event-detail-back button:hover { color: var(--text-hi); }
 .event-detail-hero {
@@ -470,7 +470,7 @@ body::before {
   border-radius: 0 0 16px 16px; padding: 24px; margin-bottom: 20px;
 }
 .event-detail-title {
-  font-family: var(--fd); font-size: 28px; font-weight: 900; letter-spacing: -0.03em;
+  font-family: var(--font-display); font-size: 28px; font-weight: 900; letter-spacing: -0.03em;
   color: var(--text-hi); margin-bottom: 8px; line-height: 1.15;
 }
 .event-detail-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
@@ -498,7 +498,7 @@ body::before {
 .event-detail-apply-label { font-size: 15px; font-weight: 700; color: var(--text-hi); }
 .event-detail-apply-sub { font-size: 12px; color: var(--text-lo); margin-top: 2px; }
 .btn-apply-full {
-  font-family: var(--fd); font-size: 15px; font-weight: 900; letter-spacing: -0.01em;
+  font-family: var(--font-display); font-size: 15px; font-weight: 900; letter-spacing: -0.01em;
   background: var(--ember); color: white; border: none;
   padding: 12px 28px; border-radius: 10px; cursor: pointer;
   transition: background 0.14s, transform 0.1s;
@@ -540,7 +540,7 @@ body::before {
 /* ── APPLICATIONS ────────────────────────────────────────────────────────── */
 .app-filter-row { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; align-items: center; }
 .status-filter-btn {
-  font-family: var(--fb); font-size: 12px; font-weight: 600;
+  font-family: var(--font-body); font-size: 12px; font-weight: 600;
   padding: 6px 14px; border-radius: 100px; cursor: pointer;
   border: 1px solid #ffffff10; background: transparent; color: var(--text-mid);
   transition: all 0.12s;
@@ -618,7 +618,7 @@ body::before {
 .form-input {
   width: 100%; height: 42px; padding: 0 14px;
   background: #ffffff08; border: 1px solid #ffffff10; border-radius: 10px;
-  font-family: var(--fb); font-size: 14px; color: var(--text-hi);
+  font-family: var(--font-body); font-size: 14px; color: var(--text-hi);
   outline: none; transition: border-color 0.14s;
 }
 .form-input::placeholder { color: var(--text-lo); }
@@ -626,7 +626,7 @@ body::before {
 .form-textarea {
   width: 100%; padding: 12px 14px; resize: vertical; min-height: 100px;
   background: #ffffff08; border: 1px solid #ffffff10; border-radius: 10px;
-  font-family: var(--fb); font-size: 14px; color: var(--text-hi); line-height: 1.6;
+  font-family: var(--font-body); font-size: 14px; color: var(--text-hi); line-height: 1.6;
   outline: none; transition: border-color 0.14s;
 }
 .form-textarea::placeholder { color: var(--text-lo); }
@@ -641,7 +641,7 @@ body::before {
   font-size: 12px; font-weight: 600; padding: 6px 14px; border-radius: 100px;
   cursor: pointer; border: 1px solid #ffffff10; background: transparent;
   color: var(--text-mid); transition: all 0.12s; user-select: none;
-  font-family: var(--fb);
+  font-family: var(--font-body);
 }
 .tag-option:hover { border-color: #E8500A30; color: var(--text-hi); }
 .tag-option.selected { background: var(--ember-bg); border-color: #E8500A30; color: var(--ember); }
@@ -651,7 +651,7 @@ body::before {
 .radio-option {
   display: flex; align-items: center; gap: 8px;
   padding: 8px 16px; border-radius: 10px; cursor: pointer;
-  border: 1px solid #ffffff10; background: transparent; font-family: var(--fb);
+  border: 1px solid #ffffff10; background: transparent; font-family: var(--font-body);
   font-size: 13px; font-weight: 600; color: var(--text-mid); transition: all 0.12s;
 }
 .radio-option input { accent-color: var(--ember); width: 15px; height: 15px; }
@@ -681,7 +681,7 @@ body::before {
 .price-btn {
   min-width: 64px; height: 42px; padding: 0 12px; border-radius: 10px; cursor: pointer;
   border: 1px solid #ffffff10; background: transparent;
-  font-family: var(--fd); font-size: 15px; font-weight: 900; color: var(--text-mid);
+  font-family: var(--font-display); font-size: 15px; font-weight: 900; color: var(--text-mid);
   transition: all 0.12s;
 }
 .price-btn:hover { border-color: #E8500A30; color: var(--text-hi); }
@@ -716,7 +716,7 @@ body::before {
 .dim-input {
   width: 80px; min-width: 64px; height: 42px; padding: 0 12px;
   background: #ffffff08; border: 1px solid #ffffff10; border-radius: 10px;
-  font-family: var(--fb); font-size: 14px; color: var(--text-hi);
+  font-family: var(--font-body); font-size: 14px; color: var(--text-hi);
   outline: none; transition: border-color 0.14s; text-align: center;
 }
 @media (max-width: 480px) { .dim-input { width: 72px; flex: 1; max-width: 100px; } }
@@ -745,7 +745,7 @@ body::before {
   margin-top: 44px; /* pushes avatar to bottom edge of banner */
 }
 .preview-body { padding: 8px 16px 14px; }
-.preview-name { font-family: var(--fd); font-size: 16px; font-weight: 900; letter-spacing: -0.02em; color: #1A1612; margin-bottom: 6px; }
+.preview-name { font-family: var(--font-display); font-size: 16px; font-weight: 900; letter-spacing: -0.02em; color: #1A1612; margin-bottom: 6px; }
 .preview-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 10px; }
 .preview-tag { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 100px; background: #E8500A14; color: var(--ember); border: 1px solid #E8500A22; }
 .preview-stats { display: flex; align-items: center; gap: 10px; padding-top: 10px; border-top: 1px solid #EDE3CC; font-size: 11px; }
@@ -757,7 +757,7 @@ body::before {
 .preview-events { color: var(--text-lo); }
 
 .btn-save {
-  font-family: var(--fb); font-size: 15px; font-weight: 700; color: #fff;
+  font-family: var(--font-body); font-size: 15px; font-weight: 700; color: #fff;
   background: var(--ember); border: none; padding: 14px 32px; border-radius: 12px;
   cursor: pointer; box-shadow: 0 4px 20px #E8500A40, 0 1px 4px #E8500A25; transition: background 0.14s, transform 0.14s;
   margin-top: 8px;
@@ -810,7 +810,7 @@ body::before {
   padding: 8px 12px; font-size: 12px; font-weight: 500; color: #D9981A;
 }
 .btn-upload {
-  font-family: var(--fb); font-size: 12px; font-weight: 700;
+  font-family: var(--font-body); font-size: 12px; font-weight: 700;
   color: var(--ember); background: var(--ember-bg); border: 1px solid #E8500A22;
   padding: 8px 16px; border-radius: 9px; cursor: pointer;
   transition: background 0.14s ease, border-color 0.14s ease;
@@ -848,7 +848,7 @@ body::before {
   box-shadow: 0 6px 16px rgba(26,22,18,0.7);
 }
 .settings-tab {
-  font-family: var(--fb); font-size: 11px; font-weight: 600;
+  font-family: var(--font-body); font-size: 11px; font-weight: 600;
   padding: 6px 14px; border-radius: 100px; cursor: pointer;
   border: 1px solid #ffffff10; background: transparent; color: var(--text-lo);
   transition: background 0.15s, color 0.15s, border-color 0.15s;
@@ -881,12 +881,12 @@ body::before {
   border: 1px solid #C9840A24; border-radius: 14px; padding: 20px 22px;
   display: flex; align-items: center; justify-content: space-between;
 }
-.plan-left h3 { font-family: var(--fd); font-size: 18px; font-weight: 900; letter-spacing: -0.02em; color: var(--gold); margin-bottom: 4px; }
+.plan-left h3 { font-family: var(--font-display); font-size: 18px; font-weight: 900; letter-spacing: -0.02em; color: var(--gold); margin-bottom: 4px; }
 .plan-left p { font-size: 12px; color: var(--text-lo); }
-.plan-price { font-family: var(--fd); font-size: 28px; font-weight: 900; color: var(--text-hi); }
-.plan-price span { font-family: var(--fb); font-size: 13px; font-weight: 400; color: var(--text-lo); }
+.plan-price { font-family: var(--font-display); font-size: 28px; font-weight: 900; color: var(--text-hi); }
+.plan-price span { font-family: var(--font-body); font-size: 13px; font-weight: 400; color: var(--text-lo); }
 .btn-plan-change {
-  font-family: var(--fb); font-size: 12px; font-weight: 600;
+  font-family: var(--font-body); font-size: 12px; font-weight: 600;
   color: var(--text-mid); background: #ffffff08; border: 1px solid #ffffff10;
   padding: 8px 16px; border-radius: 9px; cursor: pointer; transition: all 0.14s;
 }
@@ -940,7 +940,7 @@ body::before {
 }
 .app-template-textarea {
   width: 100%; background: #ffffff07; border: 1px solid #ffffff12;
-  border-radius: 10px; color: var(--text-hi); font-family: var(--fb);
+  border-radius: 10px; color: var(--text-hi); font-family: var(--font-body);
   font-size: 13px; padding: 10px 14px; resize: vertical; min-height: 80px;
   outline: none; transition: border-color 0.12s; line-height: 1.6;
 }
@@ -954,7 +954,7 @@ body::before {
 }
 .messages-gate.visible { display: flex; }
 .messages-gate-icon { font-size: 40px; margin-bottom: 4px; }
-.messages-gate-title { font-family: var(--fd); font-size: 20px; font-weight: 900; letter-spacing: -0.02em; color: var(--text-hi); }
+.messages-gate-title { font-family: var(--font-display); font-size: 20px; font-weight: 900; letter-spacing: -0.02em; color: var(--text-hi); }
 .messages-gate-sub { font-size: 14px; color: var(--text-mid); line-height: 1.6; max-width: 340px; }
 
 /* Cold-contact lock banner */
@@ -990,7 +990,7 @@ body::before {
 .gate-overlay-title { font-size: 13px; font-weight: 700; color: var(--text-hi); }
 .gate-overlay-desc { font-size: 12px; color: var(--text-mid); line-height: 1.6; max-width: 240px; }
 .gate-upgrade-btn {
-  font-family: var(--fb); font-size: 12px; font-weight: 700;
+  font-family: var(--font-body); font-size: 12px; font-weight: 700;
   color: #fff; background: var(--ember); border: none;
   padding: 8px 18px; border-radius: 8px; cursor: pointer;
   text-decoration: none; display: inline-block; margin-top: 4px;
@@ -1024,7 +1024,7 @@ body::before {
 /* Analytics panel */
 .analytics-section { margin-bottom: 8px; }
 .analytics-section + .analytics-section { margin-top: 28px; padding-top: 24px; border-top: 1px solid #ffffff07; }
-.analytics-section-title { font-family: var(--fd); font-size: 15px; font-weight: 900; letter-spacing: -0.02em; color: var(--text-hi); margin-bottom: 14px; }
+.analytics-section-title { font-family: var(--font-display); font-size: 15px; font-weight: 900; letter-spacing: -0.02em; color: var(--text-hi); margin-bottom: 14px; }
 .an-stat-label { font-size:11px; font-weight:600; color:var(--text-lo); margin-bottom:6px; }
 .an-chart-eyebrow { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--text-lo); margin-bottom:8px; }
 .empty-chart-msg { font-size:11px; color:var(--text-lo); text-align:center; padding:10px 16px; border:1px dashed #ffffff10; border-radius:8px; margin-top:6px; opacity:0.5; }
@@ -1082,7 +1082,7 @@ body::before {
 .danger-title { font-size: 14px; font-weight: 700; color: var(--terra); margin-bottom: 8px; }
 .danger-desc { font-size: 13px; color: var(--text-lo); margin-bottom: 14px; line-height: 1.6; }
 .btn-delete {
-  font-family: var(--fb); font-size: 13px; font-weight: 700;
+  font-family: var(--font-body); font-size: 13px; font-weight: 700;
   color: var(--terra); background: #C0392B10; border: 1.5px solid #C0392B30;
   padding: 10px 20px; border-radius: 10px; cursor: pointer; transition: all 0.14s;
 }
@@ -1103,23 +1103,23 @@ body::before {
 }
 .modal-overlay.open .modal-box { transform: translateY(0); }
 .modal-icon { font-size: 36px; margin-bottom: 16px; text-align: center; }
-.modal-title { font-family: var(--fd); font-size: 22px; font-weight: 900; letter-spacing: -0.02em; color: var(--text-hi); margin-bottom: 10px; text-align: center; }
+.modal-title { font-family: var(--font-display); font-size: 22px; font-weight: 900; letter-spacing: -0.02em; color: var(--text-hi); margin-bottom: 10px; text-align: center; }
 .modal-desc { font-size: 13px; color: var(--text-mid); line-height: 1.7; margin-bottom: 24px; text-align: center; }
 .modal-confirm-input {
   width: 100%; height: 42px; padding: 0 14px; margin-bottom: 20px;
   background: #ffffff08; border: 1px solid #C0392B28; border-radius: 10px;
-  font-family: var(--fb); font-size: 14px; color: var(--text-hi); outline: none;
+  font-family: var(--font-body); font-size: 14px; color: var(--text-hi); outline: none;
   transition: border-color 0.14s;
 }
 .modal-confirm-input:focus { border-color: #C0392B60; }
 .modal-actions { display: flex; gap: 10px; }
 .btn-modal-cancel {
-  flex: 1; padding: 13px; border-radius: 11px; font-family: var(--fb); font-size: 14px; font-weight: 600;
+  flex: 1; padding: 13px; border-radius: 11px; font-family: var(--font-body); font-size: 14px; font-weight: 600;
   color: var(--text-mid); background: #ffffff08; border: 1px solid #ffffff0d; cursor: pointer; transition: all 0.14s;
 }
 .btn-modal-cancel:hover { color: var(--text-hi); background: #ffffff12; }
 .btn-modal-delete {
-  flex: 1; padding: 13px; border-radius: 11px; font-family: var(--fb); font-size: 14px; font-weight: 700;
+  flex: 1; padding: 13px; border-radius: 11px; font-family: var(--font-body); font-size: 14px; font-weight: 700;
   color: #fff; background: var(--terra); border: none; cursor: pointer; transition: all 0.14s;
   opacity: 0.4; pointer-events: none;
 }
@@ -1146,7 +1146,7 @@ body::before {
 .earnings-stat.accent-slate { border-left-color: var(--slate); }
 .earnings-stat.accent-gold  { border-left-color: var(--gold); }
 .earnings-stat-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-mid); }
-.earnings-stat-value { font-family: var(--fd); font-size: 28px; font-weight: 900; letter-spacing: -0.03em; color: var(--text-hi); }
+.earnings-stat-value { font-family: var(--font-display); font-size: 28px; font-weight: 900; letter-spacing: -0.03em; color: var(--text-hi); }
 .earnings-stat-value.muted { color: var(--text-mid) !important; }
 .earnings-stat.accent-ember .earnings-stat-value:not(.muted) { color: var(--ember); }
 .earnings-stat.accent-herb  .earnings-stat-value:not(.muted) { color: var(--herb); }
@@ -1181,7 +1181,7 @@ body::before {
 .payout-locked-left p { font-size: 12px; color: var(--text-lo); }
 .btn-coming-soon {
   background: #ffffff08; border: 1px solid #ffffff10; color: var(--text-lo);
-  padding: 10px 20px; border-radius: 10px; font-family: var(--fb); font-size: 13px;
+  padding: 10px 20px; border-radius: 10px; font-family: var(--font-body); font-size: 13px;
   font-weight: 600; cursor: not-allowed; position: relative;
 }
 .coming-soon-tag {
@@ -1204,13 +1204,13 @@ body::before {
   padding: 20px; border-bottom: 1px solid #ffffff08; flex-shrink: 0;
 }
 .inbox-title {
-  font-family: var(--fd); font-size: 18px; font-weight: 900;
+  font-family: var(--font-display); font-size: 18px; font-weight: 900;
   letter-spacing: -0.02em; color: var(--text-hi); margin-bottom: 12px;
   display: flex; align-items: center; gap: 8px;
 }
 .inbox-unread-badge {
   background: var(--ember); color: #fff;
-  font-family: var(--fb); font-size: 11px; font-weight: 700;
+  font-family: var(--font-body); font-size: 11px; font-weight: 700;
   padding: 2px 7px; border-radius: 100px;
 }
 .inbox-search-wrap {
@@ -1222,7 +1222,7 @@ body::before {
 }
 .inbox-search {
   width: 100%; background: #ffffff08; border: 1px solid #ffffff0d;
-  border-radius: 9px; color: var(--text-hi); font-family: var(--fb);
+  border-radius: 9px; color: var(--text-hi); font-family: var(--font-body);
   font-size: 13px; padding: 9px 14px 9px 34px; outline: none;
 }
 .inbox-search::placeholder { color: var(--text-mid); }
@@ -1320,7 +1320,7 @@ body::before {
 }
 .convo-textarea {
   flex: 1; background: #ffffff08; border: 1px solid #ffffff10;
-  border-radius: 12px; color: var(--text-hi); font-family: var(--fb);
+  border-radius: 12px; color: var(--text-hi); font-family: var(--font-body);
   font-size: 13px; padding: 11px 14px; outline: none; resize: none;
   min-height: 42px; max-height: 108px; overflow-y: auto; line-height: 1.5;
   transition: border-color 0.14s;
@@ -1329,7 +1329,7 @@ body::before {
 .convo-textarea::placeholder { color: var(--text-lo); }
 .btn-send {
   background: var(--ember); color: #fff; border: none; border-radius: 11px;
-  padding: 11px 18px; font-family: var(--fb); font-size: 13px; font-weight: 700;
+  padding: 11px 18px; font-family: var(--font-body); font-size: 13px; font-weight: 700;
   cursor: pointer; transition: background 0.14s, transform 0.12s; flex-shrink: 0;
 }
 .btn-send:hover { background: var(--ember-glow); }
@@ -1360,14 +1360,14 @@ body::before {
   display: flex; flex-direction: column; align-items: center; gap: 3px;
   padding: 6px 12px; cursor: pointer; font-size: 10px; font-weight: 600;
   color: var(--text-lo); border: none; background: transparent; transition: color 0.14s;
-  font-family: var(--fb);
+  font-family: var(--font-body);
 }
 .mobile-tab.active { color: var(--ember); }
 .mobile-tab-icon { font-size: 18px; }
 .mobile-drawer-item {
   display: flex; align-items: center; gap: 12px; width: 100%;
   padding: 13px 12px; border-radius: 12px; border: none;
-  background: transparent; color: var(--text-hi); font-family: var(--fb);
+  background: transparent; color: var(--text-hi); font-family: var(--font-body);
   font-size: 14px; font-weight: 600; cursor: pointer; text-align: left;
   transition: background 0.12s;
 }
@@ -1393,7 +1393,7 @@ body::before {
   width: 108px; height: 38px;
   background: #ffffff08; border: 1px solid #ffffff12;
   border-radius: 10px; padding: 0 10px;
-  font-family: var(--fb); font-size: 13px; color: var(--text-hi); outline: none;
+  font-family: var(--font-body); font-size: 13px; color: var(--text-hi); outline: none;
   transition: border-color 0.14s, box-shadow 0.14s;
 }
 .browse-date-text-input:focus { border-color: #E8500A40; box-shadow: 0 0 0 3px #E8500A12; }
@@ -1432,7 +1432,7 @@ body::before {
   margin-bottom: 12px;
 }
 .browse-cal-month-name {
-  font-family: var(--fd); font-size: 14px; font-weight: 800;
+  font-family: var(--font-display); font-size: 14px; font-weight: 800;
   color: var(--text-hi); letter-spacing: -0.01em;
 }
 .browse-cal-nav {
@@ -1452,7 +1452,7 @@ body::before {
   font-size: 12px; font-weight: 500; color: var(--text-mid);
   border-radius: 8px; cursor: pointer;
   transition: background 0.1s, color 0.1s;
-  border: none; background: none; font-family: var(--fb);
+  border: none; background: none; font-family: var(--font-body);
 }
 .browse-cal-day:hover:not(.empty) { background: #ffffff12; color: var(--text-hi); }
 .browse-cal-day.empty { cursor: default; color: var(--text-lo); opacity: 0.35; pointer-events: none; }
@@ -1475,14 +1475,14 @@ body::before {
 .browse-cal-selected-label strong { color: var(--text-mid); }
 .browse-cal-footer-actions { display: flex; gap: 8px; }
 .browse-cal-btn-clear {
-  font-family: var(--fb); font-size: 12px; font-weight: 600;
+  font-family: var(--font-body); font-size: 12px; font-weight: 600;
   background: none; border: 1px solid #ffffff12; border-radius: 8px;
   color: var(--text-lo); padding: 7px 14px; cursor: pointer;
   transition: color 0.12s, border-color 0.12s;
 }
 .browse-cal-btn-clear:hover { color: var(--text-hi); border-color: #ffffff25; }
 .browse-cal-btn-apply {
-  font-family: var(--fb); font-size: 12px; font-weight: 700;
+  font-family: var(--font-body); font-size: 12px; font-weight: 700;
   background: var(--ember); border: none; border-radius: 8px;
   color: #fff; padding: 7px 18px; cursor: pointer;
   transition: background 0.12s;
@@ -1492,7 +1492,7 @@ body::before {
 /* ── BROWSE DAY PICKER ────────────────────────────────────────────────────── */
 .browse-day-toggle-btn {
   display: inline-flex; align-items: center; gap: 6px;
-  font-family: var(--fb); font-size: 13px; font-weight: 600;
+  font-family: var(--font-body); font-size: 13px; font-weight: 600;
   background: #ffffff08; border: 1px solid #ffffff12;
   color: var(--text-mid); border-radius: 10px;
   padding: 9px 12px; cursor: pointer;
@@ -1522,7 +1522,7 @@ body::before {
   display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px;
 }
 .browse-day-opt {
-  font-family: var(--fb); font-size: 12px; font-weight: 600;
+  font-family: var(--font-body); font-size: 12px; font-weight: 600;
   background: #ffffff08; border: 1px solid #ffffff10;
   color: var(--text-mid); border-radius: 8px;
   padding: 8px 4px; cursor: pointer; text-align: center;
@@ -1537,7 +1537,7 @@ body::before {
 /* ── REVIEWS ──────────────────────────────────────────────────────────────── */
 .rating-hero { display:flex; align-items:center; gap:28px; background:var(--char); border:1px solid #ffffff08; border-radius:16px; padding:24px 28px; margin-bottom:24px; }
 .rating-left { display:flex; flex-direction:column; align-items:center; min-width:100px; }
-.rating-big { font-family:var(--fd); font-size:48px; font-weight:900; letter-spacing:-0.04em; color:var(--text-hi); line-height:1; margin-bottom:6px; }
+.rating-big { font-family:var(--font-display); font-size:48px; font-weight:900; letter-spacing:-0.04em; color:var(--text-hi); line-height:1; margin-bottom:6px; }
 .rating-big.empty { font-size:36px; color:var(--text-lo); opacity:0.4; }
 .rating-stars-lg { font-size:20px; letter-spacing:2px; margin-bottom:4px; }
 .rating-stars-lg.empty { opacity:0.3; }
@@ -1566,8 +1566,8 @@ body::before {
 .fee-info { flex:1; }
 .fee-event { font-size:14px; font-weight:700; color:var(--text-hi); margin-bottom:3px; }
 .fee-due { font-size:12px; color:var(--text-lo); }
-.fee-amount { font-family:var(--fd); font-size:24px; font-weight:900; color:var(--text-hi); margin-right:16px; }
-.btn-pay { background:var(--ember); color:#fff; border:none; font-family:var(--fb); font-size:13px; font-weight:700; padding:9px 20px; border-radius:10px; cursor:pointer; transition:all 0.14s; white-space:nowrap; }
+.fee-amount { font-family:var(--font-display); font-size:24px; font-weight:900; color:var(--text-hi); margin-right:16px; }
+.btn-pay { background:var(--ember); color:#fff; border:none; font-family:var(--font-body); font-size:13px; font-weight:700; padding:9px 20px; border-radius:10px; cursor:pointer; transition:all 0.14s; white-space:nowrap; }
 .btn-pay:hover { background:var(--ember-glow); transform:translateY(-1px); }
 .payment-history-table { width:100%; border-collapse:collapse; font-size:13px; }
 .payment-history-table th { text-align:left; padding:10px 14px; color:var(--text-lo); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; border-bottom:1px solid #ffffff08; }
@@ -1579,7 +1579,7 @@ body::before {
 @media (max-width:520px) { .pay-stats { grid-template-columns:1fr; } }
 .pay-stat { background:var(--char); border:1px solid #ffffff08; border-radius:14px; padding:18px 20px; }
 .pay-stat-label { font-size:11px; font-weight:700; color:var(--text-lo); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:8px; }
-.pay-stat-value { font-family:var(--fd); font-size:26px; font-weight:900; color:var(--text-hi); letter-spacing:-0.02em; line-height:1; }
+.pay-stat-value { font-family:var(--font-display); font-size:26px; font-weight:900; color:var(--text-hi); letter-spacing:-0.02em; line-height:1; }
 .pay-stat-sub { font-size:12px; color:var(--text-lo); margin-top:6px; }
 .pay-stat.alert .pay-stat-value { color:var(--terra); }
 .pay-stat.warn .pay-stat-value { color:var(--gold); }
@@ -1595,7 +1595,7 @@ body::before {
 /* ── CALENDAR ─────────────────────────────────────────────────────────────── */
 .cal-nav { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; gap:12px; }
 .cal-nav-center { display:flex; align-items:center; gap:12px; }
-.cal-month { font-family:var(--fd); font-size:24px; font-weight:900; letter-spacing:-0.02em; color:var(--text-hi); }
+.cal-month { font-family:var(--font-display); font-size:24px; font-weight:900; letter-spacing:-0.02em; color:var(--text-hi); }
 .cal-nav-btn { background:#ffffff08; border:1px solid #ffffff10; color:var(--text-mid); width:38px; height:38px; border-radius:50%; cursor:pointer; font-size:20px; transition:background 0.14s, border-color 0.14s, color 0.14s; display:flex; align-items:center; justify-content:center; }
 .cal-nav-btn:hover { background:#ffffff18; border-color:#ffffff20; color:var(--text-hi); }
 .cal-nav-btn:active { background:#ffffff10; transform:scale(0.95); }
@@ -1625,11 +1625,11 @@ body::before {
 .cal-empty-state a:hover { text-decoration:underline; }
 .cal-feed-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:1000; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(4px); }
 .cal-feed-modal { background:var(--char); border:1px solid #ffffff12; border-radius:18px; padding:28px 32px; max-width:480px; width:90%; box-shadow:0 24px 64px rgba(0,0,0,0.5); position:relative; }
-.cal-feed-modal h3 { font-family:var(--fd); font-size:20px; font-weight:900; color:var(--text-hi); margin-bottom:6px; }
+.cal-feed-modal h3 { font-family:var(--font-display); font-size:20px; font-weight:900; color:var(--text-hi); margin-bottom:6px; }
 .cal-feed-modal p { font-size:13px; color:var(--text-mid); line-height:1.5; margin-bottom:16px; }
 .cal-feed-url { display:flex; gap:8px; margin-bottom:16px; }
-.cal-feed-url input { flex:1; font-family:var(--fb); font-size:12px; background:#ffffff08; border:1px solid #ffffff12; color:var(--text-hi); padding:10px 12px; border-radius:8px; outline:none; }
-.cal-feed-url button { font-family:var(--fb); font-size:12px; font-weight:700; color:#fff; background:var(--ember); border:none; padding:10px 16px; border-radius:8px; cursor:pointer; white-space:nowrap; transition:background 0.14s; }
+.cal-feed-url input { flex:1; font-family:var(--font-body); font-size:12px; background:#ffffff08; border:1px solid #ffffff12; color:var(--text-hi); padding:10px 12px; border-radius:8px; outline:none; }
+.cal-feed-url button { font-family:var(--font-body); font-size:12px; font-weight:700; color:#fff; background:var(--ember); border:none; padding:10px 16px; border-radius:8px; cursor:pointer; white-space:nowrap; transition:background 0.14s; }
 .cal-feed-url button:hover { background:var(--ember-glow); }
 .cal-feed-links { display:flex; flex-direction:column; gap:10px; margin-bottom:16px; }
 .cal-feed-links a { display:flex; align-items:center; gap:10px; font-size:13px; font-weight:600; color:var(--text-hi); text-decoration:none; padding:10px 14px; background:#ffffff06; border:1px solid #ffffff0a; border-radius:10px; transition:background 0.14s; }
@@ -1649,7 +1649,7 @@ body::before {
   display:flex; align-items:center; gap:8px; margin-bottom:14px; flex-wrap:wrap;
 }
 .history-filter-btn {
-  font-family:var(--fb); font-size:12px; font-weight:600; color:var(--text-mid);
+  font-family:var(--font-body); font-size:12px; font-weight:600; color:var(--text-mid);
   background:#ffffff0a; border:1px solid #ffffff10; border-radius:8px;
   padding:6px 14px; cursor:pointer; transition:border-color 0.12s, color 0.12s, background 0.12s;
 }
@@ -1665,7 +1665,7 @@ body::before {
 .history-best-label { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:var(--gold); margin-bottom:2px; }
 .history-best-name { font-size:14px; font-weight:700; color:var(--text-hi); }
 .history-best-meta { font-size:12px; color:var(--text-lo); margin-top:2px; }
-.history-best-rating { font-family:var(--fd); font-size:22px; font-weight:900; color:var(--gold); flex-shrink:0; letter-spacing:-0.02em; }
+.history-best-rating { font-family:var(--font-display); font-size:22px; font-weight:900; color:var(--gold); flex-shrink:0; letter-spacing:-0.02em; }
 .history-card { background:var(--char); border:1px solid #ffffff08; border-radius:14px; padding:18px 20px; margin-bottom:12px; transition:border-color 0.14s; }
 .history-card:hover { border-color:#ffffff18; }
 .history-header { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
@@ -1688,13 +1688,13 @@ body::before {
 .settings-input {
   width:100%; height:42px; padding:0 14px;
   background:#ffffff08; border:1px solid #ffffff10; border-radius:10px;
-  font-family:var(--fb); font-size:14px; color:var(--text-hi); outline:none;
+  font-family:var(--font-body); font-size:14px; color:var(--text-hi); outline:none;
   transition:border-color 0.14s;
 }
 .settings-input:focus { border-color:#E8500A50; }
 .settings-label { font-size:12px; font-weight:600; color:var(--text-lo); margin-bottom:6px; display:block; text-transform:uppercase; letter-spacing:0.07em; }
 .settings-save-btn {
-  background:var(--ember); color:#fff; border:none; font-family:var(--fb); font-size:13px; font-weight:700;
+  background:var(--ember); color:#fff; border:none; font-family:var(--font-body); font-size:13px; font-weight:700;
   padding:10px 22px; border-radius:10px; cursor:pointer; transition:all 0.14s;
 }
 .settings-save-btn:hover { background:var(--ember-glow); }
@@ -1710,16 +1710,16 @@ body::before {
 .pause-card { background:var(--char); border:1px solid #ffffff08; border-radius:14px; padding:20px 22px; }
 .pause-title { font-size:14px; font-weight:700; color:var(--text-hi); margin-bottom:6px; }
 .pause-desc { font-size:12px; color:var(--text-lo); margin-bottom:16px; line-height:1.6; }
-.btn-pause { font-family:var(--fb); font-size:13px; font-weight:700; padding:10px 22px; border-radius:10px; cursor:pointer; transition:all 0.14s; border:1.5px solid #ffffff20; color:var(--text-mid); background:#ffffff08; }
+.btn-pause { font-family:var(--font-body); font-size:13px; font-weight:700; padding:10px 22px; border-radius:10px; cursor:pointer; transition:all 0.14s; border:1.5px solid #ffffff20; color:var(--text-mid); background:#ffffff08; }
 .btn-pause.active { border-color:#C9840A50; color:var(--gold); background:#C9840A10; }
 .btn-pause:hover { background:#ffffff14; color:var(--text-hi); }
 
 /* ── MENU PANEL ──────────────────────────────────────────────────────────── */
 .menu-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; flex-wrap:wrap; gap:12px; }
 .menu-header-left { display:flex; flex-direction:column; gap:4px; }
-.menu-header-title { font-family:var(--fd); font-size:22px; font-weight:900; color:var(--text-hi); letter-spacing:-0.03em; }
+.menu-header-title { font-family:var(--font-display); font-size:22px; font-weight:900; color:var(--text-hi); letter-spacing:-0.03em; }
 .menu-header-sub { font-size:12px; color:var(--text-lo); }
-.btn-add-item { display:flex; align-items:center; gap:8px; background:var(--ember); color:#fff; border:none; font-family:var(--fb); font-size:13px; font-weight:700; padding:10px 18px; border-radius:12px; cursor:pointer; transition:background 0.14s; }
+.btn-add-item { display:flex; align-items:center; gap:8px; background:var(--ember); color:#fff; border:none; font-family:var(--font-body); font-size:13px; font-weight:700; padding:10px 18px; border-radius:12px; cursor:pointer; transition:background 0.14s; }
 .btn-add-item:hover { background:var(--ember-glow); }
 .menu-completeness { display:flex; align-items:center; gap:10px; background:#C9840A12; border:1px solid #C9840A30; border-radius:12px; padding:12px 16px; margin-bottom:20px; font-size:13px; color:var(--gold); }
 .menu-completeness .mc-icon { font-size:16px; flex-shrink:0; }
@@ -1749,7 +1749,7 @@ body::before {
 .menu-tag.cat { background:#ffffff0a; color:var(--text-mid); }
 .menu-tag.diet { background:#2D8B5510; color:var(--herb); border:1px solid #2D8B5520; }
 .menu-item-right { display:flex; align-items:center; gap:8px; flex-shrink:0; margin-left:auto; padding-left:16px; }
-.menu-item-btn { border:none; border-radius:8px; font-family:var(--fb); font-size:11px; font-weight:600; padding:6px 14px; cursor:pointer; transition:background 0.14s; }
+.menu-item-btn { border:none; border-radius:8px; font-family:var(--font-body); font-size:11px; font-weight:600; padding:6px 14px; cursor:pointer; transition:background 0.14s; }
 .menu-item-btn.edit { background:#ffffff0a; color:var(--text-mid); }
 .menu-item-btn.edit:hover { background:#ffffff14; color:var(--text-hi); }
 .menu-item-btn.del { background:#C0392B12; color:var(--terra); }
@@ -1758,10 +1758,10 @@ body::before {
 .menu-item-avail.off { background:var(--text-lo); }
 .menu-empty { text-align:center; padding:20px; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:calc(100vh - 280px); }
 .menu-empty-icon { font-size:44px; margin-bottom:16px; }
-.menu-empty-title { font-family:var(--fd); font-size:18px; font-weight:900; color:var(--text-hi); margin-bottom:8px; }
+.menu-empty-title { font-family:var(--font-display); font-size:18px; font-weight:900; color:var(--text-hi); margin-bottom:8px; }
 .menu-empty-desc { font-size:13px; color:var(--text-lo); line-height:1.6; max-width:340px; margin:0 auto 24px; }
 .menu-order-bar { display:flex; align-items:center; justify-content:space-between; background:#ffffff07; border:1px solid #ffffff0a; border-radius:12px; padding:10px 16px; margin-bottom:20px; font-size:13px; color:var(--text-lo); }
-.btn-save-order { background:var(--ember); color:#fff; border:none; font-family:var(--fb); font-size:13px; font-weight:700; padding:7px 16px; border-radius:9px; cursor:pointer; transition:background 0.14s; }
+.btn-save-order { background:var(--ember); color:#fff; border:none; font-family:var(--font-body); font-size:13px; font-weight:700; padding:7px 16px; border-radius:9px; cursor:pointer; transition:background 0.14s; }
 .btn-save-order:hover { background:var(--ember-glow); }
 .drag-hint { font-size:12px; color:var(--text-lo); display:flex; align-items:center; gap:5px; }
 
@@ -1782,12 +1782,12 @@ body::before {
 .menu-modal::-webkit-scrollbar-track { background:transparent; }
 .menu-modal::-webkit-scrollbar-thumb { background:#ffffff18; border-radius:3px; }
 .menu-modal::-webkit-scrollbar-thumb:hover { background:#ffffff28; }
-.menu-modal-title { font-family:var(--fd); font-size:20px; font-weight:900; color:var(--text-hi); letter-spacing:-0.03em; margin-bottom:22px; }
+.menu-modal-title { font-family:var(--font-display); font-size:20px; font-weight:900; color:var(--text-hi); letter-spacing:-0.03em; margin-bottom:22px; }
 .menu-modal-close { position:absolute; top:18px; right:18px; background:#ffffff10; border:none; color:var(--text-mid); width:32px; height:32px; border-radius:50%; cursor:pointer; font-size:14px; transition:background 0.14s; }
 .menu-modal-close:hover { background:#ffffff1c; color:var(--text-hi); }
 .menu-field { margin-bottom:16px; }
 .menu-label { font-size:12px; font-weight:600; color:var(--text-lo); text-transform:uppercase; letter-spacing:0.07em; display:block; margin-bottom:6px; }
-.menu-input, .menu-textarea, .menu-select { width:100%; background:#ffffff07; border:1px solid #ffffff10; border-radius:10px; color:var(--text-hi); font-family:var(--fb); font-size:13px; padding:10px 12px; outline:none; transition:border-color 0.14s; }
+.menu-input, .menu-textarea, .menu-select { width:100%; background:#ffffff07; border:1px solid #ffffff10; border-radius:10px; color:var(--text-hi); font-family:var(--font-body); font-size:13px; padding:10px 12px; outline:none; transition:border-color 0.14s; }
 .menu-input:focus, .menu-textarea:focus, .menu-select:focus { border-color:#E8500A50; }
 .menu-textarea { resize:none; min-height:72px; max-height:160px; line-height:1.55; }
 .menu-select option { background:var(--char); }
@@ -1809,7 +1809,7 @@ body::before {
 .menu-switch input:checked ~ .menu-switch-knob { transform:translateX(18px); }
 /* Dietary tag pills */
 .menu-diet-wrap { display:flex; flex-wrap:wrap; gap:7px; margin-top:6px; }
-.menu-diet-pill { font-size:12px; font-weight:600; font-family:var(--fb); padding:6px 12px; border-radius:20px; border:1px solid #ffffff14; background:#ffffff07; color:var(--text-lo); cursor:pointer; transition:all 0.14s; user-select:none; }
+.menu-diet-pill { font-size:12px; font-weight:600; font-family:var(--font-body); padding:6px 12px; border-radius:20px; border:1px solid #ffffff14; background:#ffffff07; color:var(--text-lo); cursor:pointer; transition:all 0.14s; user-select:none; }
 .menu-diet-pill:hover { border-color:#ffffff28; color:var(--text-mid); }
 .menu-diet-pill.selected { background:var(--ember); border-color:var(--ember); color:#fff; }
 /* Photo divider */
@@ -1818,28 +1818,28 @@ body::before {
 /* Category chips */
 .menu-cat-wrap { display:flex; flex-wrap:wrap; gap:6px; }
 .menu-diet-wrap, .menu-cat-wrap { margin-top:2px; }
-.menu-cat-chip { font-size:12px; font-weight:600; font-family:var(--fb); padding:6px 14px; border-radius:20px; border:1px solid #ffffff14; background:#ffffff07; color:var(--text-lo); cursor:pointer; transition:all 0.14s; user-select:none; }
+.menu-cat-chip { font-size:12px; font-weight:600; font-family:var(--font-body); padding:6px 14px; border-radius:20px; border:1px solid #ffffff14; background:#ffffff07; color:var(--text-lo); cursor:pointer; transition:all 0.14s; user-select:none; }
 .menu-cat-chip:hover { border-color:#ffffff28; color:var(--text-mid); }
 .menu-cat-chip.selected { background:var(--ember); border-color:var(--ember); color:#fff; }
 .menu-modal-actions { display:flex; gap:10px; margin-top:18px; padding-bottom:2px; }
-.btn-modal-save { flex:1; background:var(--ember); color:#fff; border:none; font-family:var(--fb); font-size:14px; font-weight:700; padding:13px; border-radius:12px; cursor:pointer; box-shadow:0 4px 20px #E8500A40, 0 1px 4px #E8500A25; transition:background 0.14s, transform 0.14s, box-shadow 0.14s; }
+.btn-modal-save { flex:1; background:var(--ember); color:#fff; border:none; font-family:var(--font-body); font-size:14px; font-weight:700; padding:13px; border-radius:12px; cursor:pointer; box-shadow:0 4px 20px #E8500A40, 0 1px 4px #E8500A25; transition:background 0.14s, transform 0.14s, box-shadow 0.14s; }
 .btn-modal-save:hover { background:var(--ember-glow); transform:translateY(-1px); box-shadow:0 6px 24px #E8500A50, 0 2px 6px #E8500A30; }
 .btn-modal-save:focus-visible { outline:2px solid var(--ember); outline-offset:2px; }
 .btn-modal-save:active { transform:translateY(0); }
-.menu-modal .btn-modal-cancel { flex:0 0 auto; background:#ffffff08; color:var(--text-mid); border:1px solid #ffffff10; font-family:var(--fb); font-size:13px; font-weight:600; padding:13px 28px; border-radius:12px; cursor:pointer; transition:background 0.14s, color 0.14s, border-color 0.14s; }
+.menu-modal .btn-modal-cancel { flex:0 0 auto; background:#ffffff08; color:var(--text-mid); border:1px solid #ffffff10; font-family:var(--font-body); font-size:13px; font-weight:600; padding:13px 28px; border-radius:12px; cursor:pointer; transition:background 0.14s, color 0.14s, border-color 0.14s; }
 .menu-modal .btn-modal-cancel:hover { background:#ffffff12; color:var(--text-hi); border-color:#ffffff20; }
 .menu-delete-confirm { display:none; background:#C0392B14; border:1px solid #C0392B30; border-radius:12px; padding:14px 16px; margin-top:14px; }
 .menu-delete-confirm.open { display:block; }
-.btn-confirm-del { background:var(--terra); color:#fff; border:none; font-family:var(--fb); font-size:13px; font-weight:700; padding:8px 18px; border-radius:9px; cursor:pointer; transition:background 0.14s; }
+.btn-confirm-del { background:var(--terra); color:#fff; border:none; font-family:var(--font-body); font-size:13px; font-weight:700; padding:8px 18px; border-radius:9px; cursor:pointer; transition:background 0.14s; }
 .btn-confirm-del:hover { background:#e74c3c; }
-.btn-cancel-del { background:#ffffff08; color:var(--text-mid); border:1px solid #ffffff10; font-family:var(--fb); font-size:13px; font-weight:600; padding:8px 18px; border-radius:9px; cursor:pointer; margin-left:8px; transition:background 0.14s; }
+.btn-cancel-del { background:#ffffff08; color:var(--text-mid); border:1px solid #ffffff10; font-family:var(--font-body); font-size:13px; font-weight:600; padding:8px 18px; border-radius:9px; cursor:pointer; margin-left:8px; transition:background 0.14s; }
 .btn-cancel-del:hover { background:#ffffff14; color:var(--text-hi); }
 /* Inline validation */
 .menu-input.has-error, .menu-textarea.has-error, .menu-select.has-error { border-color:var(--terra); }
 @keyframes menuShake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-6px)} 40%{transform:translateX(5px)} 60%{transform:translateX(-3px)} 80%{transform:translateX(2px)} }
 .menu-field-error { color:var(--terra); font-size:11px; font-weight:600; margin-top:4px; display:none; }
 .menu-field-error.show { display:block; }
-.menu-toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--terra); color:#fff; font-family:var(--fb); font-size:13px; font-weight:600; padding:12px 22px; border-radius:12px; opacity:0; pointer-events:none; transition:opacity 0.2s, transform 0.2s; z-index:100001; box-shadow:0 8px 24px #00000050; }
+.menu-toast { position:fixed; bottom:24px; left:50%; transform:translateX(-50%) translateY(20px); background:var(--terra); color:#fff; font-family:var(--font-body); font-size:13px; font-weight:600; padding:12px 22px; border-radius:12px; opacity:0; pointer-events:none; transition:opacity 0.2s, transform 0.2s; z-index:100001; box-shadow:0 8px 24px #00000050; }
 .menu-toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 .menu-toast.success { background:var(--herb); }
 /* Drag handle */
@@ -1884,7 +1884,7 @@ body::before {
     <div class="menu-field">
       <label class="menu-label">Photo</label>
       <div style="display:flex;gap:10px;align-items:center;">
-        <label style="display:flex;align-items:center;gap:8px;background:var(--ember);color:#fff;font-family:var(--fb);font-size:12px;font-weight:700;padding:9px 16px;border-radius:10px;cursor:pointer;white-space:nowrap;transition:background 0.14s;" onmouseover="this.style.background='var(--ember-glow)'" onmouseout="this.style.background='var(--ember)'">
+        <label style="display:flex;align-items:center;gap:8px;background:var(--ember);color:#fff;font-family:var(--font-body);font-size:12px;font-weight:700;padding:9px 16px;border-radius:10px;cursor:pointer;white-space:nowrap;transition:background 0.14s;" onmouseover="this.style.background='var(--ember-glow)'" onmouseout="this.style.background='var(--ember)'">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
           Upload photo
           <input type="file" id="mi-photo-file" accept="image/jpeg,image/png,image/webp" style="display:none;" onchange="handleMenuPhotoFile(this)" />
@@ -2170,7 +2170,7 @@ body::before {
 
       <!-- Acceptance rate (Pro/Growth only) -->
       <div id="acceptance-rate-bar" style="display:none;margin-bottom:20px;padding:14px 18px;background:var(--char);border:1px solid #ffffff08;border-radius:12px;align-items:center;gap:12px;flex-wrap:wrap;">
-        <div style="font-size:13px;color:var(--text-mid);flex-shrink:0;">Acceptance rate: <strong id="acceptance-rate-value" style="color:var(--herb);font-family:var(--fd);font-size:17px;">—</strong></div>
+        <div style="font-size:13px;color:var(--text-mid);flex-shrink:0;">Acceptance rate: <strong id="acceptance-rate-value" style="color:var(--herb);font-family:var(--font-display);font-size:17px;">—</strong></div>
         <div style="flex:1;min-width:120px;height:8px;background:#ffffff0a;border-radius:100px;overflow:hidden;">
           <div id="acceptance-rate-fill" style="height:100%;width:0%;border-radius:100px;background:linear-gradient(90deg,var(--herb),#3DA86A);transition:width 0.6s ease;"></div>
         </div>
@@ -2227,16 +2227,16 @@ body::before {
       <!-- Filter bar row 1: search + dropdowns -->
       <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:10px;align-items:center;">
         <input id="browse-search" type="text" placeholder="Search events…" oninput="applyBrowseFilters()"
-          style="font-family:var(--fb);font-size:13px;background:#ffffff08;border:1px solid #ffffff12;color:var(--text-hi);border-radius:10px;padding:9px 14px;min-width:180px;flex:1;outline:none;" />
+          style="font-family:var(--font-body);font-size:13px;background:#ffffff08;border:1px solid #ffffff12;color:var(--text-hi);border-radius:10px;padding:9px 14px;min-width:180px;flex:1;outline:none;" />
         <div style="display:flex;gap:6px;align-items:center;background:#ffffff06;border:1px solid #ffffff0a;border-radius:12px;padding:4px;">
           <select id="browse-cat" onchange="applyBrowseFilters()"
-            style="font-family:var(--fb);font-size:13px;background:#ffffff08;border:1px solid #ffffff10;color:var(--text-hi);border-radius:8px;padding:7px 12px;cursor:pointer;outline:none;">
+            style="font-family:var(--font-body);font-size:13px;background:#ffffff08;border:1px solid #ffffff10;color:var(--text-hi);border-radius:8px;padding:7px 12px;cursor:pointer;outline:none;">
             <option value="">All categories</option>
             <option>Night Market</option><option>Festival</option><option>Markets</option>
             <option>Twilight Market</option><option>Food Festival</option><option>Community Event</option>
           </select>
           <select id="browse-status" onchange="applyBrowseFilters()"
-            style="font-family:var(--fb);font-size:13px;background:#ffffff08;border:1px solid #ffffff10;color:var(--text-hi);border-radius:8px;padding:7px 12px;cursor:pointer;outline:none;">
+            style="font-family:var(--font-body);font-size:13px;background:#ffffff08;border:1px solid #ffffff10;color:var(--text-hi);border-radius:8px;padding:7px 12px;cursor:pointer;outline:none;">
             <option value="">All events</option>
             <option value="not-applied">Not applied</option>
             <option value="applied">Applied</option>
@@ -2269,8 +2269,8 @@ body::before {
             <button class="browse-day-opt" data-day="0" onclick="browseDaySelect(this)">Sun</button>
           </div>
           <div style="display:flex;justify-content:flex-end;margin-top:12px;padding-top:10px;border-top:1px solid #ffffff0A;">
-            <button onclick="browseDayClear()" style="font-family:var(--fb);font-size:12px;font-weight:600;color:var(--text-lo);background:none;border:1px solid #ffffff12;border-radius:7px;padding:5px 12px;cursor:pointer;margin-right:6px;transition:color .12s,border-color .12s;" onmouseover="this.style.color='var(--text-hi)';this.style.borderColor='#ffffff25'" onmouseout="this.style.color='var(--text-lo)';this.style.borderColor='#ffffff12'">Clear</button>
-            <button onclick="browseDayApply()" style="font-family:var(--fb);font-size:12px;font-weight:700;color:#fff;background:var(--ember);border:none;border-radius:7px;padding:5px 14px;cursor:pointer;transition:background .12s;" onmouseover="this.style.background='var(--ember-glow)'" onmouseout="this.style.background='var(--ember)'">Apply</button>
+            <button onclick="browseDayClear()" style="font-family:var(--font-body);font-size:12px;font-weight:600;color:var(--text-lo);background:none;border:1px solid #ffffff12;border-radius:7px;padding:5px 12px;cursor:pointer;margin-right:6px;transition:color .12s,border-color .12s;" onmouseover="this.style.color='var(--text-hi)';this.style.borderColor='#ffffff25'" onmouseout="this.style.color='var(--text-lo)';this.style.borderColor='#ffffff12'">Clear</button>
+            <button onclick="browseDayApply()" style="font-family:var(--font-body);font-size:12px;font-weight:700;color:#fff;background:var(--ember);border:none;border-radius:7px;padding:5px 14px;cursor:pointer;transition:background .12s;" onmouseover="this.style.background='var(--ember-glow)'" onmouseout="this.style.background='var(--ember)'">Apply</button>
           </div>
         </div>
       </div>
@@ -2299,7 +2299,7 @@ body::before {
         </div>
 
         <button onclick="clearBrowseFilters()"
-          style="font-family:var(--fb);font-size:12px;font-weight:700;color:var(--text-lo);background:transparent;border:1px solid #ffffff12;border-radius:10px;padding:9px 14px;cursor:pointer;">
+          style="font-family:var(--font-body);font-size:12px;font-weight:700;color:var(--text-lo);background:transparent;border:1px solid #ffffff12;border-radius:10px;padding:9px 14px;cursor:pointer;">
           Clear filters
         </button>
       </div>
@@ -2457,7 +2457,7 @@ body::before {
             <label class="form-label">ABN (Australian Business Number)</label>
             <div style="display:flex;gap:8px;align-items:center;">
               <input class="form-input" id="v-abn" type="text" value="" placeholder="XX XXX XXX XXX" maxlength="14" style="flex:1;font-family:monospace;letter-spacing:0.5px;" oninput="this.value=this.value.replace(/[^\d\s]/g,''); abnAutoVerify(this.value);" />
-              <button type="button" id="v-abn-btn" onclick="vendorVerifyAbn()" style="flex-shrink:0;background:var(--ember);color:#fff;border:none;border-radius:10px;padding:10px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--fb);white-space:nowrap;transition:background 0.15s;" onmouseover="this.style.background='var(--ember-glow)'" onmouseout="this.style.background='var(--ember)'">Verify ABN</button>
+              <button type="button" id="v-abn-btn" onclick="vendorVerifyAbn()" style="flex-shrink:0;background:var(--ember);color:#fff;border:none;border-radius:10px;padding:10px 16px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--font-body);white-space:nowrap;transition:background 0.15s;" onmouseover="this.style.background='var(--ember-glow)'" onmouseout="this.style.background='var(--ember)'">Verify ABN</button>
             </div>
             <div id="v-abn-result" style="margin-top:8px;font-size:12px;line-height:1.5;"></div>
           </div>
@@ -2542,7 +2542,7 @@ body::before {
               <div id="avatar-preview-large" style="width:56px;height:56px;border-radius:12px;background:linear-gradient(135deg,#3D1A06,#6B2E08);display:flex;align-items:center;justify-content:center;font-size:24px;overflow:hidden;flex-shrink:0;">🔥</div>
               <div style="flex:1;min-width:0;">
                 <div style="font-size:11.5px;color:var(--text-lo);margin-bottom:8px;line-height:1.4;">Shown on your profile, applications &amp; messages.</div>
-                <label style="display:inline-flex;align-items:center;gap:6px;background:var(--ember);color:#fff;font-size:12px;font-weight:700;padding:7px 14px;border-radius:9px;cursor:pointer;font-family:var(--fb);transition:background 0.14s;" onmouseover="this.style.background='var(--ember-glow)'" onmouseout="this.style.background='var(--ember)'">
+                <label style="display:inline-flex;align-items:center;gap:6px;background:var(--ember);color:#fff;font-size:12px;font-weight:700;padding:7px 14px;border-radius:9px;cursor:pointer;font-family:var(--font-body);transition:background 0.14s;" onmouseover="this.style.background='var(--ember-glow)'" onmouseout="this.style.background='var(--ember)'">
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                   Choose photo
                   <input type="file" accept="image/jpeg,image/png,image/webp" style="display:none;" onchange="previewAndUploadAvatar(this)">
@@ -2627,7 +2627,7 @@ body::before {
               </div>
               <div style="font-size:12px; color:var(--text-lo);">Connect your bank details to receive payouts directly.</div>
             </div>
-            <button disabled style="font-family:var(--fb);font-size:12px;font-weight:600;color:var(--text-lo);background:#ffffff06;border:1px solid #ffffff10;padding:8px 16px;border-radius:8px;cursor:not-allowed;opacity:0.5;white-space:nowrap;">Connect</button>
+            <button disabled style="font-family:var(--font-body);font-size:12px;font-weight:600;color:var(--text-lo);background:#ffffff06;border:1px solid #ffffff10;padding:8px 16px;border-radius:8px;cursor:not-allowed;opacity:0.5;white-space:nowrap;">Connect</button>
           </div>
         </div>
       </div>
@@ -2637,13 +2637,13 @@ body::before {
         <div style="font-size:14px; font-weight:700; color:var(--text-hi); margin-bottom:16px;">Tax summary</div>
         <div>
           <div style="font-size:12px; color:var(--text-lo); margin-bottom:4px;" id="earn-fy-label">Total earnings FY 2025–26</div>
-          <div style="font-family:var(--fd); font-size:28px; font-weight:900; color:var(--text-hi); margin-bottom:10px;" id="earn-fy-total">$0.00</div>
+          <div style="font-family:var(--font-display); font-size:28px; font-weight:900; color:var(--text-hi); margin-bottom:10px;" id="earn-fy-total">$0.00</div>
           <div style="display:flex; gap:10px; flex-wrap:wrap;">
-            <button id="btn-earnings-pdf" onclick="downloadEarningsPDF()" disabled style="font-family:var(--fb);font-size:12px;font-weight:600;color:var(--text-hi);background:#ffffff0a;border:1px solid #ffffff1a;padding:9px 16px;border-radius:8px;cursor:not-allowed;opacity:0.4;transition:background .14s,border-color .14s;display:flex;align-items:center;gap:6px;" onmouseover="if(!this.disabled){this.style.background='#ffffff14';this.style.borderColor='#ffffff28'}" onmouseout="if(!this.disabled){this.style.background='#ffffff0a';this.style.borderColor='#ffffff1a'}">
+            <button id="btn-earnings-pdf" onclick="downloadEarningsPDF()" disabled style="font-family:var(--font-body);font-size:12px;font-weight:600;color:var(--text-hi);background:#ffffff0a;border:1px solid #ffffff1a;padding:9px 16px;border-radius:8px;cursor:not-allowed;opacity:0.4;transition:background .14s,border-color .14s;display:flex;align-items:center;gap:6px;" onmouseover="if(!this.disabled){this.style.background='#ffffff14';this.style.borderColor='#ffffff28'}" onmouseout="if(!this.disabled){this.style.background='#ffffff0a';this.style.borderColor='#ffffff1a'}">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
               Download PDF
             </button>
-            <button id="btn-earnings-csv" onclick="downloadEarningsCSV()" disabled style="font-family:var(--fb);font-size:12px;font-weight:600;color:var(--text-hi);background:#ffffff0a;border:1px solid #ffffff1a;padding:9px 16px;border-radius:8px;cursor:not-allowed;opacity:0.4;transition:background .14s,border-color .14s;display:flex;align-items:center;gap:6px;" onmouseover="if(!this.disabled){this.style.background='#ffffff14';this.style.borderColor='#ffffff28'}" onmouseout="if(!this.disabled){this.style.background='#ffffff0a';this.style.borderColor='#ffffff1a'}">
+            <button id="btn-earnings-csv" onclick="downloadEarningsCSV()" disabled style="font-family:var(--font-body);font-size:12px;font-weight:600;color:var(--text-hi);background:#ffffff0a;border:1px solid #ffffff1a;padding:9px 16px;border-radius:8px;cursor:not-allowed;opacity:0.4;transition:background .14s,border-color .14s;display:flex;align-items:center;gap:6px;" onmouseover="if(!this.disabled){this.style.background='#ffffff14';this.style.borderColor='#ffffff28'}" onmouseout="if(!this.disabled){this.style.background='#ffffff0a';this.style.borderColor='#ffffff1a'}">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v12m0 0l-4-4m4 4l4-4"/><path d="M2 17l.621 2.485A2 2 0 004.561 21h14.878a2 2 0 001.94-1.515L22 17"/></svg>
               Export CSV
             </button>
@@ -2662,7 +2662,7 @@ body::before {
         <div class="messages-gate-icon">💬</div>
         <div class="messages-gate-title">Messaging unlocks when you're approved</div>
         <div class="messages-gate-sub">Get approved for an event to start messaging organisers directly. Or upgrade to Pro to message any organiser you've applied to.</div>
-        <a href="/pricing" style="display:inline-block;background:var(--ember);color:#fff;font-family:var(--fb);font-size:14px;font-weight:700;padding:12px 28px;border-radius:12px;text-decoration:none;margin-top:8px;">Upgrade to Pro — $29/month →</a>
+        <a href="/pricing" style="display:inline-block;background:var(--ember);color:#fff;font-family:var(--font-body);font-size:14px;font-weight:700;padding:12px 28px;border-radius:12px;text-decoration:none;margin-top:8px;">Upgrade to Pro — $29/month →</a>
       </div>
       <div class="messages-layout" id="messages-layout">
 
@@ -2697,7 +2697,7 @@ body::before {
                 <div class="convo-header-name" id="convo-org-name"></div>
                 <div id="convo-header-status" style="font-size:11px;color:var(--text-lo);margin-top:1px;"><span id="convo-status-dot" class="convo-header-dot" style="display:none;"></span><span id="convo-status-text">Event Organiser</span></div>
               </div>
-              <a id="convo-header-profile-link" href="#" target="_blank" style="font-family:var(--fb);font-size:11px;font-weight:700;color:var(--text-lo);text-decoration:none;padding:6px 12px;border:1px solid #ffffff10;border-radius:8px;transition:color 0.14s,border-color 0.14s;white-space:nowrap;" onmouseover="this.style.color='var(--ember)';this.style.borderColor='var(--ember)'" onmouseout="this.style.color='var(--text-lo)';this.style.borderColor='#ffffff10'">View profile</a>
+              <a id="convo-header-profile-link" href="#" target="_blank" style="font-family:var(--font-body);font-size:11px;font-weight:700;color:var(--text-lo);text-decoration:none;padding:6px 12px;border:1px solid #ffffff10;border-radius:8px;transition:color 0.14s,border-color 0.14s;white-space:nowrap;" onmouseover="this.style.color='var(--ember)';this.style.borderColor='var(--ember)'" onmouseout="this.style.color='var(--text-lo)';this.style.borderColor='#ffffff10'">View profile</a>
             </div>
             <div class="convo-header-event" id="convo-event-line"></div>
           </div>
@@ -2818,7 +2818,7 @@ body::before {
         <div id="stripe-pay-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);align-items:center;justify-content:center;">
           <div style="background:var(--char);border:1px solid #ffffff12;border-radius:20px;padding:32px;width:100%;max-width:440px;margin:20px;box-shadow:0 20px 60px rgba(0,0,0,.5);">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
-              <div style="font-family:var(--fd);font-size:20px;font-weight:900;color:var(--text-hi);">Pay Stall Fee</div>
+              <div style="font-family:var(--font-display);font-size:20px;font-weight:900;color:var(--text-hi);">Pay Stall Fee</div>
               <button onclick="closeStripePayModal()" style="background:none;border:none;color:var(--text-lo);font-size:20px;cursor:pointer;padding:4px;">✕</button>
             </div>
             <div id="stripe-pay-summary" style="background:#ffffff06;border:1px solid #ffffff08;border-radius:12px;padding:16px;margin-bottom:20px;font-size:13px;color:var(--text-mid);line-height:1.7;">
@@ -2826,8 +2826,8 @@ body::before {
             <div id="stripe-payment-element" style="margin-bottom:20px;min-height:40px;"></div>
             <div id="stripe-pay-error" style="color:var(--terra);font-size:12px;margin-bottom:12px;"></div>
             <div style="display:flex;gap:10px;">
-              <button onclick="closeStripePayModal()" style="flex:1;font-family:var(--fb);font-size:13px;font-weight:600;color:var(--text-mid);background:#ffffff08;border:1px solid #ffffff12;padding:12px;border-radius:10px;cursor:pointer;">Cancel</button>
-              <button id="stripe-pay-submit" onclick="submitStripePayment()" style="flex:2;font-family:var(--fb);font-size:13px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:12px;border-radius:10px;cursor:pointer;transition:background 0.14s;" onmouseover="this.style.background='var(--ember-glow)'" onmouseout="this.style.background='var(--ember)'">Pay</button>
+              <button onclick="closeStripePayModal()" style="flex:1;font-family:var(--font-body);font-size:13px;font-weight:600;color:var(--text-mid);background:#ffffff08;border:1px solid #ffffff12;padding:12px;border-radius:10px;cursor:pointer;">Cancel</button>
+              <button id="stripe-pay-submit" onclick="submitStripePayment()" style="flex:2;font-family:var(--font-body);font-size:13px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:12px;border-radius:10px;cursor:pointer;transition:background 0.14s;" onmouseover="this.style.background='var(--ember-glow)'" onmouseout="this.style.background='var(--ember)'">Pay</button>
             </div>
           </div>
         </div>
@@ -2841,13 +2841,13 @@ body::before {
           <div class="profile-section-heading" style="margin-bottom:0;">Payment History</div>
           <div style="display:none;gap:8px;flex-wrap:wrap;" id="payment-export-btns">
             <div class="gate-tooltip-wrap">
-              <button id="btn-pdf-download" onclick="downloadPaymentPDF()" style="font-family:var(--fb);font-size:12px;font-weight:600;color:var(--text-mid);background:#ffffff08;border:1px solid #ffffff12;padding:7px 14px;border-radius:8px;cursor:pointer;transition:all .14s;">
+              <button id="btn-pdf-download" onclick="downloadPaymentPDF()" style="font-family:var(--font-body);font-size:12px;font-weight:600;color:var(--text-mid);background:#ffffff08;border:1px solid #ffffff12;padding:7px 14px;border-radius:8px;cursor:pointer;transition:all .14s;">
                 Download PDF
               </button>
               <span class="gate-tooltip" id="pdf-tooltip"></span>
             </div>
             <div class="gate-tooltip-wrap" id="bookkeeping-wrap" style="display:none;">
-              <button id="btn-bookkeeping" onclick="downloadBookkeeping()" style="font-family:var(--fb);font-size:12px;font-weight:600;color:var(--gold);background:#C9840A10;border:1px solid #C9840A22;padding:7px 14px;border-radius:8px;cursor:pointer;transition:all .14s;">
+              <button id="btn-bookkeeping" onclick="downloadBookkeeping()" style="font-family:var(--font-body);font-size:12px;font-weight:600;color:var(--gold);background:#C9840A10;border:1px solid #C9840A22;padding:7px 14px;border-radius:8px;cursor:pointer;transition:all .14s;">
                 Bookkeeping summary
               </button>
             </div>
@@ -2878,7 +2878,7 @@ body::before {
             <button class="cal-nav-btn" onclick="calNav(1)">›</button>
           </div>
           <div class="gate-tooltip-wrap" id="ical-export-wrap">
-            <button id="ical-export-btn" onclick="exportICal()" style="font-family:var(--fb);font-size:12px;font-weight:600;color:var(--text-mid);background:#ffffff08;border:1px solid #ffffff12;padding:8px 16px;border-radius:9px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:background .14s, border-color .14s, color .14s;">
+            <button id="ical-export-btn" onclick="exportICal()" style="font-family:var(--font-body);font-size:12px;font-weight:600;color:var(--text-mid);background:#ffffff08;border:1px solid #ffffff12;padding:8px 16px;border-radius:9px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:background .14s, border-color .14s, color .14s;">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1.5" y="2.5" width="11" height="10" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M1.5 5.5h11M4.5 1v3M9.5 1v3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg> Export to calendar
             </button>
             <span class="gate-tooltip" id="ical-tooltip"></span>
@@ -2977,7 +2977,7 @@ body::before {
           <div class="analytics-locked-wrap gate-wrap" id="analytics-views-wrap">
             <div class="card">
               <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:4px;">
-                <div style="font-family:var(--fd);font-size:48px;font-weight:900;letter-spacing:-0.04em;color:#5B8BE8;line-height:1;" id="analytics-views-count">—</div>
+                <div style="font-family:var(--font-display);font-size:48px;font-weight:900;letter-spacing:-0.04em;color:#5B8BE8;line-height:1;" id="analytics-views-count">—</div>
                 <div style="font-size:14px;color:var(--text-mid);" id="analytics-views-label">views in the last 30 days</div>
               </div>
               <div style="font-size:12px;color:var(--text-lo);margin-bottom:14px;" id="analytics-views-unique"></div>
@@ -3007,11 +3007,11 @@ body::before {
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:16px;">
                 <div>
                   <div class="an-stat-label">Acceptance rate</div>
-                  <div style="font-family:var(--fd);font-size:36px;font-weight:900;color:var(--herb);" id="analytics-acc-rate">—</div>
+                  <div style="font-family:var(--font-display);font-size:36px;font-weight:900;color:var(--herb);" id="analytics-acc-rate">—</div>
                 </div>
                 <div>
                   <div class="an-stat-label">Applications submitted</div>
-                  <div style="font-family:var(--fd);font-size:36px;font-weight:900;color:var(--text-hi);" id="analytics-app-count">—</div>
+                  <div style="font-family:var(--font-display);font-size:36px;font-weight:900;color:var(--text-hi);" id="analytics-app-count">—</div>
                 </div>
               </div>
               <div id="analytics-app-breakdown" style="display:none;"></div>
@@ -3031,15 +3031,15 @@ body::before {
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;">
               <div>
                 <div class="an-stat-label">Total earned</div>
-                <div style="font-family:var(--fd);font-size:28px;font-weight:900;color:var(--text-lo);" id="analytics-rev-earned">$0</div>
+                <div style="font-family:var(--font-display);font-size:28px;font-weight:900;color:var(--text-lo);" id="analytics-rev-earned">$0</div>
               </div>
               <div>
                 <div class="an-stat-label">Outstanding</div>
-                <div style="font-family:var(--fd);font-size:28px;font-weight:900;color:var(--text-lo);" id="analytics-rev-outstanding">$0</div>
+                <div style="font-family:var(--font-display);font-size:28px;font-weight:900;color:var(--text-lo);" id="analytics-rev-outstanding">$0</div>
               </div>
               <div>
                 <div class="an-stat-label">Events</div>
-                <div style="font-family:var(--fd);font-size:28px;font-weight:900;color:var(--text-lo);" id="analytics-rev-events">0</div>
+                <div style="font-family:var(--font-display);font-size:28px;font-weight:900;color:var(--text-lo);" id="analytics-rev-events">0</div>
               </div>
             </div>
             <div class="an-chart-eyebrow">Monthly revenue (6 months)</div>
@@ -3053,7 +3053,7 @@ body::before {
           <div class="card">
             <div style="display:flex;align-items:center;gap:20px;margin-bottom:16px;">
               <div>
-                <div style="font-family:var(--fd);font-size:36px;font-weight:900;color:var(--gold);line-height:1;" id="analytics-review-avg">—</div>
+                <div style="font-family:var(--font-display);font-size:36px;font-weight:900;color:var(--gold);line-height:1;" id="analytics-review-avg">—</div>
                 <div style="font-size:11px;color:var(--text-lo);margin-top:4px;" id="analytics-review-stars"></div>
               </div>
               <div style="font-size:12px;color:var(--text-mid);" id="analytics-review-count">0 reviews</div>
@@ -3070,11 +3070,11 @@ body::before {
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:16px;">
               <div>
                 <div class="an-stat-label">Search appearances</div>
-                <div style="font-family:var(--fd);font-size:28px;font-weight:900;color:var(--slate);" id="analytics-search-count">0</div>
+                <div style="font-family:var(--font-display);font-size:28px;font-weight:900;color:var(--slate);" id="analytics-search-count">0</div>
               </div>
               <div>
                 <div class="an-stat-label">View conversion</div>
-                <div style="font-family:var(--fd);font-size:28px;font-weight:900;color:var(--ember);" id="analytics-search-conv">0%</div>
+                <div style="font-family:var(--font-display);font-size:28px;font-weight:900;color:var(--ember);" id="analytics-search-conv">0%</div>
               </div>
             </div>
             <div id="analytics-funnel" style="margin-bottom:16px;"></div>
@@ -3270,7 +3270,7 @@ body::before {
           <div class="settings-section-title">Default application message</div>
           <div class="card">
             <div style="font-size:12px;color:var(--text-lo);margin-bottom:10px;">This message will auto-fill when you apply to events. You can still edit it before submitting.</div>
-            <textarea class="settings-input" id="settings-default-msg" rows="4" placeholder="Introduce your stall, mention relevant experience, or ask a question…" style="resize:vertical;min-height:80px;font-family:var(--fb);font-size:13px;line-height:1.6;"></textarea>
+            <textarea class="settings-input" id="settings-default-msg" rows="4" placeholder="Introduce your stall, mention relevant experience, or ask a question…" style="resize:vertical;min-height:80px;font-family:var(--font-body);font-size:13px;line-height:1.6;"></textarea>
             <div style="display:flex;align-items:center;gap:10px;margin-top:10px;">
               <button class="settings-save-btn" onclick="saveExtSettings()" style="margin:0;">Save</button>
               <span class="settings-save-msg" id="ext-save-msg">Saved!</span>
@@ -3289,12 +3289,12 @@ body::before {
             <div>
               <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
                 <span style="font-size:22px;">📋</span>
-                <span style="font-family:var(--fd);font-size:18px;font-weight:900;letter-spacing:-0.02em;color:var(--text-hi);">Starter</span>
+                <span style="font-family:var(--font-display);font-size:18px;font-weight:900;letter-spacing:-0.02em;color:var(--text-hi);">Starter</span>
               </div>
               <div style="font-size:13px;color:var(--text-mid);margin-bottom:14px;">Free forever · No credit card needed</div>
               <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
-                <button onclick="directUpgrade('pro', this)" style="font-family:var(--fb);font-size:13px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:10px 18px;border-radius:9px;cursor:pointer;">Upgrade to Pro — $29/month →</button>
-                <button onclick="directUpgrade('growth', this)" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--gold);background:#C9840A10;border:1px solid #C9840A22;padding:10px 18px;border-radius:9px;cursor:pointer;">Upgrade to Growth — $79/month →</button>
+                <button onclick="directUpgrade('pro', this)" style="font-family:var(--font-body);font-size:13px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:10px 18px;border-radius:9px;cursor:pointer;">Upgrade to Pro — $29/month →</button>
+                <button onclick="directUpgrade('growth', this)" style="font-family:var(--font-body);font-size:13px;font-weight:700;color:var(--gold);background:#C9840A10;border:1px solid #C9840A22;padding:10px 18px;border-radius:9px;cursor:pointer;">Upgrade to Growth — $79/month →</button>
               </div>
             </div>
           </div>
@@ -3311,7 +3311,7 @@ body::before {
             </div>
             <div class="settings-form-field">
               <label class="settings-label">Business address</label>
-              <textarea class="settings-input" id="settings-invoice-address" rows="2" placeholder="e.g. 123 Rundle St, Adelaide SA 5000" style="resize:vertical;min-height:50px;font-family:var(--fb);font-size:13px;line-height:1.6;"></textarea>
+              <textarea class="settings-input" id="settings-invoice-address" rows="2" placeholder="e.g. 123 Rundle St, Adelaide SA 5000" style="resize:vertical;min-height:50px;font-family:var(--font-body);font-size:13px;line-height:1.6;"></textarea>
             </div>
             <div style="display:flex;align-items:center;gap:10px;margin-top:10px;">
               <button class="settings-save-btn" onclick="saveExtSettings()" style="margin:0;">Save</button>
@@ -3324,11 +3324,11 @@ body::before {
         <div class="settings-section" id="exports-section" style="display:none;">
           <div class="settings-section-title">Exports</div>
           <div class="card" style="display:flex;flex-direction:column;gap:10px;">
-            <button onclick="downloadApplicationCSV()" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--text-hi);background:#ffffff08;border:1px solid #ffffff12;padding:11px 18px;border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .14s;text-align:left;" onmouseover="this.style.background='#ffffff12'" onmouseout="this.style.background='#ffffff08'">
+            <button onclick="downloadApplicationCSV()" style="font-family:var(--font-body);font-size:13px;font-weight:700;color:var(--text-hi);background:#ffffff08;border:1px solid #ffffff12;padding:11px 18px;border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .14s;text-align:left;" onmouseover="this.style.background='#ffffff12'" onmouseout="this.style.background='#ffffff08'">
               📊 <span>Download application CSV</span>
               <span style="margin-left:auto;font-size:11px;color:var(--text-lo);font-weight:400;">Includes all applications and statuses</span>
             </button>
-            <button onclick="downloadBookkeepingSummary()" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--text-hi);background:#ffffff08;border:1px solid #ffffff12;padding:11px 18px;border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .14s;text-align:left;" onmouseover="this.style.background='#ffffff12'" onmouseout="this.style.background='#ffffff08'">
+            <button onclick="downloadBookkeepingSummary()" style="font-family:var(--font-body);font-size:13px;font-weight:700;color:var(--text-hi);background:#ffffff08;border:1px solid #ffffff12;padding:11px 18px;border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background .14s;text-align:left;" onmouseover="this.style.background='#ffffff12'" onmouseout="this.style.background='#ffffff08'">
               📒 <span>Download bookkeeping summary</span>
               <span style="margin-left:auto;font-size:11px;color:var(--text-lo);font-weight:400;">Fees, payments, and stall income</span>
             </button>
@@ -3342,7 +3342,7 @@ body::before {
             <div style="font-size:13px;color:var(--text-mid);margin-bottom:14px;line-height:1.6;">Invite a team member to access and manage your Pitch. account alongside you.</div>
             <div style="display:flex;gap:10px;">
               <input class="settings-input" type="email" id="team-invite-email" placeholder="Team member email address" style="flex:1;" />
-              <button onclick="sendTeamInvite()" style="font-family:var(--fb);font-size:13px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:0 18px;border-radius:10px;cursor:pointer;white-space:nowrap;transition:background .14s;" onmouseover="this.style.background='var(--ember-glow)'" onmouseout="this.style.background='var(--ember)'">Send invite</button>
+              <button onclick="sendTeamInvite()" style="font-family:var(--font-body);font-size:13px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:0 18px;border-radius:10px;cursor:pointer;white-space:nowrap;transition:background .14s;" onmouseover="this.style.background='var(--ember-glow)'" onmouseout="this.style.background='var(--ember)'">Send invite</button>
             </div>
             <div id="team-invite-msg" style="font-size:12px;color:var(--herb);margin-top:8px;display:none;">Invite sent!</div>
           </div>
@@ -3434,8 +3434,8 @@ body::before {
                 <div class="settings-row-desc">Choose how times appear in messages.</div>
               </div>
               <div style="display:flex;gap:6px;">
-                <button id="btn-time-12" onclick="setTimeFormat('12')" style="font-family:var(--fb);font-size:12px;font-weight:700;padding:7px 16px;border-radius:8px;cursor:pointer;transition:background 0.15s,color 0.15s;">12h</button>
-                <button id="btn-time-24" onclick="setTimeFormat('24')" style="font-family:var(--fb);font-size:12px;font-weight:700;padding:7px 16px;border-radius:8px;cursor:pointer;transition:background 0.15s,color 0.15s;">24h</button>
+                <button id="btn-time-12" onclick="setTimeFormat('12')" style="font-family:var(--font-body);font-size:12px;font-weight:700;padding:7px 16px;border-radius:8px;cursor:pointer;transition:background 0.15s,color 0.15s;">12h</button>
+                <button id="btn-time-24" onclick="setTimeFormat('24')" style="font-family:var(--font-body);font-size:12px;font-weight:700;padding:7px 16px;border-radius:8px;cursor:pointer;transition:background 0.15s,color 0.15s;">24h</button>
               </div>
             </div>
           </div>
@@ -3446,7 +3446,7 @@ body::before {
           <div class="settings-section-title">Timezone</div>
           <div class="card">
             <div style="font-size:12px;color:var(--text-lo);margin-bottom:10px;">Used for calendar sync and event reminders.</div>
-            <select class="settings-input" id="settings-timezone" onchange="saveExtSettings()" style="font-family:var(--fb);font-size:13px;padding:10px 14px;cursor:pointer;">
+            <select class="settings-input" id="settings-timezone" onchange="saveExtSettings()" style="font-family:var(--font-body);font-size:13px;padding:10px 14px;cursor:pointer;">
               <option value="Australia/Adelaide">Adelaide (ACST/ACDT)</option>
               <option value="Australia/Sydney">Sydney (AEST/AEDT)</option>
               <option value="Australia/Melbourne">Melbourne (AEST/AEDT)</option>
@@ -3472,14 +3472,14 @@ body::before {
                 <div class="settings-row-label">Google</div>
                 <div class="settings-row-desc" id="google-link-status">Checking…</div>
               </div>
-              <button id="google-link-badge" style="font-family:var(--fb);font-size:11px;font-weight:700;padding:6px 16px;border-radius:100px;border:1px solid transparent;cursor:pointer;transition:background 0.15s,border-color 0.15s;background:none;min-width:100px;text-align:center;"></button>
+              <button id="google-link-badge" style="font-family:var(--font-body);font-size:11px;font-weight:700;padding:6px 16px;border-radius:100px;border:1px solid transparent;cursor:pointer;transition:background 0.15s,border-color 0.15s;background:none;min-width:100px;text-align:center;"></button>
             </div>
             <div class="settings-row">
               <div class="settings-row-left">
                 <div class="settings-row-label">Email &amp; password</div>
                 <div class="settings-row-desc" id="email-login-status">—</div>
               </div>
-              <button id="email-login-badge" style="font-family:var(--fb);font-size:11px;font-weight:700;padding:6px 16px;border-radius:100px;border:1px solid transparent;cursor:pointer;transition:background 0.15s,border-color 0.15s;background:none;min-width:100px;text-align:center;"></button>
+              <button id="email-login-badge" style="font-family:var(--font-body);font-size:11px;font-weight:700;padding:6px 16px;border-radius:100px;border:1px solid transparent;cursor:pointer;transition:background 0.15s,border-color 0.15s;background:none;min-width:100px;text-align:center;"></button>
             </div>
           </div>
         </div>
@@ -3568,7 +3568,7 @@ body::before {
 
     <div class="modal-actions">
       <button class="btn-modal-cancel" onclick="closeSubModal()">Cancel</button>
-      <button id="btn-confirm-sub" style="flex:1;background:var(--ember);color:#fff;border:none;font-family:var(--fb);font-size:14px;font-weight:700;padding:13px;border-radius:12px;cursor:pointer;transition:background 0.14s;opacity:0.4;pointer-events:none;" onclick="confirmSubChange()">Confirm change</button>
+      <button id="btn-confirm-sub" style="flex:1;background:var(--ember);color:#fff;border:none;font-family:var(--font-body);font-size:14px;font-weight:700;padding:13px;border-radius:12px;cursor:pointer;transition:background 0.14s;opacity:0.4;pointer-events:none;" onclick="confirmSubChange()">Confirm change</button>
     </div>
   </div>
 </div>
@@ -3610,11 +3610,11 @@ body::before {
     </div>
     <div style="margin-bottom:20px;">
       <div style="font-size:11px;font-weight:700;color:var(--text-lo);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;">Your review (optional)</div>
-      <textarea id="review-org-body" rows="3" placeholder="What went well? What could be improved?" style="width:100%;padding:12px 14px;background:#ffffff08;border:1px solid #ffffff12;border-radius:10px;font-family:var(--fb);font-size:13px;color:var(--text-hi);resize:vertical;outline:none;"></textarea>
+      <textarea id="review-org-body" rows="3" placeholder="What went well? What could be improved?" style="width:100%;padding:12px 14px;background:#ffffff08;border:1px solid #ffffff12;border-radius:10px;font-family:var(--font-body);font-size:13px;color:var(--text-hi);resize:vertical;outline:none;"></textarea>
     </div>
     <div style="display:flex;gap:10px;">
-      <button onclick="closeReviewOrgModal()" style="flex:1;padding:11px;border-radius:10px;border:1px solid #ffffff12;background:transparent;color:var(--text-mid);font-family:var(--fb);font-size:13px;font-weight:700;cursor:pointer;">Cancel</button>
-      <button id="review-org-submit-btn" onclick="submitOrgReview()" style="flex:1;padding:11px;border-radius:10px;border:none;background:var(--ember);color:#fff;font-family:var(--fb);font-size:13px;font-weight:700;cursor:pointer;">Submit review</button>
+      <button onclick="closeReviewOrgModal()" style="flex:1;padding:11px;border-radius:10px;border:1px solid #ffffff12;background:transparent;color:var(--text-mid);font-family:var(--font-body);font-size:13px;font-weight:700;cursor:pointer;">Cancel</button>
+      <button id="review-org-submit-btn" onclick="submitOrgReview()" style="flex:1;padding:11px;border-radius:10px;border:none;background:var(--ember);color:#fff;font-family:var(--font-body);font-size:13px;font-weight:700;cursor:pointer;">Submit review</button>
     </div>
   </div>
 </div>
@@ -3736,7 +3736,7 @@ function showToast(message, type = 'info') {
   Object.assign(t.style, {
     position: 'fixed', bottom: '24px', left: '50%', transform: 'translateX(-50%) translateY(10px)',
     background: colors[type] || colors.info, color: '#fff', fontSize: '13px', fontWeight: '600',
-    fontFamily: 'var(--fb)', padding: '12px 20px', borderRadius: '10px', zIndex: '10000',
+    fontFamily: 'var(--font-body)', padding: '12px 20px', borderRadius: '10px', zIndex: '10000',
     maxWidth: '90vw', opacity: '0', transition: 'opacity 0.3s, transform 0.3s',
     boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
   });
@@ -5086,7 +5086,7 @@ async function initDashboard() {
                 <div style="font-size:12px;color:var(--text-lo);margin-top:2px;">Share your experience with ${ev.organiser_name}</div>
               </div>
             </div>
-            <button onclick="openReviewOrgModal(${ev.organiser_user_id},'${(ev.organiser_name||'').replace(/'/g,"\\'")}',${ev.event_id},'${(ev.event_name||'').replace(/'/g,"\\'")}');" style="padding:8px 18px;border-radius:9px;border:none;background:var(--ember);color:#fff;font-family:var(--fb);font-size:12.5px;font-weight:700;cursor:pointer;">Leave a review</button>
+            <button onclick="openReviewOrgModal(${ev.organiser_user_id},'${(ev.organiser_name||'').replace(/'/g,"\\'")}',${ev.event_id},'${(ev.event_name||'').replace(/'/g,"\\'")}');" style="padding:8px 18px;border-radius:9px;border:none;background:var(--ember);color:#fff;font-family:var(--font-body);font-size:12.5px;font-weight:700;cursor:pointer;">Leave a review</button>
           </div>`).join('');
       }
     }
@@ -5447,7 +5447,7 @@ function renderEventDetail(ev) {
       ? `<span class="waitlist-top-badge">🔝 Top of waitlist</span>` : '';
     applyBar = `<div style="display:flex;flex-direction:column;gap:10px;align-items:flex-end;">
       <div style="display:flex;align-items:center;gap:8px;"><span style="font-size:15px;font-weight:700;color:${statusColor};">${statusText}</span>${waitlistBadge}</div>
-      <button onclick="startChatWithOrganiser(${ev.organiser_user_id||0},'${orgName}','${evName}',false,${ev.id})" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--ember);background:var(--ember-bg);border:1px solid #E8500A33;padding:8px 18px;border-radius:8px;cursor:pointer;white-space:nowrap;">💬 Message organiser</button>
+      <button onclick="startChatWithOrganiser(${ev.organiser_user_id||0},'${orgName}','${evName}',false,${ev.id})" style="font-family:var(--font-body);font-size:13px;font-weight:700;color:var(--ember);background:var(--ember-bg);border:1px solid #E8500A33;padding:8px 18px;border-radius:8px;cursor:pointer;white-space:nowrap;">💬 Message organiser</button>
     </div>`;
   } else if (atLimit) {
     applyBar = `<div style="display:flex;flex-direction:column;gap:10px;">
@@ -5459,7 +5459,7 @@ function renderEventDetail(ev) {
       ${lateWindowHtml}
       <button class="btn-apply-full" id="detail-apply-btn" onclick="applyFromDetail(${ev.id})">Apply to this event →</button>
       ${templateHtml}
-      ${!isStarter ? `<button onclick="startChatWithOrganiser(${ev.organiser_user_id||0},'${orgName}','${evName}',false,${ev.id})" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--ember);background:var(--ember-bg);border:1px solid #E8500A33;padding:12px;border-radius:10px;cursor:pointer;width:100%;">💬 Message organiser</button>` : ''}
+      ${!isStarter ? `<button onclick="startChatWithOrganiser(${ev.organiser_user_id||0},'${orgName}','${evName}',false,${ev.id})" style="font-family:var(--font-body);font-size:13px;font-weight:700;color:var(--ember);background:var(--ember-bg);border:1px solid #E8500A33;padding:12px;border-radius:10px;cursor:pointer;width:100%;">💬 Message organiser</button>` : ''}
     </div>`;
   }
 
@@ -5708,7 +5708,7 @@ function renderApplicationsData(applications) {
             ? `<a class="action-link" href="/events/${a.event_slug||a.event_id}" target="_blank" rel="noopener" style="color:var(--text-mid);">View event →</a>`
             : `<a class="action-link" href="/events/${a.event_slug||a.event_id}" target="_blank" rel="noopener">View event →</a>`
           }
-          ${(_isStarter ? a.status === 'approved' : a.status !== 'withdrawn') ? `<button onclick="startChatWithOrganiser(${a.organiser_user_id||0},'${(a.organiser_name||'Organiser').replace(/'/g,"\\'")}','${(a.event_name||'').replace(/'/g,"\\'")}',false,${a.event_id||0})" style="font-family:var(--fb);font-size:11px;font-weight:700;color:var(--ember);background:var(--ember-bg);border:1px solid #E8500A22;padding:4px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;">💬 Message</button>` : ''}
+          ${(_isStarter ? a.status === 'approved' : a.status !== 'withdrawn') ? `<button onclick="startChatWithOrganiser(${a.organiser_user_id||0},'${(a.organiser_name||'Organiser').replace(/'/g,"\\'")}','${(a.event_name||'').replace(/'/g,"\\'")}',false,${a.event_id||0})" style="font-family:var(--font-body);font-size:11px;font-weight:700;color:var(--ember);background:var(--ember-bg);border:1px solid #E8500A22;padding:4px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;">💬 Message</button>` : ''}
         </div>
       </td>
     </tr>
@@ -6047,8 +6047,8 @@ function renderPlanCard(profile, subInfo) {
       price: 'Free forever · No credit card needed',
       features: ['Up to 10 event applications per month','Up to 4 photos','Standard placement in search','Message organisers you\'ve applied to'],
       cta: `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
-        <button onclick="directUpgrade('pro', this)" style="font-family:var(--fb);font-size:13px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:10px 18px;border-radius:9px;cursor:pointer;">Upgrade to Pro — $29/month →</button>
-        <button onclick="directUpgrade('growth', this)" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--gold);background:#C9840A10;border:1px solid #C9840A22;padding:10px 18px;border-radius:9px;cursor:pointer;">Upgrade to Growth — $79/month →</button>
+        <button onclick="directUpgrade('pro', this)" style="font-family:var(--font-body);font-size:13px;font-weight:700;color:#fff;background:var(--ember);border:none;padding:10px 18px;border-radius:9px;cursor:pointer;">Upgrade to Pro — $29/month →</button>
+        <button onclick="directUpgrade('growth', this)" style="font-family:var(--font-body);font-size:13px;font-weight:700;color:var(--gold);background:#C9840A10;border:1px solid #C9840A22;padding:10px 18px;border-radius:9px;cursor:pointer;">Upgrade to Growth — $79/month →</button>
       </div>
       <div id="upgrade-error" style="display:none;margin-top:10px;padding:10px 14px;background:#C0392B18;border:1px solid #C0392B30;border-radius:9px;font-size:12px;color:#C0392B;"></div>`
     },
@@ -6057,9 +6057,9 @@ function renderPlanCard(profile, subInfo) {
       price: '$29 / month · Billed monthly',
       features: ['Unlimited event applications','Priority placement in search','Pro badge on your profile','Up to 10 photos','New event alerts within 2 hours','Application analytics (30-day)'],
       cta: `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
-        <button onclick="directUpgrade('growth', this)" style="font-family:var(--fb);font-size:13px;font-weight:700;color:var(--gold);background:#C9840A10;border:1px solid #C9840A22;padding:10px 18px;border-radius:9px;cursor:pointer;">Upgrade to Growth — $79/month →</button>
-        <button onclick="openSubModal()" style="font-family:var(--fb);font-size:12px;font-weight:600;color:var(--text-lo);background:#ffffff07;border:1px solid #ffffff10;padding:10px 18px;border-radius:9px;cursor:pointer;transition:background 0.14s;" onmouseover="this.style.background='#ffffff12'" onmouseout="this.style.background='#ffffff07'">Manage subscription</button>
-        <button onclick="openStripePortal()" style="font-family:var(--fb);font-size:12px;font-weight:700;color:var(--text-mid);background:#ffffff0a;border:1px solid #ffffff14;padding:10px 18px;border-radius:9px;cursor:pointer;transition:background 0.14s,color 0.14s;" onmouseover="this.style.background='#ffffff14';this.style.color='var(--text-hi)'" onmouseout="this.style.background='#ffffff0a';this.style.color='var(--text-mid)'">Manage billing →</button>
+        <button onclick="directUpgrade('growth', this)" style="font-family:var(--font-body);font-size:13px;font-weight:700;color:var(--gold);background:#C9840A10;border:1px solid #C9840A22;padding:10px 18px;border-radius:9px;cursor:pointer;">Upgrade to Growth — $79/month →</button>
+        <button onclick="openSubModal()" style="font-family:var(--font-body);font-size:12px;font-weight:600;color:var(--text-lo);background:#ffffff07;border:1px solid #ffffff10;padding:10px 18px;border-radius:9px;cursor:pointer;transition:background 0.14s;" onmouseover="this.style.background='#ffffff12'" onmouseout="this.style.background='#ffffff07'">Manage subscription</button>
+        <button onclick="openStripePortal()" style="font-family:var(--font-body);font-size:12px;font-weight:700;color:var(--text-mid);background:#ffffff0a;border:1px solid #ffffff14;padding:10px 18px;border-radius:9px;cursor:pointer;transition:background 0.14s,color 0.14s;" onmouseover="this.style.background='#ffffff14';this.style.color='var(--text-hi)'" onmouseout="this.style.background='#ffffff0a';this.style.color='var(--text-mid)'">Manage billing →</button>
       </div>
       <div id="upgrade-error" style="display:none;margin-top:10px;padding:10px 14px;background:#C0392B18;border:1px solid #C0392B30;border-radius:9px;font-size:12px;color:#C0392B;"></div>`
     },
@@ -6068,8 +6068,8 @@ function renderPlanCard(profile, subInfo) {
       price: '$79 / month · Billed monthly',
       features: ['Unlimited event applications','Top placement in search','Growth badge on your profile','Up to 20 photos in named galleries','Instant new event alerts','Full analytics + competitor insights'],
       cta: `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;">
-        <button onclick="openSubModal()" style="font-family:var(--fb);font-size:12px;font-weight:600;color:var(--text-lo);background:#ffffff07;border:1px solid #ffffff10;padding:10px 18px;border-radius:9px;cursor:pointer;transition:background 0.14s;" onmouseover="this.style.background='#ffffff12'" onmouseout="this.style.background='#ffffff07'">Manage subscription</button>
-        <button onclick="openStripePortal()" style="font-family:var(--fb);font-size:12px;font-weight:700;color:var(--text-mid);background:#ffffff0a;border:1px solid #ffffff14;padding:10px 18px;border-radius:9px;cursor:pointer;transition:background 0.14s,color 0.14s;" onmouseover="this.style.background='#ffffff14';this.style.color='var(--text-hi)'" onmouseout="this.style.background='#ffffff0a';this.style.color='var(--text-mid)'">Manage billing →</button>
+        <button onclick="openSubModal()" style="font-family:var(--font-body);font-size:12px;font-weight:600;color:var(--text-lo);background:#ffffff07;border:1px solid #ffffff10;padding:10px 18px;border-radius:9px;cursor:pointer;transition:background 0.14s;" onmouseover="this.style.background='#ffffff12'" onmouseout="this.style.background='#ffffff07'">Manage subscription</button>
+        <button onclick="openStripePortal()" style="font-family:var(--font-body);font-size:12px;font-weight:700;color:var(--text-mid);background:#ffffff0a;border:1px solid #ffffff14;padding:10px 18px;border-radius:9px;cursor:pointer;transition:background 0.14s,color 0.14s;" onmouseover="this.style.background='#ffffff14';this.style.color='var(--text-hi)'" onmouseout="this.style.background='#ffffff0a';this.style.color='var(--text-mid)'">Manage billing →</button>
       </div>`
     }
   };
@@ -6079,7 +6079,7 @@ function renderPlanCard(profile, subInfo) {
     <div>
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
         <span style="font-size:22px;">${cfg.icon}</span>
-        <span style="font-family:var(--fd);font-size:18px;font-weight:900;letter-spacing:-0.02em;color:${cfg.color};">${cfg.name}</span>
+        <span style="font-family:var(--font-display);font-size:18px;font-weight:900;letter-spacing:-0.02em;color:${cfg.color};">${cfg.name}</span>
       </div>
       <div style="font-size:13px;color:var(--text-mid);margin-bottom:14px;">${cfg.price}</div>
       ${quotaBarHtml}
@@ -6817,7 +6817,7 @@ async function openStripePayModal(feeId, eventName, amount, dueDate, clientSecre
   summary.innerHTML = `
     <div style="font-weight:700;color:var(--text-hi);font-size:15px;margin-bottom:4px;">${eventName}</div>
     <div style="color:var(--text-mid);font-size:12px;">${dueDate ? 'Due ' + _fmtDate(dueDate) : 'No due date'}</div>
-    <div style="font-family:var(--fd);font-size:28px;font-weight:900;color:var(--text-hi);margin-top:12px;">$${Number(amount).toFixed(2)}</div>
+    <div style="font-family:var(--font-display);font-size:28px;font-weight:900;color:var(--text-hi);margin-top:12px;">$${Number(amount).toFixed(2)}</div>
   `;
   errEl.textContent = '';
   submitBtn.disabled = false;
@@ -8895,11 +8895,11 @@ function _applyAnalyticsData(data) {
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;">
                 <div>
                   <div class="an-stat-label">Your acceptance rate</div>
-                  <div style="font-family:var(--fd);font-size:28px;font-weight:900;color:var(--herb);">${c.yourRate}%</div>
+                  <div style="font-family:var(--font-display);font-size:28px;font-weight:900;color:var(--herb);">${c.yourRate}%</div>
                 </div>
                 <div>
                   <div class="an-stat-label">${c.primaryCuisine} category avg</div>
-                  <div style="font-family:var(--fd);font-size:28px;font-weight:900;color:var(--text-mid);">${c.categoryRate}%</div>
+                  <div style="font-family:var(--font-display);font-size:28px;font-weight:900;color:var(--text-mid);">${c.categoryRate}%</div>
                 </div>
               </div>
               <div style="display:flex;align-items:center;gap:8px;">
@@ -9607,7 +9607,7 @@ async function loadPendingVendorReviews() {
               <div style="font-size:12px;color:var(--text-lo);margin-top:2px;">Share your experience with ${ev.organiser_name}</div>
             </div>
           </div>
-          <button onclick="openReviewOrgModal(${ev.organiser_user_id},'${(ev.organiser_name||'').replace(/'/g,"\\'")}',${ev.event_id},'${(ev.event_name||'').replace(/'/g,"\\'")}');" style="padding:8px 18px;border-radius:9px;border:none;background:var(--ember);color:#fff;font-family:var(--fb);font-size:12.5px;font-weight:700;cursor:pointer;">Leave a review</button>
+          <button onclick="openReviewOrgModal(${ev.organiser_user_id},'${(ev.organiser_name||'').replace(/'/g,"\\'")}',${ev.event_id},'${(ev.event_name||'').replace(/'/g,"\\'")}');" style="padding:8px 18px;border-radius:9px;border:none;background:var(--ember);color:#fff;font-family:var(--font-body);font-size:12.5px;font-weight:700;cursor:pointer;">Leave a review</button>
         </div>`).join('');
     }
   } catch (e) { console.error('[pending-reviews]', e); }

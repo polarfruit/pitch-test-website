@@ -10,7 +10,7 @@
 }
 
 .tag {
-  display: inline-flex; align-items: center; gap: 9px;
+  display: inline-flex; align-items: center; gap: 8px;
   font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase;
   color: var(--ember); font-weight: 700; margin-bottom: 12px;
 }
@@ -20,7 +20,7 @@
 }
 
 .title {
-  font-family: var(--fd);
+  font-family: var(--font-display);
   font-size: clamp(30px, 3.5vw, 48px);
   font-weight: 900; letter-spacing: -0.03em;
   color: var(--text-hi); line-height: 1.02;
@@ -60,22 +60,22 @@
 
 .connector {
   width: 1px; height: 28px; background: rgba(255,255,255,0.047);
-  margin-left: 25px;
+  margin-left: 24px;
 }
 
 .num {
   width: 52px; height: 52px; border-radius: 50%; flex-shrink: 0;
-  background: var(--ash); border: 2px solid rgba(232,80,10,0.31);
+  background: var(--ash); border: 2px solid rgba(232,80,10,0.31); /* --ember */
   display: flex; align-items: center; justify-content: center;
-  font-family: var(--fd); font-size: 28px; font-weight: 900;
+  font-family: var(--font-display); font-size: 28px; font-weight: 900;
   color: var(--ember);
-  box-shadow: 0 0 0 4px rgba(232,80,10,0.047);
+  box-shadow: 0 0 0 4px rgba(232,80,10,0.047); /* --ember */
 }
 
-.stepBody { padding-top: 7px; }
+.stepBody { padding-top: 8px; }
 
 .stepTitle {
-  font-family: var(--fd); font-size: 16px; font-weight: 800;
+  font-family: var(--font-display); font-size: 16px; font-weight: 800;
   color: var(--text-hi); margin-bottom: 4px;
 }
 
@@ -85,16 +85,16 @@
 
 .cta {
   display: inline-flex; align-items: center; gap: 8px;
-  font-family: var(--fb); font-size: 14px; font-weight: 700;
+  font-family: var(--font-body); font-size: 14px; font-weight: 700;
   color: var(--ember); text-decoration: none;
-  border: 1px solid rgba(232,80,10,0.19);
+  border: 1px solid rgba(232,80,10,0.19); /* --ember */
   border-radius: 10px; padding: 12px 24px;
   background: var(--ember-bg);
   transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
 .cta:hover {
-  background: rgba(232,80,10,0.12);
-  border-color: rgba(232,80,10,0.38);
+  background: rgba(232,80,10,0.12); /* --ember */
+  border-color: rgba(232,80,10,0.38); /* --ember */
   color: var(--ember-glow);
 }
 

@@ -29,12 +29,12 @@
   --text-hi:    #FDF4E7;
   --text-mid:   #A89880;
   --text-lo:    #6B5A4A;
-  --fd:         'Fraunces', Georgia, serif;
-  --fb:         'Instrument Sans', 'Helvetica Neue', sans-serif;
+  --font-display:         'Fraunces', Georgia, serif;
+  --font-body:         'Instrument Sans', 'Helvetica Neue', sans-serif;
 }
 
 html { scroll-behavior: smooth; }
-body { background: var(--coal); color: var(--text-hi); font-family: var(--fb); line-height: 1.5; overflow-x: hidden; }
+body { background: var(--coal); color: var(--text-hi); font-family: var(--font-body); line-height: 1.5; overflow-x: hidden; }
 
 body::before {
   content: ''; position: fixed; inset: 0;
@@ -50,15 +50,15 @@ body::before {
   background: rgba(26,22,18,0.92); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid #ffffff07;
 }
-.nav-logo { font-family: var(--fd); font-size: 26px; font-weight: 900; letter-spacing: -0.04em; color: var(--text-hi); text-decoration: none; }
+.nav-logo { font-family: var(--font-display); font-size: 26px; font-weight: 900; letter-spacing: -0.04em; color: var(--text-hi); text-decoration: none; }
 .nav-logo .dot { color: var(--ember); }
 .nav-links { display: flex; align-items: center; gap: 32px; list-style: none; }
 .nav-links a { font-size: 14px; font-weight: 500; color: var(--text-mid); text-decoration: none; transition: color 0.14s; }
 .nav-links a:hover, .nav-links a.active { color: var(--text-hi); }
 .nav-actions { display: flex; align-items: center; gap: 10px; }
-.btn-login { font-family: var(--fb); font-size: 13px; font-weight: 600; color: var(--text-mid); background: transparent; border: none; padding: 9px 16px; border-radius: 8px; cursor: pointer; transition: color 0.14s, background 0.14s; text-decoration: none; }
+.btn-login { font-family: var(--font-body); font-size: 13px; font-weight: 600; color: var(--text-mid); background: transparent; border: none; padding: 9px 16px; border-radius: 8px; cursor: pointer; transition: color 0.14s, background 0.14s; text-decoration: none; }
 .btn-login:hover { color: var(--text-hi); background: #ffffff09; }
-.btn-get-started { font-family: var(--fb); font-size: 13px; font-weight: 700; color: #fff; background: var(--ember); border: none; padding: 10px 22px; border-radius: 9px; cursor: pointer; box-shadow: 0 4px 16px #E8500A2E; transition: background 0.14s, transform 0.14s; text-decoration: none; }
+.btn-get-started { font-family: var(--font-body); font-size: 13px; font-weight: 700; color: #fff; background: var(--ember); border: none; padding: 10px 22px; border-radius: 9px; cursor: pointer; box-shadow: 0 4px 16px #E8500A2E; transition: background 0.14s, transform 0.14s; text-decoration: none; }
 .btn-get-started:hover { background: var(--ember-glow); transform: translateY(-1px); }
 .nav-hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 8px; border: none; background: transparent; }
 .nav-hamburger span { display: block; width: 22px; height: 2px; background: var(--text-mid); border-radius: 2px; }
@@ -81,7 +81,7 @@ html.vd-loading footer { visibility: hidden; }
 }
 .vendor-hero-initials {
   position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
-  font-family: var(--fd); font-size: 80px; font-weight: 900; letter-spacing: -0.04em;
+  font-family: var(--font-display); font-size: 80px; font-weight: 900; letter-spacing: -0.04em;
   color: rgba(253,244,231,0.10); user-select: none; pointer-events: none;
 }
 .vendor-hero-avatar {
@@ -126,7 +126,7 @@ html.vd-loading footer { visibility: hidden; }
 .vendor-identity { margin-bottom: 32px; }
 .vendor-name-row { display: flex; align-items: flex-start; gap: 14px; flex-wrap: wrap; margin-bottom: 10px; }
 .vendor-name {
-  font-family: var(--fd); font-size: clamp(28px, 4vw, 42px);
+  font-family: var(--font-display); font-size: clamp(28px, 4vw, 42px);
   font-weight: 900; letter-spacing: -0.03em; color: var(--text-hi); line-height: 1.05;
 }
 .verified-badge {
@@ -169,7 +169,7 @@ html.vd-loading footer { visibility: hidden; }
 .section-block + .section-block { border-top: 1px solid #ffffff07; padding-top: 28px; }
 .section-block:last-child { margin-bottom: 0; }
 .section-heading {
-  font-family: var(--fd); font-size: 20px; font-weight: 900;
+  font-family: var(--font-display); font-size: 20px; font-weight: 900;
   letter-spacing: -0.02em; color: var(--text-hi); margin-bottom: 20px;
 }
 
@@ -223,7 +223,7 @@ html.vd-loading footer { visibility: hidden; }
 .pe-item:hover .pe-arrow { color: var(--ember); }
 .see-all-btn {
   margin-top: 14px;
-  font-family: var(--fb); font-size: 13px; font-weight: 600;
+  font-family: var(--font-body); font-size: 13px; font-weight: 600;
   color: var(--ember); background: transparent; border: none; cursor: pointer;
   padding: 0; transition: color 0.14s;
 }
@@ -233,7 +233,7 @@ html.vd-loading footer { visibility: hidden; }
 .reviews-sort { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
 .reviews-sort span { font-size: 13px; color: var(--text-lo); }
 .sort-btn {
-  font-family: var(--fb); font-size: 12px; font-weight: 600;
+  font-family: var(--font-body); font-size: 12px; font-weight: 600;
   padding: 5px 12px; border-radius: 100px; cursor: pointer;
   border: 1px solid #ffffff10; background: transparent; color: var(--text-mid);
   transition: all 0.12s;
@@ -258,7 +258,7 @@ html.vd-loading footer { visibility: hidden; }
 .load-more-btn {
   margin-top: 20px; width: 100%; padding: 14px;
   background: var(--char); border: 1px solid #ffffff0a; border-radius: 12px;
-  font-family: var(--fb); font-size: 13px; font-weight: 600; color: var(--text-mid);
+  font-family: var(--font-body); font-size: 13px; font-weight: 600; color: var(--text-mid);
   cursor: pointer; transition: all 0.14s;
 }
 .load-more-btn:hover { background: var(--ash); color: var(--text-hi); border-color: #ffffff14; }
@@ -277,7 +277,7 @@ html.vd-loading footer { visibility: hidden; }
   padding-bottom: 20px; border-bottom: 1px solid #ffffff08;
 }
 .rating-number {
-  font-family: var(--fd); font-size: 56px; font-weight: 900;
+  font-family: var(--font-display); font-size: 56px; font-weight: 900;
   letter-spacing: -0.04em; line-height: 1; color: var(--text-hi);
 }
 .rating-sub { display: flex; flex-direction: column; gap: 4px; padding-bottom: 4px; }
@@ -297,7 +297,7 @@ html.vd-loading footer { visibility: hidden; }
 .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 .stat-item { display: flex; flex-direction: column; gap: 3px; }
 .stat-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-lo); }
-.stat-value { font-family: var(--fd); font-size: 26px; font-weight: 900; letter-spacing: -0.03em; color: var(--text-hi); }
+.stat-value { font-family: var(--font-display); font-size: 26px; font-weight: 900; letter-spacing: -0.03em; color: var(--text-hi); }
 .stat-sub { font-size: 11px; color: var(--text-lo); }
 
 /* Plan badge */
@@ -329,7 +329,7 @@ html.vd-loading footer { visibility: hidden; }
 .btn-invite {
   width: 100%; padding: 14px; border-radius: 12px;
   background: var(--char); border: 1.5px solid #E8500A40;
-  font-family: var(--fb); font-size: 14px; font-weight: 700; color: var(--ember);
+  font-family: var(--font-body); font-size: 14px; font-weight: 700; color: var(--ember);
   cursor: pointer; transition: all 0.14s; display: flex; align-items: center; justify-content: center; gap: 8px;
 }
 .btn-invite:hover { background: var(--ember-bg); border-color: var(--ember); }
@@ -364,7 +364,7 @@ html.vd-loading footer { visibility: hidden; }
 .appearance-avatar {
   width: 32px; height: 32px; border-radius: 8px; flex-shrink: 0;
   background: var(--ember); color: #fff; font-size: 11px; font-weight: 700;
-  font-family: var(--fb); display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-body); display: flex; align-items: center; justify-content: center;
   letter-spacing: 0;
 }
 
@@ -412,14 +412,14 @@ footer { background:#161210;border-top:1px solid #ffffff06;margin-top:80px;posit
 .footer-links a:hover { color:var(--text-hi); }
 .footer-bottom { max-width:1320px;margin:0 auto;padding:20px 52px 28px;border-top:1px solid #ffffff06;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px; }
 .footer-copy { font-size:12px;color:var(--text-lo); }
-.footer-bottom-logo { font-family:var(--fd);font-size:20px;font-weight:900;letter-spacing:-0.04em;color:var(--text-mid);text-decoration:none; }
+.footer-bottom-logo { font-family:var(--font-display);font-size:20px;font-weight:900;letter-spacing:-0.04em;color:var(--text-mid);text-decoration:none; }
 .footer-bottom-logo .dot { color:var(--ember); }
 
 /* ── SHARED FIELD STYLES (used in contact modal) ─────────────────────────── */
 .field-input, .field-textarea-vd {
   width: 100%; background: var(--ash); border: 1px solid #ffffff0A;
   border-radius: 10px; padding: 11px 14px;
-  font-family: var(--fb); font-size: 14px; color: var(--text-hi);
+  font-family: var(--font-body); font-size: 14px; color: var(--text-hi);
   outline: none; transition: border-color 0.14s, box-shadow 0.14s; display: block;
 }
 .field-input:focus, .field-textarea-vd:focus { border-color: #E8500A40; box-shadow: 0 0 0 3px #E8500A12; }
@@ -440,7 +440,7 @@ footer { background:#161210;border-top:1px solid #ffffff06;margin-top:80px;posit
 
 /* ── FOLLOW BUTTON ───────────────────────────────────────────────────────── */
 .btn-follow {
-  width: 100%; font-family: var(--fb); font-size: 14px; font-weight: 700;
+  width: 100%; font-family: var(--font-body); font-size: 14px; font-weight: 700;
   color: var(--ember); background: var(--ember-bg); border: 1.5px solid #E8500A33;
   border-radius: 12px; padding: 13px; cursor: pointer; margin-bottom: 12px;
   display: flex; align-items: center; justify-content: center; gap: 8px;
@@ -453,7 +453,7 @@ footer { background:#161210;border-top:1px solid #ffffff06;margin-top:80px;posit
 
 /* ── CONTACT BUTTON ──────────────────────────────────────────────────────── */
 .btn-contact {
-  width: 100%; font-family: var(--fb); font-size: 14px; font-weight: 700;
+  width: 100%; font-family: var(--font-body); font-size: 14px; font-weight: 700;
   color: var(--text-mid); background: transparent; border: 1px solid #ffffff12;
   border-radius: 12px; padding: 13px; cursor: pointer; margin-bottom: 14px;
   display: flex; align-items: center; justify-content: center; gap: 8px;
@@ -478,7 +478,7 @@ footer { background:#161210;border-top:1px solid #ffffff06;margin-top:80px;posit
 .contact-header {
   display: flex; align-items: center; justify-content: space-between; padding: 22px 26px 0;
 }
-.contact-title { font-family: var(--fd); font-size: 20px; font-weight: 900; color: var(--text-hi); }
+.contact-title { font-family: var(--font-display); font-size: 20px; font-weight: 900; color: var(--text-hi); }
 .contact-close {
   width: 34px; height: 34px; border-radius: 50%; background: var(--ash);
   border: none; cursor: pointer; font-size: 17px; color: var(--text-lo);
@@ -488,12 +488,12 @@ footer { background:#161210;border-top:1px solid #ffffff06;margin-top:80px;posit
 .contact-body { padding: 18px 26px; }
 .contact-footer { padding: 0 26px 28px; display: flex; justify-content: flex-end; gap: 10px; }
 .contact-cancel {
-  font-family: var(--fb); font-size: 13px; font-weight: 600; color: var(--text-lo);
+  font-family: var(--font-body); font-size: 13px; font-weight: 600; color: var(--text-lo);
   background: none; border: none; cursor: pointer; padding: 11px 16px; transition: color 0.14s;
 }
 .contact-cancel:hover { color: var(--text-mid); }
 .contact-send {
-  font-family: var(--fb); font-size: 14px; font-weight: 700;
+  font-family: var(--font-body); font-size: 14px; font-weight: 700;
   color: #fff; background: var(--ember); border: none; border-radius: 10px;
   padding: 11px 24px; cursor: pointer; box-shadow: 0 4px 16px #E8500A28;
   transition: background 0.14s, transform 0.14s;
@@ -601,7 +601,7 @@ document.documentElement.classList.add('vd-loading');
     <a href="/signup" class="btn-get-started">Get Started</a>
   </div>
   <div id="nav-loggedin" style="display:none;align-items:center;gap:8px;position:relative;">
-    <a href="/dashboard/vendor" id="nav-dashboard-link" style="font-family:var(--fb);font-size:13px;font-weight:600;color:var(--text-mid);text-decoration:none;padding:9px 16px;border-radius:8px;transition:color 0.14s;"><span id="nav-user-label">Account</span> ▾</a>
+    <a href="/dashboard/vendor" id="nav-dashboard-link" style="font-family:var(--font-body);font-size:13px;font-weight:600;color:var(--text-mid);text-decoration:none;padding:9px 16px;border-radius:8px;transition:color 0.14s;"><span id="nav-user-label">Account</span> ▾</a>
   </div>
   <button class="nav-hamburger"><span></span><span></span><span></span></button>
 </nav>
