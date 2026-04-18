@@ -6,7 +6,7 @@
 
 .section {
   max-width: 1320px; margin: 0 auto;
-  padding: 80px 52px;
+  padding: 64px 52px;
 }
 
 .tag {
@@ -101,5 +101,5 @@
 @media (max-width: 700px) {
   .grid { grid-template-columns: 1fr; gap: 40px; }
   .divider { display: none; }
-  .section { padding: 64px 28px; }
+  .section { padding: 48px 28px; }
 }

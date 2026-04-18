@@ -126,6 +126,15 @@ body::before {
   z-index: 1;
 }
 
+/* ── HIDE NEXT.JS DEV INDICATOR ───────────────────────────────────────────── */
+/* The Next.js 15 dev-mode indicator renders an "N" logo badge at
+   bottom-left via a shadow DOM inside <nextjs-portal>. The
+   devIndicators: false config does not suppress it in 15.5.x,
+   so hide it with CSS until a future Next.js release fixes it. */
+nextjs-portal {
+  display: none !important;
+}
+
 /* ── LINKS ─────────────────────────────────────────────────────────────────── */
 a {
   color: inherit;

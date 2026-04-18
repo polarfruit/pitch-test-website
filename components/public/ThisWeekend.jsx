@@ -23,7 +23,7 @@ function ThisWeekend({ events = [], isLoading = false, error = null }) {
         <div className={styles.inner}>
           <div className={styles.header}>
             <div className={styles.liveDot} />
-            <h2 className={styles.title}>Coming <em>up.</em></h2>
+            <h2 className={styles.title}>This <em>weekend.</em></h2>
           </div>
           <div className={styles.scrollWrap}>
             <div className={styles.scroll}>
@@ -49,7 +49,7 @@ function ThisWeekend({ events = [], isLoading = false, error = null }) {
       <div className={styles.section}>
         <div className={styles.inner}>
           <div className={styles.header}>
-            <h2 className={styles.title}>Coming <em>up.</em></h2>
+            <h2 className={styles.title}>This <em>weekend.</em></h2>
           </div>
           <p style={{ color: 'var(--text-mid)', fontSize: 14, textAlign: 'center', padding: '32px 0' }}>
             Unable to load weekend events. Refresh the page to try again.
@@ -65,7 +65,7 @@ function ThisWeekend({ events = [], isLoading = false, error = null }) {
         <div className={styles.inner}>
           <div className={styles.header}>
             <div className={styles.liveDot} />
-            <h2 className={styles.title}>Coming <em>up.</em></h2>
+            <h2 className={styles.title}>This <em>weekend.</em></h2>
           </div>
           <p style={{ color: 'var(--text-mid)', fontSize: 14, textAlign: 'center', padding: '32px 0' }}>
             No events coming up this weekend.{' '}
@@ -81,7 +81,7 @@ function ThisWeekend({ events = [], isLoading = false, error = null }) {
       <div className={styles.inner}>
         <div className={styles.header}>
           <div className={styles.liveDot} />
-          <h2 className={styles.title}>Coming <em>up.</em></h2>
+          <h2 className={styles.title}>This <em>weekend.</em></h2>
         </div>
 
         <div className={styles.scrollWrap}>
