@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { CARD_ROTATION_INTERVAL_MS, CARD_SWAP_ANIMATION_DELAY_MS } from '@/constants/timing'
 import { MAX_HERO_CARD_POOL_SIZE, VISIBLE_CARD_COUNT } from '@/constants/limits'
 import { ROUTES } from '@/constants/routes'
+import { formatEventDate, formatDeadlineDate } from '@/lib/utils/eventFormatters'
 import styles from './HeroSection.module.css'
 
 const WHEN_OPTIONS = [
@@ -41,21 +42,10 @@ const STATIC_EVENTS = [
   { slug:'prospect-farmers-market',    name:'Prospect Farmers Market',   category:'Farmers Market',  suburb:'Prospect',      state:'SA', date_sort:'2026-04-19', spots_left:5,  fee_min:150, fee_max:220, deadline:'2026-04-12' },
 ]
 
-function formatEventDate(dateString) {
-  if (!dateString) return ''
-  const parsedDate = new Date(dateString + 'T00:00:00')
-  return parsedDate.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' })
-}
-
 function formatBoothFeeRange(minimumFee, maximumFee) {
   if (minimumFee && maximumFee) return `$${minimumFee}\u2013$${maximumFee}`
   if (minimumFee) return `$${minimumFee}+`
   return '\u2014'
-}
-
-function formatDeadlineDate(dateString) {
-  if (!dateString) return '\u2014'
-  return new Date(dateString + 'T00:00:00').toLocaleDateString('en-AU', { day: 'numeric', month: 'short' })
 }
 
 function HeroSearchDropdown({ label, options, value, onChange }) {
