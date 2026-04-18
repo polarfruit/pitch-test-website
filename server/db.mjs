@@ -1352,6 +1352,7 @@ export const stmts = {
   // featured / homepage queries
   featuredEvents: prepare(`
     SELECT e.id,e.name,e.slug,e.category,e.suburb,e.state,e.date_sort,e.featured,
+           e.stall_fee_min,e.stall_fee_max,e.deadline,e.stalls_available,e.date_text,e.cover_image,
            COUNT(ea.id) AS vendor_count
     FROM events e
     LEFT JOIN event_applications ea ON ea.event_id=e.id AND ea.status='approved'
