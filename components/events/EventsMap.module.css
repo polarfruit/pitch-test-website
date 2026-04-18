@@ -1,0 +1,69 @@
+/* ── Map container ──────────────────────────────────────────── */
+.mapContainer {
+  width: 100%;
+  height: 600px;
+  background: var(--coal);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  position: relative;
+}
+
+@media (max-width: 768px) {
+  .mapContainer {
+    height: 400px;
+    border-radius: 12px;
+  }
+}
+
+/* ── Leaflet popup overrides ───────────────────────────────── */
+.mapContainer :global(.leaflet-popup-content-wrapper) {
+  background: var(--char) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.7) !important;
+  font-family: var(--font-body) !important;
+  min-width: 220px;
+}
+
+.mapContainer :global(.leaflet-popup-content) {
+  margin: 16px 18px !important;
+}
+
+.mapContainer :global(.leaflet-popup-tip) {
+  display: none !important;
+}
+
+.mapContainer :global(.leaflet-popup-close-button) {
+  color: var(--text-lo) !important;
+  font-size: 22px !important;
+  top: 6px !important;
+  right: 10px !important;
+  width: auto !important;
+  height: auto !important;
+}
+
+.mapContainer :global(.leaflet-popup-close-button:hover) {
+  color: var(--text-mid) !important;
+}
+
+/* ── Cluster overrides ─────────────────────────────────────── */
+.mapContainer :global(.marker-cluster-small),
+.mapContainer :global(.marker-cluster-medium),
+.mapContainer :global(.marker-cluster-large) {
+  background: rgba(232, 80, 10, 0.35) !important;
+}
+
+.mapContainer :global(.marker-cluster-small div),
+.mapContainer :global(.marker-cluster-medium div),
+.mapContainer :global(.marker-cluster-large div) {
+  background: var(--ember) !important;
+  color: #fff !important;
+  font-family: var(--font-body) !important;
+  font-weight: 700 !important;
+  font-size: 13px !important;
+}
+
+/* ── Tile background ───────────────────────────────────────── */
+.mapContainer :global(.leaflet-tile-pane) {
+  filter: brightness(1);
+}

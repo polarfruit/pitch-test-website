@@ -36,3 +36,8 @@ export const VISIBLE_CARD_COUNT = 3
 // homepage. 6 fills two rows of three on desktop and
 // scrolls naturally on mobile without overwhelming.
 export const MAXIMUM_DISPLAYED_EVENTS = 6
+
+// Events shown per page on the /events browse page.
+// 12 fills a 4x3 grid on desktop and scrolls naturally
+// on mobile without requiring excessive pagination.
+export const EVENTS_PER_PAGE = 12

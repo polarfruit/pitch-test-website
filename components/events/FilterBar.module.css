@@ -1,0 +1,191 @@
+.filterBar {
+  background: var(--char);
+  border: 1px solid #ffffff09;
+  border-radius: 16px;
+  padding: 12px 16px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: nowrap;
+  margin-bottom: 12px;
+}
+
+/* ── Search ─────────────────────────────────────────── */
+
+.searchWrap {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-lo);
+  pointer-events: none;
+  display: flex;
+}
+
+.input,
+.select {
+  background: var(--ash);
+  border: 1px solid #ffffff0a;
+  border-radius: 9px;
+  padding: 9px 14px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--text-hi);
+  outline: none;
+  height: 40px;
+  width: 100%;
+  transition: border-color 0.14s, box-shadow 0.14s;
+}
+
+.input:focus,
+.select:focus {
+  border-color: #e8500a40;
+  box-shadow: 0 0 0 3px #e8500a12;
+}
+
+.input::placeholder {
+  color: var(--text-lo);
+}
+
+.searchInput {
+  padding-left: 36px;
+}
+
+/* ── Select ─────────────────────────────────────────── */
+
+.select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7' viewBox='0 0 12 7'%3E%3Cpath d='M1 1l5 4.5L11 1' stroke='%236B5A4A' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+  cursor: pointer;
+  width: 150px;
+  flex-shrink: 0;
+}
+
+.select option {
+  background: var(--char);
+  color: var(--text-hi);
+}
+
+/* ── Date range ─────────────────────────────────────── */
+
+.dateRangeWrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.dateInput {
+  width: 96px;
+  height: 40px;
+  background: var(--ash);
+  border: 1px solid #ffffff0a;
+  border-radius: 9px;
+  padding: 0 10px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: var(--text-hi);
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.14s, box-shadow 0.14s;
+}
+
+.dateInput:focus {
+  border-color: #e8500a40;
+  box-shadow: 0 0 0 3px #e8500a12;
+}
+
+.dateInput::placeholder {
+  color: var(--text-lo);
+}
+
+.dateInputActive {
+  border-color: #e8500a40;
+}
+
+.dateSep {
+  font-size: 15px;
+  color: var(--text-mid);
+  font-weight: 600;
+  padding: 0 2px;
+}
+
+/* ── Calendar toggle ────────────────────────────────── */
+
+.calToggleBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  background: var(--ash);
+  border: 1px solid #ffffff0a;
+  border-radius: 9px;
+  cursor: pointer;
+  color: var(--text-lo);
+  transition: border-color 0.14s, color 0.14s, background 0.14s;
+}
+
+.calToggleBtn:hover,
+.calToggleBtnActive {
+  border-color: #e8500a40;
+  color: var(--ember);
+  background: #e8500a08;
+}
+
+/* ── Clear all ──────────────────────────────────────── */
+
+.clearBtn {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  background: none;
+  border: 1px solid #ffffff12;
+  border-radius: 8px;
+  color: var(--text-lo);
+  padding: 7px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: color 0.12s, border-color 0.12s;
+}
+
+.clearBtn:hover {
+  color: var(--text-hi);
+  border-color: #ffffff25;
+}
+
+/* ── Responsive ─────────────────────────────────────── */
+
+@media (max-width: 680px) {
+  .filterBar {
+    flex-wrap: wrap;
+  }
+
+  .searchWrap {
+    flex: 1 1 100%;
+  }
+
+  .select {
+    width: calc(50% - 4px);
+  }
+
+  .dateRangeWrap {
+    flex-wrap: wrap;
+  }
+
+  .dateInput {
+    width: 100px;
+  }
+}

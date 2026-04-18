@@ -1,0 +1,84 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  margin-bottom: 48px;
+}
+
+/* ── SKELETON ────────────────────────────────────────────────────────────── */
+
+.skeleton {
+  background: var(--parchment);
+  border: 1px solid var(--linen);
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.skeletonImage {
+  height: 148px;
+  background: linear-gradient(135deg, #2E2720, #1A1612);
+  position: relative;
+  overflow: hidden;
+}
+
+.skeletonImage::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.04) 50%, transparent 100%);
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
+.skeletonBody {
+  padding: 16px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skeletonLine {
+  background: var(--linen);
+  border-radius: 4px;
+  opacity: 0.6;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* ── EMPTY STATE ─────────────────────────────────────────────────────────── */
+
+.empty {
+  text-align: center;
+  padding: 80px 0;
+  grid-column: 1 / -1;
+}
+
+.emptyIcon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.emptyTitle {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-hi);
+  margin-bottom: 8px;
+}
+
+.emptyDescription {
+  font-size: 14px;
+  color: var(--text-lo);
+}
+
+/* ── RESPONSIVE ──────────────────────────────────────────────────────────── */
+
+@media (max-width: 1024px) {
+  .grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 640px) {
+  .grid { grid-template-columns: 1fr; }
+}

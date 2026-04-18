@@ -29,7 +29,7 @@ const nextConfig = {
         { source: '/api/:path*', destination: `${expressBaseUrl}/api/:path*` },
 
         // Pages — browsing
-        { source: '/events', destination: `${expressBaseUrl}/events` },
+        // /events migrated to Next.js App Router (app/events/page.jsx)
         { source: '/events/:path*', destination: `${expressBaseUrl}/events/:path*` },
         { source: '/vendors', destination: `${expressBaseUrl}/vendors` },
         { source: '/vendors/:path*', destination: `${expressBaseUrl}/vendors/:path*` },

@@ -49,6 +49,28 @@ export const SOCIAL_LINKS = {
 
 export const COPYRIGHT_YEAR = new Date().getFullYear()
 
+// ── Event filter categories ──────────────────────────
+// Matches the category values stored in the events table.
+// Empty string means "no filter" (All Categories).
+export const EVENT_CATEGORIES = [
+  { value: '', label: 'All Categories' },
+  { value: 'Night Market', label: 'Night Market' },
+  { value: 'Festival', label: 'Festival' },
+  { value: 'Farmers Market', label: 'Farmers Market' },
+  { value: 'Corporate', label: 'Corporate' },
+  { value: 'Pop-up', label: 'Pop-up' },
+  { value: 'Twilight Market', label: 'Twilight Market' },
+]
+
+// ── Event sort options ───────────────────────────────
+// Values match the sort logic in the events page filter.
+export const EVENT_SORT_OPTIONS = [
+  { value: 'date', label: 'Sort: Soonest' },
+  { value: 'spots', label: 'Sort: Spots Left' },
+  { value: 'newest', label: 'Sort: Newest' },
+  { value: 'fee', label: 'Sort: Fee \u2191' },
+]
+
 // ── Category badges ──────────────────────────────────
 // Colours map to CSS custom properties defined in
 // globals.css. Each category gets a distinct tint

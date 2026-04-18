@@ -1,0 +1,96 @@
+.meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.count {
+  font-size: 13px;
+  color: var(--text-lo);
+}
+
+.count strong {
+  color: var(--text-mid);
+  font-weight: 600;
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.filters {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--ember-bg);
+  border: 1px solid #E8500A20;
+  border-radius: 100px;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ember);
+}
+
+.chipRemove {
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1;
+}
+
+.viewToggle {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.viewButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 14px;
+  background: var(--char);
+  border: 1px solid #ffffff09;
+  border-radius: 9px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-lo);
+  cursor: pointer;
+  transition: color 0.14s, border-color 0.14s, background 0.14s;
+}
+
+.viewButton:hover {
+  color: var(--text-hi);
+  border-color: #ffffff18;
+  background: var(--ash);
+}
+
+.viewButtonActive {
+  background: var(--ember);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 2px 10px #E8500A28;
+}
+
+.viewButtonActive:hover {
+  background: var(--ember);
+  color: #fff;
+}

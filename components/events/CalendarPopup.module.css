@@ -1,0 +1,245 @@
+.popup {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 500;
+  background: var(--char);
+  border: 1px solid #ffffff12;
+  border-radius: 18px;
+  padding: 20px;
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.6),
+    0 4px 16px rgba(0, 0, 0, 0.4);
+  min-width: 580px;
+}
+
+.popupOpen {
+  display: block;
+}
+
+/* ── Layout ─────────────────────────────────────────── */
+
+.popupInner {
+  display: flex;
+  gap: 24px;
+}
+
+.month {
+  flex: 1;
+  min-width: 240px;
+}
+
+.monthHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.monthName {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text-hi);
+  letter-spacing: -0.01em;
+}
+
+/* ── Navigation ─────────────────────────────────────── */
+
+.nav {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-lo);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 16px;
+  line-height: 1;
+  transition: color 0.12s, background 0.12s;
+}
+
+.nav:hover {
+  color: var(--text-hi);
+  background: #ffffff0a;
+}
+
+/* Invisible spacer keeps month name centred when nav is
+   only on one side */
+.navSpacer {
+  width: 28px;
+}
+
+/* ── Day grid ───────────────────────────────────────── */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.dow {
+  text-align: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-lo);
+  letter-spacing: 0.05em;
+  padding-bottom: 6px;
+}
+
+.day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-mid);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+  border: none;
+  background: none;
+  font-family: var(--font-body);
+}
+
+.day:hover:not(.empty):not(.past) {
+  background: #ffffff12;
+  color: var(--text-hi);
+}
+
+.empty {
+  cursor: default;
+  color: var(--text-lo);
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+.past {
+  color: var(--text-lo);
+  opacity: 0.5;
+  cursor: default;
+}
+
+.today {
+  color: var(--ember);
+  font-weight: 700;
+}
+
+.start,
+.end,
+.hoverEnd {
+  background: var(--ember);
+  color: #fff;
+  font-weight: 700;
+}
+
+.hoverEnd {
+  opacity: 0.7;
+}
+
+.inRange {
+  background: #e8500a18;
+  color: var(--text-hi);
+  border-radius: 0;
+}
+
+.start {
+  border-radius: 8px 0 0 8px;
+}
+
+.end {
+  border-radius: 0 8px 8px 0;
+}
+
+.startEnd {
+  border-radius: 8px;
+}
+
+/* ── Divider ────────────────────────────────────────── */
+
+.divider {
+  width: 1px;
+  background: #ffffff0a;
+  flex-shrink: 0;
+}
+
+/* ── Footer ─────────────────────────────────────────── */
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid #ffffff0a;
+}
+
+.selectedLabel {
+  font-size: 12px;
+  color: var(--text-lo);
+}
+
+.selectedLabelStrong {
+  color: var(--text-mid);
+  font-weight: 700;
+}
+
+.footerActions {
+  display: flex;
+  gap: 8px;
+}
+
+.btnClear {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 600;
+  background: none;
+  border: 1px solid #ffffff12;
+  border-radius: 8px;
+  color: var(--text-lo);
+  padding: 7px 14px;
+  cursor: pointer;
+  transition: color 0.12s, border-color 0.12s;
+}
+
+.btnClear:hover {
+  color: var(--text-hi);
+  border-color: #ffffff25;
+}
+
+.btnApply {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--ember);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  padding: 7px 18px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+
+.btnApply:hover {
+  background: var(--ember-glow);
+}
+
+/* ── Responsive ─────────────────────────────────────── */
+
+@media (max-width: 680px) {
+  .popup {
+    min-width: calc(100vw - 48px);
+    right: 0;
+    left: auto;
+  }
+
+  .popupInner {
+    flex-direction: column;
+  }
+
+  .divider {
+    height: 1px;
+    width: 100%;
+  }
+}
