@@ -4684,13 +4684,13 @@ async function confirmSubChange() {
       // Downgrade scheduled at period end
       if (d.cancel_at_period_end) {
         closeSubModal();
-        showToast('Your plan will change to Starter at the end of the billing period.', 'info');
+        showToast('Done — you have been moved to the Starter plan. You will keep your current features until the end of your billing period.', 'info');
         return;
       }
       // Subscription swap pending webhook confirmation
       if (d.pending) {
         closeSubModal();
-        showToast('Processing payment — your plan will update within a few minutes once confirmed.', 'info');
+        showToast('Processing — your plan will activate once payment is confirmed.', 'info');
         return;
       }
       // Instant plan switch (same-price sync or free downgrade)
@@ -4753,7 +4753,12 @@ async function directUpgrade(plan, btn) {
       return;
     }
     if (r.ok && d.pending) {
-      showToast('Processing payment — your plan will update within a few minutes once confirmed.', 'info');
+      showToast('Processing — your plan will activate once payment is confirmed.', 'info');
+      btn.textContent = origText; btn.disabled = false; btn.style.opacity = '1';
+      return;
+    }
+    if (r.ok && d.cancel_at_period_end) {
+      showToast('Done — you have been moved to the Starter plan. You will keep your current features until the end of your billing period.', 'info');
       btn.textContent = origText; btn.disabled = false; btn.style.opacity = '1';
       return;
     }
