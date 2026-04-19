@@ -117,7 +117,7 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
           await stmts.updateVendorPlan.run(newPlan, vendor.user_id);
           await stmts.insertSubscriptionChange.run({
             user_id: vendor.user_id, old_plan: oldPlan, new_plan: newPlan,
-            changed_by: 'stripe', admin_user_id: null,
+            changed_by: 'system', admin_user_id: null,
             reason: 'Subscription updated', payment_status: 'paid',
             is_override: 0, override_expires: null,
           });
