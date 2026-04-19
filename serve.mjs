@@ -7,7 +7,8 @@ import bcrypt from 'bcryptjs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import db, { stmts, txSignupVendor, txSignupOrganiser, txSignupFoodie, prepare } from './server/db.mjs';
-import { sendVerificationEmail, sendVerificationSMS, sendAdminEmail, sendDowngradeConfirmationEmail, sendUpgradeConfirmationEmail, sendPaymentFailedEmail, sendSubscriptionCancelledEmail, buildSuspensionEmailHtml, buildSuspensionNoticeHtml, buildPostEventOrgHtml, buildPostEventVendorHtml } from './server/mailer.mjs';
+import { sendVerificationEmail, sendVerificationSMS, sendAdminEmail, sendDowngradeConfirmationEmail, sendUpgradeConfirmationEmail, sendPaymentFailedEmail, sendSubscriptionCancelledEmail, buildSuspensionNoticeHtml, buildPostEventOrgHtml, buildPostEventVendorHtml } from './server/mailer.mjs';
+import { sendNewVendorSignupAdminEmail, sendNewOrganiserSignupAdminEmail, sendStallFeePaidEmail, sendNewMessageEmail, sendAccountApprovedEmail, sendAccountSuspendedEmail, sendApplicationSubmittedEmail, sendApplicationApprovedEmail, sendApplicationRejectedEmail, sendNewApplicationOrganiserEmail, sendDocumentUploadedAdminEmail } from './server/email/index.mjs';
 
 // Lazy-loaded heavy modules (deferred to first use — saves ~1s cold start)
 let _Stripe = null;
@@ -194,6 +195,13 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
         if (fee && fee.status === 'unpaid') {
           await stmts.markStallFeePaid.run(pi.id);
           console.log(`[stripe-webhook] Stall fee ${fee.id} paid via PI ${pi.id}`);
+
+          // Notify vendor of successful payment (fire-and-forget)
+          const feeVendorUser = await stmts.getUserById.get(fee.vendor_user_id);
+          if (feeVendorUser) {
+            sendStallFeePaidEmail(feeVendorUser.email, feeVendorUser.first_name, fee.event_name, fee.amount)
+              .catch(err => console.error('[mailer] stall fee paid webhook email failed:', err.message));
+          }
         }
         break;
       }
@@ -682,6 +690,10 @@ app.post('/api/signup/vendor', async (req, res) => {
     // Auto-verify ABN in background (non-blocking)
     if (abn) autoVerifyAbn(abn.replace(/\s/g, ''), userId, 'vendor', { first_name, last_name, trading_name, email });
 
+    // Notify admin of new vendor signup (fire-and-forget)
+    sendNewVendorSignupAdminEmail(first_name, email, trading_name, suburb || '', plan || 'free')
+      .catch(err => console.error('[mailer] vendor signup admin email failed:', err.message));
+
     sessWrite(res, { userId, role: 'vendor', name: `${first_name} ${last_name}` });
     res.json({ ok: true, redirect: '/dashboard/vendor' });
   } catch (err) {
@@ -749,6 +761,10 @@ app.post('/api/signup/organiser', async (req, res) => {
 
     // Auto-verify ABN in background (non-blocking)
     if (abn) autoVerifyAbn(abn.replace(/\s/g, ''), userId, 'organiser', { first_name, last_name, trading_name: org_name, email });
+
+    // Notify admin of new organiser signup (fire-and-forget)
+    sendNewOrganiserSignupAdminEmail(first_name, email, org_name, suburb || '')
+      .catch(err => console.error('[mailer] organiser signup admin email failed:', err.message));
 
     sessWrite(res, { userId, role: 'organiser', name: `${first_name} ${last_name}` });
     res.json({ ok: true, redirect: '/dashboard/organiser' });
@@ -1820,13 +1836,9 @@ app.post('/api/admin/users/:id/status', requireAdmin, async (req, res) => {
             );
           }
         }
-        // Suspension email to vendor
-        await sendAdminEmail(
-          user.email,
-          'Your Pitch. account has been suspended',
-          buildSuspensionEmailHtml(user.first_name, reason || 'Violation of platform terms.', 'vendor'),
-          `Your Pitch. vendor account has been suspended. Reason: ${reason || 'Violation of platform terms.'}. Contact support@onpitch.com.au to appeal.`
-        );
+        // Suspension email to vendor (branded template)
+        sendAccountSuspendedEmail(user.email, user.first_name, reason || 'Violation of platform terms.')
+          .catch(err => console.error('[mailer] account suspended email failed:', err.message));
       } else if (user.role === 'organiser') {
         // Notify confirmed vendors BEFORE archiving events
         const affectedVendors = await stmts.getConfirmedVendorsAtOrgEvents.all(userId);
@@ -1840,13 +1852,9 @@ app.post('/api/admin/users/:id/status', requireAdmin, async (req, res) => {
         }
         // Archive all their published events
         await stmts.suspendOrgEvents.run(userId);
-        // Suspension email to organiser
-        await sendAdminEmail(
-          user.email,
-          'Your Pitch. organiser account has been suspended',
-          buildSuspensionEmailHtml(user.first_name, reason || 'Violation of platform terms.', 'organiser'),
-          `Your Pitch. organiser account has been suspended. Reason: ${reason || 'Violation of platform terms.'}. Contact support@onpitch.com.au to appeal.`
-        );
+        // Suspension email to organiser (branded template)
+        sendAccountSuspendedEmail(user.email, user.first_name, reason || 'Violation of platform terms.')
+          .catch(err => console.error('[mailer] account suspended email failed:', err.message));
       }
     } else if (status === 'active' && prevStatus === 'suspended') {
       // Reinstatement
@@ -1866,6 +1874,10 @@ app.post('/api/admin/users/:id/status', requireAdmin, async (req, res) => {
       }
       // Clear suspension reason on reinstatement
       await stmts.setSuspendedReason.run(null, userId);
+    } else if (status === 'active' && prevStatus !== 'active') {
+      // Activation from pending/banned = approval
+      sendAccountApprovedEmail(user.email, user.first_name)
+        .catch(err => console.error('[mailer] account approved email failed:', err.message));
     }
 
     // Audit log
@@ -2707,6 +2719,21 @@ app.post('/api/events/:id/apply', requireAuth, async (req, res) => {
     } catch (autoErr) { console.error('[auto-response]', autoErr); }
 
     res.json({ ok: true });
+
+    // Email notifications — fire-and-forget
+    try {
+      const applyUser = await stmts.getUserById.get(req.session.userId);
+      const applyVendor = await stmts.getVendorByUserId.get(req.session.userId);
+      if (applyUser) {
+        sendApplicationSubmittedEmail(applyUser.email, applyUser.first_name, ev.name, ev.date_text || '', ev.suburb || '')
+          .catch(err => console.error('[mailer] application submitted email failed:', err.message));
+      }
+      const orgUser = await stmts.getUserById.get(ev.organiser_user_id);
+      if (orgUser && applyVendor) {
+        sendNewApplicationOrganiserEmail(orgUser.email, orgUser.first_name, applyUser?.first_name || '', applyVendor.trading_name || '', ev.name, applyVendor.cuisine_tags || '', applyVendor.plan || 'free')
+          .catch(err => console.error('[mailer] new application organiser email failed:', err.message));
+      }
+    } catch (emailErr) { console.error('[mailer] application email lookup failed:', emailErr.message); }
   } catch (err) {
     if (err.message && err.message.includes('UNIQUE')) {
       return res.status(409).json({ error: 'You have already applied to this event' });
@@ -2984,6 +3011,23 @@ app.post('/api/messages/:threadKey', requireAuth, async (req, res) => {
     const result = await stmts.sendMessage.run(threadKey, req.session.userId, body.trim());
     const msg = { id: result.lastInsertRowid, thread_key: threadKey, sender_user_id: req.session.userId, body: body.trim(), is_read: 0, created_at: new Date().toISOString() };
     res.json({ message: msg });
+
+    // Notify recipient of new message (fire-and-forget, non-blocking)
+    try {
+      const thread = await stmts.getThread.get(threadKey);
+      if (thread) {
+        const recipientUserId = thread.vendor_user_id === req.session.userId
+          ? thread.organiser_user_id
+          : thread.vendor_user_id;
+        const recipientUser = await stmts.getUserById.get(recipientUserId);
+        const senderUser = await stmts.getUserById.get(req.session.userId);
+        if (recipientUser && senderUser) {
+          const senderDisplayName = senderUser.first_name || 'Someone';
+          sendNewMessageEmail(recipientUser.email, recipientUser.first_name, senderDisplayName, body.trim().substring(0, 100), null)
+            .catch(err => console.error('[mailer] new message email failed:', err.message));
+        }
+      }
+    } catch (emailErr) { console.error('[mailer] message notification lookup failed:', emailErr.message); }
   } catch (e) { console.error('[messages send]', e); res.status(500).json({ error: 'Server error' }); }
 });
 
@@ -3052,6 +3096,15 @@ app.post('/api/vendor/documents', requireAuth, async (req, res) => {
   }
 
   res.json({ ok: true, url: data, pli_analysis: pliAnalysis });
+
+  // Notify admin of document upload — fire-and-forget
+  try {
+    const docUser = await stmts.getUserById.get(req.session.userId);
+    if (docUser) {
+      sendDocumentUploadedAdminEmail(current?.trading_name || docUser.first_name, docUser.email, doc_type)
+        .catch(err => console.error('[mailer] document uploaded admin email failed:', err.message));
+    }
+  } catch (emailErr) { console.error('[mailer] doc upload email lookup failed:', emailErr.message); }
 });
 
 // ── API: PLI analysis status ──────────────────────────────────────────────
@@ -3159,6 +3212,14 @@ app.post('/api/vendor/stall-fees/:id/confirm', requireAuth, async (req, res) => 
     const pi = await stripe.paymentIntents.retrieve(fee.stripe_payment_intent_id);
     if (pi.status === 'succeeded') {
       await stmts.payStallFee.run(fee.id, req.session.userId);
+
+      // Notify vendor of successful payment (fire-and-forget)
+      const confirmUser = await stmts.getUserById.get(req.session.userId);
+      if (confirmUser) {
+        sendStallFeePaidEmail(confirmUser.email, confirmUser.first_name, fee.event_name, fee.amount)
+          .catch(err => console.error('[mailer] stall fee paid confirm email failed:', err.message));
+      }
+
       return res.json({ ok: true });
     }
     res.json({ ok: false, status: pi.status });
@@ -4101,6 +4162,27 @@ app.patch('/api/organiser/applications/:id/status', requireAuth, async (req, res
       const { n } = await stmts.countApprovedByEvent.get(app.event_id);
       spotNumber = n; // n already includes this approval
       await stmts.setApplicationSpot.run(spotNumber, req.params.id);
+      // Email: notify vendor of approval
+      try {
+        const approvedVendorUser = await stmts.getUserById.get(app.vendor_user_id);
+        const approvedEvent = await stmts.getEventById.get(app.event_id);
+        if (approvedVendorUser && approvedEvent) {
+          sendApplicationApprovedEmail(approvedVendorUser.email, approvedVendorUser.first_name, approvedEvent.name, approvedEvent.date_text || '', approvedEvent.suburb || '', '', '')
+            .catch(err => console.error('[mailer] application approved email failed:', err.message));
+        }
+      } catch (emailErr) { console.error('[mailer] approval email lookup failed:', emailErr.message); }
+    }
+  } else if (status === 'rejected') {
+    const rejApp = await stmts.getApplicationById.get(req.params.id);
+    if (rejApp) {
+      try {
+        const rejVendorUser = await stmts.getUserById.get(rejApp.vendor_user_id);
+        const rejEvent = await stmts.getEventById.get(rejApp.event_id);
+        if (rejVendorUser && rejEvent) {
+          sendApplicationRejectedEmail(rejVendorUser.email, rejVendorUser.first_name, rejEvent.name, rejEvent.date_text || '', '')
+            .catch(err => console.error('[mailer] application rejected email failed:', err.message));
+        }
+      } catch (emailErr) { console.error('[mailer] rejection email lookup failed:', emailErr.message); }
     }
   }
   res.json({ ok: true, spot_number: spotNumber });
