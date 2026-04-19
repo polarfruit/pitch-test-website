@@ -117,7 +117,7 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
           await stmts.updateVendorPlan.run(newPlan, vendor.user_id);
           await stmts.insertSubscriptionChange.run({
             user_id: vendor.user_id, old_plan: oldPlan, new_plan: newPlan,
-            changed_by: 'system', admin_user_id: null,
+            changed_by: 'stripe', admin_user_id: null,
             reason: 'Subscription updated', payment_status: 'paid',
             is_override: 0, override_expires: null,
           });
@@ -1254,7 +1254,7 @@ app.post('/api/profile/plan', requireAuth, async (req, res) => {
       // If vendor already has a Stripe subscription, swap the price on it
       if (hasStripeSub) {
         try {
-          const sub = await stripe.subscriptions.retrieve(vendor.stripe_subscription_id);
+          const sub = await stripe.subscriptions.retrieve(vendor.stripe_subscription_id, {}, { timeout: 10000 });
           const currentPriceId = sub.items.data[0]?.price?.id;
           // Already on this exact price — nothing to do
           if (currentPriceId === STRIPE_PRICES[plan]) {
@@ -1266,16 +1266,10 @@ app.post('/api/profile/plan', requireAuth, async (req, res) => {
             items: [{ id: sub.items.data[0].id, price: STRIPE_PRICES[plan] }],
             proration_behavior: 'create_prorations',
             metadata: { user_id: String(req.session.userId), plan },
-          });
-          await stmts.updateVendorPlan.run(plan, req.session.userId);
-          await stmts.insertSubscriptionChange.run({
-            user_id: req.session.userId, old_plan: vendor.plan || 'free', new_plan: plan,
-            changed_by: 'vendor', admin_user_id: null,
-            reason: 'Plan switch (prorated)', payment_status: 'paid',
-            is_override: 0, override_expires: null,
-          });
-          _apiCache.delete('vendors'); _apiCache.delete('stats');
-          return res.json({ ok: true, plan });
+          }, { timeout: 10000 });
+          // Plan update deferred — the customer.subscription.updated webhook
+          // will write the new plan to the DB once Stripe confirms payment.
+          return res.json({ ok: true, pending: true });
         } catch (subErr) {
           console.error('[plan] Subscription swap failed:', subErr.message);
           // If sub is invalid/cancelled, clear it and fall through to checkout
@@ -1309,7 +1303,7 @@ app.post('/api/profile/plan', requireAuth, async (req, res) => {
       }
 
       try {
-        const session = await stripe.checkout.sessions.create(sessionParams);
+        const session = await stripe.checkout.sessions.create(sessionParams, { timeout: 10000 });
         console.log('[plan] Checkout session created:', session.id);
         return res.json({ ok: true, checkout_url: session.url });
       } catch (stripeErr) {
@@ -1324,7 +1318,7 @@ app.post('/api/profile/plan', requireAuth, async (req, res) => {
       if (stripe) {
         await stripe.subscriptions.update(vendor.stripe_subscription_id, {
           cancel_at_period_end: true,
-        });
+        }, { timeout: 10000 });
         return res.json({ ok: true, plan: vendor.plan, cancel_at_period_end: true });
       }
     }

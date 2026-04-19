@@ -4686,7 +4686,13 @@ async function confirmSubChange() {
         showToast('Your plan will change to Starter at the end of the billing period.', 'info');
         return;
       }
-      // Instant plan switch (upgrade between paid, or fallback)
+      // Subscription swap pending webhook confirmation
+      if (d.pending) {
+        closeSubModal();
+        showToast('Processing payment — your plan will update within a few minutes once confirmed.', 'info');
+        return;
+      }
+      // Instant plan switch (same-price sync or free downgrade)
       if (window.__PITCH_USER__?.vendor) window.__PITCH_USER__.vendor.plan = d.plan || chosen;
       _currentSubPlan = d.plan || chosen;
       closeSubModal();
@@ -4743,6 +4749,11 @@ async function directUpgrade(plan, btn) {
     if (r.ok && d.checkout_url) {
       btn.textContent = 'Redirecting to payment…';
       window.location.href = d.checkout_url;
+      return;
+    }
+    if (r.ok && d.pending) {
+      showToast('Processing payment — your plan will update within a few minutes once confirmed.', 'info');
+      btn.textContent = origText; btn.disabled = false; btn.style.opacity = '1';
       return;
     }
     if (r.ok && d.plan) {
