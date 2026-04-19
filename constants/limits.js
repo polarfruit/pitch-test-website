@@ -41,3 +41,8 @@ export const MAXIMUM_DISPLAYED_EVENTS = 6
 // 12 fills a 4x3 grid on desktop and scrolls naturally
 // on mobile without requiring excessive pagination.
 export const EVENTS_PER_PAGE = 12
+
+// Vendors shown per page on the /vendors browse page.
+// 12 fills a 3x4 grid on desktop and scrolls naturally
+// on mobile without requiring excessive pagination.
+export const VENDORS_PER_PAGE = 12

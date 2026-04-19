@@ -30,8 +30,9 @@ const nextConfig = {
 
         // Pages — browsing
         // /events migrated to Next.js App Router (app/events/page.jsx)
+        // /vendors migrated to Next.js App Router (app/vendors/page.jsx)
+        // Vendor detail pages (/vendors/:slug) remain on Express for now.
         { source: '/events/:path*', destination: `${expressBaseUrl}/events/:path*` },
-        { source: '/vendors', destination: `${expressBaseUrl}/vendors` },
         { source: '/vendors/:path*', destination: `${expressBaseUrl}/vendors/:path*` },
         { source: '/organisers/:path*', destination: `${expressBaseUrl}/organisers/:path*` },
         { source: '/discover', destination: `${expressBaseUrl}/discover` },

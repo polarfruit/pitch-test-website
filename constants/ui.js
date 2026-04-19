@@ -101,3 +101,40 @@ export const CATEGORY_BADGE_COLORS = {
     color: 'var(--slate)',
   },
 }
+
+// ── Vendor filter options ─────────────────────────────
+// Cuisine values match the cuisine_tags strings stored in
+// the vendors table. Empty string means "no filter"
+// (All Cuisines).
+export const VENDOR_CUISINES = [
+  { value: '', label: 'All Cuisines' },
+  { value: 'BBQ', label: 'BBQ' },
+  { value: 'Mexican', label: 'Mexican' },
+  { value: 'Asian Fusion', label: 'Asian Fusion' },
+  { value: 'Italian', label: 'Italian' },
+  { value: 'Desserts', label: 'Desserts' },
+  { value: 'Coffee & Drinks', label: 'Coffee & Drinks' },
+  { value: 'Vegan', label: 'Vegan' },
+  { value: 'Burgers', label: 'Burgers' },
+  { value: 'Seafood', label: 'Seafood' },
+  { value: 'Other', label: 'Other' },
+]
+
+// Setup type values match the setup_type column in the
+// vendors table.
+export const VENDOR_SETUP_TYPES = [
+  { value: '', label: 'All Setup Types' },
+  { value: 'Food Truck', label: 'Food Truck' },
+  { value: 'Pop-up Stall', label: 'Pop-up Stall' },
+  { value: 'Cart', label: 'Cart' },
+]
+
+// Default 'featured' sorts by plan tier (Growth \u2192 Pro
+// \u2192 Starter) so paying vendors retain visibility
+// parity after migration from pages/vendors.html, where
+// the same behaviour was keyed on isPro/_tier.
+export const VENDOR_SORT_OPTIONS = [
+  { value: 'featured', label: 'Sort: Featured' },
+  { value: 'az', label: 'Sort: A\u2013Z' },
+  { value: 'za', label: 'Sort: Z\u2013A' },
+]

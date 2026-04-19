@@ -1,0 +1,139 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-bottom: 48px;
+}
+
+/* ── SKELETON ────────────────────────────────────────────────────────────── */
+
+.skeleton {
+  background: var(--parchment);
+  border: 1px solid var(--linen);
+  border-radius: 18px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.skeletonHead {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.skeletonAvatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2E2720, #1A1612);
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+.skeletonAvatar::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.04) 50%, transparent 100%);
+  animation: shimmer 1.6s ease-in-out infinite;
+}
+
+.skeletonHeadText {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skeletonBody {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skeletonLine {
+  background: var(--linen);
+  border-radius: 4px;
+  opacity: 0.6;
+}
+
+.skeletonTagsRow {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.skeletonTag {
+  width: 56px;
+  height: 20px;
+  border-radius: 10px;
+  background: var(--linen);
+  opacity: 0.6;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* ── EMPTY STATE ─────────────────────────────────────────────────────────── */
+
+.empty {
+  text-align: center;
+  padding: 80px 0;
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.emptyIcon {
+  font-size: 48px;
+  margin-bottom: 4px;
+}
+
+.emptyTitle {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-hi);
+}
+
+.emptyDescription {
+  font-size: 14px;
+  color: var(--text-lo);
+  max-width: 420px;
+  line-height: 1.6;
+}
+
+.emptyCta {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 12px 24px;
+  background: var(--ember);
+  color: var(--parchment);
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+  transition: background 150ms ease, transform 150ms ease;
+}
+
+.emptyCta:hover {
+  background: var(--ember-glow);
+  transform: translateY(-1px);
+}
+
+/* ── RESPONSIVE ──────────────────────────────────────────────────────────── */
+
+@media (max-width: 1024px) {
+  .grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 640px) {
+  .grid { grid-template-columns: 1fr; }
+}
