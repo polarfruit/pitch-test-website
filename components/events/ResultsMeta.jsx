@@ -15,14 +15,14 @@ function ResultsMeta({ filteredCount, totalCount, activeFilters = [], currentVie
       <div className={styles.right}>
         <div className={styles.filters}>
           {activeFilters.map((filter) => (
-            <span key={filter} className={styles.chip}>
-              {filter}
+            <span key={filter.field} className={styles.chip}>
+              {filter.label}
               <span
                 className={styles.chipRemove}
-                onClick={() => onRemoveFilter(filter)}
+                onClick={() => onRemoveFilter(filter.field)}
                 role="button"
                 tabIndex={0}
-                aria-label={`Remove ${filter} filter`}
+                aria-label={`Remove ${filter.label} filter`}
               >
                 &times;
               </span>

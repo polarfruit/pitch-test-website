@@ -158,12 +158,20 @@ function EventsPage({ events = [] }) {
         </p>
       </div>
 
-      <FilterBar filters={filters} onFilterChange={handleFilterChange} onCalendarToggle={handleCalendarToggle} />
+      <FilterBar
+        filters={filters}
+        onFilterChange={handleFilterChange}
+        onClearAll={handleClearAllFilters}
+        onCalendarToggle={handleCalendarToggle}
+        isCalendarOpen={isCalendarOpen}
+      />
 
       {isCalendarOpen && (
         <CalendarPopup
-          dateFrom={dateFromFilter}
-          dateTo={dateToFilter}
+          startDate={dateFromFilter}
+          endDate={dateToFilter}
+          isOpen={isCalendarOpen}
+          onClose={handleCalendarToggle}
           onApply={(from, to) => {
             handleFilterChange('dateFrom', from)
             handleFilterChange('dateTo', to)

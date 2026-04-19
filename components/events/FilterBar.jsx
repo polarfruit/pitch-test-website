@@ -11,7 +11,7 @@ function toDisplayDate(iso) {
 }
 
 function FilterBar({ filters, onFilterChange, onClearAll, onCalendarToggle, isCalendarOpen }) {
-  const hasActiveFilters = filters.search || filters.category || filters.dateFrom || filters.dateTo || filters.sort !== 'date'
+  const hasActiveFilters = filters.search || filters.category || filters.dateFrom || filters.dateTo || filters.sort !== 'soonest'
 
   return (
     <div className={styles.filterBar}>
