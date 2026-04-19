@@ -8,7 +8,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import db, { stmts, txSignupVendor, txSignupOrganiser, txSignupFoodie, prepare } from './server/db.mjs';
 import { sendVerificationEmail, sendVerificationSMS, sendAdminEmail, sendDowngradeConfirmationEmail, sendUpgradeConfirmationEmail, sendPaymentFailedEmail, sendSubscriptionCancelledEmail, buildSuspensionNoticeHtml, buildPostEventOrgHtml, buildPostEventVendorHtml } from './server/mailer.mjs';
-import { sendNewVendorSignupAdminEmail, sendNewOrganiserSignupAdminEmail, sendStallFeePaidEmail, sendNewMessageEmail, sendAccountApprovedEmail, sendAccountSuspendedEmail, sendApplicationSubmittedEmail, sendApplicationApprovedEmail, sendApplicationRejectedEmail, sendNewApplicationOrganiserEmail, sendDocumentUploadedAdminEmail } from './server/email/index.mjs';
+import { sendNewVendorSignupAdminEmail, sendNewOrganiserSignupAdminEmail, sendStallFeePaidEmail, sendStallFeeIssuedEmail, sendNewMessageEmail, sendAccountApprovedEmail, sendAccountSuspendedEmail, sendApplicationSubmittedEmail, sendApplicationApprovedEmail, sendApplicationRejectedEmail, sendNewApplicationOrganiserEmail, sendDocumentUploadedAdminEmail, sendDocumentVerifiedEmail, sendDocumentRejectedEmail, sendAccountRejectedEmail } from './server/email/index.mjs';
 
 // Lazy-loaded heavy modules (deferred to first use — saves ~1s cold start)
 let _Stripe = null;
@@ -1803,7 +1803,7 @@ app.get('/api/admin/stats', requireAdmin, async (req, res) => {
 
 app.post('/api/admin/users/:id/status', requireAdmin, async (req, res) => {
   const { status, reason } = req.body;
-  const allowed = ['active', 'pending', 'suspended', 'banned'];
+  const allowed = ['active', 'pending', 'suspended', 'banned', 'rejected'];
   if (!allowed.includes(status)) return res.status(400).json({ error: 'Invalid status' });
 
   const userId = parseInt(req.params.id);
@@ -1874,8 +1874,19 @@ app.post('/api/admin/users/:id/status', requireAdmin, async (req, res) => {
       }
       // Clear suspension reason on reinstatement
       await stmts.setSuspendedReason.run(null, userId);
+    } else if (status === 'rejected') {
+      // Rejection — withdraw vendor's pending applications
+      if (user.role === 'vendor') {
+        await stmts.withdrawVendorPendingApps.run(userId);
+      }
+      // Send rejection email
+      sendAccountRejectedEmail(user.email, user.first_name, reason || 'Your application did not meet our current requirements.')
+        .catch(err => console.error('[mailer] account rejected email failed:', err.message));
     } else if (status === 'active' && prevStatus !== 'active') {
-      // Activation from pending/banned = approval
+      // Activation from pending/banned/rejected = approval
+      if (prevStatus === 'rejected') {
+        await stmts.setSuspendedReason.run(null, userId);
+      }
       sendAccountApprovedEmail(user.email, user.first_name)
         .catch(err => console.error('[mailer] account approved email failed:', err.message));
     }
@@ -4188,6 +4199,62 @@ app.patch('/api/organiser/applications/:id/status', requireAuth, async (req, res
   res.json({ ok: true, spot_number: spotNumber });
 });
 
+// POST /api/organiser/events/:eventId/stall-fees — issue stall fee to vendor
+app.post('/api/organiser/events/:eventId/stall-fees', requireAuth, async (req, res) => {
+  if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
+  const ev = await stmts.getEventById.get(req.params.eventId);
+  if (!ev || Number(ev.organiser_user_id) !== Number(req.session.userId)) return res.status(403).json({ error: 'Not your event' });
+
+  const { vendor_user_id, amount, due_date } = req.body;
+
+  if (!vendor_user_id) return res.status(400).json({ error: 'vendor_user_id is required.' });
+  if (!amount || isNaN(amount) || Number(amount) <= 0) return res.status(400).json({ error: 'Amount must be a positive number.' });
+  if (!due_date) return res.status(400).json({ error: 'due_date is required.' });
+  const parsedDueDate = new Date(due_date);
+  if (isNaN(parsedDueDate.getTime())) return res.status(400).json({ error: 'Invalid due_date format.' });
+  if (parsedDueDate <= new Date()) return res.status(400).json({ error: 'due_date must be in the future.' });
+
+  // Vendor must have an approved application for this event
+  const application = await stmts.getApplicationByIds.get(Number(req.params.eventId), Number(vendor_user_id));
+  if (!application || application.status !== 'approved') return res.status(400).json({ error: 'Vendor does not have an approved application for this event.' });
+
+  // Vendor must not already have an unpaid fee for this event
+  const existingFee = await prepare(`SELECT id FROM stall_fees WHERE vendor_user_id=? AND event_id=? AND status='unpaid'`).get(Number(vendor_user_id), Number(req.params.eventId));
+  if (existingFee) return res.status(409).json({ error: 'Vendor already has an unpaid stall fee for this event.' });
+
+  const result = await stmts.createStallFee.run({
+    vendor_user_id: Number(vendor_user_id),
+    event_id: Number(req.params.eventId),
+    event_name: ev.name,
+    amount: Number(amount),
+    due_date: parsedDueDate.toISOString().split('T')[0],
+    status: 'unpaid',
+  });
+
+  // Email vendor — fire-and-forget
+  try {
+    const vendorUser = await stmts.getUserById.get(Number(vendor_user_id));
+    if (vendorUser) {
+      const formattedDueDate = parsedDueDate.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric' });
+      sendStallFeeIssuedEmail(vendorUser.email, vendorUser.first_name, ev.name, Number(amount), formattedDueDate)
+        .catch(err => console.error('[mailer] stall fee issued email failed:', err.message));
+    }
+  } catch (emailErr) { console.error('[mailer] stall fee email lookup failed:', emailErr.message); }
+
+  res.json({ ok: true, feeId: result.lastInsertRowid });
+});
+
+// GET /api/organiser/events/:eventId/stall-fees — list stall fees for event
+app.get('/api/organiser/events/:eventId/stall-fees', requireAuth, async (req, res) => {
+  if (req.session.role !== 'organiser') return res.status(403).json({ error: 'Organisers only' });
+  const ev = await stmts.getEventById.get(req.params.eventId);
+  if (!ev || Number(ev.organiser_user_id) !== Number(req.session.userId)) return res.status(403).json({ error: 'Not your event' });
+
+  const fees = await prepare(`SELECT sf.*, u.first_name, u.last_name, u.email, v.trading_name FROM stall_fees sf JOIN users u ON sf.vendor_user_id=u.id LEFT JOIN vendors v ON v.user_id=u.id WHERE sf.event_id=? ORDER BY sf.created_at DESC`).all(Number(req.params.eventId));
+
+  res.json({ fees });
+});
+
 // ── Admin — applications ───────────────────────────────────────────────────
 app.get('/api/admin/applications', requireAdmin, async (req, res) => {
   const { status } = req.query;
@@ -4308,9 +4375,14 @@ app.post('/api/admin/users/:id/force-verify', requireAdmin, async (req, res) => 
       }
     }
 
-    // 4. Activate the user if they're still pending
-    if (user.status === 'pending') {
+    // 4. Activate the user if they're still pending or rejected
+    if (user.status === 'pending' || user.status === 'rejected') {
       await prepare(`UPDATE users SET status='active' WHERE id=?`).run(userId);
+      if (user.status === 'rejected') {
+        await stmts.setSuspendedReason.run(null, userId);
+      }
+      sendAccountApprovedEmail(user.email, user.first_name)
+        .catch(err => console.error('[mailer] approval email failed:', err.message));
     }
 
     res.json({ ok: true });
@@ -4767,6 +4839,94 @@ app.patch('/api/admin/vendors/:id/rename', requireAdmin, async (req, res) => {
   await stmts.renameVendor.run(name.trim(), req.params.id);
   _apiCache.delete('featured-vendors');
   res.json({ ok: true });
+});
+
+// ── Admin document verification ────────────────────────────────────────────
+
+const DOCUMENT_TYPE_LABELS = {
+  pli: 'Public Liability Insurance',
+  food_safety: 'Food Safety Certificate',
+  council: 'Council Registration',
+};
+
+// PATCH /api/admin/vendors/:userId/documents/:docType/verify
+app.patch('/api/admin/vendors/:userId/documents/:docType/verify', requireAdmin, async (req, res) => {
+  const { userId, docType } = req.params;
+  const docTypeLabel = DOCUMENT_TYPE_LABELS[docType];
+  if (!docTypeLabel) return res.status(400).json({ error: 'Invalid document type. Must be: pli, food_safety, or council' });
+
+  const verifyStatements = {
+    pli: stmts.verifyPliDocument,
+    food_safety: stmts.verifyFoodSafetyDocument,
+    council: stmts.verifyCouncilDocument,
+  };
+
+  try {
+    const user = await stmts.getUserById.get(parseInt(userId));
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    const vendor = await stmts.getVendorByUserId.get(user.id);
+    if (!vendor) return res.status(404).json({ error: 'Vendor profile not found' });
+
+    await verifyStatements[docType].run(user.id);
+
+    await stmts.insertAuditLog.run({
+      admin_user_id: req.session.userId,
+      action: `document_verified_${docType}`,
+      target_user_id: user.id,
+      target_role: 'vendor',
+      reason: null,
+      metadata: JSON.stringify({ document_type: docType }),
+    });
+
+    sendDocumentVerifiedEmail(user.email, vendor.trading_name || user.first_name, docTypeLabel)
+      .catch(err => console.error('[mailer] document verified email failed:', err.message));
+
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('[admin document verify]', e);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// PATCH /api/admin/vendors/:userId/documents/:docType/reject
+app.patch('/api/admin/vendors/:userId/documents/:docType/reject', requireAdmin, async (req, res) => {
+  const { userId, docType } = req.params;
+  const { reason } = req.body;
+  const docTypeLabel = DOCUMENT_TYPE_LABELS[docType];
+  if (!docTypeLabel) return res.status(400).json({ error: 'Invalid document type. Must be: pli, food_safety, or council' });
+  if (!reason || !reason.trim()) return res.status(400).json({ error: 'Rejection reason required' });
+
+  const rejectStatements = {
+    pli: stmts.rejectPliDocument,
+    food_safety: stmts.rejectFoodSafetyDocument,
+    council: stmts.rejectCouncilDocument,
+  };
+
+  try {
+    const user = await stmts.getUserById.get(parseInt(userId));
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    const vendor = await stmts.getVendorByUserId.get(user.id);
+    if (!vendor) return res.status(404).json({ error: 'Vendor profile not found' });
+
+    await rejectStatements[docType].run(reason.trim(), user.id);
+
+    await stmts.insertAuditLog.run({
+      admin_user_id: req.session.userId,
+      action: `document_rejected_${docType}`,
+      target_user_id: user.id,
+      target_role: 'vendor',
+      reason: reason.trim(),
+      metadata: JSON.stringify({ document_type: docType }),
+    });
+
+    sendDocumentRejectedEmail(user.email, vendor.trading_name || user.first_name, docTypeLabel, reason.trim())
+      .catch(err => console.error('[mailer] document rejected email failed:', err.message));
+
+    res.json({ ok: true });
+  } catch (e) {
+    console.error('[admin document reject]', e);
+    res.status(500).json({ error: 'Server error' });
+  }
 });
 
 // ── Vendor menu endpoints ───────────────────────────────────────────────────

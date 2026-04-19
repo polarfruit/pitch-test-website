@@ -166,7 +166,7 @@ try {
       last_name         TEXT    NOT NULL,
       role              TEXT    NOT NULL CHECK(role IN ('vendor','organiser','admin','foodie')),
       status            TEXT    NOT NULL DEFAULT 'pending'
-                                CHECK(status IN ('pending','active','suspended','banned')),
+                                CHECK(status IN ('pending','active','suspended','banned','rejected')),
       email_verified    INTEGER NOT NULL DEFAULT 0,
       phone_verified    INTEGER NOT NULL DEFAULT 0,
       oauth_provider    TEXT,
@@ -387,6 +387,11 @@ await _safeExec(`ALTER TABLE vendors ADD COLUMN pli_expiry TEXT`);
 await _safeExec(`ALTER TABLE vendors ADD COLUMN pli_status TEXT DEFAULT 'none'`);  // none | pending | verified | flagged | expired
 await _safeExec(`ALTER TABLE vendors ADD COLUMN pli_analysed_at DATETIME`);
 await _safeExec(`ALTER TABLE vendors ADD COLUMN pli_flags TEXT DEFAULT '[]'`);
+await _safeExec(`ALTER TABLE vendors ADD COLUMN food_safety_status TEXT DEFAULT 'none'`);  // none | pending | verified | rejected
+await _safeExec(`ALTER TABLE vendors ADD COLUMN council_status TEXT DEFAULT 'none'`);      // none | pending | verified | rejected
+await _safeExec(`ALTER TABLE vendors ADD COLUMN pli_rejection_reason TEXT`);
+await _safeExec(`ALTER TABLE vendors ADD COLUMN food_safety_rejection_reason TEXT`);
+await _safeExec(`ALTER TABLE vendors ADD COLUMN council_rejection_reason TEXT`);
 await _safeExec(`ALTER TABLE vendors ADD COLUMN abn_entity_name TEXT`);
 await _safeExec(`ALTER TABLE vendors ADD COLUMN abn_match TEXT`);        // match | partial | mismatch | unknown
 await _safeExec(`ALTER TABLE vendors ADD COLUMN abn_verified_at DATETIME`);
@@ -627,7 +632,7 @@ await _safeExec(`CREATE INDEX IF NOT EXISTS idx_msg_thread ON messages(thread_ke
         first_name TEXT NOT NULL,
         last_name TEXT NOT NULL,
         role TEXT NOT NULL CHECK(role IN ('vendor','organiser','admin','foodie')),
-        status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','active','suspended','banned')),
+        status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','active','suspended','banned','rejected')),
         email_verified INTEGER NOT NULL DEFAULT 0,
         phone_verified INTEGER NOT NULL DEFAULT 0,
         created_at DATETIME DEFAULT (datetime('now')),
@@ -1133,6 +1138,57 @@ await _safeExec(`ALTER TABLE organisers ADD COLUMN time_format TEXT DEFAULT '12'
 // ── User last_active tracking ───────────────────────────────────────────────
 await _safeExec(`ALTER TABLE users ADD COLUMN last_active DATETIME`);
 
+// ── Rejected status migration (users.status CHECK must include 'rejected') ──
+{
+  let _rejSchema = '';
+  try {
+    if (process.env.TURSO_DATABASE_URL) {
+      const r = await _client.execute(`SELECT sql FROM sqlite_master WHERE type='table' AND name='users'`);
+      _rejSchema = (r.rows[0]?.sql) || '';
+    } else {
+      const row = _localDb.prepare(`SELECT sql FROM sqlite_master WHERE type='table' AND name='users'`).get();
+      _rejSchema = (row?.sql) || '';
+    }
+  } catch {}
+  if (_rejSchema && !_rejSchema.includes("'rejected'")) {
+    const migSQL = `
+      ALTER TABLE users RENAME TO _users_old;
+      CREATE TABLE users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        email TEXT UNIQUE NOT NULL,
+        password_hash TEXT NOT NULL,
+        first_name TEXT NOT NULL,
+        last_name TEXT NOT NULL,
+        role TEXT NOT NULL CHECK(role IN ('vendor','organiser','admin','foodie')),
+        status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending','active','suspended','banned','rejected')),
+        email_verified INTEGER NOT NULL DEFAULT 0,
+        phone_verified INTEGER NOT NULL DEFAULT 0,
+        oauth_provider TEXT,
+        oauth_sub TEXT,
+        force_verified INTEGER DEFAULT 0,
+        suspended_reason TEXT,
+        two_factor_enabled INTEGER NOT NULL DEFAULT 0,
+        last_active DATETIME,
+        created_at DATETIME DEFAULT (datetime('now')),
+        avatar_url TEXT
+      );
+      INSERT INTO users SELECT * FROM _users_old;
+      DROP TABLE _users_old;
+    `;
+    try {
+      if (process.env.TURSO_DATABASE_URL) {
+        await _client.execute('PRAGMA foreign_keys=OFF');
+        await _client.executeMultiple(migSQL);
+        await _client.execute('PRAGMA foreign_keys=ON');
+      } else {
+        _localDb.pragma('foreign_keys=OFF');
+        _localDb.exec(migSQL);
+        _localDb.pragma('foreign_keys=ON');
+      }
+    } catch (e) { console.error('[db] Rejected status migration failed:', e); }
+  }
+}
+
 // ── Team members table ──────────────────────────────────────────────────────
 await _safeExec(`
   CREATE TABLE IF NOT EXISTS organiser_team_members (
@@ -1435,6 +1491,15 @@ export const stmts = {
   updateVendorPhotos:     prepare(`UPDATE vendors SET photos=@photos WHERE user_id=@user_id`),
   updateVendorDoc:        prepare(`UPDATE vendors SET food_safety_url=@food_safety_url,pli_url=@pli_url,council_url=@council_url WHERE user_id=@user_id`),
   updateVendorPliAnalysis: prepare(`UPDATE vendors SET pli_insured_name=@pli_insured_name,pli_policy_number=@pli_policy_number,pli_coverage_amount=@pli_coverage_amount,pli_expiry=@pli_expiry,pli_status=@pli_status,pli_analysed_at=datetime('now'),pli_flags=@pli_flags WHERE user_id=@user_id`),
+
+  // document verification (admin)
+  verifyPliDocument:         prepare(`UPDATE vendors SET pli_status='verified',pli_rejection_reason=NULL WHERE user_id=?`),
+  verifyFoodSafetyDocument:  prepare(`UPDATE vendors SET food_safety_status='verified',food_safety_rejection_reason=NULL WHERE user_id=?`),
+  verifyCouncilDocument:     prepare(`UPDATE vendors SET council_status='verified',council_rejection_reason=NULL WHERE user_id=?`),
+  rejectPliDocument:         prepare(`UPDATE vendors SET pli_status='rejected',pli_rejection_reason=? WHERE user_id=?`),
+  rejectFoodSafetyDocument:  prepare(`UPDATE vendors SET food_safety_status='rejected',food_safety_rejection_reason=? WHERE user_id=?`),
+  rejectCouncilDocument:     prepare(`UPDATE vendors SET council_status='rejected',council_rejection_reason=? WHERE user_id=?`),
+
   updateVendorAbnVerification: prepare(`UPDATE vendors SET abn_verified=@abn_verified,abn_entity_name=@abn_entity_name,abn_match=@abn_match,abn_verified_at=datetime('now') WHERE user_id=@user_id`),
   updateOrganiserProfile: prepare(`UPDATE organisers SET org_name=@org_name,phone=@phone,website=@website,suburb=@suburb,state=@state,bio=@bio,event_scale=@event_scale,stall_range=@stall_range,abn=@abn WHERE user_id=@user_id`),
   updateOrganiserProfileSelf: prepare(`UPDATE organisers SET org_name=@org_name,bio=@bio,website=@website,abn=@abn WHERE user_id=@user_id`),

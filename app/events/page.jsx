@@ -1,3 +1,4 @@
+import { Suspense } from 'react'
 import { fetchAllPublishedEvents } from '@/lib/data/events'
 import EventsPage from '@/components/events/EventsPage'
 
@@ -9,5 +10,9 @@ export const metadata = {
 export default async function EventsRoute() {
   const events = await fetchAllPublishedEvents()
 
-  return <EventsPage events={events} />
+  return (
+    <Suspense fallback={<div style={{ minHeight: '100vh', background: 'var(--coal)' }} />}>
+      <EventsPage events={events} />
+    </Suspense>
+  )
 }
