@@ -1216,21 +1216,6 @@ app.post('/api/profile/avatar', requireAuth, async (req, res) => {
   }
 });
 
-// GET /api/stripe/debug — temporary diagnostic (remove after fix)
-app.get('/api/stripe/debug', async (req, res) => {
-  try {
-    const stripe = await getStripe();
-    const prices = STRIPE_PRICES;
-    const hasKey = !!process.env.STRIPE_SECRET_KEY;
-    const keyPrefix = hasKey ? process.env.STRIPE_SECRET_KEY.substring(0, 12) + '...' : 'NOT SET';
-    let stripeOk = false;
-    if (stripe) {
-      try { await stripe.prices.list({ limit: 1 }); stripeOk = true; } catch (e) { stripeOk = e.message; }
-    }
-    res.json({ hasKey, keyPrefix, prices, stripeOk, stripeLoaded: !!stripe });
-  } catch (e) { res.status(500).json({ error: e.message }); }
-});
-
 // POST /api/profile/plan — update vendor subscription plan via Stripe
 app.post('/api/profile/plan', requireAuth, async (req, res) => {
   try {
@@ -2559,7 +2544,7 @@ app.post('/api/events/:id/apply', requireAuth, async (req, res) => {
     // Free plan: enforce application limit from platform settings
     if (effectivePlan === 'free') {
       const limitSetting = await getPlatformFlag('limit_free_apps');
-      const APP_LIMIT = limitSetting ? parseInt(limitSetting, 10) : 3;
+      const APP_LIMIT = limitSetting ? parseInt(limitSetting, 10) : 10;
       if (APP_LIMIT > 0) { // 0 = unlimited, skip check
         // Reset counter if it's a new month
         if (vendorSub.apps_reset_month !== currentMonth) {
@@ -3019,7 +3004,7 @@ app.post('/api/vendor/stall-fees/:id/pay', requireAuth, async (req, res) => {
     if (fee.status !== 'unpaid') return res.status(400).json({ error: 'Fee is not unpaid' });
 
     const stripe = await getStripe();
-    if (!stripe || !process.env.STRIPE_PUBLISHABLE_KEY) {
+    if (!stripe) {
       // No Stripe configured — mock payment (dev/local)
       await stmts.payStallFee.run(req.params.id, req.session.userId);
       return res.json({ ok: true, mock: true });
