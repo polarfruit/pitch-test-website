@@ -220,6 +220,165 @@ export function buildPostEventVendorHtml(tradingName, eventName, organiserName, 
   `);
 }
 
+// ── Subscription email template ─────────────────────────────────────────────
+
+function buildSubscriptionEmailHtml(bodyHtml) {
+  return `<!DOCTYPE html>
+<html>
+<body style="margin:0;padding:0;background:#1A1612;font-family:-apple-system,BlinkMacSystemFont,sans-serif;">
+  <div style="max-width:600px;margin:40px auto;background:#231E19;border-radius:20px;overflow:hidden;border:1px solid rgba(255,255,255,0.04);">
+    <div style="background:linear-gradient(135deg,#2C1408,#1A1612);padding:32px 36px 28px;text-align:center;">
+      <div style="font-size:32px;font-weight:900;color:#FDF4E7;letter-spacing:-0.04em;">Pitch<span style="color:#E8500A;">.</span></div>
+    </div>
+    <div style="padding:36px;">
+      ${bodyHtml}
+      <p style="font-size:12px;color:#6B5A4A;margin:32px 0 0;line-height:1.6;">Manage your subscription any time from your dashboard settings.</p>
+    </div>
+  </div>
+</body>
+</html>`;
+}
+
+// Plan features displayed in subscription emails. Growth includes
+// all Pro features plus additional Growth-only capabilities.
+const PRO_FEATURES = [
+  'Unlimited applications',
+  'Priority placement in search',
+  'Pro badge on your profile',
+  'Up to 10 profile photos',
+  'New event alerts within 2 hours',
+  'Application templates',
+  'Profile view analytics',
+  'iCal calendar export',
+  'Document expiry reminders',
+];
+
+const GROWTH_ONLY_FEATURES = [
+  'Top placement in search',
+  'Growth badge on profile',
+  'Up to 20 photos in named galleries',
+  '24-hour early event access',
+  'Cold contact any organiser',
+  'Custom vanity URL',
+  'Bookkeeping summary export',
+  'Team access (second user)',
+];
+
+function formatPlanName(plan) {
+  return plan.charAt(0).toUpperCase() + plan.slice(1);
+}
+
+function buildFeatureListHtml(features) {
+  const items = features
+    .map(f => `<li style="font-size:14px;color:#FDF4E7;margin-bottom:6px;line-height:1.5;">${f}</li>`)
+    .join('');
+  return `<ul style="margin:0;padding:0 0 0 20px;">${items}</ul>`;
+}
+
+function getFeaturesForPlan(plan) {
+  if (plan === 'growth') return [...PRO_FEATURES, ...GROWTH_ONLY_FEATURES];
+  return PRO_FEATURES;
+}
+
+// ── Subscription lifecycle emails ───────────────────────────────────────────
+
+export async function sendUpgradeConfirmationEmail(vendorEmail, vendorName, newPlan, amount) {
+  const planLabel = formatPlanName(newPlan);
+  const subject = `You're now on Pitch. ${planLabel} \u2713`;
+
+  let featuresHtml;
+  if (newPlan === 'growth') {
+    featuresHtml = `
+      <div style="font-size:13px;font-weight:700;color:#A89880;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">Everything in Pro</div>
+      ${buildFeatureListHtml(PRO_FEATURES)}
+      <div style="font-size:13px;font-weight:700;color:#A89880;text-transform:uppercase;letter-spacing:0.06em;margin:18px 0 10px;">Plus</div>
+      ${buildFeatureListHtml(GROWTH_ONLY_FEATURES)}`;
+  } else {
+    featuresHtml = buildFeatureListHtml(PRO_FEATURES);
+  }
+
+  const html = buildSubscriptionEmailHtml(`
+    <h2 style="font-size:22px;font-weight:700;color:#FDF4E7;margin:0 0 4px;">Welcome to ${planLabel}, ${vendorName}.</h2>
+    <p style="font-size:15px;color:#A89880;margin:0 0 24px;line-height:1.6;">Your upgrade is confirmed.</p>
+    <div style="background:#2E2720;border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px 20px;margin-bottom:24px;">
+      <p style="font-size:14px;color:#A89880;margin:0;line-height:1.6;">Your card was charged <strong style="color:#FDF4E7;">$${amount.toFixed(2)}</strong> today.</p>
+    </div>
+    <div style="font-size:13px;font-weight:700;color:#6B5A4A;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;">What you now have access to</div>
+    <div style="background:#2E2720;border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:18px 20px;margin-bottom:28px;">
+      ${featuresHtml}
+    </div>
+    <a href="https://onpitch.com.au/dashboard/vendor" style="display:inline-block;background:#E8500A;color:#fff;font-size:14px;font-weight:700;text-decoration:none;padding:12px 28px;border-radius:10px;">Go to your dashboard</a>
+  `);
+
+  const text = `Welcome to ${planLabel}, ${vendorName}. Your upgrade is confirmed. Your card was charged $${amount.toFixed(2)} today. Visit your dashboard: https://onpitch.com.au/dashboard/vendor`;
+
+  return await sendAdminEmail(vendorEmail, subject, html, text);
+}
+
+export async function sendDowngradeConfirmationEmail(vendorEmail, vendorName, currentPlan, periodEndDate) {
+  const planLabel = formatPlanName(currentPlan);
+  const subject = 'Your Pitch. subscription has been cancelled';
+  const features = getFeaturesForPlan(currentPlan);
+
+  const html = buildSubscriptionEmailHtml(`
+    <h2 style="font-size:22px;font-weight:700;color:#FDF4E7;margin:0 0 10px;">Subscription cancelled, ${vendorName}.</h2>
+    <p style="font-size:14px;color:#A89880;margin:0 0 20px;line-height:1.6;">You have cancelled your <strong style="color:#FDF4E7;">${planLabel}</strong> subscription.</p>
+    <div style="background:#2E2720;border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:16px 20px;margin-bottom:24px;">
+      <p style="font-size:14px;color:#A89880;margin:0;line-height:1.6;">You keep all ${planLabel} features until <strong style="color:#FDF4E7;">${periodEndDate}</strong>. After that date your account moves to Starter (free).</p>
+    </div>
+    <div style="font-size:13px;font-weight:700;color:#6B5A4A;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;">What you will lose access to on ${periodEndDate}</div>
+    <div style="background:#2E2720;border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:18px 20px;margin-bottom:28px;">
+      ${buildFeatureListHtml(features)}
+    </div>
+    <a href="https://onpitch.com.au/dashboard/vendor#billing" style="display:inline-block;background:#E8500A;color:#fff;font-size:14px;font-weight:700;text-decoration:none;padding:12px 28px;border-radius:10px;">Reactivate before ${periodEndDate}</a>
+    <p style="font-size:14px;color:#A89880;margin:24px 0 0;line-height:1.6;">We hope to see you back. If anything about the experience could have been better, we'd genuinely like to hear about it.</p>
+  `);
+
+  const text = `Subscription cancelled, ${vendorName}. You have cancelled your ${planLabel} subscription. You keep all ${planLabel} features until ${periodEndDate}. After that your account moves to Starter (free). Reactivate: https://onpitch.com.au/dashboard/vendor#billing`;
+
+  return await sendAdminEmail(vendorEmail, subject, html, text);
+}
+
+export async function sendPaymentFailedEmail(vendorEmail, vendorName, amount, nextRetryDate) {
+  const subject = 'Action required \u2014 payment failed for your Pitch. subscription';
+
+  const html = buildSubscriptionEmailHtml(`
+    <h2 style="font-size:22px;font-weight:700;color:#FDF4E7;margin:0 0 10px;">We couldn't process your payment, ${vendorName}.</h2>
+    <div style="background:#2E2720;border:1px solid rgba(192,57,43,0.3);border-radius:12px;padding:16px 20px;margin-bottom:24px;">
+      <p style="font-size:14px;color:#A89880;margin:0 0 8px;line-height:1.6;">Your payment of <strong style="color:#FDF4E7;">$${amount.toFixed(2)}</strong> failed today.</p>
+      <p style="font-size:14px;color:#A89880;margin:0;line-height:1.6;">We'll automatically retry on <strong style="color:#FDF4E7;">${nextRetryDate}</strong>.</p>
+    </div>
+    <p style="font-size:14px;color:#A89880;margin:0 0 24px;line-height:1.6;">If the payment is not resolved, your subscription will be cancelled and your account will revert to Starter (free).</p>
+    <a href="https://onpitch.com.au/dashboard/vendor#billing" style="display:inline-block;background:#E8500A;color:#fff;font-size:14px;font-weight:700;text-decoration:none;padding:12px 28px;border-radius:10px;">Update payment method</a>
+    <p style="font-size:14px;color:#A89880;margin:24px 0 0;line-height:1.6;">If you've already updated your card, you can ignore this email — we'll retry automatically.</p>
+  `);
+
+  const text = `We couldn't process your payment, ${vendorName}. Your payment of $${amount.toFixed(2)} failed today. We'll retry on ${nextRetryDate}. If not resolved your subscription will be cancelled. Update your payment method: https://onpitch.com.au/dashboard/vendor#billing`;
+
+  return await sendAdminEmail(vendorEmail, subject, html, text);
+}
+
+export async function sendSubscriptionCancelledEmail(vendorEmail, vendorName, planName) {
+  const planLabel = formatPlanName(planName);
+  const subject = `Your Pitch. ${planLabel} has ended`;
+  const features = getFeaturesForPlan(planName);
+
+  const html = buildSubscriptionEmailHtml(`
+    <h2 style="font-size:22px;font-weight:700;color:#FDF4E7;margin:0 0 10px;">Your ${planLabel} plan has ended.</h2>
+    <p style="font-size:14px;color:#A89880;margin:0 0 20px;line-height:1.6;">Your subscription was cancelled due to a failed payment. Your account is now on Starter (free).</p>
+    <div style="font-size:13px;font-weight:700;color:#6B5A4A;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:12px;">What you no longer have access to</div>
+    <div style="background:#2E2720;border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:18px 20px;margin-bottom:28px;">
+      ${buildFeatureListHtml(features)}
+    </div>
+    <a href="https://onpitch.com.au/pricing" style="display:inline-block;background:#E8500A;color:#fff;font-size:14px;font-weight:700;text-decoration:none;padding:12px 28px;border-radius:10px;">Upgrade again</a>
+    <p style="font-size:14px;color:#A89880;margin:24px 0 0;line-height:1.6;">You can upgrade again any time. Your profile and application history are still here.</p>
+  `);
+
+  const text = `Your ${planLabel} plan has ended. Your subscription was cancelled due to a failed payment. Your account is now on Starter (free). Upgrade again: https://onpitch.com.au/pricing`;
+
+  return await sendAdminEmail(vendorEmail, subject, html, text);
+}
+
 // ── SMS ─────────────────────────────────────────────────────────────────────
 
 export async function sendVerificationSMS(toPhone, code) {

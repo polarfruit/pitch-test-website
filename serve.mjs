@@ -7,7 +7,7 @@ import bcrypt from 'bcryptjs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import db, { stmts, txSignupVendor, txSignupOrganiser, txSignupFoodie, prepare } from './server/db.mjs';
-import { sendVerificationEmail, sendVerificationSMS, sendAdminEmail, buildSuspensionEmailHtml, buildSuspensionNoticeHtml, buildPostEventOrgHtml, buildPostEventVendorHtml } from './server/mailer.mjs';
+import { sendVerificationEmail, sendVerificationSMS, sendAdminEmail, sendDowngradeConfirmationEmail, sendUpgradeConfirmationEmail, sendPaymentFailedEmail, sendSubscriptionCancelledEmail, buildSuspensionEmailHtml, buildSuspensionNoticeHtml, buildPostEventOrgHtml, buildPostEventVendorHtml } from './server/mailer.mjs';
 
 // Lazy-loaded heavy modules (deferred to first use — saves ~1s cold start)
 let _Stripe = null;
@@ -104,6 +104,17 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
           status: 'paid', description: `Subscription: ${newPlan}`,
         });
         console.log(`[stripe-webhook] User ${userId} upgraded to ${newPlan}`);
+
+        // Fire-and-forget upgrade confirmation email
+        const upgradeUser = await stmts.getUserById.get(userId);
+        const upgradeAmount = (session.amount_total || 0) / 100;
+        sendUpgradeConfirmationEmail(
+          upgradeUser.email,
+          upgradeUser.first_name,
+          newPlan,
+          upgradeAmount
+        ).catch(err => console.error('[mailer] upgrade email failed:', err.message));
+
         break;
       }
       case 'customer.subscription.updated': {
@@ -138,6 +149,15 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
           is_override: 0, override_expires: null,
         });
         console.log(`[stripe-webhook] Vendor ${vendor.user_id} subscription cancelled`);
+
+        // Fire-and-forget cancellation confirmation email
+        const cancelledUser = await stmts.getUserById.get(vendor.user_id);
+        sendSubscriptionCancelledEmail(
+          cancelledUser.email,
+          cancelledUser.first_name,
+          oldPlan
+        ).catch(err => console.error('[mailer] cancellation email failed:', err.message));
+
         break;
       }
       case 'invoice.payment_failed': {
@@ -149,6 +169,21 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
           'Invoice:', invoice.id,
           'Amount:', invoice.amount_due
         )
+
+        // Fire-and-forget payment failure notification email
+        const failedUser = await stmts.getUserById.get(vendor.user_id);
+        const retryDate = invoice.next_payment_attempt
+          ? new Date(invoice.next_payment_attempt * 1000).toLocaleDateString('en-AU', {
+              day: 'numeric', month: 'long', year: 'numeric'
+            })
+          : 'soon';
+        sendPaymentFailedEmail(
+          failedUser.email,
+          failedUser.first_name,
+          (invoice.amount_due || 0) / 100,
+          retryDate
+        ).catch(err => console.error('[mailer] payment failed email failed:', err.message));
+
         // Don't downgrade immediately — Stripe retries. Log for monitoring.
         break;
       }
@@ -1336,9 +1371,30 @@ app.post('/api/profile/plan', requireAuth, async (req, res) => {
     if (hasStripeSub) {
       const stripe = await getStripe();
       if (stripe) {
-        await stripe.subscriptions.update(vendor.stripe_subscription_id, {
+        const subscription = await stripe.subscriptions.update(vendor.stripe_subscription_id, {
           cancel_at_period_end: true,
         }, { timeout: 10000 });
+
+        const periodEnd = new Date(
+          subscription.current_period_end * 1000
+        ).toLocaleDateString('en-AU', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric'
+        })
+
+        const downgradeUser = stmts.getUserById.get(req.session.userId)
+
+        sendDowngradeConfirmationEmail(
+          downgradeUser.email,
+          downgradeUser.first_name,
+          vendor.plan,
+          periodEnd
+        ).catch(err => console.error(
+          '[mailer] downgrade email failed:',
+          err.message
+        ))
+
         return res.json({ ok: true, plan: vendor.plan, cancel_at_period_end: true });
       }
     }
@@ -1351,6 +1407,19 @@ app.post('/api/profile/plan', requireAuth, async (req, res) => {
       is_override: 0, override_expires: null,
     });
     _apiCache.delete('vendors'); _apiCache.delete('stats');
+
+    const downgradeUser = stmts.getUserById.get(req.session.userId)
+
+    sendDowngradeConfirmationEmail(
+      downgradeUser.email,
+      downgradeUser.first_name,
+      vendor.plan || 'free',
+      'immediately'
+    ).catch(err => console.error(
+      '[mailer] downgrade email failed:',
+      err.message
+    ))
+
     return res.json({ ok: true, plan: 'free' });
   } catch (e) {
     console.error('[plan]', e);
