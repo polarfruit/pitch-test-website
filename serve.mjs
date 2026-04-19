@@ -53,6 +53,13 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
   if (!stripe) return res.status(503).json({ error: 'Stripe not configured' });
   const sig = req.headers['stripe-signature'];
   const whSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  if (!whSecret && process.env.NODE_ENV === 'production') {
+    console.error(
+      '[stripe/webhook] CRITICAL: STRIPE_WEBHOOK_SECRET is not set. ' +
+      'Webhook signature verification is disabled. ' +
+      'All webhook events are being accepted without verification.'
+    )
+  }
   let event;
   try {
     if (whSecret) {
@@ -137,7 +144,11 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async
         const invoice = event.data.object;
         const vendor = await stmts.getVendorByStripeCustomerId.get(invoice.customer);
         if (!vendor) break;
-        console.log(`[stripe-webhook] Payment failed for vendor ${vendor.user_id}`);
+        console.error(
+          '[stripe/webhook] Payment failed for vendor:', vendor.user_id,
+          'Invoice:', invoice.id,
+          'Amount:', invoice.amount_due
+        )
         // Don't downgrade immediately — Stripe retries. Log for monitoring.
         break;
       }
