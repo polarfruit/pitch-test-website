@@ -1307,6 +1307,26 @@ app.post('/api/profile/plan', requireAuth, async (req, res) => {
         console.log('[plan] Checkout session created:', session.id);
         return res.json({ ok: true, checkout_url: session.url });
       } catch (stripeErr) {
+        // Stale customer ID — exists in DB but deleted from Stripe.
+        // Clear it and retry without a customer so Stripe creates a new one.
+        if (stripeErr.code === 'resource_missing' && sessionParams.customer) {
+          console.warn('[plan] Stale stripe_customer_id cleared:', sessionParams.customer);
+          await stmts.updateVendorStripe.run({
+            stripe_customer_id: null,
+            stripe_subscription_id: null,
+            user_id: req.session.userId,
+          });
+          delete sessionParams.customer;
+          if (user?.email) sessionParams.customer_email = user.email;
+          try {
+            const session = await stripe.checkout.sessions.create(sessionParams, { timeout: 10000 });
+            console.log('[plan] Checkout session created (after customer reset):', session.id);
+            return res.json({ ok: true, checkout_url: session.url });
+          } catch (retryErr) {
+            console.error('[plan] Stripe checkout FAILED on retry:', retryErr.message);
+            return res.status(502).json({ error: `Payment error: ${retryErr.message}` });
+          }
+        }
         console.error('[plan] Stripe checkout FAILED:', stripeErr.message);
         return res.status(502).json({ error: `Payment error: ${stripeErr.message}` });
       }
