@@ -44,7 +44,31 @@
 
 .links a:hover { color: var(--text-hi); }
 
+.links a.active { color: var(--ember); }
+
 .actions { display: flex; align-items: center; gap: 12px; }
+
+/* Auth — foodie row (avatar + name + sign out) */
+.foodieActions { display: flex; align-items: center; gap: 10px; }
+
+.avatarBubble {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--ember);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: var(--white);
+}
+
+.avatarName { font-size: 13px; font-weight: 600; color: var(--text-mid); }
+
+.signOutButton {
+  font-family: var(--font-body);
+  font-size: 13px; font-weight: 600; color: var(--text-lo);
+  background: transparent; border: none; cursor: pointer;
+  padding: 8px;
+  transition: color 0.14s;
+}
+
+.signOutButton:hover { color: var(--text-hi); }
 
 /* rgba required — white with opacity for login hover background */
 .btnLogin {
@@ -144,6 +168,8 @@
 
 .mobileMenu a:hover { color: var(--ember); }
 
+.mobileMenu a.active { color: var(--ember); }
+
 .mobileActions { display: flex; gap: 12px; margin-top: 8px; }
 
 /* Responsive */
@@ -152,5 +178,6 @@
   .links { display: none; }
   .actions { display: none; }
   .navUser { display: none; }
+  .foodieActions { display: none; }
   .hamburger { display: flex; }
 }
