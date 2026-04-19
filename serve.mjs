@@ -801,7 +801,10 @@ app.post('/api/verify/email', requireAuth, async (req, res) => {
   }
   await stmts.markCodeUsed.run(row.id);
   await stmts.setEmailVerified.run(req.session.userId);
-  res.json({ ok: true, redirect: '/verify/phone' });
+
+  const user = await stmts.getUserById.get(req.session.userId);
+  const redirect = user && user.role === 'vendor' ? '/dashboard/vendor' : '/dashboard/organiser';
+  res.json({ ok: true, redirect });
 });
 
 // POST /api/verify/email/resend
