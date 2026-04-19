@@ -1383,6 +1383,7 @@ body::before {
   .doc-grid { grid-template-columns: 1fr; }
   .profile-grid { grid-template-columns: 1fr; }
   .overview-grid { grid-template-columns: 1fr; }
+  #dashboard-loading-overlay { left: 0 !important; }
 }
 
 /* ── BROWSE CALENDAR ──────────────────────────────────────────────────────── */
@@ -1852,7 +1853,7 @@ body::before {
 </head>
 <body>
 <!-- Loading overlay — renders instantly, hidden when dashboard JS initializes -->
-<div id="dashboard-loading-overlay" style="position:fixed;inset:0;background:#1A1612;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10000;transition:opacity 0.3s;">
+<div id="dashboard-loading-overlay" style="position:fixed;top:0;right:0;bottom:0;left:260px;background:#1A1612;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10000;transition:opacity 0.3s;">
   <div style="display:flex;align-items:center;gap:9px;margin-bottom:32px;">
     <div style="width:28px;height:28px;border-radius:50%;background:#E8500A;"></div>
     <span style="font-family:'Fraunces',serif;font-size:22px;font-weight:900;color:#FDF4E7;">Pitch.</span>
