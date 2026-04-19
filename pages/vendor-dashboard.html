@@ -4700,7 +4700,11 @@ async function confirmSubChange() {
       // Update sidebar pill
       const labels = { free: '📋 Starter', pro: '⭐ Pro', growth: '🔥 Growth' };
       const pill = document.querySelector('.plan-pill');
-      if (pill) pill.textContent = labels[_currentSubPlan] || '📋 Starter';
+      if (pill) {
+        const _f = window.__PITCH_SUB_INFO__?.founding_member === true;
+        pill.textContent = _f ? '🔥 Founding Member' : (labels[_currentSubPlan] || '📋 Starter');
+        if (_f) { pill.style.background = 'var(--ember)'; pill.style.color = '#ffffff'; pill.style.borderColor = 'var(--ember)'; }
+      }
       // Update settings plan card
       const profile = window.__PITCH_USER__?.vendor || {};
       renderPlanCard(profile);
@@ -4766,7 +4770,11 @@ async function directUpgrade(plan, btn) {
       _currentSubPlan = d.plan;
       const labels = { free: '📋 Starter', pro: '⭐ Pro', growth: '🔥 Growth' };
       const pill = document.querySelector('.plan-pill');
-      if (pill) pill.textContent = labels[_currentSubPlan] || '📋 Starter';
+      if (pill) {
+        const _f = window.__PITCH_SUB_INFO__?.founding_member === true;
+        pill.textContent = _f ? '🔥 Founding Member' : (labels[_currentSubPlan] || '📋 Starter');
+        if (_f) { pill.style.background = 'var(--ember)'; pill.style.color = '#ffffff'; pill.style.borderColor = 'var(--ember)'; }
+      }
       renderPlanCard(window.__PITCH_USER__?.vendor || {});
       applySubscriptionGating(_currentSubPlan);
       showToast(`Plan updated to ${labels[_currentSubPlan]}`, 'success');
@@ -4873,7 +4881,11 @@ async function initDashboard() {
     if (window.__PITCH_USER__?.vendor) window.__PITCH_USER__.vendor.plan = _upgPlan;
     const labels = { free: '📋 Starter', pro: '⭐ Pro', growth: '🔥 Growth' };
     const pill = document.querySelector('.plan-pill');
-    if (pill) pill.textContent = labels[_upgPlan] || '📋 Starter';
+    if (pill) {
+      const _f = window.__PITCH_SUB_INFO__?.founding_member === true;
+      pill.textContent = _f ? '🔥 Founding Member' : (labels[_upgPlan] || '📋 Starter');
+      if (_f) { pill.style.background = 'var(--ember)'; pill.style.color = '#ffffff'; pill.style.borderColor = 'var(--ember)'; }
+    }
     setTimeout(() => {
       showToast(`Welcome to ${planLabel}! Your subscription is now active.`, 'success');
       applySubscriptionGating(_upgPlan);
@@ -4954,7 +4966,12 @@ async function initDashboard() {
   const _plan = (_currentSubPlan !== 'free') ? _currentSubPlan : _planFromDb;
   _currentSubPlan = _plan;
   const planLabels = { free: '📋 Starter', pro: '⭐ Pro', growth: '🔥 Growth' };
-  document.querySelector('.plan-pill').textContent = planLabels[_plan] || '📋 Starter';
+  const _isFounder = window.__PITCH_SUB_INFO__?.founding_member === true;
+  const _pillEl = document.querySelector('.plan-pill');
+  if (_pillEl) {
+    _pillEl.textContent = _isFounder ? '🔥 Founding Member' : (planLabels[_plan] || '📋 Starter');
+    if (_isFounder) { _pillEl.style.background = 'var(--ember)'; _pillEl.style.color = '#ffffff'; _pillEl.style.borderColor = 'var(--ember)'; }
+  }
   // Apply all subscription gating
   applySubscriptionGating(_plan);
 
@@ -5049,10 +5066,12 @@ async function initDashboard() {
   if (init && init.subscriptionInfo) {
     window.__PITCH_SUB_INFO__ = init.subscriptionInfo;
     renderPlanCard(profile, init.subscriptionInfo);
+    if (init.subscriptionInfo.founding_member) _hideAllUpgradePrompts();
   } else {
     pitchFetch('/api/vendor/subscription-info').then(r => r.ok ? r.json() : null).then(subInfo => {
       if (subInfo) window.__PITCH_SUB_INFO__ = subInfo;
       renderPlanCard(profile, subInfo);
+      if (subInfo?.founding_member) _hideAllUpgradePrompts();
     }).catch(() => {});
   }
 
@@ -6038,6 +6057,20 @@ async function removeDoc(key) {
 function renderPlanCard(profile, subInfo) {
   const el = document.getElementById('settings-plan-card');
   if (!el) return;
+
+  // Founding member: replace entire plan card
+  const _isFounding = (subInfo || window.__PITCH_SUB_INFO__)?.founding_member === true;
+  if (_isFounding) {
+    el.innerHTML = `
+      <div style="background:#231E19;border:1px solid var(--ember);border-radius:16px;padding:32px;text-align:center;">
+        <div style="font-size:11px;letter-spacing:0.2em;text-transform:uppercase;color:var(--ember);font-weight:700;margin-bottom:12px;">Founding Member</div>
+        <div style="font-family:Georgia,serif;font-size:24px;font-weight:900;color:var(--text-hi);margin-bottom:16px;line-height:1.2;">Full access. No limits.<br/>No cost.</div>
+        <div style="font-size:14px;color:var(--text-mid);line-height:1.7;max-width:400px;margin:0 auto 24px;">You joined Pitch during our founding phase. Every feature is yours — free — while we build together across South Australia. When pricing is introduced, founding members lock in special rates before anyone else.</div>
+        <div style="display:inline-flex;align-items:center;gap:8px;background:#2D8B5510;border:1px solid #2D8B5530;border-radius:100px;padding:8px 20px;font-size:13px;font-weight:700;color:#2D8B55;">✓ All features unlocked</div>
+      </div>`;
+    return;
+  }
+
   // Use _currentSubPlan which respects phantom plan detection (no stripe sub = free)
   const plan = _currentSubPlan || (profile && profile.plan) || 'free';
   const appsUsed = subInfo ? subInfo.apps_used : 0;
@@ -8934,7 +8967,18 @@ function _applyAnalyticsData(data) {
     _analyticsReveal();
 }
 
+function _hideAllUpgradePrompts() {
+  document.querySelectorAll('[onclick*="directUpgrade"], [onclick*="openSubModal"], [onclick*="openStripePortal"]').forEach(el => el.style.display = 'none');
+  document.querySelectorAll('[href="/pricing"]').forEach(el => {
+    if (el.closest('#settings-plan-card') || el.closest('.usage-counter-bar') || el.closest('.gate-overlay')) el.style.display = 'none';
+  });
+}
+
 function applySubscriptionGating(plan) {
+  // Founding phase: treat all vendors as Growth-tier
+  const isFoundingMember = window.__PITCH_SUB_INFO__?.founding_member === true;
+  if (isFoundingMember) plan = 'growth';
+
   const isStarter = plan === 'free' || !plan;
   const isPro     = plan === 'pro';
   const isGrowth  = plan === 'growth';
@@ -9197,6 +9241,24 @@ function applySubscriptionGating(plan) {
       if (sub) sub.textContent = 'Available on the Growth plan — upgrade to pin a signature item.';
       sigRow.style.opacity = '0.5';
       sigRow.style.cursor = 'not-allowed';
+    }
+  }
+
+  // ── Founding member: override stat card to show access level ──
+  if (isFoundingMember) {
+    const viewsCard = document.getElementById('stat-card-views');
+    if (viewsCard) {
+      const vLabel = viewsCard.querySelector('.stat-label');
+      const vValue = viewsCard.querySelector('.stat-value');
+      const vSub   = viewsCard.querySelector('.stat-delta');
+      if (vLabel) vLabel.textContent = 'Access';
+      if (vValue) { vValue.textContent = 'Founding Member'; vValue.style.fontSize = '18px'; vValue.style.color = 'var(--ember)'; }
+      if (vSub) vSub.textContent = 'All features unlocked';
+      viewsCard.classList.remove('slate');
+      viewsCard.classList.add('ember');
+      viewsCard.style.cursor = 'default';
+      viewsCard.onclick = null;
+      viewsCard.title = '';
     }
   }
 }

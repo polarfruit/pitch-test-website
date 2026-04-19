@@ -5,7 +5,7 @@ const SIGNALS = [
   'ABN verified',
   'Food safety certified',
   '$10M liability insured',
-  'Free to join',
+  'Free during founding phase',
 ]
 
 function StatsBar() {

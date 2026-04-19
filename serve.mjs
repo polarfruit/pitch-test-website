@@ -48,6 +48,13 @@ const STRIPE_PLAN_FOR_PRICE = Object.fromEntries(
   Object.entries(STRIPE_PRICES).map(([plan, priceId]) => [priceId, plan])
 );
 
+// ── Founding phase ───────────────────────────────────────────────────────
+// When true: all vendors receive Growth-level access at no cost.
+// Flip to false when platform reaches:
+//   200 active vendors · 40 events in last 90 days · 50 completed trades
+// Give 90 days notice before enforcing pricing.
+const FOUNDING_PHASE = true;
+
 // ── Stripe webhook needs raw body — must come before express.json ─────────
 app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
   const stripe = await getStripe();
@@ -2653,7 +2660,7 @@ app.post('/api/events/:id/apply', requireAuth, async (req, res) => {
 
   // ── Subscription quota check ──────────────────────────────────────────────
   const vendorSub = await stmts.getVendorSubscription.get(req.session.userId);
-  if (vendorSub) {
+  if (vendorSub && !FOUNDING_PHASE) {
     const now = new Date();
     const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
 
@@ -2774,12 +2781,27 @@ app.get('/api/vendor/subscription-info', requireAuth, async (req, res) => {
 
     const now = new Date();
     const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const appsUsed = sub.apps_reset_month === currentMonth ? Number(sub.apps_this_month) : 0;
+
+    // Founding phase: all vendors get Growth-level access at no cost
+    if (FOUNDING_PHASE) {
+      return res.json({
+        plan: sub.plan || 'free',
+        effective_plan: 'growth',
+        founding_phase: true,
+        founding_member: true,
+        on_trial: false,
+        trial_ends_at: null,
+        subscription_status: 'active',
+        apps_used: appsUsed,
+        apps_limit: 0,
+        apps_remaining: null,
+      });
+    }
+
     const onTrial = sub.trial_ends_at && new Date(sub.trial_ends_at) > now;
     const effectivePlan = onTrial ? sub.plan : (sub.plan || 'free');
     const APP_LIMIT = 10;
-
-    // Return 0 used if counter is from a different month
-    const appsUsed = sub.apps_reset_month === currentMonth ? Number(sub.apps_this_month) : 0;
 
     res.json({
       plan: sub.plan || 'free',
