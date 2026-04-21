@@ -3,9 +3,18 @@ import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 
 export const metadata = {
-  title: 'Privacy Policy — Pitch.',
+  title: 'Privacy Policy',
   description:
     'How Pitch. collects, uses, and protects your personal information under the Australian Privacy Act 1988.',
+  alternates: { canonical: '/privacy' },
+  openGraph: {
+    title: 'Privacy Policy — Pitch.',
+    description:
+      'How Pitch. collects, uses, and protects your personal information under the Australian Privacy Act 1988.',
+    url: 'https://onpitch.com.au/privacy',
+    siteName: 'Pitch.',
+    type: 'website',
+  },
 }
 
 export default function PrivacyRoute() {

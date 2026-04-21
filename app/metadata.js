@@ -1,7 +1,10 @@
 export const metadata = {
-  title: "Pitch. — Australia's Food Vendor & Event Marketplace",
+  title: {
+    default: "Pitch. — Australia's marketplace for food vendors and events",
+    template: '%s — Pitch.',
+  },
   description:
-    'Pitch. connects food vendors, event organisers, and foodies across Australia. Find food trucks, market stalls, and pop-up vendors for your next event — or list your food business and get booked. Based in Adelaide, SA.',
+    'Find your pitch. Connect food vendors with events and markets across South Australia.',
   keywords:
     'food vendors Australia, food truck hire, event catering, market stall vendors, food vendor marketplace, event organisers Australia, Adelaide food vendors',
   authors: [{ name: 'Pitch.' }],

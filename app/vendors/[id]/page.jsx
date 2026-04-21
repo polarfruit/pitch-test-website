@@ -8,15 +8,24 @@ import Footer from '@/components/Footer'
 export async function generateMetadata({ params }) {
   const { id } = await params
   if (!/^\d+$/.test(String(id))) {
-    return { title: 'Vendor not found — Pitch.' }
+    return { title: 'Vendor not found' }
   }
   const vendor = await fetchVendorById(id)
-  if (!vendor) return { title: 'Vendor not found — Pitch.' }
+  if (!vendor) return { title: 'Vendor not found' }
+  const description =
+    vendor.bio?.slice(0, 160) ||
+    `View menu, photos, and booking info for ${vendor.tradingName} on Pitch.`
   return {
-    title: `${vendor.tradingName} — Pitch.`,
-    description:
-      vendor.bio?.slice(0, 160) ||
-      `View menu, photos, and booking info for ${vendor.tradingName} on Pitch.`,
+    title: vendor.tradingName,
+    description,
+    alternates: { canonical: `/vendors/${id}` },
+    openGraph: {
+      title: `${vendor.tradingName} — Pitch.`,
+      description,
+      url: `https://onpitch.com.au/vendors/${id}`,
+      siteName: 'Pitch.',
+      type: 'website',
+    },
   }
 }
 

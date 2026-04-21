@@ -5,8 +5,16 @@ import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 
 export const metadata = {
-  title: 'Events — Pitch.',
+  title: 'Events',
   description: 'Browse upcoming food markets and events across South Australia.',
+  alternates: { canonical: '/events' },
+  openGraph: {
+    title: 'Events — Pitch.',
+    description: 'Browse upcoming food markets and events across South Australia.',
+    url: 'https://onpitch.com.au/events',
+    siteName: 'Pitch.',
+    type: 'website',
+  },
 }
 
 export default async function EventsRoute() {

@@ -10,12 +10,22 @@ export async function generateMetadata({ params }) {
   const { slug } = await params
   const event = await fetchEventBySlug(slug)
   if (!event) {
-    return { title: 'Event not found — Pitch.' }
+    return { title: 'Event not found' }
   }
-  const description = (event.description ?? '').slice(0, 160)
+  const description =
+    (event.description ?? '').slice(0, 160) ||
+    `${event.name} in ${event.suburb}, ${event.state}.`
   return {
-    title: `${event.name} — Pitch.`,
-    description: description || `${event.name} in ${event.suburb}, ${event.state}.`,
+    title: event.name,
+    description,
+    alternates: { canonical: `/events/${slug}` },
+    openGraph: {
+      title: `${event.name} — Pitch.`,
+      description,
+      url: `https://onpitch.com.au/events/${slug}`,
+      siteName: 'Pitch.',
+      type: 'website',
+    },
   }
 }
 

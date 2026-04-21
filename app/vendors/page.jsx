@@ -5,8 +5,16 @@ import Navbar from '@/components/Navbar'
 import Footer from '@/components/Footer'
 
 export const metadata = {
-  title: 'Vendors — Pitch.',
+  title: 'Vendors',
   description: 'Browse verified food vendors and mobile kitchens serving events across South Australia.',
+  alternates: { canonical: '/vendors' },
+  openGraph: {
+    title: 'Vendors — Pitch.',
+    description: 'Browse verified food vendors and mobile kitchens serving events across South Australia.',
+    url: 'https://onpitch.com.au/vendors',
+    siteName: 'Pitch.',
+    type: 'website',
+  },
 }
 
 export default async function VendorsRoute() {
