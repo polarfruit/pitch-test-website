@@ -13,14 +13,6 @@ export default function VendorProfileHeader({ vendor }) {
 
   return (
     <section className={styles.header}>
-      <div
-        className={styles.banner}
-        style={{ background: avatarGradient }}
-        aria-hidden="true"
-      >
-        <span className={styles.initialsWatermark}>{initials}</span>
-      </div>
-
       <div className={styles.content}>
         <div
           className={styles.avatar}
@@ -30,8 +22,8 @@ export default function VendorProfileHeader({ vendor }) {
             <Image
               src={avatarUrl}
               alt={`${tradingName} logo`}
-              width={80}
-              height={80}
+              width={96}
+              height={96}
               className={styles.avatarImage}
             />
           ) : (

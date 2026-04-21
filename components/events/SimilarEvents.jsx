@@ -13,7 +13,7 @@ function SimilarEvents({ events }) {
       <h2 className={styles.heading}>Similar events nearby</h2>
       <div className={styles.grid}>
         {events.map(event => (
-          <EventCard key={event.id ?? event.slug} {...event} />
+          <EventCard key={event.id ?? event.slug} event={event} />
         ))}
       </div>
     </section>
