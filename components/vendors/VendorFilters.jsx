@@ -28,7 +28,7 @@ function VendorFilters({ filters, onFilterChange, onClearAll }) {
         <input
           className={`${styles.input} ${styles.searchInput}`}
           type="text"
-          placeholder="Search by vendor name or cuisine\u2026"
+          placeholder="Search by vendor name or cuisine…"
           value={filters.search}
           onChange={(inputEvent) => onFilterChange('search', inputEvent.target.value)}
           autoComplete="off"

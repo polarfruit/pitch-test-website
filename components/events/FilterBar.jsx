@@ -26,7 +26,7 @@ function FilterBar({ filters, onFilterChange, onClearAll, onCalendarToggle, isCa
         <input
           className={`${styles.input} ${styles.searchInput}`}
           type="text"
-          placeholder="Search by name or suburb\u2026"
+          placeholder="Search by name or suburb…"
           value={filters.search}
           onChange={(inputEvent) => onFilterChange('search', inputEvent.target.value)}
           autoComplete="off"

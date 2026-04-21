@@ -1,6 +1,8 @@
 import { Suspense } from 'react'
 import { fetchAllPublishedVendors } from '@/lib/data/vendors'
 import VendorsPage from '@/components/vendors/VendorsPage'
+import Navbar from '@/components/Navbar'
+import Footer from '@/components/Footer'
 
 export const metadata = {
   title: 'Vendors — Pitch.',
@@ -11,8 +13,12 @@ export default async function VendorsRoute() {
   const vendors = await fetchAllPublishedVendors()
 
   return (
-    <Suspense fallback={<div style={{ minHeight: '100vh', background: 'var(--coal)' }} />}>
-      <VendorsPage vendors={vendors} />
-    </Suspense>
+    <main className="page-main">
+      <Navbar />
+      <Suspense fallback={<div style={{ minHeight: '100vh', background: 'var(--coal)' }} />}>
+        <VendorsPage vendors={vendors} />
+      </Suspense>
+      <Footer />
+    </main>
   )
 }
