@@ -1649,7 +1649,7 @@
       <p style="font-size:14px;color:#A89880;margin:0 0 16px;line-height:1.6;">This will permanently reject the application and notify the applicant by email.</p>
       <div style="margin-bottom:12px;">
         <label class="field-label-sm">Rejection reason</label>
-        <select class="field-sm" style="appearance:none;">
+        <select id="rejectReason" class="field-sm" style="appearance:none;">
           <option>Incomplete or missing documents</option>
           <option>ABN could not be verified</option>
           <option>Does not meet platform standards</option>
@@ -1665,7 +1665,27 @@
     </div>
     <div class="modal-footer">
       <button class="btn-sm-outline" onclick="closeModal('rejectModal')">Cancel</button>
-      <button class="btn-sm-danger" onclick="closeModal('rejectModal')">Reject application</button>
+      <button class="btn-sm-danger" onclick="confirmReject()">Reject application</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Reject document modal ── -->
+<div class="modal-overlay" id="rejectDocModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span style="font-size:18px;">🚫</span>
+      <span class="modal-title">Reject document</span>
+      <button class="modal-close" onclick="closeModal('rejectDocModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <p id="rejectDocModalDescription" style="font-size:14px;color:#A89880;margin:0 0 16px;line-height:1.6;"></p>
+      <label class="field-label-sm" for="rejectDocReason">Rejection reason (required)</label>
+      <textarea class="field-sm" id="rejectDocReason" placeholder="Explain what's wrong so the vendor knows what to fix and re-upload…"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-sm-outline" onclick="closeModal('rejectDocModal')">Cancel</button>
+      <button class="btn-sm-danger" id="rejectDocConfirmBtn" onclick="submitDocRejection()">Reject document</button>
     </div>
   </div>
 </div>
@@ -2066,9 +2086,22 @@
   }
 
   /* ── Modals ── */
-  function openRejectModal(name) {
+  let pendingRejectUserId = null;
+
+  function openRejectModal(userId, name) {
+    pendingRejectUserId = userId;
     document.getElementById('rejectModalTitle').textContent = 'Reject — ' + name;
     document.getElementById('rejectModal').classList.add('open');
+  }
+
+  async function confirmReject() {
+    if (!pendingRejectUserId) return;
+    const reason = document.getElementById('rejectReason')?.value || '';
+    const userId = pendingRejectUserId;
+    closeModal('rejectModal');
+    pendingRejectUserId = null;
+    await _doSetUserStatus(userId, 'rejected', reason);
+    showToast('Account rejected');
   }
 
   function openDisputeModal(name, ref) {
@@ -2076,7 +2109,7 @@
     document.getElementById('disputeModal').classList.add('open');
   }
 
-  function openBanModal() { openRejectModal('Ban user'); }
+  function openBanModal() { openRejectModal(null, 'Ban user'); }
   function openAnnouncementModal() {
     document.getElementById('announcementModal').classList.add('open');
     document.getElementById('ann-modal-subject').value = '';
@@ -2295,7 +2328,7 @@
           <div class="queue-actions">
             <div class="act-group">
               <button class="act-btn act-approve" onclick="setUserStatus(${v.user_id},'active',this);setTimeout(renderPendingQueue,300)">Approve</button>
-              <button class="act-btn act-reject" onclick="openRejectModal('${safeName}')">Reject</button>
+              <button class="act-btn act-reject" onclick="openRejectModal(${v.user_id},'${safeName}')">Reject</button>
             </div>
             <span class="queue-time">${fmtDate(v.joined)}</span>
           </div>
@@ -2318,7 +2351,7 @@
           <div class="queue-actions">
             <div class="act-group">
               <button class="act-btn act-approve" onclick="setUserStatus(${o.user_id},'active',this);setTimeout(renderPendingQueue,300)">Approve</button>
-              <button class="act-btn act-reject" onclick="openRejectModal('${safeName}')">Reject</button>
+              <button class="act-btn act-reject" onclick="openRejectModal(${o.user_id},'${safeName}')">Reject</button>
             </div>
             <span class="queue-time">${fmtDate(o.joined)}</span>
           </div>
@@ -2402,7 +2435,7 @@
       const actions = v.status === 'pending'
         ? `<div class="act-group">
              <button class="act-btn act-approve" onclick="setUserStatus(${v.user_id},'active',this)">Approve</button>
-             <button class="act-btn act-reject" onclick="openRejectModal('${vSafeName}')">Reject</button>
+             <button class="act-btn act-reject" onclick="openRejectModal(${v.user_id},'${vSafeName}')">Reject</button>
              <button class="act-btn act-view" onclick="window.open('/vendors/${v.user_id}','_blank')">Profile</button>
            </div>`
         : v.status === 'suspended'
@@ -2630,7 +2663,7 @@
       const actions = o.status === 'pending'
         ? `<div class="act-group">
              <button class="act-btn act-approve" onclick="setUserStatus(${o.user_id},'active',this)">Approve</button>
-             <button class="act-btn act-reject" onclick="openRejectModal('${oSafeName}')">Reject</button>
+             <button class="act-btn act-reject" onclick="openRejectModal(${o.user_id},'${oSafeName}')">Reject</button>
            </div>`
         : o.status === 'suspended'
         ? `<div class="act-group">
@@ -3204,6 +3237,64 @@
     }
   }
 
+  // ── Admin document verification ────────────────────────────────────────────
+  async function verifyDocument(userId, docType) {
+    try {
+      const r = await fetch(`/api/admin/vendors/${userId}/documents/${docType}/verify`, { method: 'PATCH' });
+      if (!r.ok) {
+        const data = await r.json().catch(() => ({}));
+        showToast(data.error || 'Failed to verify document');
+        return;
+      }
+      showToast('Document verified ✓');
+      openVendorDetail(userId);
+    } catch (e) {
+      console.error('[verifyDocument]', { message: e.message, userId, docType, timestamp: new Date().toISOString() });
+      showToast('Network error: ' + e.message);
+    }
+  }
+
+  let _rejectDocContext = null;
+  function openRejectDocModal(userId, docType) {
+    _rejectDocContext = { userId, docType };
+    const labels = { pli: 'Public Liability Insurance', food_safety: 'Food Safety Certificate', council: 'Council Permit' };
+    document.getElementById('rejectDocModalDescription').textContent =
+      `Reject the ${labels[docType] || 'document'} and email the vendor the reason. They can re-upload a corrected document.`;
+    document.getElementById('rejectDocReason').value = '';
+    document.getElementById('rejectDocModal').classList.add('open');
+    setTimeout(() => document.getElementById('rejectDocReason').focus(), 50);
+  }
+
+  async function submitDocRejection() {
+    if (!_rejectDocContext) return;
+    const reason = document.getElementById('rejectDocReason').value.trim();
+    if (!reason) { showToast('Please enter a rejection reason'); return; }
+    const btn = document.getElementById('rejectDocConfirmBtn');
+    btn.disabled = true; btn.textContent = 'Rejecting…';
+    try {
+      const { userId, docType } = _rejectDocContext;
+      const r = await fetch(`/api/admin/vendors/${userId}/documents/${docType}/reject`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason }),
+      });
+      if (!r.ok) {
+        const data = await r.json().catch(() => ({}));
+        showToast(data.error || 'Failed to reject document');
+        return;
+      }
+      showToast('Document rejected');
+      closeModal('rejectDocModal');
+      _rejectDocContext = null;
+      openVendorDetail(userId);
+    } catch (e) {
+      console.error('[submitDocRejection]', { message: e.message, timestamp: new Date().toISOString() });
+      showToast('Network error: ' + e.message);
+    } finally {
+      btn.disabled = false; btn.textContent = 'Reject document';
+    }
+  }
+
   function paymentsHTML(payments) {
     return payments.length
       ? payments.map(p => `<div class="payment-row">
@@ -3413,6 +3504,13 @@
             { key: 'pli_url',         label: 'Public Liability Insurance' },
             { key: 'council_url',     label: 'Council Permit' },
           ];
+          const statusChipStyles = {
+            verified: { icon:'✓', label:'Verified',       bg:'rgba(45,139,85,0.12)',  border:'rgba(45,139,85,0.3)',  color:'#2D8B55' },
+            rejected: { icon:'✕', label:'Rejected',       bg:'rgba(192,57,43,0.12)',  border:'rgba(192,57,43,0.3)',  color:'#C0392B' },
+            pending:  { icon:'⏳', label:'Pending review', bg:'rgba(201,132,10,0.12)', border:'rgba(201,132,10,0.3)', color:'#C9840A' },
+            flagged:  { icon:'⚠', label:'Flagged',        bg:'rgba(201,132,10,0.12)', border:'rgba(201,132,10,0.3)', color:'#C9840A' },
+            expired:  { icon:'✕', label:'Expired',        bg:'rgba(192,57,43,0.12)',  border:'rgba(192,57,43,0.3)',  color:'#C0392B' },
+          };
           return docs.map(d => {
             const url = vendor[d.key];
             if (!url) {
@@ -3426,12 +3524,24 @@
             const icon  = isPdf ? '📄' : isImg ? '🖼' : '📎';
             const typeLabel = isPdf ? 'PDF' : isImg ? 'Image' : 'File';
 
-            // PLI analysis badge
+            const backendDocType = d.key.replace('_url', '');
+            const rawStatus = vendor[`${backendDocType}_status`] || 'none';
+            // Uploaded docs with no recorded status are awaiting review.
+            const effectiveStatus = rawStatus === 'none' ? 'pending' : rawStatus;
+            const chip = statusChipStyles[effectiveStatus] || statusChipStyles.pending;
+            const rejectionReason = vendor[`${backendDocType}_rejection_reason`];
+            const statusBadge = `<div style="margin-top:6px;">
+              <span style="display:inline-block;background:${chip.bg};border:1px solid ${chip.border};border-radius:6px;padding:3px 10px;font-size:11px;font-weight:700;color:${chip.color};">${chip.icon} ${chip.label}</span>
+              ${effectiveStatus === 'rejected' && rejectionReason ? `<div style="font-size:11px;color:#A89880;margin-top:4px;line-height:1.5;"><strong style="color:#C0392B;">Reason:</strong> ${rejectionReason.replace(/</g, '&lt;')}</div>` : ''}
+            </div>`;
+
+            // PLI analysis badge (insurance metadata — shown below the uniform status chip)
             let pliExtra = '';
             if (d.key === 'pli_url' && vendor.pli_status && vendor.pli_status !== 'none') {
               const sm = { verified: { icon:'✓', label:'Verified', bg:'rgba(45,139,85,0.12)', border:'rgba(45,139,85,0.3)', color:'#2D8B55' },
                            flagged:  { icon:'⚠', label:'Flagged', bg:'rgba(201,132,10,0.12)', border:'rgba(201,132,10,0.3)', color:'#C9840A' },
                            expired:  { icon:'✕', label:'Expired', bg:'rgba(192,57,43,0.12)', border:'rgba(192,57,43,0.3)', color:'#C0392B' },
+                           rejected: { icon:'✕', label:'Rejected', bg:'rgba(192,57,43,0.12)', border:'rgba(192,57,43,0.3)', color:'#C0392B' },
                            pending:  { icon:'…', label:'Pending', bg:'rgba(201,132,10,0.12)', border:'rgba(201,132,10,0.3)', color:'#C9840A' } };
               const st = sm[vendor.pli_status] || sm.pending;
               const details = [];
@@ -3449,16 +3559,19 @@
             }
 
             return `<div style="padding:10px 0;border-bottom:1px solid #1E1916;">
-              <div style="display:flex;align-items:center;justify-content:space-between;">
-                <div>
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+                <div style="min-width:0;">
                   <div style="font-size:13px;color:#FDF4E7;">${d.label}</div>
                   <div style="font-size:11px;color:#4A3C30;margin-top:2px;">${icon} ${typeLabel} uploaded</div>
                 </div>
-                <div style="display:flex;gap:8px;">
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
                   <button onclick="adminViewDoc('${d.key}',${userId})" style="background:rgba(232,80,10,0.1);border:1px solid rgba(232,80,10,0.3);border-radius:6px;padding:4px 12px;font-size:12px;color:#E8500A;cursor:pointer;font-family:inherit;">View</button>
                   ${isImg ? `<button onclick="adminViewDoc('${d.key}',${userId})" style="background:#1E1916;border:1px solid #2A2018;border-radius:6px;padding:4px 12px;font-size:12px;color:#A89880;cursor:pointer;font-family:inherit;">Preview</button>` : ''}
+                  <button onclick="verifyDocument(${userId},'${backendDocType}')" style="background:#2D8B55;color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;">✓ Verify</button>
+                  <button onclick="openRejectDocModal(${userId},'${backendDocType}')" style="background:transparent;color:#C0392B;border:1px solid #C0392B;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;">✕ Reject</button>
                 </div>
               </div>
+              ${statusBadge}
               ${pliExtra}
             </div>`;
           }).join('');
