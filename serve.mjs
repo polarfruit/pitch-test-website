@@ -74,6 +74,12 @@ function logEnvStartup() {
   }
   lines.push(sep);
   console.log(lines.join('\n'));
+
+  if (!process.env.ADMIN_PASSWORD) {
+    console.error(
+      '[env] CRITICAL: ADMIN_PASSWORD is using default value. Set ADMIN_PASSWORD in environment variables before launch.'
+    );
+  }
 }
 
 logEnvStartup();

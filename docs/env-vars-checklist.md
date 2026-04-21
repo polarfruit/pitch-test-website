@@ -39,6 +39,41 @@ dashboard (Domains tab) with SPF and DKIM DNS records set. Without
 domain verification, Resend will reject outbound mail from the brand
 address.
 
+### ADMIN_USERNAME / ADMIN_PASSWORD — set strong values before launch
+
+**Current (fallback):** `admin` / `admin`
+**Required:**          custom username + password of **at least 16 characters**
+
+These credentials gate `POST /api/admin/login` and therefore the entire
+admin panel. The code falls back to `admin` / `admin` only when the env
+vars are missing — acceptable locally, catastrophic in production. Rate
+limiting is in place (5 attempts per IP per 15 minutes at
+[serve.mjs:1670-1700](../serve.mjs)) but is a deterrent, not a
+replacement for strong credentials. Constants read at
+[serve.mjs:930-931](../serve.mjs).
+
+If `ADMIN_PASSWORD` is unset on boot, the startup banner is followed by
+an error-severity line:
+
+```
+[env] CRITICAL: ADMIN_PASSWORD is using default value. Set ADMIN_PASSWORD in environment variables before launch.
+```
+
+Steps:
+
+1. Generate a strong password — e.g. `openssl rand -base64 24`
+2. Vercel → Project → Settings → Environment Variables
+3. Add `ADMIN_USERNAME` (Production) — any non-trivial value
+4. Add `ADMIN_PASSWORD` (Production) — the generated password
+5. Redeploy (trigger a deploy or push a commit)
+6. Verify in the deploy's logs — the startup banner will show:
+   `[env] ADMIN_USERNAME=set`
+   `[env] ADMIN_PASSWORD=set (masked)`
+   and the `[env] CRITICAL: ADMIN_PASSWORD is using default value`
+   error line will be **absent**.
+7. Test login at `/admin` with the new credentials; confirm the old
+   `admin` / `admin` pair now returns 401.
+
 ---
 
 ## Legend
