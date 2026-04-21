@@ -223,6 +223,11 @@ try {
       pli_status          TEXT DEFAULT 'none',
       pli_analysed_at     DATETIME,
       pli_flags           TEXT DEFAULT '[]',
+      food_safety_status           TEXT DEFAULT 'none',
+      council_status               TEXT DEFAULT 'none',
+      pli_rejection_reason         TEXT,
+      food_safety_rejection_reason TEXT,
+      council_rejection_reason     TEXT,
       featured            INTEGER NOT NULL DEFAULT 0,
       featured_at         DATETIME,
       paused              INTEGER NOT NULL DEFAULT 0,
@@ -1005,14 +1010,45 @@ await _safeExec(`ALTER TABLE events ADD COLUMN suspended_by_admin INTEGER NOT NU
 // ── Document verification migrations (idempotent, outside version gate) ──────
 // These five columns were originally added inside the version gate
 // (lines 390-394). DBs stamped at schema_version=20 before those lines
-// existed skip them forever. _safeExec silently ignores "duplicate column"
-// errors, so re-running here applies the migration to any DB missing a
-// column and is a no-op everywhere else.
-await _safeExec(`ALTER TABLE vendors ADD COLUMN food_safety_status TEXT DEFAULT 'none'`);
-await _safeExec(`ALTER TABLE vendors ADD COLUMN council_status TEXT DEFAULT 'none'`);
-await _safeExec(`ALTER TABLE vendors ADD COLUMN pli_rejection_reason TEXT`);
-await _safeExec(`ALTER TABLE vendors ADD COLUMN food_safety_rejection_reason TEXT`);
-await _safeExec(`ALTER TABLE vendors ADD COLUMN council_rejection_reason TEXT`);
+// existed skip them forever. _ensureColumn checks PRAGMA table_info first
+// and only ALTERs when the column is actually missing, logging when it
+// adds so operators can see the heal happen in server boot logs.
+async function _ensureColumn(table, column, typeSql) {
+  let existingColumns;
+  try {
+    if (process.env.TURSO_DATABASE_URL) {
+      const r = await _client.execute(`PRAGMA table_info(${table})`);
+      existingColumns = r.rows.map(row => row.name);
+    } else {
+      existingColumns = _localDb
+        .prepare(`PRAGMA table_info(${table})`)
+        .all()
+        .map(row => row.name);
+    }
+  } catch (e) {
+    console.error(`[db] _ensureColumn PRAGMA failed for ${table}:`, e.message);
+    return false;
+  }
+  if (existingColumns.includes(column)) return false;
+  try {
+    if (process.env.TURSO_DATABASE_URL) {
+      await _client.execute(`ALTER TABLE ${table} ADD COLUMN ${column} ${typeSql}`);
+    } else {
+      _localDb.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${typeSql}`);
+    }
+    console.log(`[db] Added column ${table}.${column}`);
+    return true;
+  } catch {
+    // Column was added between the PRAGMA and the ALTER — safe to ignore
+    return false;
+  }
+}
+
+await _ensureColumn('vendors', 'food_safety_status',           "TEXT DEFAULT 'none'");
+await _ensureColumn('vendors', 'council_status',               "TEXT DEFAULT 'none'");
+await _ensureColumn('vendors', 'pli_rejection_reason',         'TEXT');
+await _ensureColumn('vendors', 'food_safety_rejection_reason', 'TEXT');
+await _ensureColumn('vendors', 'council_rejection_reason',     'TEXT');
 
 // ── FK heal for stale _users_old references (idempotent, outside gate) ───────
 // Mirrors the heal at lines 661-679. That heal was inside the version gate,
