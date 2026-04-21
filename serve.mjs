@@ -34,6 +34,48 @@ const app = express();
 app.set('trust proxy', true);   // Vercel/reverse proxy — req.protocol returns 'https'
 const PORT = process.env.PORT || 3000;
 
+// ── Startup env-var banner ──────────────────────────────────────────────────
+// Logs critical configuration on every boot (Vercel cold start + local run)
+// so we can verify which vars are loaded without reading Vercel dashboard.
+// Secrets are never printed in full — only last 4 chars for correlation.
+// This is the ONE place to check what the deployed platform is configured
+// with; pair with docs/env-vars-checklist.md for the full reference.
+function maskSecret(value) {
+  if (!value) return 'NOT SET';
+  if (value.length <= 4) return 'set (masked)';
+  return `set (…${value.slice(-4)})`;
+}
+
+function logEnvStartup() {
+  const sep = '─'.repeat(60);
+  const lines = [
+    sep,
+    `[env] Pitch. startup — ${new Date().toISOString()}`,
+    `[env] NODE_ENV=${process.env.NODE_ENV || 'development'}`,
+    `[env] SITE_URL=${process.env.SITE_URL || 'https://onpitch.com.au (fallback)'}`,
+    `[env] RESEND_API_KEY=${maskSecret(process.env.RESEND_API_KEY)}`,
+    `[env] RESEND_FROM=${process.env.RESEND_FROM || 'Pitch. <noreply@onpitch.com.au> (fallback)'}`,
+    `[env] SMTP_HOST=${process.env.SMTP_HOST || 'not set'}`,
+    `[env] ADMIN_EMAIL=${process.env.ADMIN_EMAIL || 'admin@onpitch.com.au (fallback)'}`,
+    `[env] STRIPE_SECRET_KEY=${maskSecret(process.env.STRIPE_SECRET_KEY)}`,
+    `[env] STRIPE_WEBHOOK_SECRET=${maskSecret(process.env.STRIPE_WEBHOOK_SECRET)}`,
+    `[env] STRIPE_PRICE_PRO=${process.env.STRIPE_PRICE_PRO || 'NOT SET'}`,
+    `[env] STRIPE_PRICE_GROWTH=${process.env.STRIPE_PRICE_GROWTH || 'NOT SET'}`,
+    `[env] SESSION_SECRET=${maskSecret(process.env.SESSION_SECRET)}`,
+    `[env] TURSO_DATABASE_URL=${process.env.TURSO_DATABASE_URL ? 'set' : 'NOT SET (using local SQLite)'}`,
+    `[env] TURSO_AUTH_TOKEN=${maskSecret(process.env.TURSO_AUTH_TOKEN)}`,
+    `[env] ABR_GUID=${process.env.ABR_GUID ? 'set' : 'NOT SET (ABN auto-verify disabled)'}`,
+    `[env] CRON_SECRET=${process.env.CRON_SECRET ? 'set' : 'NOT SET (cron endpoints unprotected)'}`,
+  ];
+  if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET === 'pitch-dev-secret-2026') {
+    lines.push('[env] ⚠ SESSION_SECRET is missing or using dev fallback — sessions are insecure');
+  }
+  lines.push(sep);
+  console.log(lines.join('\n'));
+}
+
+logEnvStartup();
+
 // ── TEMPORARY: Bypass auth for AI analysis ──────────────────────────────────
 // Set to false to re-enable login requirements on dashboards.
 const BYPASS_AUTH = false;
