@@ -1,0 +1,120 @@
+.gallery {
+  background: var(--char);
+  border: 1px solid var(--smoke);
+  border-radius: 20px;
+  padding: 32px;
+}
+
+.heading {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 24px;
+  letter-spacing: -0.02em;
+  color: var(--text-hi);
+  margin-bottom: 16px;
+}
+
+.grid {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.item {
+  aspect-ratio: 1 / 1;
+}
+
+.photoButton {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  background: var(--ash);
+  transition: transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.photoButton:hover,
+.photoButton:focus-visible {
+  transform: scale(1.02);
+  outline: none;
+}
+
+.photoButton:focus-visible {
+  box-shadow: 0 0 0 3px var(--ember);
+}
+
+.photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.empty {
+  padding: 32px;
+  border: 1px dashed var(--smoke);
+  border-radius: 12px;
+  text-align: center;
+}
+
+.emptyTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-hi);
+  margin-bottom: 4px;
+}
+
+.emptyBody {
+  font-size: 13px;
+  color: var(--text-mid);
+}
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.9);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  cursor: zoom-out;
+}
+
+.lightboxImage {
+  max-width: 90vw;
+  max-height: 90vh;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.lightboxClose {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 0;
+  background: var(--char);
+  color: var(--text-hi);
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.lightboxClose:hover {
+  transform: scale(1.08);
+}
+
+@media (max-width: 640px) {
+  .gallery { padding: 24px; }
+}

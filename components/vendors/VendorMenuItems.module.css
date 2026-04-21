@@ -1,0 +1,125 @@
+.menu {
+  background: var(--char);
+  border: 1px solid var(--smoke);
+  border-radius: 20px;
+  padding: 32px;
+}
+
+.heading {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 24px;
+  letter-spacing: -0.02em;
+  color: var(--text-hi);
+  margin-bottom: 16px;
+}
+
+.grid {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+.item {
+  background: var(--parchment);
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: transform 180ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.item:hover {
+  transform: translateY(-2px);
+}
+
+.photo {
+  width: 100%;
+  aspect-ratio: 16 / 11;
+  object-fit: cover;
+  display: block;
+}
+
+.photoPlaceholder {
+  width: 100%;
+  aspect-ratio: 16 / 11;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--linen);
+  font-size: 44px;
+}
+
+.body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.titleRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.itemName {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--coal);
+  line-height: 1.25;
+}
+
+.signatureBadge {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--ember);
+  color: var(--parchment);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.description {
+  font-size: 13px;
+  color: var(--text-card-muted);
+  line-height: 1.5;
+}
+
+.price {
+  margin-top: auto;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--ember);
+}
+
+.empty {
+  padding: 32px;
+  border: 1px dashed var(--smoke);
+  border-radius: 12px;
+  text-align: center;
+}
+
+.emptyTitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-hi);
+  margin-bottom: 4px;
+}
+
+.emptyBody {
+  font-size: 13px;
+  color: var(--text-mid);
+}
+
+@media (max-width: 640px) {
+  .menu { padding: 24px; }
+}

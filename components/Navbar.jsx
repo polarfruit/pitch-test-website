@@ -129,16 +129,21 @@ function Navbar({ user }) {
         </Link>
 
         <ul className={styles.links}>
-          {desktopNavLinks.map(link => (
-            <li key={link.href}>
-              <Link
-                href={link.href}
-                className={currentPathname === link.href ? styles.active : undefined}
-              >
-                {link.label}
-              </Link>
-            </li>
-          ))}
+          {desktopNavLinks.map(link => {
+            const isActiveLink =
+              currentPathname === link.href ||
+              currentPathname.startsWith(`${link.href}/`)
+            return (
+              <li key={link.href}>
+                <Link
+                  href={link.href}
+                  className={isActiveLink ? styles.active : undefined}
+                >
+                  {link.label}
+                </Link>
+              </li>
+            )
+          })}
         </ul>
 
         {!user ? (
@@ -203,16 +208,21 @@ function Navbar({ user }) {
         className={`${styles.mobileMenu} ${isMobileMenuOpen ? styles.mobileMenuOpen : ''}`}
         aria-hidden={!isMobileMenuOpen}
       >
-        {desktopNavLinks.map(link => (
-          <Link
-            key={link.href}
-            href={link.href}
-            onClick={handleMobileLinkClick}
-            className={currentPathname === link.href ? styles.active : undefined}
-          >
-            {link.label}
-          </Link>
-        ))}
+        {desktopNavLinks.map(link => {
+          const isActiveLink =
+            currentPathname === link.href ||
+            currentPathname.startsWith(`${link.href}/`)
+          return (
+            <Link
+              key={link.href}
+              href={link.href}
+              onClick={handleMobileLinkClick}
+              className={isActiveLink ? styles.active : undefined}
+            >
+              {link.label}
+            </Link>
+          )
+        })}
         <div className={styles.mobileActions}>
           {!user ? (
             <>
