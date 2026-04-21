@@ -50,12 +50,12 @@ const nextConfig = {
         { source: '/logout', destination: `${expressBaseUrl}/logout` },
 
         // Pages — info
-        { source: '/pricing', destination: `${expressBaseUrl}/pricing` },
-        { source: '/how-it-works', destination: `${expressBaseUrl}/how-it-works` },
-        { source: '/about', destination: `${expressBaseUrl}/about` },
-        { source: '/contact', destination: `${expressBaseUrl}/contact` },
-        { source: '/terms', destination: `${expressBaseUrl}/terms` },
-        { source: '/privacy', destination: `${expressBaseUrl}/privacy` },
+        // /pricing migrated to Next.js App Router (app/pricing/page.jsx)
+        // /how-it-works migrated to Next.js App Router (app/how-it-works/page.jsx)
+        // /about migrated to Next.js App Router (app/about/page.jsx)
+        // /contact migrated to Next.js App Router (app/contact/page.jsx)
+        // /terms migrated to Next.js App Router (app/terms/page.jsx)
+        // /privacy migrated to Next.js App Router (app/privacy/page.jsx)
 
         // Misc
         { source: '/cal/:path*', destination: `${expressBaseUrl}/cal/:path*` },

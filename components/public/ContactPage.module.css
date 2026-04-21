@@ -1,0 +1,269 @@
+.page {
+  position: relative;
+  z-index: 1;
+}
+
+.hero {
+  padding: 140px 52px 72px;
+  max-width: 680px;
+  margin: 0 auto;
+  text-align: center;
+}
+.heroHeading {
+  font-family: var(--font-display);
+  font-size: clamp(44px, 6vw, 64px);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  color: var(--text-hi);
+  margin-bottom: 16px;
+}
+.heroBody {
+  font-size: 18px;
+  color: var(--text-mid);
+  line-height: 1.65;
+}
+
+.contactLayout {
+  padding: 0 52px 80px;
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 48px;
+  align-items: start;
+}
+
+.formCard {
+  background: var(--char);
+  border: 1px solid #ffffff09;
+  border-radius: 20px;
+  padding: 48px;
+}
+.formHeading {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  color: var(--text-hi);
+  margin-bottom: 32px;
+}
+.fieldGroup {
+  margin-bottom: 20px;
+}
+.fieldRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.fieldGroup label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-mid);
+  margin-bottom: 8px;
+}
+.fieldGroup input,
+.fieldGroup select,
+.fieldGroup textarea {
+  width: 100%;
+  background: var(--ash);
+  border: 1px solid #ffffff0d;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--text-hi);
+  outline: none;
+  transition: border-color 0.14s, box-shadow 0.14s;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.fieldGroup input::placeholder,
+.fieldGroup textarea::placeholder {
+  color: var(--text-lo);
+}
+.fieldGroup input:focus,
+.fieldGroup select:focus,
+.fieldGroup textarea:focus {
+  border-color: rgba(232, 80, 10, 0.45);
+  box-shadow: 0 0 0 3px rgba(232, 80, 10, 0.1);
+}
+.fieldGroup select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' stroke='%23A89880' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 16px;
+  padding-right: 40px;
+}
+.fieldGroup select option {
+  background: var(--char);
+  color: var(--text-hi);
+}
+.fieldGroup textarea {
+  min-height: 140px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.submitBtn {
+  width: 100%;
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--ember);
+  border: none;
+  padding: 14px 24px;
+  border-radius: 10px;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: background 0.14s, transform 0.1s;
+  box-shadow: 0 4px 20px rgba(232, 80, 10, 0.35);
+}
+.submitBtn:hover:not(:disabled) {
+  background: var(--ember-glow);
+  transform: translateY(-1px);
+}
+.submitBtn:active:not(:disabled) {
+  transform: translateY(0);
+}
+.submitBtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.errorMsg {
+  margin: 8px 0 16px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: rgba(192, 57, 43, 0.1);
+  border: 1px solid rgba(192, 57, 43, 0.35);
+  color: var(--terra);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.successMsg {
+  text-align: center;
+  padding: 48px 24px;
+}
+.successIcon {
+  width: 64px;
+  height: 64px;
+  background: rgba(45, 139, 85, 0.15);
+  border: 2px solid rgba(45, 139, 85, 0.3);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  font-size: 28px;
+  color: var(--herb);
+}
+.successMsg h3 {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: var(--text-hi);
+  margin-bottom: 10px;
+}
+.successMsg p {
+  font-size: 15px;
+  color: var(--text-mid);
+  line-height: 1.65;
+}
+
+.infoStack {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.infoCard {
+  background: var(--char);
+  border: 1px solid #ffffff09;
+  border-radius: 14px;
+  padding: 24px 28px;
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+}
+.infoIcon {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  background: var(--ember-bg);
+  border: 1px solid rgba(232, 80, 10, 0.2);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+.infoBody h4 {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-mid);
+  margin-bottom: 6px;
+}
+.infoBody a,
+.infoBody span {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-hi);
+  text-decoration: none;
+}
+.infoBody a:hover {
+  color: var(--ember);
+}
+.infoSub {
+  font-size: 13px;
+  color: var(--text-lo);
+  margin-top: 3px;
+}
+
+.noteCard {
+  background: var(--ember-bg);
+  border: 1px solid rgba(232, 80, 10, 0.15);
+  border-radius: 14px;
+  padding: 20px 24px;
+}
+.noteCard p {
+  font-size: 13px;
+  color: var(--text-mid);
+  line-height: 1.65;
+}
+.noteCard strong {
+  color: var(--ember);
+}
+.noteCard a {
+  color: var(--ember);
+  text-decoration: none;
+}
+.noteCard a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 900px) {
+  .contactLayout {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    padding: 0 20px 64px;
+  }
+  .formCard {
+    padding: 32px 24px;
+  }
+}
+@media (max-width: 580px) {
+  .fieldRow {
+    grid-template-columns: 1fr;
+  }
+  .hero {
+    padding: 120px 20px 48px;
+  }
+}

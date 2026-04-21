@@ -1,0 +1,163 @@
+.docLayout {
+  padding: 0 52px 100px;
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 64px;
+  align-items: start;
+}
+
+.toc {
+  position: sticky;
+  top: 90px;
+}
+.tocLabel {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-lo);
+  margin-bottom: 14px;
+}
+.tocList {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+}
+.tocList li {
+  list-style: none;
+}
+.tocList a {
+  font-size: 13px;
+  color: var(--text-lo);
+  text-decoration: none;
+  padding: 5px 10px;
+  border-radius: 6px;
+  display: block;
+  transition: color 0.14s, background 0.14s, border-left-color 0.14s;
+  border-left: 2px solid transparent;
+}
+.tocList a:hover {
+  color: var(--text-mid);
+  background: #ffffff06;
+  border-left-color: #ffffff15;
+}
+.tocLinkActive {
+  color: var(--ember) !important;
+  border-left-color: var(--ember) !important;
+  background: var(--ember-bg) !important;
+}
+
+.tocMobileToggle {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: var(--char);
+  border: 1px solid #ffffff0e;
+  border-radius: 10px;
+  padding: 12px 16px;
+  color: var(--text-mid);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+.tocMobileToggle:hover {
+  border-color: #ffffff1a;
+  color: var(--text-hi);
+}
+.tocMobileToggle svg {
+  transition: transform 0.2s;
+}
+.tocMobileToggleOpen svg {
+  transform: rotate(180deg);
+}
+
+.backToTop {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  z-index: 100;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid #ffffff12;
+  background: var(--char);
+  color: var(--text-mid);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.2s ease, background 0.15s, color 0.15s;
+  transform: translateY(8px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+.backToTopVisible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+.backToTop:hover {
+  background: var(--ember);
+  color: #fff;
+  border-color: var(--ember);
+}
+.backToTop:active {
+  transform: scale(0.94);
+}
+.backToTop:focus-visible {
+  outline: 2px solid var(--ember);
+  outline-offset: 2px;
+}
+
+@media (max-width: 880px) {
+  .docLayout {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .toc {
+    position: relative;
+    top: 0;
+    margin-bottom: 8px;
+  }
+  .tocMobileToggle {
+    display: flex;
+  }
+  .tocLabel {
+    display: none;
+  }
+  .tocList {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.3s ease, opacity 0.2s ease, padding 0.3s ease;
+    background: var(--char);
+    border: 1px solid #ffffff0e;
+    border-radius: 10px;
+    margin-top: 6px;
+    padding: 0 8px;
+  }
+  .tocListOpen {
+    max-height: 600px;
+    opacity: 1;
+    padding: 8px;
+  }
+}
+
+@media (max-width: 768px) {
+  .docLayout {
+    padding: 0 20px 80px;
+  }
+  .backToTop {
+    bottom: 20px;
+    right: 20px;
+  }
+}

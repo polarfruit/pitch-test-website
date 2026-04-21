@@ -1,0 +1,71 @@
+.docBody {
+  min-width: 0;
+}
+.docSection {
+  margin-bottom: 52px;
+}
+.docSection h2 {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: var(--ember);
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #ffffff14;
+  scroll-margin-top: 90px;
+}
+.docSection p {
+  font-size: 15px;
+  color: var(--text-mid);
+  line-height: 1.85;
+  margin-bottom: 14px;
+}
+.docSection p:last-child {
+  margin-bottom: 0;
+}
+.docSection ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 14px 0;
+  padding: 0;
+}
+.docSection ul li {
+  font-size: 14px;
+  color: var(--text-mid);
+  line-height: 1.7;
+  padding-left: 20px;
+  position: relative;
+}
+.docSection ul li::before {
+  content: '–';
+  position: absolute;
+  left: 0;
+  color: var(--text-lo);
+}
+.docSection strong {
+  color: var(--text-hi);
+  font-weight: 600;
+}
+.docSection a {
+  color: var(--ember);
+  text-decoration: none;
+}
+.docSection a:hover {
+  text-decoration: underline;
+}
+
+.highlightBox {
+  background: var(--ember-bg);
+  border: 1px solid rgba(232, 80, 10, 0.15);
+  border-radius: 12px;
+  padding: 18px 22px;
+  margin: 20px 0;
+}
+.highlightBox p {
+  font-size: 14px;
+  color: var(--text-mid);
+  margin: 0 !important;
+}
