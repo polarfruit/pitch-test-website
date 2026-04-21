@@ -26,3 +26,8 @@ export const DATA_REVALIDATE_SECONDS = 60
 // synchronously after a redirect. 100ms is the empirically
 // tested minimum required for the cookie to be readable.
 export const AUTH_COOKIE_SETTLE_DELAY_MS = 100
+
+// Resend cooldown for email verification code. 60 seconds
+// matches the server-side rate limit on /api/verify/email/resend
+// and prevents accidental double-sends from frustrated users.
+export const VERIFY_EMAIL_RESEND_COOLDOWN_SECONDS = 60

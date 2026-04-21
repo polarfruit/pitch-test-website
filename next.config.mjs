@@ -43,9 +43,14 @@ const nextConfig = {
 
         // Pages — auth
         // /login migrated to Next.js App Router (app/login/page.jsx)
-        { source: '/signup', destination: `${expressBaseUrl}/signup` },
+        // /signup migrated to Next.js App Router (app/signup/page.jsx)
+        // /signup/vendor migrated to Next.js App Router (app/signup/vendor/page.jsx)
+        // /signup/organiser migrated to Next.js App Router (app/signup/organiser/page.jsx)
+        // Unmigrated subpaths (e.g. /signup/foodie) fall through to Express.
         { source: '/signup/:path*', destination: `${expressBaseUrl}/signup/:path*` },
-        { source: '/forgot-password', destination: `${expressBaseUrl}/forgot-password` },
+        // /forgot-password migrated to Next.js App Router (app/forgot-password/page.jsx)
+        // /verify/email migrated to Next.js App Router (app/verify/email/page.jsx)
+        // /verify/phone still served by Express until a later batch.
         { source: '/verify/:path*', destination: `${expressBaseUrl}/verify/:path*` },
         { source: '/logout', destination: `${expressBaseUrl}/logout` },
 

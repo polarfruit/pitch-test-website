@@ -926,6 +926,21 @@ app.post('/api/login', async (req, res) => {
   res.json({ ok: true, redirect });
 });
 
+// POST /api/forgot-password
+// Always returns { ok: true } regardless of whether the email exists, to
+// prevent account enumeration. The mailer wiring is intentionally deferred
+// — the legacy HTML behaves the same way and real token issuance lands in
+// a later batch.
+app.post('/api/forgot-password', (req, res) => {
+  const email = typeof req.body?.email === 'string' ? req.body.email.trim() : '';
+  console.log('[forgot-password]', {
+    email: email || '<invalid>',
+    timestamp: new Date().toISOString(),
+  });
+  // TODO: issue reset token and send via server/mailer.mjs
+  return res.json({ ok: true });
+});
+
 // ── OAuth: Google Sign-In ──────────────────────────────────────────────────
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
 

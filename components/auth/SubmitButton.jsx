@@ -2,6 +2,7 @@ import styles from './SubmitButton.module.css'
 
 export default function SubmitButton({
   label,
+  loadingLabel = 'Signing in…',
   isLoading = false,
   disabled = false,
 }) {
@@ -14,7 +15,7 @@ export default function SubmitButton({
       aria-busy={isLoading}
     >
       {isLoading ? <span className={styles.spinner} aria-hidden="true" /> : null}
-      <span>{isLoading ? 'Signing in…' : label}</span>
+      <span>{isLoading ? loadingLabel : label}</span>
     </button>
   )
 }

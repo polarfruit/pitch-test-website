@@ -1,0 +1,37 @@
+.callout {
+  background: rgba(232, 80, 10, 0.06);
+  border: 1px solid rgba(232, 80, 10, 0.25);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.emoji {
+  font-size: 20px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.heading {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ember);
+  margin: 0;
+}
+
+.text {
+  font-family: var(--font-body);
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--text-mid);
+  margin: 0;
+}

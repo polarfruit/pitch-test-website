@@ -1,0 +1,164 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.heading {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 28px;
+  letter-spacing: -0.03em;
+  color: var(--text-hi);
+  text-align: center;
+  margin: 0;
+  line-height: 1.15;
+}
+
+.subtitle {
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-mid);
+  text-align: center;
+  margin: 0 0 12px;
+}
+
+.card {
+  background: var(--char);
+  border: 1.5px solid rgba(232, 80, 10, 0.14);
+  border-radius: 16px;
+  padding: 22px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  text-decoration: none;
+  color: var(--text-hi);
+  transition: border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+}
+
+.card:hover {
+  border-color: rgba(232, 80, 10, 0.55);
+  transform: translateY(-2px);
+  box-shadow: 0 16px 40px -20px rgba(232, 80, 10, 0.35);
+}
+
+.card:focus-visible {
+  outline: 2px solid var(--ember);
+  outline-offset: 3px;
+}
+
+.foodie {
+  flex-direction: row;
+  align-items: center;
+  gap: 18px;
+  text-align: left;
+  padding: 20px 22px;
+  background: linear-gradient(135deg, var(--char) 0%, #2A1C12 100%);
+  border-color: rgba(232, 80, 10, 0.25);
+}
+
+.foodieBody {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.emoji {
+  font-size: 40px;
+  line-height: 1;
+  flex-shrink: 0;
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.4));
+}
+
+.badge {
+  display: inline-flex;
+  align-self: flex-start;
+  background: rgba(232, 80, 10, 0.12);
+  border: 1px solid rgba(232, 80, 10, 0.28);
+  border-radius: 100px;
+  padding: 2px 10px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--ember);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.cardLabel {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 20px;
+  letter-spacing: -0.02em;
+  color: var(--text-hi);
+}
+
+.foodie .cardLabel {
+  font-size: 22px;
+}
+
+.cardDesc {
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-mid);
+  margin: 0;
+}
+
+.cta {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ember);
+  letter-spacing: 0.03em;
+  margin-top: 2px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.footer {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--text-mid);
+  text-align: center;
+  margin: 18px 0 0;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.loginLink {
+  color: var(--ember);
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 160ms ease;
+}
+
+.loginLink:hover {
+  color: var(--ember-glow);
+  text-decoration: underline;
+}
+
+@media (max-width: 520px) {
+  .foodie {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .foodieBody {
+    align-items: center;
+  }
+  .badge {
+    align-self: center;
+  }
+  .row {
+    grid-template-columns: 1fr;
+  }
+}

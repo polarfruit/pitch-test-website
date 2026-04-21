@@ -1,0 +1,101 @@
+.heading {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 28px;
+  letter-spacing: -0.02em;
+  color: var(--text-hi);
+  margin: 0 0 6px;
+  text-align: center;
+}
+
+.subtitle {
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--text-mid);
+  margin: 0 0 28px;
+  text-align: center;
+}
+
+.emailHighlight {
+  color: var(--text-hi);
+  font-weight: 600;
+  word-break: break-all;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.codeRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 4px 0 12px;
+}
+
+.codeBox {
+  flex: 1;
+  min-width: 0;
+  aspect-ratio: 1;
+  max-width: 54px;
+  background: var(--coal);
+  color: var(--text-hi);
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 800;
+  text-align: center;
+  border: 1.5px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+  outline: none;
+}
+
+.codeBox:focus {
+  border-color: var(--ember);
+  box-shadow: 0 0 0 3px rgba(232, 80, 10, 0.18);
+}
+
+.codeBox:disabled {
+  opacity: 0.55;
+}
+
+.success {
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--herb);
+  margin: 0;
+  text-align: center;
+}
+
+.resendButton {
+  background: none;
+  border: none;
+  padding: 8px;
+  color: var(--text-mid);
+  font-family: var(--font-body);
+  font-size: 13px;
+  cursor: pointer;
+  transition: color 160ms ease;
+  align-self: center;
+}
+
+.resendButton:hover:not(:disabled) {
+  color: var(--ember);
+}
+
+.resendButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+@media (max-width: 380px) {
+  .codeRow {
+    gap: 6px;
+  }
+  .codeBox {
+    font-size: 20px;
+  }
+}
