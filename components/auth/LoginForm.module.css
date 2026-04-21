@@ -1,0 +1,58 @@
+.heading {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 28px;
+  letter-spacing: -0.02em;
+  color: var(--text-hi);
+  margin: 0 0 6px;
+}
+
+.subtitle {
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--text-mid);
+  margin: 0 0 28px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.forgotLink {
+  align-self: flex-end;
+  font-family: var(--font-body);
+  font-size: 13px;
+  color: var(--text-mid);
+  text-decoration: none;
+  transition: color 160ms ease;
+  margin-top: -4px;
+}
+
+.forgotLink:hover {
+  color: var(--ember);
+}
+
+.footer {
+  margin: 24px 0 0;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  font-family: var(--font-body);
+  font-size: 14px;
+  text-align: center;
+  color: var(--text-mid);
+}
+
+.signupLink {
+  color: var(--ember);
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 160ms ease;
+}
+
+.signupLink:hover {
+  color: var(--ember-glow);
+  text-decoration: underline;
+}

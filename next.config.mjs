@@ -42,7 +42,7 @@ const nextConfig = {
         { source: '/admin/:path*', destination: `${expressBaseUrl}/admin/:path*` },
 
         // Pages — auth
-        { source: '/login', destination: `${expressBaseUrl}/login` },
+        // /login migrated to Next.js App Router (app/login/page.jsx)
         { source: '/signup', destination: `${expressBaseUrl}/signup` },
         { source: '/signup/:path*', destination: `${expressBaseUrl}/signup/:path*` },
         { source: '/forgot-password', destination: `${expressBaseUrl}/forgot-password` },
