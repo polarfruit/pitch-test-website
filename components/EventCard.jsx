@@ -34,7 +34,7 @@ const CATEGORY_BADGE_FALLBACK = { background: 'rgba(107,90,74,0.08)', color: '#6
 function EventCard({ event }) {
   if (!event) return null
 
-  const { id, name, category, suburb, state, dateLabel, filled, total, feeMin, feeMax, deadlineLabel, photo, spots_left, spots_total } = event
+  const { id, slug, name, category, suburb, state, dateLabel, filled, total, feeMin, feeMax, deadlineLabel, photo, spots_left, spots_total } = event
   const totalSpots = total ?? spots_total ?? 0
   const filledSpots = filled ?? (totalSpots - (spots_left ?? totalSpots))
   const fillPercent = totalSpots > 0 ? Math.round((filledSpots / totalSpots) * 100) : 0
@@ -47,7 +47,7 @@ function EventCard({ event }) {
   const spotsBadgeStyle = getSpotsBadgeStyle(fillPercent)
 
   return (
-    <Link href={`/events/${id}`} className={styles.card}>
+    <Link href={`/events/${slug ?? id}`} className={styles.card}>
       <div className={`${styles.img} ${categoryImageClass}`}>
         {photo && (
           <Image src={photo} alt={category} className={styles.photo} fill sizes="(max-width: 640px) 100vw, 288px" />

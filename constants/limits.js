@@ -46,3 +46,23 @@ export const EVENTS_PER_PAGE = 12
 // 12 fills a 3x4 grid on desktop and scrolls naturally
 // on mobile without requiring excessive pagination.
 export const VENDORS_PER_PAGE = 12
+
+// Fill-rate ring SVG radius on the event detail sidebar.
+// 54 is the radius the original HTML used; the dasharray
+// math depends on this exact value matching the <circle r>.
+export const FILL_RING_RADIUS_PX = 54
+
+// Circumference of the fill-rate ring. Derived from the
+// radius above so the stroke-dasharray animation lines up
+// to the pixel when the ring is redrawn on any page.
+export const FILL_RING_CIRCUMFERENCE_PX = 2 * Math.PI * FILL_RING_RADIUS_PX
+
+// Maximum similar events shown under an event detail page.
+// 3 keeps the rail to one row on desktop and one swipe on
+// mobile, matching the legacy layout.
+export const SIMILAR_EVENTS_COUNT = 3
+
+// Character cap on the vendor application message textarea.
+// 1000 mirrors the soft cap applied across other long-form
+// fields in the platform (review bodies, bios).
+export const APPLY_MESSAGE_MAX_CHARS = 1000

@@ -1,34 +1,14 @@
 import Image from 'next/image'
 import styles from './VendorProfileHeader.module.css'
 
-function computeAverageRating(rating) {
-  if (typeof rating !== 'number' || Number.isNaN(rating)) return null
-  return rating.toFixed(1)
-}
-
 export default function VendorProfileHeader({ vendor }) {
   const {
-    tradingName,
-    ownerName,
-    avatarUrl,
-    avatarGradient,
-    verified,
-    planLabel,
-    plan,
-    rating,
-    reviewCount,
-    tags,
-    setupType,
+    tradingName, ownerName, avatarUrl, avatarGradient,
+    verified, planLabel, plan, rating, reviewCount, tags, setupType,
   } = vendor
 
-  const initials = tradingName
-    .split(' ')
-    .map(word => word.charAt(0))
-    .join('')
-    .slice(0, 2)
-    .toUpperCase()
-
-  const averageRating = computeAverageRating(rating)
+  const initials = tradingName.split(' ').map(w => w.charAt(0)).join('').slice(0, 2).toUpperCase()
+  const averageRatingLabel = typeof rating === 'number' && !Number.isNaN(rating) ? rating.toFixed(1) : null
   const hasTags = Array.isArray(tags) && tags.length > 0
 
   return (
@@ -81,9 +61,9 @@ export default function VendorProfileHeader({ vendor }) {
             ) : null}
           </div>
 
-          {averageRating ? (
+          {averageRatingLabel ? (
             <div className={styles.rating}>
-              <span className={styles.ratingValue}>★ {averageRating}</span>
+              <span className={styles.ratingValue}>★ {averageRatingLabel}</span>
               <span className={styles.ratingMeta}>
                 {reviewCount > 0 ? `${reviewCount} reviews` : 'No reviews yet'}
               </span>

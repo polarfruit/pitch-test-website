@@ -1603,9 +1603,46 @@ app.get('/api/category-counts', apiCached('category-counts', 120000, async () =>
 }));
 
 app.get('/api/events/:slug', async (req, res) => {
-  const ev = await stmts.getEventBySlug.get(req.params.slug);
-  if (!ev) return res.status(404).json({ error: 'Event not found' });
-  res.json({ event: ev });
+  try {
+    const ev = await stmts.getEventBySlug.get(req.params.slug);
+    if (!ev) return res.status(404).json({ error: 'Event not found' });
+
+    const [approvedVendors, approvedCount, orgEventRow, orgExtRow] = await Promise.all([
+      stmts.getApprovedVendorsByEvent.all(ev.id).catch(() => []),
+      stmts.countApprovedByEvent.get(ev.id).catch(() => ({ n: 0 })),
+      ev.organiser_user_id ? stmts.countOrgEvents.get(ev.organiser_user_id).catch(() => ({ n: 0 })) : Promise.resolve({ n: 0 }),
+      ev.organiser_user_id ? stmts.getOrgWithAvatar.get(ev.organiser_user_id).catch(() => null) : Promise.resolve(null),
+    ]);
+
+    // Only surface viewer-specific state when the requester is an
+    // authenticated vendor — organisers and anonymous users get null
+    // so the client never relies on another role's application state.
+    let viewerApplicationStatus = null;
+    if (req.session.userId && req.session.role === 'vendor') {
+      const existing = await stmts.getApplicationByIds.get(ev.id, req.session.userId).catch(() => null);
+      viewerApplicationStatus = existing && existing.status !== 'withdrawn' ? existing.status : null;
+    }
+
+    const event = {
+      ...ev,
+      approved_count: Number(approvedCount?.n ?? 0),
+      org_event_count: Number(orgEventRow?.n ?? 0),
+      organiser_verified: orgExtRow?.abn_verified ? true : false,
+      organiser_avatar_url: orgExtRow?.avatar_url || null,
+      approved_vendors: approvedVendors.map(v => ({
+        user_id: v.user_id,
+        trading_name: v.trading_name,
+        cuisine_tags: (() => { try { return JSON.parse(v.cuisine_tags || '[]'); } catch { return []; } })(),
+        setup_type: v.setup_type || '',
+      })),
+      viewer_application_status: viewerApplicationStatus,
+    };
+
+    res.json({ event });
+  } catch (e) {
+    console.error('[api/events/:slug]', e);
+    res.status(500).json({ error: 'Failed to load event' });
+  }
 });
 
 // ── API: Public vendors ────────────────────────────────────────────────────
