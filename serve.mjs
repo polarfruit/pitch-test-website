@@ -57,8 +57,6 @@ function logEnvStartup() {
     `[env] RESEND_FROM=${process.env.RESEND_FROM || 'Pitch. <noreply@onpitch.com.au> (fallback)'}`,
     `[env] SMTP_HOST=${process.env.SMTP_HOST || 'not set'}`,
     `[env] ADMIN_EMAIL=${process.env.ADMIN_EMAIL || 'admin@onpitch.com.au (fallback)'}`,
-    `[env] ADMIN_USERNAME=${process.env.ADMIN_USERNAME ? 'set' : 'NOT SET (using insecure default)'}`,
-    `[env] ADMIN_PASSWORD=${process.env.ADMIN_PASSWORD ? 'set (masked)' : 'NOT SET (using insecure default)'}`,
     `[env] STRIPE_SECRET_KEY=${maskSecret(process.env.STRIPE_SECRET_KEY)}`,
     `[env] STRIPE_WEBHOOK_SECRET=${maskSecret(process.env.STRIPE_WEBHOOK_SECRET)}`,
     `[env] STRIPE_PRICE_PRO=${process.env.STRIPE_PRICE_PRO || 'NOT SET'}`,
@@ -74,12 +72,6 @@ function logEnvStartup() {
   }
   lines.push(sep);
   console.log(lines.join('\n'));
-
-  if (!process.env.ADMIN_PASSWORD) {
-    console.error(
-      '[env] CRITICAL: ADMIN_PASSWORD is using default value. Set ADMIN_PASSWORD in environment variables before launch.'
-    );
-  }
 }
 
 logEnvStartup();
@@ -933,20 +925,13 @@ app.post('/api/verify/phone/skip', requireAuth, async (req, res) => {
 
 // ── API: Auth ──────────────────────────────────────────────────────────────
 
-// ⚠️ SECURITY: Set ADMIN_USERNAME and ADMIN_PASSWORD in Vercel environment
-// variables before production launch. Default values are insecure.
-const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin';
+// Admin credentials live in the users table (id=1000, role='admin'). Seed
+// lives in server/db.mjs. /api/login handles admin via the role branch below.
 
 // POST /api/login
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
-
-  if (email === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-    sessWrite(res, { isAdmin: true, userId: 1000 });
-    return res.json({ ok: true, redirect: '/admin' });
-  }
 
   const user = await stmts.getUserByEmail.get(email);
   if (!user) return res.status(401).json({ error: 'Invalid email or password' });
@@ -1682,7 +1667,7 @@ function checkAdminRateLimit(ip) {
   return true;
 }
 
-app.post('/api/admin/login', (req, res) => {
+app.post('/api/admin/login', async (req, res) => {
   const ip = req.ip || req.connection?.remoteAddress || 'unknown';
   if (!checkAdminRateLimit(ip)) {
     return res.status(429).json({
@@ -1690,12 +1675,25 @@ app.post('/api/admin/login', (req, res) => {
     });
   }
 
-  const { username, password } = req.body;
-  if (!username || !password) return res.status(400).json({ error: 'Username and password required' });
-  if (username !== ADMIN_USERNAME || password !== ADMIN_PASSWORD) {
-    return res.status(401).json({ error: 'Invalid username or password' });
+  const { email, password } = req.body;
+  if (!email || !password) return res.status(400).json({ error: 'Email and password required' });
+
+  const user = await stmts.getUserByEmail.get(email);
+  if (!user || user.role !== 'admin') {
+    return res.status(401).json({ error: 'Invalid credentials' });
   }
-  sessWrite(res, { isAdmin: true, userId: 1000 });
+
+  const match = await bcrypt.compare(password, user.password_hash);
+  if (!match) {
+    return res.status(401).json({ error: 'Invalid credentials' });
+  }
+
+  sessWrite(res, {
+    isAdmin: true,
+    userId:  Number(user.id),
+    role:    'admin',
+    name:    `${user.first_name} ${user.last_name}`,
+  });
   res.json({ ok: true });
 });
 

@@ -990,8 +990,32 @@ await _safeExec(`INSERT INTO _schema_meta (v) VALUES (${SCHEMA_VERSION})`);
 } // end if (_schemaVersion < SCHEMA_VERSION)
 
 // ── Always: ensure admin user row exists (id=1000, role='admin') ─────────────
-// The admin dashboard session stores this userId so messaging threads work.
-await _safeExec(`INSERT OR IGNORE INTO users (id,email,password_hash,first_name,last_name,role,status) VALUES (1000,'admin@onpitch.com.au','$2b$08$unusable_hash_admin','Pitch','Admin','admin','active')`);
+// Admin lives in the users table like every other role. Row is pinned at
+// id=1000 so the admin_user_id references scattered through serve.mjs remain
+// valid FKs. On fresh install → INSERT with real bcrypt hash. On installs
+// still carrying the legacy '$2b$08$unusable_hash_admin' placeholder from
+// earlier commits → UPDATE to a usable hash. Once a real hash is in place,
+// this block is a no-op and bcrypt.hash is not invoked.
+const _LEGACY_UNUSABLE_ADMIN_HASH = '$2b$08$unusable_hash_admin';
+const _adminRow = await prepare(`SELECT id, password_hash FROM users WHERE id = 1000`).get();
+const _needsAdminSeed = !_adminRow || _adminRow.password_hash === _LEGACY_UNUSABLE_ADMIN_HASH;
+if (_needsAdminSeed) {
+  const _seedPassword = process.env.ADMIN_PASSWORD || 'ChangePitchAdminNow!';
+  if (!process.env.ADMIN_PASSWORD) {
+    console.error(
+      '[db] CRITICAL: seeding admin user with default password "ChangePitchAdminNow!" — rotate immediately via direct DB update.'
+    );
+  }
+  const _adminHash = await bcryptjs.hash(_seedPassword, 10);
+  if (_adminRow) {
+    await prepare(`UPDATE users SET password_hash = ? WHERE id = 1000`).run(_adminHash);
+  } else {
+    await prepare(
+      `INSERT INTO users (id, email, password_hash, first_name, last_name, role, status, email_verified)
+       VALUES (1000, 'admin@onpitch.com.au', ?, 'Admin', 'Pitch', 'admin', 'active', 1)`
+    ).run(_adminHash);
+  }
+}
 
 // ── Always: ensure every vendor user has a vendors row (idempotent) ──────────
 // Runs on every cold start — INSERT OR IGNORE is a no-op when record exists.

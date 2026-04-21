@@ -39,40 +39,36 @@ dashboard (Domains tab) with SPF and DKIM DNS records set. Without
 domain verification, Resend will reject outbound mail from the brand
 address.
 
-### ADMIN_USERNAME / ADMIN_PASSWORD — set strong values before launch
+### Admin credentials — now managed in the database
 
-**Current (fallback):** `admin` / `admin`
-**Required:**          custom username + password of **at least 16 characters**
+Admin credentials are stored in the `users` table like every other role
+(id pinned at `1000`, email `admin@onpitch.com.au`, role `admin`). The
+seed block in [server/db.mjs](../server/db.mjs) creates the row on first
+boot and heals any legacy install that still carries the pre-refactor
+placeholder hash `$2b$08$unusable_hash_admin`.
 
-These credentials gate `POST /api/admin/login` and therefore the entire
-admin panel. The code falls back to `admin` / `admin` only when the env
-vars are missing — acceptable locally, catastrophic in production. Rate
-limiting is in place (5 attempts per IP per 15 minutes at
-[serve.mjs:1670-1700](../serve.mjs)) but is a deterrent, not a
-replacement for strong credentials. Constants read at
-[serve.mjs:930-931](../serve.mjs).
+- **Email:** `admin@onpitch.com.au`
+- **Password at seed:** value of `ADMIN_PASSWORD` env var at the moment
+  the admin row is first written. If unset, the seed falls back to the
+  dev default `ChangePitchAdminNow!` and logs a `console.error` line:
+  `[db] CRITICAL: seeding admin user with default password "ChangePitchAdminNow!" — rotate immediately via direct DB update.`
+- **Rotation:** update the `password_hash` column directly in Turso
+  (or via a future admin-panel rotation flow). `ADMIN_PASSWORD` is
+  consulted only at the initial seed — changing the env var after the
+  row exists does **not** re-seed. To force a re-seed, reset the
+  `password_hash` to the legacy placeholder and restart.
 
-If `ADMIN_PASSWORD` is unset on boot, the startup banner is followed by
-an error-severity line:
+Steps for a fresh production deploy:
 
-```
-[env] CRITICAL: ADMIN_PASSWORD is using default value. Set ADMIN_PASSWORD in environment variables before launch.
-```
-
-Steps:
-
-1. Generate a strong password — e.g. `openssl rand -base64 24`
-2. Vercel → Project → Settings → Environment Variables
-3. Add `ADMIN_USERNAME` (Production) — any non-trivial value
-4. Add `ADMIN_PASSWORD` (Production) — the generated password
-5. Redeploy (trigger a deploy or push a commit)
-6. Verify in the deploy's logs — the startup banner will show:
-   `[env] ADMIN_USERNAME=set`
-   `[env] ADMIN_PASSWORD=set (masked)`
-   and the `[env] CRITICAL: ADMIN_PASSWORD is using default value`
-   error line will be **absent**.
-7. Test login at `/admin` with the new credentials; confirm the old
-   `admin` / `admin` pair now returns 401.
+1. Set `ADMIN_PASSWORD` in Vercel environment variables (Production)
+   before the first cold start. Strong value recommended —
+   `openssl rand -base64 24`.
+2. Deploy. The first boot will seed `users(id=1000)` with a bcrypt hash
+   of the env value.
+3. Remove `ADMIN_PASSWORD` from Vercel after first seed if you prefer.
+   It is no longer read at runtime — only at seed time.
+4. Test login at `/admin/login` with `admin@onpitch.com.au` and the
+   password you set.
 
 ---
 
@@ -102,8 +98,6 @@ Steps:
 | `RESEND_FROM` | From address on all platform emails | `Pitch. <noreply@onpitch.com.au>` | ✅ known set — **value needs correction**, see Manual fixes above | [server/mailer.mjs:46,181](../server/mailer.mjs) |
 | `TURSO_DATABASE_URL` | Production SQLite via Turso (libSQL) | `libsql://…` | ❓ verify in Vercel | [server/db.mjs:23](../server/db.mjs) |
 | `TURSO_AUTH_TOKEN` | Turso database auth token | JWT-like string | ❓ verify in Vercel | [server/db.mjs:28](../server/db.mjs) |
-| `ADMIN_USERNAME` | Admin panel username — **must be changed from `admin` default** before production launch | string | ❓ verify in Vercel | [serve.mjs:930](../serve.mjs) |
-| `ADMIN_PASSWORD` | Admin panel password — **must be changed from `admin` default** before production launch. Minimum 16 characters recommended | ≥ 16 chars | ❓ verify in Vercel | [serve.mjs:931](../serve.mjs) |
 
 ---
 
@@ -137,6 +131,7 @@ Steps:
 | `PORT` | Local dev server port. Vercel assigns its own port | `3000` | ➖ local only | [serve.mjs:35](../serve.mjs) |
 | `VERCEL` | Auto-set by Vercel at runtime. Gates `app.listen` so the Express app exports as a serverless handler | `1` | ✅ auto-set by Vercel | [serve.mjs:5635](../serve.mjs) |
 | `STRIPE_PUBLISHABLE_KEY` | Legacy — the server returns this value on `/api/create-payment-intent`. Prefer `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | `pk_live_…` | ❓ consider migrating reads to the `NEXT_PUBLIC_` variant | [serve.mjs:3278](../serve.mjs) |
+| `ADMIN_PASSWORD` | One-time seed for the admin `password_hash` on first boot. Not read at runtime. See **Admin credentials** under Manual fixes above | strong random string | ➖ seed-only | [server/db.mjs](../server/db.mjs) |
 
 ---
 
@@ -188,6 +183,9 @@ ADMIN_EMAIL=admin@your-domain.example
 # Ops
 CRON_SECRET=<32+ random chars>
 ABR_GUID=<Australian Business Register lookup GUID>
+
+# Admin seed (read once on first boot; can be removed after seeding)
+ADMIN_PASSWORD=<strong random string — openssl rand -base64 24>
 ```
 
 Omit any of the **Optional** rows unless the specific feature is

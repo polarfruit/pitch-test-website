@@ -133,8 +133,8 @@
 
   <form id="loginForm" autocomplete="on" novalidate>
     <div class="field-group">
-      <label class="field-label" for="admin-username">Username</label>
-      <input class="field-input" type="text" id="admin-username" name="username" placeholder="Username" autocomplete="username" autofocus />
+      <label class="field-label" for="admin-email">Email</label>
+      <input class="field-input" type="email" id="admin-email" name="email" placeholder="admin@onpitch.com.au" autocomplete="username" autofocus />
     </div>
 
     <div class="field-group">
@@ -163,7 +163,7 @@
   const form     = document.getElementById('loginForm');
   const btn      = document.getElementById('admin-btn');
   const errEl    = document.getElementById('admin-error');
-  const userInp  = document.getElementById('admin-username');
+  const emailInp = document.getElementById('admin-email');
   const passInp  = document.getElementById('admin-password');
   const card     = document.getElementById('loginCard');
   const pwToggle = document.getElementById('pwToggle');
@@ -172,18 +172,18 @@
   fetch('/api/me', { credentials: 'same-origin' })
     .then(r => r.json())
     .then(d => {
-      if (d.user && d.user.id === 1000) {
+      if (d.user && d.user.role === 'admin') {
         // Already authenticated — go straight to admin
         window.location.href = '/dashboard/loading?to=admin';
       } else {
         // Not authenticated — reveal the login card
         card.classList.add('visible');
-        userInp.focus();
+        emailInp.focus();
       }
     })
     .catch(() => {
       card.classList.add('visible');
-      userInp.focus();
+      emailInp.focus();
     });
 
   // ── Password toggle ──
@@ -194,12 +194,12 @@
   });
 
   // ── Clear error on typing ──
-  userInp.addEventListener('input', clearError);
+  emailInp.addEventListener('input', clearError);
   passInp.addEventListener('input', clearError);
 
   function clearError() {
     errEl.classList.remove('show');
-    userInp.classList.remove('input-error');
+    emailInp.classList.remove('input-error');
     passInp.classList.remove('input-error');
   }
 
@@ -217,14 +217,14 @@
     e.preventDefault();
     clearError();
 
-    const username = userInp.value.trim();
+    const email    = emailInp.value.trim();
     const password = passInp.value;
 
-    if (!username || !password) {
-      if (!username) userInp.classList.add('input-error');
+    if (!email || !password) {
+      if (!email) emailInp.classList.add('input-error');
       if (!password) passInp.classList.add('input-error');
-      showError('Please enter your username and password.');
-      (username ? passInp : userInp).focus();
+      showError('Please enter your email and password.');
+      (email ? passInp : emailInp).focus();
       return;
     }
 
@@ -237,7 +237,7 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'same-origin',
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ email, password }),
       });
       const data = await res.json();
 
