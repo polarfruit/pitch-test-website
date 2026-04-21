@@ -84,6 +84,86 @@ If memory contradicts what a file looks like on disk — flag the contradiction 
 
 ---
 
+# PROJECT STATE
+
+Snapshot of where the Pitch. build currently stands. Update this section whenever the status of a page, system, or launch-blocker changes.
+
+## PAGES
+
+**Migrated to Next.js (App Router):**
+- `/` — homepage
+- `/events` — event browse/filter grid
+- `/events/[slug]` — event detail
+- `/vendors` — vendor grid with filters, search, pagination
+- `/vendors/[id]` — vendor profile
+- `/pricing`
+- `/about`
+- `/how-it-works`
+- `/terms`
+- `/privacy`
+- `/contact`
+- `/login`
+- `/signup`
+- `/signup/vendor`
+- `/signup/organiser`
+- `/forgot-password`
+- `/verify-email`
+
+**Still legacy Express HTML (served by `serve.mjs`):**
+- `/dashboard/vendor`
+- `/dashboard/organiser`
+- `/admin`
+- `/signup/foodie`
+- `/verify/phone`
+
+## EMAIL SYSTEM
+
+- 25 templates across 7 categories in [server/email/](server/email/) — auth, admin, applications, payments, messages, documents, reviews.
+- 13 trigger points wired in [serve.mjs](serve.mjs) — signup, approval, rejection, suspension, new message, new application, document upload/verify/reject, stall fee issued/paid, review lifecycle.
+- All sends are fire-and-forget with `.catch()` — no email failure ever throws into the request path. See [server/email/index.mjs](server/email/index.mjs).
+- Delivery via `sendAdminEmail()` in [server/mailer.mjs](server/mailer.mjs) (Resend).
+
+## PAYMENT SYSTEM
+
+- `FOUNDING_PHASE = true` on [serve.mjs:56](serve.mjs#L56). While true, every vendor receives Growth-level access at no cost regardless of signup plan selection.
+- Stripe is configured but still on **test keys**. Live keys must be swapped in before real billing.
+- Switch `FOUNDING_PHASE` to `false` when the platform reaches all three thresholds:
+  - 200 active vendors
+  - 40 events in the last 90 days
+  - 50 completed trades
+- Give 90 days' notice to vendors before enforcing paid tiers.
+
+## RECENT KEY COMMITS
+
+- `4a98cf4` — add Navbar/Footer to events and vendors, fix card data field mappings, fix placeholder encoding
+- `5d49602` — migrate `/vendors` page to Next.js (grid, filters, search, pagination)
+- `5f11634` — navbar fixes (foodie role, active links, mobile menu gaps, logout method)
+- `55593e4` — migrate vendor detail page to Next.js
+- `339d489` — tighten `VendorProfileHeader` to under 100 lines
+- `fb54c60` — migrate all static public pages to Next.js (about, how-it-works, pricing, terms, privacy, contact)
+- `26bbc94` — migrate signup, forgot-password, verify-email pages to Next.js
+- `f2d2d10` — add rating, reviews, events-completed to vendors listing API
+- `81340ef` — ensure vendor column migrations are idempotent on existing DBs
+- `1dd0777` — complete transactional email system (triggers wired end-to-end)
+
+## WHAT STILL NEEDS DOING
+
+**Before launch:**
+- Switch Stripe from test keys to live keys
+- Fix `RESEND_FROM` env var in Vercel
+- Test full signup flow on production
+- Walk through admin approval flow end-to-end
+- Remove test accounts from production DB
+- Seed real events
+
+**Post launch:**
+- Stripe Connect for organiser payouts
+- Phone verification via Twilio
+- Migrate vendor/organiser/admin dashboards to Next.js
+- Supabase migration (move DB off SQLite/Vercel `/tmp`)
+
+---
+
 # CLAUDE.md — Frontend Website Rules
 
 ## Always Do First
