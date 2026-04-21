@@ -57,6 +57,8 @@ function logEnvStartup() {
     `[env] RESEND_FROM=${process.env.RESEND_FROM || 'Pitch. <noreply@onpitch.com.au> (fallback)'}`,
     `[env] SMTP_HOST=${process.env.SMTP_HOST || 'not set'}`,
     `[env] ADMIN_EMAIL=${process.env.ADMIN_EMAIL || 'admin@onpitch.com.au (fallback)'}`,
+    `[env] ADMIN_USERNAME=${process.env.ADMIN_USERNAME ? 'set' : 'NOT SET (using insecure default)'}`,
+    `[env] ADMIN_PASSWORD=${process.env.ADMIN_PASSWORD ? 'set (masked)' : 'NOT SET (using insecure default)'}`,
     `[env] STRIPE_SECRET_KEY=${maskSecret(process.env.STRIPE_SECRET_KEY)}`,
     `[env] STRIPE_WEBHOOK_SECRET=${maskSecret(process.env.STRIPE_WEBHOOK_SECRET)}`,
     `[env] STRIPE_PRICE_PRO=${process.env.STRIPE_PRICE_PRO || 'NOT SET'}`,
@@ -925,8 +927,10 @@ app.post('/api/verify/phone/skip', requireAuth, async (req, res) => {
 
 // ── API: Auth ──────────────────────────────────────────────────────────────
 
-const ADMIN_USERNAME = 'admin';
-const ADMIN_PASSWORD = 'admin';
+// ⚠️ SECURITY: Set ADMIN_USERNAME and ADMIN_PASSWORD in Vercel environment
+// variables before production launch. Default values are insecure.
+const ADMIN_USERNAME = process.env.ADMIN_USERNAME || 'admin';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin';
 
 // POST /api/login
 app.post('/api/login', async (req, res) => {
@@ -1649,7 +1653,36 @@ app.get('/api/foodie/feed', async (req, res) => {
 
 // ── API: Admin auth ────────────────────────────────────────────────────────
 
+// In-memory IP-based rate limiter for admin login.
+// Max 5 attempts per IP per 15-minute window. Map is process-local so it
+// resets on every cold start — acceptable for a brute-force deterrent.
+const adminLoginAttempts = new Map();
+
+function checkAdminRateLimit(ip) {
+  const now = Date.now();
+  const windowMs = 15 * 60 * 1000;
+  const maxAttempts = 5;
+
+  const attempts = adminLoginAttempts.get(ip) || [];
+  const recent = attempts.filter(t => now - t < windowMs);
+
+  if (recent.length >= maxAttempts) {
+    return false;
+  }
+
+  recent.push(now);
+  adminLoginAttempts.set(ip, recent);
+  return true;
+}
+
 app.post('/api/admin/login', (req, res) => {
+  const ip = req.ip || req.connection?.remoteAddress || 'unknown';
+  if (!checkAdminRateLimit(ip)) {
+    return res.status(429).json({
+      error: 'Too many login attempts. Try again in 15 minutes.',
+    });
+  }
+
   const { username, password } = req.body;
   if (!username || !password) return res.status(400).json({ error: 'Username and password required' });
   if (username !== ADMIN_USERNAME || password !== ADMIN_PASSWORD) {

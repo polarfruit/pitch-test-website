@@ -67,6 +67,8 @@ address.
 | `RESEND_FROM` | From address on all platform emails | `Pitch. <noreply@onpitch.com.au>` | ✅ known set — **value needs correction**, see Manual fixes above | [server/mailer.mjs:46,181](../server/mailer.mjs) |
 | `TURSO_DATABASE_URL` | Production SQLite via Turso (libSQL) | `libsql://…` | ❓ verify in Vercel | [server/db.mjs:23](../server/db.mjs) |
 | `TURSO_AUTH_TOKEN` | Turso database auth token | JWT-like string | ❓ verify in Vercel | [server/db.mjs:28](../server/db.mjs) |
+| `ADMIN_USERNAME` | Admin panel username — **must be changed from `admin` default** before production launch | string | ❓ verify in Vercel | [serve.mjs:930](../serve.mjs) |
+| `ADMIN_PASSWORD` | Admin panel password — **must be changed from `admin` default** before production launch. Minimum 16 characters recommended | ≥ 16 chars | ❓ verify in Vercel | [serve.mjs:931](../serve.mjs) |
 
 ---
 
