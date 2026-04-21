@@ -964,9 +964,10 @@ app.post('/api/login', async (req, res) => {
   if (user.status === 'suspended') return res.status(403).json({ error: 'This account is suspended.' });
 
   sessWrite(res, {
-    userId: Number(user.id),
-    role:   user.role,
-    name:   `${user.first_name} ${user.last_name}`,
+    userId:  Number(user.id),
+    role:    user.role,
+    name:    `${user.first_name} ${user.last_name}`,
+    isAdmin: user.role === 'admin',
   });
 
   let redirect = '/';
