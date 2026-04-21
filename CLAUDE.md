@@ -118,8 +118,8 @@ Snapshot of where the Pitch. build currently stands. Update this section wheneve
 
 ## EMAIL SYSTEM
 
-- 25 templates across 7 categories in [server/email/](server/email/) — auth, admin, applications, payments, messages, documents, reviews.
-- 13 trigger points wired in [serve.mjs](serve.mjs) — signup, approval, rejection, suspension, new message, new application, document upload/verify/reject, stall fee issued/paid, review lifecycle.
+- 29 templates across 7 categories in [server/email/](server/email/) — auth (4), admin (3), applications (6), payments (3), messages (2), documents (7), reviews (4).
+- ~20 send trigger points wired in [serve.mjs](serve.mjs) — signup, approval, rejection, suspension, new message, new application, document upload/verify/reject, stall fee issued/paid, review lifecycle.
 - All sends are fire-and-forget with `.catch()` — no email failure ever throws into the request path. See [server/email/index.mjs](server/email/index.mjs).
 - Delivery via `sendAdminEmail()` in [server/mailer.mjs](server/mailer.mjs) (Resend).
 
