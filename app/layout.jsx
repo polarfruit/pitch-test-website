@@ -20,7 +20,10 @@ const instrumentSans = localFont({
 export default function RootLayout({ children }) {
   return (
     <html lang="en" className={`${fraunces.variable} ${instrumentSans.variable}`}>
-      <body>{children}</body>
+      {/* Coal hex literal so the brand background still paints if the
+          layout.css bundle fails to load. globals.css remains the
+          source of truth — this is a belt-and-braces fallback. */}
+      <body style={{ background: '#1A1612' }}>{children}</body>
     </html>
   )
 }
