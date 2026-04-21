@@ -107,7 +107,7 @@ Snapshot of where the Pitch. build currently stands. Update this section wheneve
 - `/signup/vendor`
 - `/signup/organiser`
 - `/forgot-password`
-- `/verify-email`
+- `/verify/email`
 
 **Still legacy Express HTML (served by `serve.mjs`):**
 - `/dashboard/vendor`
