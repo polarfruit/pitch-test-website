@@ -1769,11 +1769,37 @@ export const stmts = {
 
   // public vendors
   publicVendors: prepare(`
-    SELECT v.user_id,v.trading_name,v.suburb,v.state,v.bio,v.cuisine_tags,
-           v.setup_type,v.stall_w,v.stall_d,v.power,v.water,v.price_range,
-           v.instagram,v.plan,u.status,u.avatar_url,u.email_verified
-    FROM users u JOIN vendors v ON v.user_id=u.id
-    WHERE u.role='vendor' AND u.status='active' ORDER BY
+    SELECT v.user_id, v.trading_name, v.suburb, v.state, v.bio, v.cuisine_tags,
+           v.setup_type, v.stall_w, v.stall_d, v.power, v.water, v.price_range,
+           v.instagram, v.plan, v.abn_verified,
+           u.status, u.avatar_url, u.email_verified,
+           COALESCE(rv.avg_rating, 0)       AS rating,
+           COALESCE(rv.review_count, 0)     AS review_count,
+           COALESCE(ec.events_completed, 0) AS events_completed
+    FROM users u
+    JOIN vendors v ON v.user_id = u.id
+    LEFT JOIN (
+      SELECT vendor_user_id,
+             ROUND(AVG(rating), 1) AS avg_rating,
+             COUNT(*)              AS review_count
+      FROM vendor_reviews
+      WHERE flagged = 0
+      GROUP BY vendor_user_id
+    ) rv ON rv.vendor_user_id = v.user_id
+    LEFT JOIN (
+      SELECT ea.vendor_user_id,
+             COUNT(*) AS events_completed
+      FROM event_applications ea
+      JOIN events e ON e.id = ea.event_id
+      WHERE ea.status = 'approved'
+        AND (
+          e.completed_at IS NOT NULL
+          OR COALESCE(e.date_end, e.date_sort) < date('now')
+        )
+      GROUP BY ea.vendor_user_id
+    ) ec ON ec.vendor_user_id = v.user_id
+    WHERE u.role = 'vendor' AND u.status = 'active'
+    ORDER BY
       CASE v.plan WHEN 'growth' THEN 0 WHEN 'pro' THEN 1 ELSE 2 END ASC,
       v.created_at ASC
   `),
