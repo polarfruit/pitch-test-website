@@ -12,6 +12,7 @@ import { accountApprovedTemplate } from './templates/auth/accountApproved.mjs';
 import { accountRejectedTemplate } from './templates/auth/accountRejected.mjs';
 import { accountSuspendedTemplate } from './templates/auth/accountSuspended.mjs';
 import { emailVerifiedTemplate } from './templates/auth/emailVerified.mjs';
+import { passwordResetTemplate } from './templates/auth/passwordReset.mjs';
 import { newVendorSignupTemplate } from './templates/admin/newVendorSignup.mjs';
 import { newOrganiserSignupTemplate } from './templates/admin/newOrganiserSignup.mjs';
 import { reportFiledTemplate } from './templates/admin/reportFiled.mjs';
@@ -64,6 +65,12 @@ export async function sendEmailVerifiedEmail(vendorEmail, vendorName) {
   const { subject, html } = emailVerifiedTemplate(vendorName);
   sendAdminEmail(vendorEmail, subject, html, `Email verified, ${vendorName}. Complete your profile: https://onpitch.com.au/dashboard/vendor`)
     .catch(err => console.error('[email] sendEmailVerifiedEmail failed:', err.message));
+}
+
+export async function sendPasswordResetEmail(toEmail, userName, resetUrl) {
+  const { subject, html } = passwordResetTemplate(userName, resetUrl);
+  sendAdminEmail(toEmail, subject, html, `Reset your Pitch. password: ${resetUrl} (expires in 1 hour)`)
+    .catch(err => console.error('[email] sendPasswordResetEmail failed:', err.message));
 }
 
 // ── Admin notification emails ───────────────────────────────────────────────

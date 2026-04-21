@@ -1287,6 +1287,19 @@ await _safeExec(`
   )
 `);
 
+// ── Password reset tokens (idempotent) ──────────────────────────────────────
+await _safeExec(`
+  CREATE TABLE IF NOT EXISTS password_reset_tokens (
+    id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id    INTEGER NOT NULL,
+    token      TEXT    NOT NULL UNIQUE,
+    expires_at TEXT    NOT NULL,
+    used       INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT    NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (user_id) REFERENCES users(id)
+  )
+`);
+
 // ── Prepared statements ──────────────────────────────────────────────────────
 export const stmts = {
   // users
@@ -1364,6 +1377,24 @@ export const stmts = {
   countHiddenByOrgSuspension:         prepare(`SELECT COUNT(*) as n FROM events WHERE suspended_by_admin=1`),
   countVendorsAffectedBySuspension:   prepare(`SELECT COUNT(DISTINCT ea.vendor_user_id) as n FROM event_applications ea JOIN events e ON ea.event_id=e.id WHERE e.suspended_by_admin=1 AND ea.status='approved'`),
   updateUserPassword:              prepare(`UPDATE users SET password_hash=? WHERE id=?`),
+
+  // password reset
+  createPasswordResetToken: prepare(`
+    INSERT INTO password_reset_tokens (user_id, token, expires_at)
+    VALUES (?, ?, datetime('now', '+1 hour'))
+  `),
+  getPasswordResetToken: prepare(`
+    SELECT * FROM password_reset_tokens
+    WHERE token = ? AND used = 0 AND expires_at > datetime('now')
+  `),
+  markPasswordResetTokenUsed: prepare(`
+    UPDATE password_reset_tokens SET used = 1 WHERE token = ?
+  `),
+  deleteOtherPasswordResetTokensForUser: prepare(`
+    DELETE FROM password_reset_tokens
+    WHERE user_id = ? AND token != ?
+  `),
+
   touchUserActive:                 prepare(`UPDATE users SET last_active=datetime('now') WHERE id=?`),
   deleteUser:                      prepare(`DELETE FROM users WHERE id=?`),
   deleteVendorByUserId:            prepare(`DELETE FROM vendors WHERE user_id=?`),

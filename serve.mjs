@@ -8,7 +8,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import db, { stmts, txSignupVendor, txSignupOrganiser, txSignupFoodie, prepare } from './server/db.mjs';
 import { sendVerificationEmail, sendVerificationSMS, sendAdminEmail, sendDowngradeConfirmationEmail, sendUpgradeConfirmationEmail, sendPaymentFailedEmail, sendSubscriptionCancelledEmail, buildSuspensionNoticeHtml, buildPostEventOrgHtml, buildPostEventVendorHtml } from './server/mailer.mjs';
-import { sendNewVendorSignupAdminEmail, sendNewOrganiserSignupAdminEmail, sendStallFeePaidEmail, sendStallFeeIssuedEmail, sendNewMessageEmail, sendAccountApprovedEmail, sendAccountSuspendedEmail, sendApplicationSubmittedEmail, sendApplicationApprovedEmail, sendApplicationRejectedEmail, sendNewApplicationOrganiserEmail, sendDocumentUploadedAdminEmail, sendDocumentVerifiedEmail, sendDocumentRejectedEmail, sendAccountRejectedEmail } from './server/email/index.mjs';
+import { sendNewVendorSignupAdminEmail, sendNewOrganiserSignupAdminEmail, sendStallFeePaidEmail, sendStallFeeIssuedEmail, sendNewMessageEmail, sendAccountApprovedEmail, sendAccountSuspendedEmail, sendApplicationSubmittedEmail, sendApplicationApprovedEmail, sendApplicationRejectedEmail, sendNewApplicationOrganiserEmail, sendDocumentUploadedAdminEmail, sendDocumentVerifiedEmail, sendDocumentRejectedEmail, sendAccountRejectedEmail, sendPasswordResetEmail } from './server/email/index.mjs';
 
 // Lazy-loaded heavy modules (deferred to first use — saves ~1s cold start)
 let _Stripe = null;
@@ -969,18 +969,67 @@ app.post('/api/login', async (req, res) => {
 });
 
 // POST /api/forgot-password
-// Always returns { ok: true } regardless of whether the email exists, to
-// prevent account enumeration. The mailer wiring is intentionally deferred
-// — the legacy HTML behaves the same way and real token issuance lands in
-// a later batch.
-app.post('/api/forgot-password', (req, res) => {
-  const email = typeof req.body?.email === 'string' ? req.body.email.trim() : '';
-  console.log('[forgot-password]', {
-    email: email || '<invalid>',
-    timestamp: new Date().toISOString(),
-  });
-  // TODO: issue reset token and send via server/mailer.mjs
+// Always returns { ok: true } regardless of whether the email exists —
+// prevents account enumeration. Failures in token write or email delivery
+// log to the server but never leak to the client.
+app.post('/api/forgot-password', async (req, res) => {
+  const email = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
+  if (!email) {
+    return res.json({ ok: true });
+  }
+
+  try {
+    const user = await stmts.getUserByEmail.get(email);
+    if (user) {
+      const token = randomBytes(32).toString('hex');
+      await stmts.createPasswordResetToken.run(user.id, token);
+      const resetUrl = `${SITE_URL}/reset-password/${token}`;
+      sendPasswordResetEmail(user.email, user.first_name || 'there', resetUrl);
+    }
+  } catch (error) {
+    console.error('[api/forgot-password]', {
+      message: error.message,
+      email,
+      timestamp: new Date().toISOString(),
+    });
+  }
+
   return res.json({ ok: true });
+});
+
+// POST /api/reset-password
+// Consumes a password-reset token, updates password_hash, invalidates
+// the used token and any other outstanding tokens for the user.
+app.post('/api/reset-password', async (req, res) => {
+  const token = typeof req.body?.token === 'string' ? req.body.token.trim() : '';
+  const password = typeof req.body?.password === 'string' ? req.body.password : '';
+
+  if (!token || !password) {
+    return res.status(400).json({ error: 'Token and password are required.' });
+  }
+  if (password.length < 8) {
+    return res.status(400).json({ error: 'Password must be at least 8 characters.' });
+  }
+
+  try {
+    const tokenRow = await stmts.getPasswordResetToken.get(token);
+    if (!tokenRow) {
+      return res.status(400).json({ error: 'This reset link has expired or already been used.' });
+    }
+
+    const hash = await bcrypt.hash(password, 10);
+    await stmts.updateUserPassword.run(hash, tokenRow.user_id);
+    await stmts.markPasswordResetTokenUsed.run(token);
+    await stmts.deleteOtherPasswordResetTokensForUser.run(tokenRow.user_id, token);
+
+    return res.json({ ok: true });
+  } catch (error) {
+    console.error('[api/reset-password]', {
+      message: error.message,
+      timestamp: new Date().toISOString(),
+    });
+    return res.status(500).json({ error: 'Something went wrong. Please try again.' });
+  }
 });
 
 // ── OAuth: Google Sign-In ──────────────────────────────────────────────────
