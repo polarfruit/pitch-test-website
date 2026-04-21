@@ -1001,6 +1001,40 @@ await _safeExec(`
 // ── Suspension feature migrations (idempotent, outside version gate) ─────────
 await _safeExec(`ALTER TABLE users ADD COLUMN suspended_reason TEXT`);
 await _safeExec(`ALTER TABLE events ADD COLUMN suspended_by_admin INTEGER NOT NULL DEFAULT 0`);
+
+// ── Document verification migrations (idempotent, outside version gate) ──────
+// These five columns were originally added inside the version gate
+// (lines 390-394). DBs stamped at schema_version=20 before those lines
+// existed skip them forever. _safeExec silently ignores "duplicate column"
+// errors, so re-running here applies the migration to any DB missing a
+// column and is a no-op everywhere else.
+await _safeExec(`ALTER TABLE vendors ADD COLUMN food_safety_status TEXT DEFAULT 'none'`);
+await _safeExec(`ALTER TABLE vendors ADD COLUMN council_status TEXT DEFAULT 'none'`);
+await _safeExec(`ALTER TABLE vendors ADD COLUMN pli_rejection_reason TEXT`);
+await _safeExec(`ALTER TABLE vendors ADD COLUMN food_safety_rejection_reason TEXT`);
+await _safeExec(`ALTER TABLE vendors ADD COLUMN council_rejection_reason TEXT`);
+
+// ── FK heal for stale _users_old references (idempotent, outside gate) ───────
+// Mirrors the heal at lines 661-679. That heal was inside the version gate,
+// so any local DB already at schema_version=20 retained stale refs until
+// patched by hand. Running here on every boot makes it self-healing. Turso's
+// libsql client does not support writable_schema, so this stays local-only.
+if (!process.env.TURSO_DATABASE_URL && _localDb) {
+  try {
+    const brokenCount = _localDb.prepare(
+      `SELECT COUNT(*) as n FROM sqlite_master WHERE sql LIKE '%"_users_old"%'`
+    ).get()?.n || 0;
+    if (brokenCount > 0) {
+      _localDb.pragma('writable_schema=1');
+      _localDb.prepare(
+        `UPDATE sqlite_master SET sql=REPLACE(sql,'"_users_old"','"users"') WHERE sql LIKE '%"_users_old"%'`
+      ).run();
+      _localDb.pragma('writable_schema=0');
+      console.log('[db] Healed FK references from _users_old → users (post-gate)');
+    }
+  } catch (e) { console.error('[db] FK heal (post-gate) failed:', e.message); }
+}
+
 await _safeExec(`
   CREATE TABLE IF NOT EXISTS admin_audit_log (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
