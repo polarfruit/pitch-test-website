@@ -739,9 +739,13 @@ app.post('/api/signup/vendor', async (req, res) => {
     // Auto-verify ABN in background (non-blocking)
     if (abn) autoVerifyAbn(abn.replace(/\s/g, ''), userId, 'vendor', { first_name, last_name, trading_name, email });
 
-    // Notify admin of new vendor signup (fire-and-forget)
-    sendNewVendorSignupAdminEmail(first_name, email, trading_name, suburb || '', plan || 'free')
-      .catch(err => console.error('[mailer] vendor signup admin email failed:', err.message));
+    // Notify admin of new vendor signup — awaited so the Vercel handler
+    // stays alive until the Resend HTTP call resolves.
+    try {
+      await sendNewVendorSignupAdminEmail(first_name, email, trading_name, suburb || '', plan || 'free');
+    } catch (emailErr) {
+      console.error('[mailer] vendor signup admin email failed:', emailErr.message);
+    }
 
     sessWrite(res, { userId, role: 'vendor', name: `${first_name} ${last_name}` });
     res.json({ ok: true, redirect: '/dashboard/vendor' });
@@ -811,9 +815,13 @@ app.post('/api/signup/organiser', async (req, res) => {
     // Auto-verify ABN in background (non-blocking)
     if (abn) autoVerifyAbn(abn.replace(/\s/g, ''), userId, 'organiser', { first_name, last_name, trading_name: org_name, email });
 
-    // Notify admin of new organiser signup (fire-and-forget)
-    sendNewOrganiserSignupAdminEmail(first_name, email, org_name, suburb || '')
-      .catch(err => console.error('[mailer] organiser signup admin email failed:', err.message));
+    // Notify admin of new organiser signup — awaited so the Vercel
+    // handler stays alive until the Resend HTTP call resolves.
+    try {
+      await sendNewOrganiserSignupAdminEmail(first_name, email, org_name, suburb || '');
+    } catch (emailErr) {
+      console.error('[mailer] organiser signup admin email failed:', emailErr.message);
+    }
 
     sessWrite(res, { userId, role: 'organiser', name: `${first_name} ${last_name}` });
     res.json({ ok: true, redirect: '/dashboard/organiser' });
@@ -980,7 +988,11 @@ app.post('/api/forgot-password', async (req, res) => {
       const token = randomBytes(32).toString('hex');
       await stmts.createPasswordResetToken.run(user.id, token);
       const resetUrl = `${SITE_URL}/reset-password/${token}`;
-      sendPasswordResetEmail(user.email, user.first_name || 'there', resetUrl);
+      try {
+        await sendPasswordResetEmail(user.email, user.first_name || 'there', resetUrl);
+      } catch (emailErr) {
+        console.error('[mailer] password reset email failed:', emailErr.message);
+      }
     }
   } catch (error) {
     console.error('[api/forgot-password]', {
@@ -2025,8 +2037,11 @@ app.post('/api/admin/users/:id/status', requireAdmin, async (req, res) => {
           }
         }
         // Suspension email to vendor (branded template)
-        sendAccountSuspendedEmail(user.email, user.first_name, reason || 'Violation of platform terms.')
-          .catch(err => console.error('[mailer] account suspended email failed:', err.message));
+        try {
+          await sendAccountSuspendedEmail(user.email, user.first_name, reason || 'Violation of platform terms.');
+        } catch (emailErr) {
+          console.error('[mailer] account suspended email failed:', emailErr.message);
+        }
       } else if (user.role === 'organiser') {
         // Notify confirmed vendors BEFORE archiving events
         const affectedVendors = await stmts.getConfirmedVendorsAtOrgEvents.all(userId);
@@ -2041,8 +2056,11 @@ app.post('/api/admin/users/:id/status', requireAdmin, async (req, res) => {
         // Archive all their published events
         await stmts.suspendOrgEvents.run(userId);
         // Suspension email to organiser (branded template)
-        sendAccountSuspendedEmail(user.email, user.first_name, reason || 'Violation of platform terms.')
-          .catch(err => console.error('[mailer] account suspended email failed:', err.message));
+        try {
+          await sendAccountSuspendedEmail(user.email, user.first_name, reason || 'Violation of platform terms.');
+        } catch (emailErr) {
+          console.error('[mailer] account suspended email failed:', emailErr.message);
+        }
       }
     } else if (status === 'active' && prevStatus === 'suspended') {
       // Reinstatement
@@ -2068,15 +2086,21 @@ app.post('/api/admin/users/:id/status', requireAdmin, async (req, res) => {
         await stmts.withdrawVendorPendingApps.run(userId);
       }
       // Send rejection email
-      sendAccountRejectedEmail(user.email, user.first_name, reason || 'Your application did not meet our current requirements.')
-        .catch(err => console.error('[mailer] account rejected email failed:', err.message));
+      try {
+        await sendAccountRejectedEmail(user.email, user.first_name, reason || 'Your application did not meet our current requirements.');
+      } catch (emailErr) {
+        console.error('[mailer] account rejected email failed:', emailErr.message);
+      }
     } else if (status === 'active' && prevStatus !== 'active') {
       // Activation from pending/banned/rejected = approval
       if (prevStatus === 'rejected') {
         await stmts.setSuspendedReason.run(null, userId);
       }
-      sendAccountApprovedEmail(user.email, user.first_name)
-        .catch(err => console.error('[mailer] account approved email failed:', err.message));
+      try {
+        await sendAccountApprovedEmail(user.email, user.first_name);
+      } catch (emailErr) {
+        console.error('[mailer] account approved email failed:', emailErr.message);
+      }
     }
 
     // Audit log
@@ -2917,22 +2941,29 @@ app.post('/api/events/:id/apply', requireAuth, async (req, res) => {
       }
     } catch (autoErr) { console.error('[auto-response]', autoErr); }
 
-    res.json({ ok: true });
-
-    // Email notifications — fire-and-forget
+    // Email notifications — must be awaited BEFORE res.json so the
+    // Vercel serverless handler does not freeze mid-fetch to Resend.
     try {
       const applyUser = await stmts.getUserById.get(req.session.userId);
       const applyVendor = await stmts.getVendorByUserId.get(req.session.userId);
       if (applyUser) {
-        sendApplicationSubmittedEmail(applyUser.email, applyUser.first_name, ev.name, ev.date_text || '', ev.suburb || '')
-          .catch(err => console.error('[mailer] application submitted email failed:', err.message));
+        try {
+          await sendApplicationSubmittedEmail(applyUser.email, applyUser.first_name, ev.name, ev.date_text || '', ev.suburb || '');
+        } catch (emailErr) {
+          console.error('[mailer] application submitted email failed:', emailErr.message);
+        }
       }
       const orgUser = await stmts.getUserById.get(ev.organiser_user_id);
       if (orgUser && applyVendor) {
-        sendNewApplicationOrganiserEmail(orgUser.email, orgUser.first_name, applyUser?.first_name || '', applyVendor.trading_name || '', ev.name, applyVendor.cuisine_tags || '', applyVendor.plan || 'free')
-          .catch(err => console.error('[mailer] new application organiser email failed:', err.message));
+        try {
+          await sendNewApplicationOrganiserEmail(orgUser.email, orgUser.first_name, applyUser?.first_name || '', applyVendor.trading_name || '', ev.name, applyVendor.cuisine_tags || '', applyVendor.plan || 'free');
+        } catch (emailErr) {
+          console.error('[mailer] new application organiser email failed:', emailErr.message);
+        }
       }
     } catch (emailErr) { console.error('[mailer] application email lookup failed:', emailErr.message); }
+
+    res.json({ ok: true });
   } catch (err) {
     if (err.message && err.message.includes('UNIQUE')) {
       return res.status(409).json({ error: 'You have already applied to this event' });

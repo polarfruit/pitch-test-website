@@ -45,20 +45,29 @@ const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@onpitch.com.au';
 
 export async function sendAccountApprovedEmail(vendorEmail, vendorName) {
   const { subject, html } = accountApprovedTemplate(vendorName);
-  sendAdminEmail(vendorEmail, subject, html, `You're approved, ${vendorName}. Browse events: https://onpitch.com.au/events`)
-    .catch(err => console.error('[email] sendAccountApprovedEmail failed:', err.message));
+  try {
+    await sendAdminEmail(vendorEmail, subject, html, `You're approved, ${vendorName}. Browse events: https://onpitch.com.au/events`);
+  } catch (err) {
+    console.error('[email] sendAccountApprovedEmail failed:', err.message);
+  }
 }
 
 export async function sendAccountRejectedEmail(vendorEmail, vendorName, reason) {
   const { subject, html } = accountRejectedTemplate(vendorName, reason);
-  sendAdminEmail(vendorEmail, subject, html, `Hi ${vendorName}, your application was not approved. Reason: ${reason}. Update your profile: https://onpitch.com.au/dashboard/vendor`)
-    .catch(err => console.error('[email] sendAccountRejectedEmail failed:', err.message));
+  try {
+    await sendAdminEmail(vendorEmail, subject, html, `Hi ${vendorName}, your application was not approved. Reason: ${reason}. Update your profile: https://onpitch.com.au/dashboard/vendor`);
+  } catch (err) {
+    console.error('[email] sendAccountRejectedEmail failed:', err.message);
+  }
 }
 
 export async function sendAccountSuspendedEmail(vendorEmail, vendorName, reason) {
   const { subject, html } = accountSuspendedTemplate(vendorName, reason);
-  sendAdminEmail(vendorEmail, subject, html, `Hi ${vendorName}, your account has been suspended. Reason: ${reason}. Contact support: https://onpitch.com.au/contact`)
-    .catch(err => console.error('[email] sendAccountSuspendedEmail failed:', err.message));
+  try {
+    await sendAdminEmail(vendorEmail, subject, html, `Hi ${vendorName}, your account has been suspended. Reason: ${reason}. Contact support: https://onpitch.com.au/contact`);
+  } catch (err) {
+    console.error('[email] sendAccountSuspendedEmail failed:', err.message);
+  }
 }
 
 export async function sendEmailVerifiedEmail(vendorEmail, vendorName) {
@@ -69,22 +78,31 @@ export async function sendEmailVerifiedEmail(vendorEmail, vendorName) {
 
 export async function sendPasswordResetEmail(toEmail, userName, resetUrl) {
   const { subject, html } = passwordResetTemplate(userName, resetUrl);
-  sendAdminEmail(toEmail, subject, html, `Reset your Pitch. password: ${resetUrl} (expires in 1 hour)`)
-    .catch(err => console.error('[email] sendPasswordResetEmail failed:', err.message));
+  try {
+    await sendAdminEmail(toEmail, subject, html, `Reset your Pitch. password: ${resetUrl} (expires in 1 hour)`);
+  } catch (err) {
+    console.error('[email] sendPasswordResetEmail failed:', err.message);
+  }
 }
 
 // ── Admin notification emails ───────────────────────────────────────────────
 
 export async function sendNewVendorSignupAdminEmail(vendorName, vendorEmail, tradingName, suburb, plan) {
   const { subject, html } = newVendorSignupTemplate(vendorName, vendorEmail, tradingName, suburb, plan);
-  sendAdminEmail(ADMIN_EMAIL, subject, html, `New vendor signup: ${tradingName} (${vendorEmail}). Review: https://onpitch.com.au/admin/vendors`)
-    .catch(err => console.error('[email] sendNewVendorSignupAdminEmail failed:', err.message));
+  try {
+    await sendAdminEmail(ADMIN_EMAIL, subject, html, `New vendor signup: ${tradingName} (${vendorEmail}). Review: https://onpitch.com.au/admin/vendors`);
+  } catch (err) {
+    console.error('[email] sendNewVendorSignupAdminEmail failed:', err.message);
+  }
 }
 
 export async function sendNewOrganiserSignupAdminEmail(organiserName, organiserEmail, orgName, suburb) {
   const { subject, html } = newOrganiserSignupTemplate(organiserName, organiserEmail, orgName, suburb);
-  sendAdminEmail(ADMIN_EMAIL, subject, html, `New organiser signup: ${orgName} (${organiserEmail}). Review: https://onpitch.com.au/admin/organisers`)
-    .catch(err => console.error('[email] sendNewOrganiserSignupAdminEmail failed:', err.message));
+  try {
+    await sendAdminEmail(ADMIN_EMAIL, subject, html, `New organiser signup: ${orgName} (${organiserEmail}). Review: https://onpitch.com.au/admin/organisers`);
+  } catch (err) {
+    console.error('[email] sendNewOrganiserSignupAdminEmail failed:', err.message);
+  }
 }
 
 export async function sendReportFiledAdminEmail(reportType, reportedName, reportedBy, reason) {
@@ -131,8 +149,11 @@ export async function sendUnreadDigestEmail(recipientEmail, recipientName, unrea
 
 export async function sendApplicationSubmittedEmail(vendorEmail, vendorName, eventName, eventDate, eventSuburb) {
   const { subject, html, text } = applicationSubmittedTemplate(vendorName, eventName, eventDate, eventSuburb);
-  sendAdminEmail(vendorEmail, subject, html, text)
-    .catch(err => console.error('[email] sendApplicationSubmittedEmail failed:', err.message));
+  try {
+    await sendAdminEmail(vendorEmail, subject, html, text);
+  } catch (err) {
+    console.error('[email] sendApplicationSubmittedEmail failed:', err.message);
+  }
 }
 
 export async function sendApplicationApprovedEmail(vendorEmail, vendorName, eventName, eventDate, eventSuburb, boothDetails, stallFee) {
@@ -149,8 +170,11 @@ export async function sendApplicationRejectedEmail(vendorEmail, vendorName, even
 
 export async function sendNewApplicationOrganiserEmail(organiserEmail, organiserName, vendorName, vendorTradingName, eventName, vendorCuisine, vendorPlan) {
   const { subject, html, text } = newApplicationOrganiserTemplate(organiserName, vendorName, vendorTradingName, eventName, vendorCuisine, vendorPlan);
-  sendAdminEmail(organiserEmail, subject, html, text)
-    .catch(err => console.error('[email] sendNewApplicationOrganiserEmail failed:', err.message));
+  try {
+    await sendAdminEmail(organiserEmail, subject, html, text);
+  } catch (err) {
+    console.error('[email] sendNewApplicationOrganiserEmail failed:', err.message);
+  }
 }
 
 export async function sendDeadlineApproachingEmail(organiserEmail, organiserName, eventName, eventDate, pendingCount, deadlineDate) {
