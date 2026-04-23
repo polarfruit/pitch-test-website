@@ -3,10 +3,10 @@ import { ROUTES } from '@/constants/routes'
 import styles from './AboutPage.module.css'
 
 const MISSION_STATS = [
-  { num: '200+', label: 'vendors on the platform' },
-  { num: '80+', label: 'events listed in 2026' },
-  { num: '30+', label: 'markets & organisers' },
-  { num: 'SA', label: 'founded in South Australia' },
+  { num: 'SA', label: 'Based in Adelaide' },
+  { num: '2026', label: 'Founded this year' },
+  { num: 'Free', label: 'During founding phase' },
+  { num: 'B2B', label: 'Vendor marketplace' },
 ]
 
 const VALUES = [
@@ -102,13 +102,14 @@ export default function AboutPage() {
           worse, a spreadsheet — was a nightmare no one had solved.
         </p>
         <p className={styles.storyBody}>
-          We started building a simple tool to fix our own problem. A year
-          later, it had grown into a platform that hundreds of vendors
-          across Adelaide use to discover events, submit applications, and
-          get matched with the right markets — and that organisers use to
-          run their vendor selection professionally, without the admin
-          overhead. Pitch. became the word for the moment you put yourself
-          forward. We liked that.
+          We started building the platform to fix our own problem — a
+          straightforward way for Adelaide food vendors to discover events,
+          submit applications, and get matched with the right markets, and
+          for organisers to run their vendor selection professionally
+          without the admin overhead. Pitch. became the word for the moment
+          you put yourself forward. We liked that. We&apos;re in our
+          founding phase now, building the platform out with our first
+          vendors and organisers.
         </p>
       </section>
 
