@@ -22,7 +22,9 @@ const nextConfig = {
         { source: '/location-autocomplete.js', destination: `${expressBaseUrl}/location-autocomplete.js` },
         { source: '/favicon.ico', destination: `${expressBaseUrl}/favicon.ico` },
         { source: '/favicon.png', destination: `${expressBaseUrl}/favicon.png` },
+        { source: '/favicon.svg', destination: `${expressBaseUrl}/favicon.svg` },
         { source: '/apple-touch-icon.png', destination: `${expressBaseUrl}/apple-touch-icon.png` },
+        { source: '/site.webmanifest', destination: `${expressBaseUrl}/site.webmanifest` },
       ],
       afterFiles: [
         // API

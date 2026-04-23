@@ -10,12 +10,13 @@ export const metadata = {
   authors: [{ name: 'Pitch.' }],
   metadataBase: new URL('https://onpitch.com.au'),
   alternates: { canonical: '/' },
+  manifest: '/site.webmanifest',
   openGraph: {
     type: 'website',
     title: "Pitch. — Australia's Food Vendor & Event Marketplace",
     description:
       'Connect with food vendors, event organisers, and foodies across Australia. Find food trucks, market stalls, and pop-ups for your next event or list your food business.',
-    images: ['/brand_assets/pitch-og-image.png'],
+    images: ['/brand_assets/pitch-og-image.svg'],
     siteName: 'Pitch.',
     locale: 'en_AU',
   },
@@ -24,13 +25,15 @@ export const metadata = {
     title: "Pitch. — Australia's Food Vendor & Event Marketplace",
     description:
       'Connect with food vendors, event organisers, and foodies across Australia.',
-    images: ['/brand_assets/pitch-og-image.png'],
+    images: ['/brand_assets/pitch-og-image.svg'],
   },
   icons: {
     icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
       { url: '/favicon.ico', sizes: 'any' },
       { url: '/favicon.png', sizes: '64x64', type: 'image/png' },
     ],
+    shortcut: '/favicon.svg',
     apple: { url: '/apple-touch-icon.png', sizes: '180x180' },
   },
   other: {
