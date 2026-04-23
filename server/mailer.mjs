@@ -171,19 +171,30 @@ export function buildSuspensionNoticeHtml(bodyText) {
 }
 
 export async function sendAdminEmail(toEmail, subject, htmlBody, textBody) {
-  console.log(`[mailer] Sending admin email to ${toEmail}: ${subject}`);
+  const hasKey = !!process.env.RESEND_API_KEY;
+  const keyTail = hasKey ? process.env.RESEND_API_KEY.slice(-4) : 'none';
+  const fromAddr = process.env.RESEND_FROM || 'Pitch. <noreply@onpitch.com.au>';
+  console.log(`[mailer] Sending admin email to ${toEmail}: "${subject}" — RESEND_API_KEY=${hasKey ? '***' + keyTail : 'MISSING'}, RESEND_FROM="${fromAddr}"`);
   try {
-    if (process.env.RESEND_API_KEY) {
+    if (hasKey) {
       const res = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          from: process.env.RESEND_FROM || 'Pitch. <noreply@onpitch.com.au>',
+          from: fromAddr,
           to: [toEmail], subject, text: textBody, html: htmlBody,
         }),
       });
-      if (!res.ok) console.error('[mailer] Resend admin email error:', await res.text());
+      const bodyText = await res.text();
+      if (!res.ok) {
+        console.error(`[mailer] Resend admin email error: status=${res.status} body=${bodyText}`);
+        throw new Error(`Resend API ${res.status}: ${bodyText}`);
+      }
+      let parsed;
+      try { parsed = JSON.parse(bodyText); } catch { parsed = {}; }
+      console.log(`[mailer] Resend admin email sent. id=${parsed.id || 'unknown'} to=${toEmail}`);
     } else {
+      console.warn('[mailer] RESEND_API_KEY missing — falling back to SMTP/Ethereal');
       const t = await getTransporter();
       const from = process.env.SMTP_FROM || '"Pitch." <noreply@onpitch.com.au>';
       const info = await t.sendMail({ from, to: toEmail, subject, text: textBody, html: htmlBody });
@@ -191,7 +202,8 @@ export async function sendAdminEmail(toEmail, subject, htmlBody, textBody) {
       if (preview) console.log('[mailer] Ethereal preview:', preview);
     }
   } catch (err) {
-    console.error('[mailer] Failed to send admin email:', err.message);
+    console.error('[mailer] Failed to send admin email:', err.message, err.stack);
+    throw err;
   }
 }
 

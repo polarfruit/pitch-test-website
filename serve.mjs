@@ -982,21 +982,27 @@ app.post('/api/forgot-password', async (req, res) => {
     return res.json({ ok: true });
   }
 
+  console.log('[forgot-password] attempting email send to:', email);
   try {
     const user = await stmts.getUserByEmail.get(email);
-    if (user) {
+    if (!user) {
+      console.log('[forgot-password] no user found for email:', email);
+    } else {
       const token = randomBytes(32).toString('hex');
       await stmts.createPasswordResetToken.run(user.id, token);
       const resetUrl = `${SITE_URL}/reset-password/${token}`;
+      console.log('[forgot-password] reset URL:', resetUrl);
       try {
         await sendPasswordResetEmail(user.email, user.first_name || 'there', resetUrl);
+        console.log('[forgot-password] email send completed for:', user.email);
       } catch (emailErr) {
-        console.error('[mailer] password reset email failed:', emailErr.message);
+        console.error('[forgot-password] email send failed:', emailErr.message, emailErr.stack);
       }
     }
   } catch (error) {
     console.error('[api/forgot-password]', {
       message: error.message,
+      stack: error.stack,
       email,
       timestamp: new Date().toISOString(),
     });

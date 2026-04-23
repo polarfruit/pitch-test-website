@@ -81,7 +81,8 @@ export async function sendPasswordResetEmail(toEmail, userName, resetUrl) {
   try {
     await sendAdminEmail(toEmail, subject, html, `Reset your Pitch. password: ${resetUrl} (expires in 1 hour)`);
   } catch (err) {
-    console.error('[email] sendPasswordResetEmail failed:', err.message);
+    console.error('[email] sendPasswordResetEmail failed:', err.message, err.stack);
+    throw err;
   }
 }
 
