@@ -50,11 +50,16 @@ if (process.env.TURSO_DATABASE_URL) {
   _safeExec   = async sql => { try { await _client.execute(sql); } catch {} };
   _execSchema = async sql => { await _client.executeMultiple(sql); };
 
+  // RETURNING id is used instead of tx.execute(...).lastInsertRowid because
+  // the libsql HTTP client does not reliably populate lastInsertRowid inside
+  // an interactive transaction — producing NaN and an FK failure on the
+  // dependent insert. Reading the new id from the statement's own result set
+  // is SQL-level and transport-independent.
   _txSignupVendor = async (userData, vendorData) => {
     const tx = await _client.transaction('write');
     try {
-      const r = await tx.execute({ sql: `INSERT INTO users (email,password_hash,first_name,last_name,role) VALUES (@email,@password_hash,@first_name,@last_name,@role)`, args: userData });
-      const userId = Number(r.lastInsertRowid);
+      const insertedUser = await tx.execute({ sql: `INSERT INTO users (email,password_hash,first_name,last_name,role) VALUES (@email,@password_hash,@first_name,@last_name,@role) RETURNING id`, args: userData });
+      const userId = Number(insertedUser.rows[0].id);
       await tx.execute({ sql: `INSERT INTO vendors (user_id,trading_name,abn,abn_verified,mobile,state,suburb,bio,cuisine_tags,setup_type,stall_w,stall_d,power,water,price_range,instagram,plan) VALUES (@user_id,@trading_name,@abn,@abn_verified,@mobile,@state,@suburb,@bio,@cuisine_tags,@setup_type,@stall_w,@stall_d,@power,@water,@price_range,@instagram,@plan)`, args: { ...vendorData, user_id: userId } });
       await tx.commit();
       return userId;
@@ -64,8 +69,8 @@ if (process.env.TURSO_DATABASE_URL) {
   _txSignupOrganiser = async (userData, organiserData) => {
     const tx = await _client.transaction('write');
     try {
-      const r = await tx.execute({ sql: `INSERT INTO users (email,password_hash,first_name,last_name,role) VALUES (@email,@password_hash,@first_name,@last_name,@role)`, args: userData });
-      const userId = Number(r.lastInsertRowid);
+      const insertedUser = await tx.execute({ sql: `INSERT INTO users (email,password_hash,first_name,last_name,role) VALUES (@email,@password_hash,@first_name,@last_name,@role) RETURNING id`, args: userData });
+      const userId = Number(insertedUser.rows[0].id);
       await tx.execute({ sql: `INSERT INTO organisers (user_id,org_name,abn,abn_verified,website,state,suburb,phone,bio,event_types,event_scale,stall_range,referral) VALUES (@user_id,@org_name,@abn,@abn_verified,@website,@state,@suburb,@phone,@bio,@event_types,@event_scale,@stall_range,@referral)`, args: { ...organiserData, user_id: userId } });
       await tx.commit();
       return userId;
@@ -75,8 +80,8 @@ if (process.env.TURSO_DATABASE_URL) {
   _txSignupFoodie = async (userData) => {
     const tx = await _client.transaction('write');
     try {
-      const r = await tx.execute({ sql: `INSERT INTO users (email,password_hash,first_name,last_name,role) VALUES (@email,@password_hash,@first_name,@last_name,@role)`, args: userData });
-      const userId = Number(r.lastInsertRowid);
+      const insertedUser = await tx.execute({ sql: `INSERT INTO users (email,password_hash,first_name,last_name,role) VALUES (@email,@password_hash,@first_name,@last_name,@role) RETURNING id`, args: userData });
+      const userId = Number(insertedUser.rows[0].id);
       await tx.execute({ sql: `INSERT INTO foodies (user_id) VALUES (?)`, args: [userId] });
       await tx.commit();
       return userId;
