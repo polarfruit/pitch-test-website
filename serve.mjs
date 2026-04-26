@@ -97,6 +97,12 @@ const STRIPE_PLAN_FOR_PRICE = Object.fromEntries(
 // Give 90 days notice before enforcing pricing.
 const FOUNDING_PHASE = true;
 
+// Resolve the plan the vendor actually has access to right now. Under
+// FOUNDING_PHASE every vendor is upgraded to Growth regardless of the
+// vendors.plan column. Used wherever session.plan is written so the
+// dashboard badge tracks effective access, not the raw DB column.
+const effectivePlanFor = vendorPlan => FOUNDING_PHASE ? 'growth' : (vendorPlan || 'free');
+
 // ── Stripe webhook needs raw body — must come before express.json ─────────
 app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), async (req, res) => {
   const stripe = await getStripe();
@@ -747,7 +753,7 @@ app.post('/api/signup/vendor', async (req, res) => {
       console.error('[mailer] vendor signup admin email failed:', emailErr.message);
     }
 
-    sessWrite(res, { userId, role: 'vendor', name: `${first_name} ${last_name}`, plan: plan || 'free' });
+    sessWrite(res, { userId, role: 'vendor', name: `${first_name} ${last_name}`, plan: effectivePlanFor(plan) });
     res.json({ ok: true, redirect: '/dashboard/vendor' });
   } catch (err) {
     console.error('Signup vendor error:', err);
@@ -964,7 +970,7 @@ app.post('/api/login', async (req, res) => {
   };
   if (user.role === 'vendor') {
     const vendor = await stmts.getVendorByUserId.get(user.id);
-    if (vendor?.plan) sessionPayload.plan = vendor.plan;
+    sessionPayload.plan = effectivePlanFor(vendor?.plan);
   }
   sessWrite(res, sessionPayload);
 
@@ -1095,7 +1101,7 @@ app.post('/api/auth/google', async (req, res) => {
     const oauthSessionPayload = { userId: Number(user.id), role: user.role, name: `${user.first_name} ${user.last_name}` };
     if (user.role === 'vendor') {
       const vendor = await stmts.getVendorByUserId.get(user.id);
-      if (vendor?.plan) oauthSessionPayload.plan = vendor.plan;
+      oauthSessionPayload.plan = effectivePlanFor(vendor?.plan);
     }
     sessWrite(res, oauthSessionPayload);
     return res.json({ ok: true, redirect: oauthRedirect(user.role), existing: true });
@@ -1450,7 +1456,7 @@ app.post('/api/profile/plan', requireAuth, async (req, res) => {
           // Already on this exact price — nothing to do
           if (currentPriceId === STRIPE_PRICES[plan]) {
             await stmts.updateVendorPlan.run(plan, req.session.userId);
-            sessWrite(res, { ...req.session, plan });
+            sessWrite(res, { ...req.session, plan: effectivePlanFor(plan) });
             return res.json({ ok: true, plan });
           }
           // Swap to the new price with proration
@@ -1557,7 +1563,7 @@ app.post('/api/profile/plan', requireAuth, async (req, res) => {
     }
     // No Stripe sub — just switch directly
     await stmts.updateVendorPlan.run('free', req.session.userId);
-    sessWrite(res, { ...req.session, plan: 'free' });
+    sessWrite(res, { ...req.session, plan: effectivePlanFor('free') });
     await stmts.insertSubscriptionChange.run({
       user_id: req.session.userId, old_plan: vendor.plan || 'free', new_plan: 'free',
       changed_by: 'vendor', admin_user_id: null,
