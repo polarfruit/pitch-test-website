@@ -747,7 +747,7 @@ app.post('/api/signup/vendor', async (req, res) => {
       console.error('[mailer] vendor signup admin email failed:', emailErr.message);
     }
 
-    sessWrite(res, { userId, role: 'vendor', name: `${first_name} ${last_name}` });
+    sessWrite(res, { userId, role: 'vendor', name: `${first_name} ${last_name}`, plan: plan || 'free' });
     res.json({ ok: true, redirect: '/dashboard/vendor' });
   } catch (err) {
     console.error('Signup vendor error:', err);
@@ -956,12 +956,17 @@ app.post('/api/login', async (req, res) => {
   if (user.status === 'banned')    return res.status(403).json({ error: 'This account has been banned.' });
   if (user.status === 'suspended') return res.status(403).json({ error: 'This account is suspended.' });
 
-  sessWrite(res, {
+  const sessionPayload = {
     userId:  Number(user.id),
     role:    user.role,
     name:    `${user.first_name} ${user.last_name}`,
     isAdmin: user.role === 'admin',
-  });
+  };
+  if (user.role === 'vendor') {
+    const vendor = await stmts.getVendorByUserId.get(user.id);
+    if (vendor?.plan) sessionPayload.plan = vendor.plan;
+  }
+  sessWrite(res, sessionPayload);
 
   let redirect = '/';
   if (user.role === 'vendor')         redirect = '/dashboard/vendor';
@@ -1087,7 +1092,12 @@ app.post('/api/auth/google', async (req, res) => {
       await stmts.setUserStatus.run('active', user.id);
       await stmts.setEmailVerified.run(user.id);
     }
-    sessWrite(res, { userId: Number(user.id), role: user.role, name: `${user.first_name} ${user.last_name}` });
+    const oauthSessionPayload = { userId: Number(user.id), role: user.role, name: `${user.first_name} ${user.last_name}` };
+    if (user.role === 'vendor') {
+      const vendor = await stmts.getVendorByUserId.get(user.id);
+      if (vendor?.plan) oauthSessionPayload.plan = vendor.plan;
+    }
+    sessWrite(res, oauthSessionPayload);
     return res.json({ ok: true, redirect: oauthRedirect(user.role), existing: true });
   }
 
@@ -1440,6 +1450,7 @@ app.post('/api/profile/plan', requireAuth, async (req, res) => {
           // Already on this exact price — nothing to do
           if (currentPriceId === STRIPE_PRICES[plan]) {
             await stmts.updateVendorPlan.run(plan, req.session.userId);
+            sessWrite(res, { ...req.session, plan });
             return res.json({ ok: true, plan });
           }
           // Swap to the new price with proration
@@ -1546,6 +1557,7 @@ app.post('/api/profile/plan', requireAuth, async (req, res) => {
     }
     // No Stripe sub — just switch directly
     await stmts.updateVendorPlan.run('free', req.session.userId);
+    sessWrite(res, { ...req.session, plan: 'free' });
     await stmts.insertSubscriptionChange.run({
       user_id: req.session.userId, old_plan: vendor.plan || 'free', new_plan: 'free',
       changed_by: 'vendor', admin_user_id: null,
@@ -5409,8 +5421,11 @@ function serveAdminDashboard() {
 function injectSession(html, req) {
   const s = req.session;
   if (s && s.userId && s.role) {
-    const u = JSON.stringify({ id: s.userId, role: s.role, name: s.name || '' });
-    html = html.replace('</head>', `<script>window.__PITCH_USER__=${u};</script>\n</head>`);
+    const userObj = { id: s.userId, role: s.role, name: s.name || '' };
+    if (s.plan) userObj.plan = s.plan;
+    const u = JSON.stringify(userObj);
+    const planJson = JSON.stringify(s.plan || 'free');
+    html = html.replace('</head>', `<script>window.__PITCH_USER__=${u};window.__PITCH_PLAN__=${planJson};</script>\n</head>`);
   }
   return html;
 }
